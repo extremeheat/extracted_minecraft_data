@@ -10,4 +10,7 @@ public abstract class Overlay implements Renderable {
    public boolean isPauseScreen() {
       return true;
    }
+
+   public void tick() {
+   }
 }

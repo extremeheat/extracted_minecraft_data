@@ -1,15 +1,11 @@
 package net.minecraft.client.particle;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleGroup;
+import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -40,12 +36,6 @@ public abstract class Particle {
    protected int age;
    protected int lifetime;
    protected float gravity;
-   protected float rCol;
-   protected float gCol;
-   protected float bCol;
-   protected float alpha;
-   protected float roll;
-   protected float oRoll;
    protected float friction;
    protected boolean speedUpWhenYMotionIsBlocked;
 
@@ -56,10 +46,6 @@ public abstract class Particle {
       this.bbWidth = 0.6F;
       this.bbHeight = 1.8F;
       this.random = RandomSource.create();
-      this.rCol = 1.0F;
-      this.gCol = 1.0F;
-      this.bCol = 1.0F;
-      this.alpha = 1.0F;
       this.friction = 0.98F;
       this.speedUpWhenYMotionIsBlocked = false;
       this.level = var1;
@@ -101,16 +87,6 @@ public abstract class Particle {
       return this;
    }
 
-   public void setColor(float var1, float var2, float var3) {
-      this.rCol = var1;
-      this.gCol = var2;
-      this.bCol = var3;
-   }
-
-   protected void setAlpha(float var1) {
-      this.alpha = var1;
-   }
-
    public void setLifetime(int var1) {
       this.lifetime = var1;
    }
@@ -144,16 +120,11 @@ public abstract class Particle {
       }
    }
 
-   public abstract void render(VertexConsumer var1, Camera var2, float var3);
-
-   public void renderCustom(PoseStack var1, MultiBufferSource var2, Camera var3, float var4) {
-   }
-
-   public abstract ParticleRenderType getRenderType();
+   public abstract ParticleRenderType getGroup();
 
    public String toString() {
       String var10000 = this.getClass().getSimpleName();
-      return var10000 + ", Pos (" + this.x + "," + this.y + "," + this.z + "), RGBA (" + this.rCol + "," + this.gCol + "," + this.bCol + "," + this.alpha + "), Age " + this.age;
+      return var10000 + ", Pos (" + this.x + "," + this.y + "," + this.z + "), Age " + this.age;
    }
 
    public void remove() {
@@ -238,7 +209,7 @@ public abstract class Particle {
       this.bb = var1;
    }
 
-   public Optional<ParticleGroup> getParticleGroup() {
+   public Optional<ParticleLimit> getParticleLimit() {
       return Optional.empty();
    }
 

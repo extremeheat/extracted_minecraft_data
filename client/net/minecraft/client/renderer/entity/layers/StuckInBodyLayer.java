@@ -7,7 +7,7 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -15,13 +15,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionfc;
 
-public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderLayer<PlayerRenderState, M> {
+public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderLayer<AvatarRenderState, M> {
    private final Model<S> model;
    private final S modelState;
    private final ResourceLocation texture;
    private final PlacementStyle placementStyle;
 
-   public StuckInBodyLayer(LivingEntityRenderer<?, PlayerRenderState, M> var1, Model<S> var2, S var3, ResourceLocation var4, PlacementStyle var5) {
+   public StuckInBodyLayer(LivingEntityRenderer<?, AvatarRenderState, M> var1, Model<S> var2, S var3, ResourceLocation var4, PlacementStyle var5) {
       super(var1);
       this.model = var2;
       this.modelState = var3;
@@ -29,7 +29,7 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
       this.placementStyle = var5;
    }
 
-   protected abstract int numStuck(PlayerRenderState var1);
+   protected abstract int numStuck(AvatarRenderState var1);
 
    private void submitStuckItem(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6, int var7) {
       float var8 = Mth.sqrt(var4 * var4 + var6 * var6);
@@ -40,7 +40,7 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
       var2.submitModel(this.model, this.modelState, var1, this.model.renderType(this.texture), var3, OverlayTexture.NO_OVERLAY, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PlayerRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
       int var7 = this.numStuck(var4);
       if (var7 > 0) {
          RandomSource var8 = RandomSource.create((long)var4.id);

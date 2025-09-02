@@ -10,6 +10,8 @@ import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -94,37 +96,29 @@ public class ChatScreen extends Screen {
       this.isDraft = false;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.commandSuggestions.keyPressed(var1)) {
          return true;
-      } else if (this.isDraft && var1 == 259) {
+      } else if (this.isDraft && var1.key() == 259) {
          this.input.setValue("");
          this.isDraft = false;
          return true;
-      } else if (super.keyPressed(var1, var2, var3)) {
+      } else if (super.keyPressed(var1)) {
+         return true;
+      } else if (var1.isConfirmation()) {
+         this.handleChatInput(this.input.getValue(), true);
+         this.exitReason = ChatScreen.ExitReason.DONE;
+         this.minecraft.setScreen((Screen)null);
          return true;
       } else {
-         switch (var1) {
-            case 257:
-            case 335:
-               this.handleChatInput(this.input.getValue(), true);
-               this.exitReason = ChatScreen.ExitReason.DONE;
-               this.minecraft.setScreen((Screen)null);
-               break;
-            case 264:
-               this.moveInHistory(1);
-               break;
-            case 265:
-               this.moveInHistory(-1);
-               break;
-            case 266:
-               this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
-               break;
-            case 267:
-               this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
-               break;
-            default:
+         switch (var1.key()) {
+            case 264 -> this.moveInHistory(1);
+            case 265 -> this.moveInHistory(-1);
+            case 266 -> this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
+            case 267 -> this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
+            default -> {
                return false;
+            }
          }
 
          return true;
@@ -136,7 +130,7 @@ public class ChatScreen extends Screen {
       if (this.commandSuggestions.mouseScrolled(var7)) {
          return true;
       } else {
-         if (!hasShiftDown()) {
+         if (!this.minecraft.hasShiftDown()) {
             var7 *= 7.0;
          }
 
@@ -145,29 +139,29 @@ public class ChatScreen extends Screen {
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (this.commandSuggestions.mouseClicked((double)((int)var1), (double)((int)var3), var5)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (this.commandSuggestions.mouseClicked(var1)) {
          return true;
       } else {
-         if (var5 == 0) {
-            ChatComponent var7 = this.minecraft.gui.getChat();
-            if (var7.handleChatQueueClicked(var1, var3)) {
+         if (var1.button() == 0) {
+            ChatComponent var3 = this.minecraft.gui.getChat();
+            if (var3.handleChatQueueClicked(var1.x(), var1.y())) {
                return true;
             }
 
-            Style var8 = this.getComponentStyleAt(var1, var3);
-            if (var8 != null && this.handleComponentClicked(var8)) {
+            Style var4 = this.getComponentStyleAt(var1.x(), var1.y());
+            if (var4 != null && this.handleComponentClicked(var4)) {
                this.initial = this.input.getValue();
                return true;
             }
          }
 
-         return this.input.mouseClicked(var1, var3, var5, var6) ? true : super.mouseClicked(var1, var3, var5, var6);
+         return this.input.mouseClicked(var1, var2) ? true : super.mouseClicked(var1, var2);
       }
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      return this.input.mouseDragged(var1, var3, var5, var6, var8) ? true : super.mouseDragged(var1, var3, var5, var6, var8);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      return this.input.mouseDragged(var1, var2, var4) ? true : super.mouseDragged(var1, var2, var4);
    }
 
    public void insertText(String var1, boolean var2) {

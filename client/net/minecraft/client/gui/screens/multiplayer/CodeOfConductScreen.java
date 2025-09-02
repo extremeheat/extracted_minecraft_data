@@ -6,6 +6,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.network.chat.CommonComponents;
@@ -18,16 +20,18 @@ public class CodeOfConductScreen extends WarningScreen {
    private final ServerData serverData;
    private final String codeOfConductText;
    private final BooleanConsumer resultConsumer;
+   private final Screen parent;
 
-   private CodeOfConductScreen(@Nullable ServerData var1, Component var2, String var3, BooleanConsumer var4) {
-      super(TITLE, var2, CHECK, TITLE.copy().append("\n").append(var2));
+   private CodeOfConductScreen(@Nullable ServerData var1, Screen var2, Component var3, String var4, BooleanConsumer var5) {
+      super(TITLE, var3, CHECK, TITLE.copy().append("\n").append(var3));
       this.serverData = var1;
-      this.codeOfConductText = var3;
-      this.resultConsumer = var4;
+      this.parent = var2;
+      this.codeOfConductText = var4;
+      this.resultConsumer = var5;
    }
 
-   public CodeOfConductScreen(@Nullable ServerData var1, String var2, BooleanConsumer var3) {
-      this(var1, Component.literal(var2), var2, var3);
+   public CodeOfConductScreen(@Nullable ServerData var1, Screen var2, String var3, BooleanConsumer var4) {
+      this(var1, var2, Component.literal(var3), var3, var4);
    }
 
    protected Layout addFooterButtons() {
@@ -53,6 +57,14 @@ public class CodeOfConductScreen extends WarningScreen {
 
    public boolean shouldCloseOnEsc() {
       return false;
+   }
+
+   public void tick() {
+      super.tick();
+      if (this.parent instanceof ConnectScreen || this.parent instanceof ServerReconfigScreen) {
+         this.parent.tick();
+      }
+
    }
 
    static {

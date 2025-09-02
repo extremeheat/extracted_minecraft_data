@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 public class SpectateCommand {
    private static final SimpleCommandExceptionType ERROR_SELF = new SimpleCommandExceptionType(Component.translatable("commands.spectate.self"));
    private static final DynamicCommandExceptionType ERROR_NOT_SPECTATOR = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.spectate.not_spectator", var0));
+   private static final DynamicCommandExceptionType ERROR_CANNOT_SPECTATE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.spectate.cannot_spectate", var0));
 
    public SpectateCommand() {
       super();
@@ -31,6 +32,8 @@ public class SpectateCommand {
          throw ERROR_SELF.create();
       } else if (!var2.isSpectator()) {
          throw ERROR_NOT_SPECTATOR.create(var2.getDisplayName());
+      } else if (var1 != null && var1.getType().clientTrackingRange() == 0) {
+         throw ERROR_CANNOT_SPECTATE.create(var1.getDisplayName());
       } else {
          var2.setCamera(var1);
          if (var1 != null) {

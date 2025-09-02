@@ -7,11 +7,11 @@ public class ToggleKeyMapping extends KeyMapping {
    private final BooleanSupplier needsToggle;
    private boolean releasedByScreenWhenDown;
 
-   public ToggleKeyMapping(String var1, int var2, String var3, BooleanSupplier var4) {
+   public ToggleKeyMapping(String var1, int var2, KeyMapping.Category var3, BooleanSupplier var4) {
       this(var1, InputConstants.Type.KEYSYM, var2, var3, var4);
    }
 
-   public ToggleKeyMapping(String var1, InputConstants.Type var2, int var3, String var4, BooleanSupplier var5) {
+   public ToggleKeyMapping(String var1, InputConstants.Type var2, int var3, KeyMapping.Category var4, BooleanSupplier var5) {
       super(var1, var2, var3, var4);
       this.needsToggle = var5;
    }
@@ -32,7 +32,7 @@ public class ToggleKeyMapping extends KeyMapping {
    }
 
    protected void release() {
-      if (this.isDown() || this.releasedByScreenWhenDown) {
+      if (this.needsToggle.getAsBoolean() && this.isDown() || this.releasedByScreenWhenDown) {
          this.releasedByScreenWhenDown = true;
       }
 
@@ -40,7 +40,7 @@ public class ToggleKeyMapping extends KeyMapping {
    }
 
    public boolean shouldRestoreStateOnScreenClosed() {
-      boolean var1 = this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
+      boolean var1 = this.needsToggle.getAsBoolean() && this.key.getType() == InputConstants.Type.KEYSYM && this.releasedByScreenWhenDown;
       this.releasedByScreenWhenDown = false;
       return var1;
    }

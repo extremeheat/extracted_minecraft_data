@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -42,7 +41,6 @@ public class PotionItem extends Item {
       if (var1.getClickedFace() != Direction.DOWN && var7.is(BlockTags.CONVERTABLE_TO_MUD) && var6.is(Potions.WATER)) {
          var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.setItemInHand(var1.getHand(), ItemUtils.createFilledResult(var5, var4, new ItemStack(Items.GLASS_BOTTLE)));
-         var4.awardStat(Stats.ITEM_USED.get(var5.getItem()));
          if (!var2.isClientSide()) {
             ServerLevel var8 = (ServerLevel)var2;
 

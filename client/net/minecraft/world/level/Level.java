@@ -64,10 +64,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.PalettedContainerFactory;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
@@ -87,6 +87,7 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
@@ -121,39 +122,26 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
    private final boolean isClientSide;
-   private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
    private final RegistryAccess registryAccess;
    private final DamageSources damageSources;
+   private final PalettedContainerFactory palettedContainerFactory;
    private long subTickCount;
 
    protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
       super();
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      final DimensionType var10 = (DimensionType)var4.value();
+      DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
       this.isClientSide = var5;
-      if (var10.coordinateScale() != 1.0) {
-         this.worldBorder = new WorldBorder() {
-            public double getCenterX() {
-               return super.getCenterX() / var10.coordinateScale();
-            }
-
-            public double getCenterZ() {
-               return super.getCenterZ() / var10.coordinateScale();
-            }
-         };
-      } else {
-         this.worldBorder = new WorldBorder();
-      }
-
       this.thread = Thread.currentThread();
       this.biomeManager = new BiomeManager(this, var7);
       this.isDebug = var6;
       this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
       this.registryAccess = var3;
+      this.palettedContainerFactory = PalettedContainerFactory.create(var3);
       this.damageSources = new DamageSources(var3);
    }
 
@@ -629,6 +617,32 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       });
    }
 
+   public <T extends Entity> boolean hasEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
+      Profiler.get().incrementCounter("hasEntities");
+      MutableBoolean var4 = new MutableBoolean();
+      this.getEntities().get(var1, var2, (var3x) -> {
+         if (var3.test(var3x)) {
+            var4.setTrue();
+            return AbortableIterationConsumer.Continuation.ABORT;
+         } else {
+            if (var3x instanceof EnderDragon) {
+               EnderDragon var4x = (EnderDragon)var3x;
+
+               for(EnderDragonPart var8 : var4x.getSubEntities()) {
+                  Entity var9 = (Entity)var1.tryCast(var8);
+                  if (var9 != null && var3.test(var9)) {
+                     var4.setTrue();
+                     return AbortableIterationConsumer.Continuation.ABORT;
+                  }
+               }
+            }
+
+            return AbortableIterationConsumer.Continuation.CONTINUE;
+         }
+      });
+      return var4.isTrue();
+   }
+
    public List<Entity> getPushableEntities(Entity var1, AABB var2) {
       return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
    }
@@ -811,10 +825,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void setSkyFlashTime(int var1) {
    }
 
-   public WorldBorder getWorldBorder() {
-      return this.worldBorder;
-   }
-
    public void sendPacketToServer(Packet<?> var1) {
       throw new UnsupportedOperationException("Can't send packets to server unless you're on the client.");
    }
@@ -883,6 +893,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public int getClientLeafTintColor(BlockPos var1) {
       return 0;
+   }
+
+   public PalettedContainerFactory palettedContainerFactory() {
+      return this.palettedContainerFactory;
    }
 
    // $FF: synthetic method

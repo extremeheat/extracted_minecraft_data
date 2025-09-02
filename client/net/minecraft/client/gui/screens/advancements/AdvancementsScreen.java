@@ -13,6 +13,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -98,29 +100,29 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (var5 == 0) {
-         int var7 = (this.width - 252) / 2;
-         int var8 = (this.height - 140) / 2;
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (var1.button() == 0) {
+         int var3 = (this.width - 252) / 2;
+         int var4 = (this.height - 140) / 2;
 
-         for(AdvancementTab var10 : this.tabs.values()) {
-            if (var10.isMouseOver(var7, var8, var1, var3)) {
-               this.advancements.setSelectedTab(var10.getRootNode().holder(), true);
+         for(AdvancementTab var6 : this.tabs.values()) {
+            if (var6.isMouseOver(var3, var4, var1.x(), var1.y())) {
+               this.advancements.setSelectedTab(var6.getRootNode().holder(), true);
                break;
             }
          }
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.minecraft.options.keyAdvancements.matches(var1, var2)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.minecraft.options.keyAdvancements.matches(var1)) {
          this.minecraft.setScreen((Screen)null);
          this.minecraft.mouseHandler.grabMouse();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 
@@ -135,15 +137,15 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       this.renderTooltips(var1, var2, var3, var5, var6);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      if (var5 != 0) {
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      if (var1.button() != 0) {
          this.isScrolling = false;
          return false;
       } else {
          if (!this.isScrolling) {
             this.isScrolling = true;
          } else if (this.selectedTab != null) {
-            this.selectedTab.scroll(var6, var8);
+            this.selectedTab.scroll(var2, var4);
          }
 
          return true;

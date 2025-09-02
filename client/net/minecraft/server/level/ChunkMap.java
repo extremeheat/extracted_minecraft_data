@@ -530,7 +530,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    private CompletableFuture<ChunkAccess> scheduleChunkLoad(ChunkPos var1) {
       CompletableFuture var2 = this.readChunk(var1).thenApplyAsync((var2x) -> var2x.map((var2) -> {
-            SerializableChunkData var3 = SerializableChunkData.parse(this.level, this.level.registryAccess(), var2);
+            SerializableChunkData var3 = SerializableChunkData.parse(this.level, this.level.palettedContainerFactory(), var2);
             if (var3 == null) {
                LOGGER.error("Chunk file at {} is missing level data, skipping", var1);
             }
@@ -582,7 +582,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    private ChunkAccess createEmptyChunk(ChunkPos var1) {
       this.markPositionReplaceable(var1);
-      return new ProtoChunk(var1, UpgradeData.EMPTY, this.level, this.level.registryAccess().lookupOrThrow(Registries.BIOME), (BlendingData)null);
+      return new ProtoChunk(var1, UpgradeData.EMPTY, this.level, this.level.palettedContainerFactory(), (BlendingData)null);
    }
 
    private void markPositionReplaceable(ChunkPos var1) {

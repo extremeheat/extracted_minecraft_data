@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -64,12 +65,12 @@ public class BackupConfirmScreen extends Screen {
       return false;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 256) {
          this.onCancel.run();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
@@ -98,7 +99,7 @@ public class BanlistService {
       }
 
       private static UserBanDto from(UserBan var0) {
-         return new UserBanDto(PlayerDto.from(var0.player()), Optional.of(var0.reason()), Optional.of(var0.source()), var0.expires());
+         return new UserBanDto(PlayerDto.from(var0.player()), Optional.ofNullable(var0.reason()), Optional.of(var0.source()), var0.expires());
       }
 
       public static UserBanDto from(UserBanListEntry var0) {
@@ -106,12 +107,12 @@ public class BanlistService {
       }
 
       private UserBan toUserBan(NameAndId var1) {
-         return new UserBan(var1, (String)this.reason().orElse("Banned by an operator."), (String)this.source().orElse("Management server"), this.expires());
+         return new UserBan(var1, (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
       }
    }
 
-   static record UserBan(NameAndId player, String reason, String source, Optional<Instant> expires) {
-      UserBan(NameAndId var1, String var2, String var3, Optional<Instant> var4) {
+   static record UserBan(NameAndId player, @Nullable String reason, String source, Optional<Instant> expires) {
+      UserBan(NameAndId var1, @Nullable String var2, String var3, Optional<Instant> var4) {
          super();
          this.player = var1;
          this.reason = var2;

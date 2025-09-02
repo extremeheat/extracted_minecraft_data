@@ -321,10 +321,14 @@ public class BiomeDefaultFeatures {
    public static void addDefaultExtraVegetation(BiomeGenerationSettings.Builder var0, boolean var1) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
       if (var1) {
-         var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
-         var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER);
+         addNearWaterVegetation(var0);
       }
 
+   }
+
+   public static void addNearWaterVegetation(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_FIREFLY_BUSH_NEAR_WATER);
    }
 
    public static void addLeafLitterPatch(BiomeGenerationSettings.Builder var0) {

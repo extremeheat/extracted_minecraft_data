@@ -30,6 +30,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -132,8 +133,8 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 256) {
          if (this.showDots) {
             this.onCancel();
          } else {
@@ -142,7 +143,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

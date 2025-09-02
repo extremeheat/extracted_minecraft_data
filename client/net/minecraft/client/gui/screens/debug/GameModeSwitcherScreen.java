@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -110,7 +111,7 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    private boolean checkToClose() {
-      if (!InputConstants.isKeyDown(this.minecraft.getWindow().getWindow(), 292)) {
+      if (!InputConstants.isKeyDown(this.minecraft.getWindow(), 292)) {
          this.switchToHoveredGameMode();
          this.minecraft.setScreen((Screen)null);
          return true;
@@ -119,13 +120,13 @@ public class GameModeSwitcherScreen extends Screen {
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 293) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 293) {
          this.setFirstMousePos = false;
          this.currentlyHovered = this.currentlyHovered.getNext();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

@@ -21,10 +21,12 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.LanguageInfo;
@@ -302,7 +304,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
-         if (!Screen.hasControlDown()) {
+         if (!this.minecraft.hasControlDown()) {
             this.time += var4;
          }
 
@@ -333,18 +335,18 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       this.ghostSlots.render(var1, this.minecraft, var2);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166, var6)) {
-            RecipeDisplayId var11 = this.recipeBookPage.getLastClickedRecipe();
-            RecipeCollection var12 = this.recipeBookPage.getLastClickedRecipeCollection();
-            if (var11 != null && var12 != null) {
-               if (!this.tryPlaceRecipe(var12, var11)) {
+         if (this.recipeBookPage.mouseClicked(var1, this.getXOrigin(), this.getYOrigin(), 147, 166, var2)) {
+            RecipeDisplayId var7 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeCollection var8 = this.recipeBookPage.getLastClickedRecipeCollection();
+            if (var7 != null && var8 != null) {
+               if (!this.tryPlaceRecipe(var8, var7, var1.hasShiftDown())) {
                   return false;
                }
 
-               this.lastRecipeCollection = var12;
-               this.lastRecipe = var11;
+               this.lastRecipeCollection = var8;
+               this.lastRecipe = var7;
                if (!this.isOffsetNextToMainGUI()) {
                   this.setVisible(false);
                }
@@ -353,8 +355,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
             return true;
          } else {
             if (this.searchBox != null) {
-               boolean var7 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
-               if (var7 || this.searchBox.mouseClicked(var1, var3, var5, var6)) {
+               boolean var3 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1.x()), Mth.floor(var1.y()));
+               if (var3 || this.searchBox.mouseClicked(var1, var2)) {
                   this.searchBox.setFocused(true);
                   return true;
                }
@@ -362,22 +364,22 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
                this.searchBox.setFocused(false);
             }
 
-            if (this.filterButton.mouseClicked(var1, var3, var5, var6)) {
-               boolean var10 = this.toggleFiltering();
-               this.filterButton.setStateTriggered(var10);
+            if (this.filterButton.mouseClicked(var1, var2)) {
+               boolean var6 = this.toggleFiltering();
+               this.filterButton.setStateTriggered(var6);
                this.updateFilterButtonTooltip();
                this.sendUpdateSettings();
-               this.updateCollections(false, var10);
+               this.updateCollections(false, var6);
                return true;
             } else {
-               for(RecipeBookTabButton var8 : this.tabButtons) {
-                  if (var8.mouseClicked(var1, var3, var5, var6)) {
-                     if (this.selectedTab != var8) {
+               for(RecipeBookTabButton var4 : this.tabButtons) {
+                  if (var4.mouseClicked(var1, var2)) {
+                     if (this.selectedTab != var4) {
                         if (this.selectedTab != null) {
                            this.selectedTab.setStateTriggered(false);
                         }
 
-                        this.selectedTab = var8;
+                        this.selectedTab = var4;
                         this.selectedTab.setStateTriggered(true);
                         this.updateCollections(true, this.isFiltering());
                      }
@@ -394,17 +396,17 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      return this.searchBox != null && this.searchBox.isFocused() ? this.searchBox.mouseDragged(var1, var3, var5, var6, var8) : false;
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      return this.searchBox != null && this.searchBox.isFocused() ? this.searchBox.mouseDragged(var1, var2, var4) : false;
    }
 
-   private boolean tryPlaceRecipe(RecipeCollection var1, RecipeDisplayId var2) {
+   private boolean tryPlaceRecipe(RecipeCollection var1, RecipeDisplayId var2, boolean var3) {
       if (!var1.isCraftable(var2) && var2.equals(this.lastPlacedRecipe)) {
          return false;
       } else {
          this.lastPlacedRecipe = var2;
          this.ghostSlots.clear();
-         this.minecraft.gameMode.handlePlaceRecipe(this.minecraft.player.containerMenu.containerId, var2, Screen.hasShiftDown());
+         this.minecraft.gameMode.handlePlaceRecipe(this.minecraft.player.containerMenu.containerId, var2, var3);
          return true;
       }
    }
@@ -416,34 +418,34 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       return var2;
    }
 
-   public boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7, int var8, int var9) {
+   public boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7, int var8) {
       if (!this.isVisible()) {
          return true;
       } else {
-         boolean var10 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + var7) || var3 >= (double)(var6 + var8);
-         boolean var11 = (double)(var5 - 147) < var1 && var1 < (double)var5 && (double)var6 < var3 && var3 < (double)(var6 + var8);
-         return var10 && !var11 && !this.selectedTab.isHoveredOrFocused();
+         boolean var9 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + var7) || var3 >= (double)(var6 + var8);
+         boolean var10 = (double)(var5 - 147) < var1 && var1 < (double)var5 && (double)var6 < var3 && var3 < (double)(var6 + var8);
+         return var9 && !var10 && !this.selectedTab.isHoveredOrFocused();
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       this.ignoreTextInput = false;
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (var1 == 256 && !this.isOffsetNextToMainGUI()) {
+         if (var1.isEscape() && !this.isOffsetNextToMainGUI()) {
             this.setVisible(false);
             return true;
-         } else if (this.searchBox.keyPressed(var1, var2, var3)) {
+         } else if (this.searchBox.keyPressed(var1)) {
             this.checkSearchStringUpdate();
             return true;
-         } else if (this.searchBox.isFocused() && this.searchBox.isVisible() && var1 != 256) {
+         } else if (this.searchBox.isFocused() && this.searchBox.isVisible() && !var1.isEscape()) {
             return true;
-         } else if (this.minecraft.options.keyChat.matches(var1, var2) && !this.searchBox.isFocused()) {
+         } else if (this.minecraft.options.keyChat.matches(var1) && !this.searchBox.isFocused()) {
             this.ignoreTextInput = true;
             this.searchBox.setFocused(true);
             return true;
-         } else if (CommonInputs.selected(var1) && this.lastRecipeCollection != null && this.lastRecipe != null) {
+         } else if (var1.isSelection() && this.lastRecipeCollection != null && this.lastRecipe != null) {
             AbstractWidget.playButtonClickSound(Minecraft.getInstance().getSoundManager());
-            return this.tryPlaceRecipe(this.lastRecipeCollection, this.lastRecipe);
+            return this.tryPlaceRecipe(this.lastRecipeCollection, this.lastRecipe, var1.hasShiftDown());
          } else {
             return false;
          }
@@ -452,20 +454,20 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
-   public boolean keyReleased(int var1, int var2, int var3) {
+   public boolean keyReleased(KeyEvent var1) {
       this.ignoreTextInput = false;
-      return GuiEventListener.super.keyReleased(var1, var2, var3);
+      return GuiEventListener.super.keyReleased(var1);
    }
 
-   public boolean charTyped(char var1, int var2) {
+   public boolean charTyped(CharacterEvent var1) {
       if (this.ignoreTextInput) {
          return false;
       } else if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (this.searchBox.charTyped(var1, var2)) {
+         if (this.searchBox.charTyped(var1)) {
             this.checkSearchStringUpdate();
             return true;
          } else {
-            return GuiEventListener.super.charTyped(var1, var2);
+            return GuiEventListener.super.charTyped(var1);
          }
       } else {
          return false;

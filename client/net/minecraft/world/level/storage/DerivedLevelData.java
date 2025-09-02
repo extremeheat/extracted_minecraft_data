@@ -1,5 +1,6 @@
 package net.minecraft.world.level.storage;
 
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
@@ -111,11 +112,11 @@ public class DerivedLevelData implements ServerLevelData {
       return this.worldData.getGameRules();
    }
 
-   public WorldBorder.Settings getWorldBorder() {
-      return this.wrapped.getWorldBorder();
+   public Optional<WorldBorder.Settings> getLegacyWorldBorderSettings() {
+      return this.wrapped.getLegacyWorldBorderSettings();
    }
 
-   public void setWorldBorder(WorldBorder.Settings var1) {
+   public void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1) {
    }
 
    public Difficulty getDifficulty() {

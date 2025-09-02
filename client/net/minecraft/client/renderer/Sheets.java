@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Holder;
@@ -17,13 +18,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.CopperChestBlock;
 import net.minecraft.world.level.block.entity.BannerPattern;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
-import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
-import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
@@ -205,31 +201,17 @@ public class Sheets {
       return var0 == null ? null : (Material)DECORATED_POT_MATERIALS.get(var0);
    }
 
-   public static Material chooseMaterial(BlockEntity var0, ChestType var1, boolean var2) {
-      if (var0 instanceof EnderChestBlockEntity) {
-         return ENDER_CHEST_LOCATION;
-      } else if (var2) {
-         return chooseMaterial(var1, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
-      } else if (var0 instanceof TrappedChestBlockEntity) {
-         return chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
-      } else {
-         Block var4 = var0.getBlockState().getBlock();
-         if (var4 instanceof CopperChestBlock) {
-            CopperChestBlock var3 = (CopperChestBlock)var4;
-            return chooseCopperMaterial(var1, var3);
-         } else {
-            return chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
-         }
-      }
-   }
-
-   private static Material chooseCopperMaterial(ChestType var0, CopperChestBlock var1) {
+   public static Material chooseMaterial(ChestRenderState.ChestMaterialType var0, ChestType var1) {
       Material var10000;
-      switch (var1.getState()) {
-         case UNAFFECTED -> var10000 = chooseMaterial(var0, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
-         case EXPOSED -> var10000 = chooseMaterial(var0, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
-         case WEATHERED -> var10000 = chooseMaterial(var0, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
-         case OXIDIZED -> var10000 = chooseMaterial(var0, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
+      switch (var0) {
+         case ENDER_CHEST -> var10000 = ENDER_CHEST_LOCATION;
+         case CHRISTMAS -> var10000 = chooseMaterial(var1, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
+         case TRAPPED -> var10000 = chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
+         case COPPER_UNAFFECTED -> var10000 = chooseMaterial(var1, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_EXPOSED -> var10000 = chooseMaterial(var1, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_WEATHERED -> var10000 = chooseMaterial(var1, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
+         case COPPER_OXIDIZED -> var10000 = chooseMaterial(var1, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
+         case REGULAR -> var10000 = chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

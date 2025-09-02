@@ -63,4 +63,6 @@ public interface OrderedSubmitNodeCollector {
    void submitItem(PoseStack var1, ItemDisplayContext var2, int var3, int var4, int var5, int[] var6, List<BakedQuad> var7, RenderType var8, ItemStackRenderState.FoilType var9);
 
    void submitCustomGeometry(PoseStack var1, RenderType var2, SubmitNodeCollector.CustomGeometryRenderer var3);
+
+   void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1);
 }

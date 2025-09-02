@@ -12,11 +12,11 @@ import net.minecraft.network.chat.Component;
 public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    public static final SimpleDateFormat DATE_FORMAT;
    public static final String EXPIRES_NEVER = "forever";
-   public static final String DEFAULT_BAN_REASON = "Banned by an operator.";
    protected final Date created;
    protected final String source;
    @Nullable
    protected final Date expires;
+   @Nullable
    protected final String reason;
 
    public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
@@ -24,7 +24,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       this.created = var2 == null ? new Date() : var2;
       this.source = var3 == null ? "(Unknown)" : var3;
       this.expires = var4;
-      this.reason = var5 == null ? "Banned by an operator." : var5;
+      this.reason = var5;
    }
 
    protected BanListEntry(@Nullable T var1, JsonObject var2) {
@@ -48,7 +48,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       }
 
       this.expires = var4;
-      this.reason = var2.has("reason") ? var2.get("reason").getAsString() : "Banned by an operator.";
+      this.reason = var2.has("reason") ? var2.get("reason").getAsString() : null;
    }
 
    public Date getCreated() {
@@ -64,6 +64,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       return this.expires;
    }
 
+   @Nullable
    public String getReason() {
       return this.reason;
    }

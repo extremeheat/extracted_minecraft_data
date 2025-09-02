@@ -46,13 +46,15 @@ public class BellModel extends Model<State> {
       this.bellBody.zRot = var3;
    }
 
-   public static class State {
-      public float ticks;
+   public static record State(float ticks, @Nullable Direction shakeDirection) {
+      final float ticks;
       @Nullable
-      public Direction shakeDirection;
+      final Direction shakeDirection;
 
-      public State() {
+      public State(float var1, @Nullable Direction var2) {
          super();
+         this.ticks = var1;
+         this.shakeDirection = var2;
       }
    }
 }

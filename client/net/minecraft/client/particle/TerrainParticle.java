@@ -6,11 +6,11 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class TerrainParticle extends TextureSheetParticle {
+public class TerrainParticle extends SingleQuadParticle {
    private final BlockPos pos;
    private final float uo;
    private final float vo;
@@ -20,9 +20,8 @@ public class TerrainParticle extends TextureSheetParticle {
    }
 
    public TerrainParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, BlockState var14, BlockPos var15) {
-      super(var1, var2, var4, var6, var8, var10, var12);
+      super(var1, var2, var4, var6, var8, var10, var12, Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(var14));
       this.pos = var15;
-      this.setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(var14));
       this.gravity = 1.0F;
       this.rCol = 0.6F;
       this.gCol = 0.6F;
@@ -39,8 +38,8 @@ public class TerrainParticle extends TextureSheetParticle {
       this.vo = this.random.nextFloat() * 3.0F;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.TERRAIN_SHEET;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TERRAIN;
    }
 
    protected float getU0() {
@@ -76,14 +75,8 @@ public class TerrainParticle extends TextureSheetParticle {
       }
 
       @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-
-      // $FF: synthetic method
-      @Nullable
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -93,20 +86,14 @@ public class TerrainParticle extends TextureSheetParticle {
       }
 
       @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         TerrainParticle var15 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
-         if (var15 != null) {
-            ((Particle)var15).setParticleSpeed(var2.random.nextGaussian() / 30.0, var11 + var2.random.nextGaussian() / 2.0, var2.random.nextGaussian() / 30.0);
-            ((Particle)var15).setLifetime(var2.random.nextInt(20) + 20);
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         TerrainParticle var16 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
+         if (var16 != null) {
+            ((Particle)var16).setParticleSpeed(var15.nextGaussian() / 30.0, var11 + var15.nextGaussian() / 2.0, var15.nextGaussian() / 30.0);
+            ((Particle)var16).setLifetime(var15.nextInt(20) + 20);
          }
 
-         return var15;
-      }
-
-      // $FF: synthetic method
-      @Nullable
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+         return var16;
       }
    }
 
@@ -116,20 +103,14 @@ public class TerrainParticle extends TextureSheetParticle {
       }
 
       @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         TerrainParticle var15 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
-         if (var15 != null) {
-            ((Particle)var15).setParticleSpeed(0.0, 0.0, 0.0);
-            ((Particle)var15).setLifetime(var2.random.nextInt(10) + 1);
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         TerrainParticle var16 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
+         if (var16 != null) {
+            ((Particle)var16).setParticleSpeed(0.0, 0.0, 0.0);
+            ((Particle)var16).setLifetime(var15.nextInt(10) + 1);
          }
 
-         return var15;
-      }
-
-      // $FF: synthetic method
-      @Nullable
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+         return var16;
       }
    }
 }

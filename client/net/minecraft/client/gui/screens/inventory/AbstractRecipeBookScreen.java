@@ -5,6 +5,9 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
@@ -71,34 +74,34 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       return true;
    }
 
-   public boolean charTyped(char var1, int var2) {
-      return this.recipeBookComponent.charTyped(var1, var2) ? true : super.charTyped(var1, var2);
+   public boolean charTyped(CharacterEvent var1) {
+      return this.recipeBookComponent.charTyped(var1) ? true : super.charTyped(var1);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return this.recipeBookComponent.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
+   public boolean keyPressed(KeyEvent var1) {
+      return this.recipeBookComponent.keyPressed(var1) ? true : super.keyPressed(var1);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (this.recipeBookComponent.mouseClicked(var1, var3, var5, var6)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (this.recipeBookComponent.mouseClicked(var1, var2)) {
          this.setFocused(this.recipeBookComponent);
          return true;
       } else {
-         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(var1, var3, var5, var6);
+         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(var1, var2);
       }
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      return this.recipeBookComponent.mouseDragged(var1, var3, var5, var6, var8) ? true : super.mouseDragged(var1, var3, var5, var6, var8);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      return this.recipeBookComponent.mouseDragged(var1, var2, var4) ? true : super.mouseDragged(var1, var2, var4);
    }
 
    protected boolean isHovering(int var1, int var2, int var3, int var4, double var5, double var7) {
       return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.isHovering(var1, var2, var3, var4, var5, var7);
    }
 
-   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7) {
-      boolean var8 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
-      return this.recipeBookComponent.hasClickedOutside(var1, var3, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, var7) && var8;
+   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6) {
+      boolean var7 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
+      return this.recipeBookComponent.hasClickedOutside(var1, var3, this.leftPos, this.topPos, this.imageWidth, this.imageHeight) && var7;
    }
 
    protected void slotClicked(Slot var1, int var2, int var3, ClickType var4) {

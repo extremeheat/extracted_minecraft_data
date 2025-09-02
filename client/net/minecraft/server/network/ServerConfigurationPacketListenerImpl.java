@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
@@ -37,7 +38,6 @@ import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
@@ -66,7 +66,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void onDisconnect(DisconnectionDetails var1) {
-      LOGGER.info("{} lost connection: {}", this.gameProfile, var1.reason().getString());
+      LOGGER.info("{} ({}) lost connection: {}", new Object[]{this.gameProfile.name(), this.gameProfile.id(), var1.reason().getString()});
       if (this.prepareSpawnTask != null) {
          this.prepareSpawnTask.close();
          this.prepareSpawnTask = null;
@@ -135,7 +135,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void handleSelectKnownPacks(ServerboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       if (this.synchronizeRegistriesTask == null) {
          throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
       } else {
@@ -149,7 +149,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       this.finishCurrentTask(JoinWorldTask.TYPE);
       this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
 

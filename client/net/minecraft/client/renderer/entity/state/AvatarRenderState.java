@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Parrot;
 
-public class PlayerRenderState extends HumanoidRenderState {
+public class AvatarRenderState extends HumanoidRenderState {
    public PlayerSkin skin = DefaultPlayerSkin.getDefaultSkin();
    public float capeFlap;
    public float capeLean;
@@ -33,10 +33,10 @@ public class PlayerRenderState extends HumanoidRenderState {
    @Nullable
    public Parrot.Variant parrotOnRightShoulder;
    public int id;
-   public String name = "Steve";
+   public boolean showDeadMouseEars = false;
    public final ItemStackRenderState heldOnHead = new ItemStackRenderState();
 
-   public PlayerRenderState() {
+   public AvatarRenderState() {
       super();
    }
 

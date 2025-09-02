@@ -32,6 +32,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -154,8 +155,8 @@ public class StatsScreen extends Screen {
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+   public boolean keyPressed(KeyEvent var1) {
+      return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

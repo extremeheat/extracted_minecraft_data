@@ -20,20 +20,20 @@ public class MacosUtil {
       super();
    }
 
-   public static void exitNativeFullscreen(long var0) {
+   public static void exitNativeFullscreen(Window var0) {
       getNsWindow(var0).filter(MacosUtil::isInNativeFullscreen).ifPresent(MacosUtil::toggleNativeFullscreen);
    }
 
-   public static void clearResizableBit(long var0) {
+   public static void clearResizableBit(Window var0) {
       getNsWindow(var0).ifPresent((var0x) -> {
          long var1 = getStyleMask(var0x);
          var0x.send("setStyleMask:", new Object[]{var1 & -9L});
       });
    }
 
-   private static Optional<NSObject> getNsWindow(long var0) {
-      long var2 = GLFWNativeCocoa.glfwGetCocoaWindow(var0);
-      return var2 != 0L ? Optional.of(new NSObject(new Pointer(var2))) : Optional.empty();
+   private static Optional<NSObject> getNsWindow(Window var0) {
+      long var1 = GLFWNativeCocoa.glfwGetCocoaWindow(var0.handle());
+      return var1 != 0L ? Optional.of(new NSObject(new Pointer(var1))) : Optional.empty();
    }
 
    private static boolean isInNativeFullscreen(NSObject var0) {

@@ -6,22 +6,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.math.MatrixUtil;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 
 public class ItemRenderer {
    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
@@ -30,12 +23,9 @@ public class ItemRenderer {
    public static final float SPECIAL_FOIL_FIRST_PERSON_SCALE = 0.75F;
    public static final float SPECIAL_FOIL_TEXTURE_SCALE = 0.0078125F;
    public static final int NO_TINT = -1;
-   private final ItemModelResolver resolver;
-   private final ItemStackRenderState scratchItemStackRenderState = new ItemStackRenderState();
 
-   public ItemRenderer(ItemModelResolver var1) {
+   public ItemRenderer() {
       super();
-      this.resolver = var1;
    }
 
    public static void renderItem(ItemDisplayContext var0, PoseStack var1, MultiBufferSource var2, int var3, int var4, int[] var5, List<BakedQuad> var6, RenderType var7, ItemStackRenderState.FoilType var8) {
@@ -108,19 +98,5 @@ public class ItemRenderer {
          var1.putBulkData(var6, var8, var10, var11, var12, var9, var4, var5);
       }
 
-   }
-
-   public AABB getBoundingBox(ItemStack var1, ItemDisplayContext var2, @Nullable Level var3, @Nullable ItemOwner var4, int var5) {
-      this.resolver.updateForTopItem(this.scratchItemStackRenderState, var1, var2, var3, var4, var5);
-      return this.scratchItemStackRenderState.getModelBoundingBox();
-   }
-
-   public void renderUpwardsFrom(@Nullable ItemOwner var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, SubmitNodeCollector var5, @Nullable Level var6, int var7, int var8, int var9) {
-      ItemStackRenderState var10 = new ItemStackRenderState();
-      this.resolver.updateForTopItem(var10, var2, var3, var6, var1, var9);
-      AABB var11 = var10.getModelBoundingBox();
-      double var12 = -var11.minY;
-      var4.translate(0.0, var12, 0.0);
-      var10.submit(var4, var5, var7, var8, 0);
    }
 }

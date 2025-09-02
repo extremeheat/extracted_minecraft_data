@@ -48,6 +48,7 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
@@ -257,16 +258,16 @@ public class CreateWorldScreen extends Screen {
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       if (this.tabNavigationBar.keyPressed(var1)) {
          return true;
-      } else if (super.keyPressed(var1, var2, var3)) {
+      } else if (super.keyPressed(var1)) {
          return true;
-      } else if (var1 != 257 && var1 != 335) {
-         return false;
-      } else {
+      } else if (var1.isConfirmation()) {
          this.onCreate();
          return true;
+      } else {
+         return false;
       }
    }
 

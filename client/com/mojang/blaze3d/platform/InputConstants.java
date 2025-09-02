@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.LazyLoadedValue;
@@ -124,11 +125,11 @@ public class InputConstants {
    public static final int KEY_LALT = 342;
    public static final int KEY_LCONTROL = 341;
    public static final int KEY_LSHIFT = 340;
-   public static final int KEY_LWIN = 343;
+   public static final int KEY_LSUPER = 343;
    public static final int KEY_RALT = 346;
    public static final int KEY_RCONTROL = 345;
    public static final int KEY_RSHIFT = 344;
-   public static final int KEY_RWIN = 347;
+   public static final int KEY_RSUPER = 347;
    public static final int KEY_RETURN = 257;
    public static final int KEY_ESCAPE = 256;
    public static final int KEY_BACKSPACE = 259;
@@ -148,7 +149,12 @@ public class InputConstants {
    public static final int MOUSE_BUTTON_LEFT = 0;
    public static final int MOUSE_BUTTON_MIDDLE = 2;
    public static final int MOUSE_BUTTON_RIGHT = 1;
+   public static final int MOD_SHIFT = 1;
    public static final int MOD_CONTROL = 2;
+   public static final int MOD_ALT = 4;
+   public static final int MOD_SUPER = 8;
+   public static final int MOD_CAPS_LOCK = 16;
+   public static final int MOD_NUM_LOCK = 32;
    public static final int CURSOR = 208897;
    public static final int CURSOR_DISABLED = 212995;
    public static final int CURSOR_NORMAL = 212993;
@@ -158,8 +164,8 @@ public class InputConstants {
       super();
    }
 
-   public static Key getKey(int var0, int var1) {
-      return var0 == -1 ? InputConstants.Type.SCANCODE.getOrCreate(var1) : InputConstants.Type.KEYSYM.getOrCreate(var0);
+   public static Key getKey(KeyEvent var0) {
+      return var0.key() == -1 ? InputConstants.Type.SCANCODE.getOrCreate(var0.scancode()) : InputConstants.Type.KEYSYM.getOrCreate(var0.key());
    }
 
    public static Key getKey(String var0) {
@@ -182,25 +188,25 @@ public class InputConstants {
       }
    }
 
-   public static boolean isKeyDown(long var0, int var2) {
-      return GLFW.glfwGetKey(var0, var2) == 1;
+   public static boolean isKeyDown(Window var0, int var1) {
+      return GLFW.glfwGetKey(var0.handle(), var1) == 1;
    }
 
-   public static void setupKeyboardCallbacks(long var0, GLFWKeyCallbackI var2, GLFWCharModsCallbackI var3) {
-      GLFW.glfwSetKeyCallback(var0, var2);
-      GLFW.glfwSetCharModsCallback(var0, var3);
+   public static void setupKeyboardCallbacks(Window var0, GLFWKeyCallbackI var1, GLFWCharModsCallbackI var2) {
+      GLFW.glfwSetKeyCallback(var0.handle(), var1);
+      GLFW.glfwSetCharModsCallback(var0.handle(), var2);
    }
 
-   public static void setupMouseCallbacks(long var0, GLFWCursorPosCallbackI var2, GLFWMouseButtonCallbackI var3, GLFWScrollCallbackI var4, GLFWDropCallbackI var5) {
-      GLFW.glfwSetCursorPosCallback(var0, var2);
-      GLFW.glfwSetMouseButtonCallback(var0, var3);
-      GLFW.glfwSetScrollCallback(var0, var4);
-      GLFW.glfwSetDropCallback(var0, var5);
+   public static void setupMouseCallbacks(Window var0, GLFWCursorPosCallbackI var1, GLFWMouseButtonCallbackI var2, GLFWScrollCallbackI var3, GLFWDropCallbackI var4) {
+      GLFW.glfwSetCursorPosCallback(var0.handle(), var1);
+      GLFW.glfwSetMouseButtonCallback(var0.handle(), var2);
+      GLFW.glfwSetScrollCallback(var0.handle(), var3);
+      GLFW.glfwSetDropCallback(var0.handle(), var4);
    }
 
-   public static void grabOrReleaseMouse(long var0, int var2, double var3, double var5) {
-      GLFW.glfwSetCursorPos(var0, var3, var5);
-      GLFW.glfwSetInputMode(var0, 208897, var2);
+   public static void grabOrReleaseMouse(Window var0, int var1, double var2, double var4) {
+      GLFW.glfwSetCursorPos(var0.handle(), var2, var4);
+      GLFW.glfwSetInputMode(var0.handle(), 208897, var1);
    }
 
    public static boolean isRawMouseInputSupported() {
@@ -211,9 +217,9 @@ public class InputConstants {
       }
    }
 
-   public static void updateRawMouseInput(long var0, boolean var2) {
+   public static void updateRawMouseInput(Window var0, boolean var1) {
       if (isRawMouseInputSupported()) {
-         GLFW.glfwSetInputMode(var0, GLFW_RAW_MOUSE_MOTION, var2 ? 1 : 0);
+         GLFW.glfwSetInputMode(var0.handle(), GLFW_RAW_MOUSE_MOTION, var1 ? 1 : 0);
       }
 
    }

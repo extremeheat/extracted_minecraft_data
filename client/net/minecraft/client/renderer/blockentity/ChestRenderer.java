@@ -11,25 +11,29 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AbstractChestBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.CopperChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
+import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
-public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T> {
+public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T, ChestRenderState> {
    private final MaterialSet materials;
    private final ChestModel singleModel;
    private final ChestModel doubleLeftModel;
@@ -50,44 +54,91 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       return var0.get(2) + 1 == 12 && var0.get(5) >= 24 && var0.get(5) <= 26;
    }
 
-   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      Level var9 = var1.getLevel();
-      boolean var10 = var9 != null;
-      BlockState var11 = var10 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
-      ChestType var12 = var11.hasProperty(ChestBlock.TYPE) ? (ChestType)var11.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
-      Block var13 = var11.getBlock();
-      if (var13 instanceof AbstractChestBlock var14) {
-         boolean var15 = var12 != ChestType.SINGLE;
-         var3.pushPose();
-         float var16 = ((Direction)var11.getValue(ChestBlock.FACING)).toYRot();
-         var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var16));
-         var3.translate(-0.5F, -0.5F, -0.5F);
-         DoubleBlockCombiner.NeighborCombineResult var17;
-         if (var10) {
-            var17 = var14.combine(var11, var9, var1.getBlockPos(), true);
-         } else {
-            var17 = DoubleBlockCombiner.Combiner::acceptNone;
-         }
+   public ChestRenderState createRenderState() {
+      return new ChestRenderState();
+   }
 
-         float var18 = ((Float2FloatFunction)var17.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
-         var18 = 1.0F - var18;
-         var18 = 1.0F - var18 * var18 * var18;
-         int var19 = ((Int2IntFunction)var17.apply(new BrightnessCombiner())).applyAsInt(var4);
-         Material var20 = Sheets.chooseMaterial(var1, var12, this.xmasTextures);
-         RenderType var21 = var20.renderType(RenderType::entityCutout);
-         TextureAtlasSprite var22 = this.materials.get(var20);
-         if (var15) {
-            if (var12 == ChestType.LEFT) {
-               var8.submitModel(this.doubleLeftModel, var18, var3, var21, var4, var5, -1, var22, 0, var7);
-            } else {
-               var8.submitModel(this.doubleRightModel, var18, var3, var21, var4, var5, -1, var22, 0, var7);
+   public void extractRenderState(T var1, ChestRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      DoubleBlockCombiner.NeighborCombineResult var8;
+      label30: {
+         BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+         boolean var6 = var1.getLevel() != null;
+         BlockState var7 = var6 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+         var2.type = var7.hasProperty(ChestBlock.TYPE) ? (ChestType)var7.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
+         var2.angle = ((Direction)var7.getValue(ChestBlock.FACING)).toYRot();
+         var2.material = this.getChestMaterial(var1, this.xmasTextures);
+         if (var6) {
+            Block var10 = var7.getBlock();
+            if (var10 instanceof ChestBlock) {
+               ChestBlock var9 = (ChestBlock)var10;
+               var8 = var9.combine(var7, var1.getLevel(), var1.getBlockPos(), true);
+               break label30;
             }
-         } else {
-            var8.submitModel(this.singleModel, var18, var3, var21, var19, var5, -1, var22, 0, var7);
          }
 
-         var3.popPose();
+         var8 = DoubleBlockCombiner.Combiner::acceptNone;
       }
+
+      var2.open = ((Float2FloatFunction)var8.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var3);
+      if (var2.type != ChestType.SINGLE) {
+         var2.lightCoords = ((Int2IntFunction)var8.apply(new BrightnessCombiner())).applyAsInt(var2.lightCoords);
+      }
+
+   }
+
+   public void submit(ChestRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      var2.pushPose();
+      var2.translate(0.5F, 0.5F, 0.5F);
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.angle));
+      var2.translate(-0.5F, -0.5F, -0.5F);
+      float var4 = var1.open;
+      var4 = 1.0F - var4;
+      var4 = 1.0F - var4 * var4 * var4;
+      Material var5 = Sheets.chooseMaterial(var1.material, var1.type);
+      RenderType var6 = var5.renderType(RenderType::entityCutout);
+      TextureAtlasSprite var7 = this.materials.get(var5);
+      if (var1.type != ChestType.SINGLE) {
+         if (var1.type == ChestType.LEFT) {
+            var3.submitModel(this.doubleLeftModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+         } else {
+            var3.submitModel(this.doubleRightModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+         }
+      } else {
+         var3.submitModel(this.singleModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+      }
+
+      var2.popPose();
+   }
+
+   private ChestRenderState.ChestMaterialType getChestMaterial(BlockEntity var1, boolean var2) {
+      if (var1 instanceof EnderChestBlockEntity) {
+         return ChestRenderState.ChestMaterialType.ENDER_CHEST;
+      } else if (var2) {
+         return ChestRenderState.ChestMaterialType.CHRISTMAS;
+      } else if (var1 instanceof TrappedChestBlockEntity) {
+         return ChestRenderState.ChestMaterialType.TRAPPED;
+      } else {
+         Block var4 = var1.getBlockState().getBlock();
+         if (var4 instanceof CopperChestBlock) {
+            CopperChestBlock var3 = (CopperChestBlock)var4;
+            ChestRenderState.ChestMaterialType var10000;
+            switch (var3.getState()) {
+               case UNAFFECTED -> var10000 = ChestRenderState.ChestMaterialType.COPPER_UNAFFECTED;
+               case EXPOSED -> var10000 = ChestRenderState.ChestMaterialType.COPPER_EXPOSED;
+               case WEATHERED -> var10000 = ChestRenderState.ChestMaterialType.COPPER_WEATHERED;
+               case OXIDIZED -> var10000 = ChestRenderState.ChestMaterialType.COPPER_OXIDIZED;
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            return var10000;
+         } else {
+            return ChestRenderState.ChestMaterialType.REGULAR;
+         }
+      }
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

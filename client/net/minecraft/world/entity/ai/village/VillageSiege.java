@@ -32,10 +32,10 @@ public class VillageSiege implements CustomSpawner {
       this.siegeState = VillageSiege.State.SIEGE_DONE;
    }
 
-   public void tick(ServerLevel var1, boolean var2, boolean var3) {
+   public void tick(ServerLevel var1, boolean var2) {
       if (!var1.isBrightOutside() && var2) {
-         float var4 = var1.getTimeOfDay(0.0F);
-         if ((double)var4 == 0.5) {
+         float var3 = var1.getTimeOfDay(0.0F);
+         if ((double)var3 == 0.5) {
             this.siegeState = var1.random.nextInt(10) == 0 ? VillageSiege.State.SIEGE_TONIGHT : VillageSiege.State.SIEGE_DONE;
          }
 

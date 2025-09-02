@@ -3,12 +3,13 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -19,67 +20,78 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
-public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T> {
+public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T, BeaconRenderState> {
    public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
    public static final int MAX_RENDER_Y = 2048;
    private static final float BEAM_SCALE_THRESHOLD = 96.0F;
    public static final float SOLID_BEAM_RADIUS = 0.2F;
    public static final float BEAM_GLOW_RADIUS = 0.25F;
 
-   public BeaconRenderer(BlockEntityRendererProvider.Context var1) {
+   public BeaconRenderer() {
       super();
    }
 
-   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      long var9 = var1.getLevel().getGameTime();
-      float var11 = (float)var6.subtract(var1.getBlockPos().getCenter()).horizontalDistance();
-      LocalPlayer var12 = Minecraft.getInstance().player;
-      float var13 = var12 != null && var12.isScoping() ? 1.0F : Math.max(1.0F, var11 / 96.0F);
-      List var14 = ((BeaconBeamOwner)var1).getBeamSections();
-      int var15 = 0;
+   public BeaconRenderState createRenderState() {
+      return new BeaconRenderState();
+   }
 
-      for(int var16 = 0; var16 < var14.size(); ++var16) {
-         BeaconBeamOwner.Section var17 = (BeaconBeamOwner.Section)var14.get(var16);
-         submitBeaconBeam(var3, var8, var2, var13, var9, var15, var16 == var14.size() - 1 ? 2048 : var17.getHeight(), var17.getColor());
-         var15 += var17.getHeight();
+   public void extractRenderState(T var1, BeaconRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      extract(var1, var2, var3, var4);
+   }
+
+   public static <T extends BlockEntity & BeaconBeamOwner> void extract(T var0, BeaconRenderState var1, float var2, Vec3 var3) {
+      var1.animationTime = var0.getLevel() != null ? (float)Math.floorMod(var0.getLevel().getGameTime(), 40) + var2 : 0.0F;
+      var1.sections = ((BeaconBeamOwner)var0).getBeamSections().stream().map((var0x) -> new BeaconRenderState.Section(var0x.getColor(), var0x.getHeight())).toList();
+      float var4 = (float)var3.subtract(var1.blockPos.getCenter()).horizontalDistance();
+      LocalPlayer var5 = Minecraft.getInstance().player;
+      var1.beamRadiusScale = var5 != null && var5.isScoping() ? 1.0F : Math.max(1.0F, var4 / 96.0F);
+   }
+
+   public void submit(BeaconRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      int var4 = 0;
+
+      for(int var5 = 0; var5 < var1.sections.size(); ++var5) {
+         BeaconRenderState.Section var6 = (BeaconRenderState.Section)var1.sections.get(var5);
+         submitBeaconBeam(var2, var3, var1.beamRadiusScale, var1.animationTime, var4, var5 == var1.sections.size() - 1 ? 2048 : var6.height(), var6.color());
+         var4 += var6.height();
       }
 
    }
 
-   private static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, float var2, float var3, long var4, int var6, int var7, int var8) {
-      submitBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var4, var6, var7, var8, 0.2F * var3, 0.25F * var3);
+   private static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, float var2, float var3, int var4, int var5, int var6) {
+      submitBeaconBeam(var0, var1, BEAM_LOCATION, 1.0F, var3, var4, var5, var6, 0.2F * var2, 0.25F * var2);
    }
 
-   public static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, int var9, float var10, float var11) {
-      int var12 = var7 + var8;
+   public static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, ResourceLocation var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9) {
+      int var10 = var5 + var6;
       var0.pushPose();
       var0.translate(0.5, 0.0, 0.5);
-      float var13 = (float)Math.floorMod(var5, 40) + var3;
-      float var14 = var8 < 0 ? var13 : -var13;
-      float var15 = Mth.frac(var14 * 0.2F - (float)Mth.floor(var14 * 0.1F));
+      float var11 = var6 < 0 ? var4 : -var4;
+      float var12 = Mth.frac(var11 * 0.2F - (float)Mth.floor(var11 * 0.1F));
       var0.pushPose();
-      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var13 * 2.25F - 45.0F));
+      var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var4 * 2.25F - 45.0F));
+      float var13 = 0.0F;
       float var16 = 0.0F;
+      float var17 = -var8;
+      float var18 = 0.0F;
       float var19 = 0.0F;
-      float var20 = -var10;
+      float var20 = -var8;
       float var21 = 0.0F;
-      float var22 = 0.0F;
-      float var23 = -var10;
-      float var24 = 0.0F;
-      float var25 = 1.0F;
-      float var26 = -1.0F + var15;
-      float var27 = (float)var8 * var4 * (0.5F / var10) + var26;
-      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, false), (var9x, var10x) -> renderPart(var9x, var10x, var9, var7, var12, 0.0F, var10, var10, 0.0F, var20, 0.0F, 0.0F, var23, 0.0F, 1.0F, var27, var26));
+      float var22 = 1.0F;
+      float var23 = -1.0F + var12;
+      float var24 = (float)var6 * var3 * (0.5F / var8) + var23;
+      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, false), (var9x, var10x) -> renderPart(var9x, var10x, var7, var5, var10, 0.0F, var8, var8, 0.0F, var17, 0.0F, 0.0F, var20, 0.0F, 1.0F, var24, var23));
       var0.popPose();
-      var16 = -var11;
-      float var17 = -var11;
-      var19 = -var11;
-      var20 = -var11;
-      var24 = 0.0F;
-      var25 = 1.0F;
-      var26 = -1.0F + var15;
-      var27 = (float)var8 * var4 + var26;
-      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, true), (var13x, var14x) -> renderPart(var13x, var14x, ARGB.color(32, var9), var7, var12, var16, var17, var11, var19, var20, var11, var11, var11, 0.0F, 1.0F, var27, var26));
+      var13 = -var9;
+      float var14 = -var9;
+      var16 = -var9;
+      var17 = -var9;
+      var21 = 0.0F;
+      var22 = 1.0F;
+      var23 = -1.0F + var12;
+      var24 = (float)var6 * var3 + var23;
+      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, true), (var13x, var14x) -> renderPart(var13x, var14x, ARGB.color(32, var7), var5, var10, var13, var14, var9, var16, var17, var9, var9, var9, 0.0F, 1.0F, var24, var23));
       var0.popPose();
    }
 
@@ -111,5 +123,10 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
 
    public boolean shouldRender(T var1, Vec3 var2) {
       return Vec3.atCenterOf(var1.getBlockPos()).multiply(1.0, 0.0, 1.0).closerThan(var2.multiply(1.0, 0.0, 1.0), (double)this.getViewDistance());
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

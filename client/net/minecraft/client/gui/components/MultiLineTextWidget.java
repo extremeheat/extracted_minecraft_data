@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.SingleKeyCache;
@@ -107,16 +108,16 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       }
    }
 
-   public void onClick(double var1, double var3, boolean var5) {
+   public void onClick(MouseButtonEvent var1, boolean var2) {
       if (this.componentClickHandler != null) {
-         Style var6 = this.getComponentStyleAt(var1, var3);
-         if (var6 != null) {
-            this.componentClickHandler.accept(var6);
+         Style var3 = this.getComponentStyleAt(var1.x(), var1.y());
+         if (var3 != null) {
+            this.componentClickHandler.accept(var3);
             return;
          }
       }
 
-      super.onClick(var1, var3, var5);
+      super.onClick(var1, var2);
    }
 
    private CacheKey getFreshCacheKey() {

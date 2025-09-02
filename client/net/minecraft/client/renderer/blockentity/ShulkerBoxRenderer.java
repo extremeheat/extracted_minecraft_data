@@ -11,8 +11,11 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.ShulkerBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
@@ -23,7 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
-public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity> {
+public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderState> {
    private final MaterialSet materials;
    private final ShulkerBoxModel model;
 
@@ -41,18 +44,27 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model = new ShulkerBoxModel(var1.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
-   public void submit(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      Direction var9 = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
-      DyeColor var10 = var1.getColor();
-      Material var11;
-      if (var10 == null) {
-         var11 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public ShulkerBoxRenderState createRenderState() {
+      return new ShulkerBoxRenderState();
+   }
+
+   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.direction = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
+      var2.color = var1.getColor();
+      var2.progress = var1.getProgress(var3);
+   }
+
+   public void submit(ShulkerBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      DyeColor var4 = var1.color;
+      Material var5;
+      if (var4 == null) {
+         var5 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var11 = Sheets.getShulkerBoxMaterial(var10);
+         var5 = Sheets.getShulkerBoxMaterial(var4);
       }
 
-      float var12 = var1.getProgress(var2);
-      this.submit(var3, var8, var4, var5, var9, var12, var7, var11);
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var5);
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8) {
@@ -80,6 +92,11 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       PoseStack var4 = new PoseStack();
       this.prepareModel(var4, var1, var2);
       this.model.root().getExtentsForGui(var4, var3);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 
    static class ShulkerBoxModel extends Model<Float> {

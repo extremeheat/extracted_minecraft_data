@@ -10,6 +10,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -50,23 +52,23 @@ public class KeyBindsScreen extends OptionsSubScreen {
       this.keyBindsList.updateSize(this.width, this.layout);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       if (this.selectedKey != null) {
-         this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(var5));
+         this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(var1.button()));
          this.selectedKey = null;
          this.keyBindsList.resetMappingAndUpdateButtons();
          return true;
       } else {
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       if (this.selectedKey != null) {
-         if (var1 == 256) {
+         if (var1.isEscape()) {
             this.selectedKey.setKey(InputConstants.UNKNOWN);
          } else {
-            this.selectedKey.setKey(InputConstants.getKey(var1, var2));
+            this.selectedKey.setKey(InputConstants.getKey(var1));
          }
 
          this.selectedKey = null;
@@ -74,7 +76,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
          this.keyBindsList.resetMappingAndUpdateButtons();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

@@ -8,6 +8,7 @@ import com.mojang.serialization.DynamicOps;
 import java.util.Optional;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.util.StrictJsonParser;
 
 public class LegacyComponentDataFixUtils {
    private static final String EMPTY_CONTENTS = createTextComponentJson("");
@@ -62,6 +63,17 @@ public class LegacyComponentDataFixUtils {
       } else {
          return EMPTY_CONTENTS;
       }
+   }
+
+   public static boolean isStrictlyValidJson(Dynamic<?> var0) {
+      return var0.asString().result().filter((var0x) -> {
+         try {
+            StrictJsonParser.parse(var0x);
+            return true;
+         } catch (JsonParseException var2) {
+            return false;
+         }
+      }).isPresent();
    }
 
    public static Optional<String> extractTranslationString(String var0) {

@@ -27,6 +27,7 @@ import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.particle.FireworkParticles;
+import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
@@ -88,9 +89,11 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -147,6 +150,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
    private final ClientExplosionTracker explosionTracker = new ClientExplosionTracker();
+   private final WorldBorder worldBorder = new WorldBorder();
    private final int seaLevel;
    private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
@@ -556,6 +560,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.connection.send(var1);
    }
 
+   public WorldBorder getWorldBorder() {
+      return this.worldBorder;
+   }
+
    public RecipeAccess recipeAccess() {
       return this.connection.recipes();
    }
@@ -818,7 +826,72 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void addDestroyBlockEffect(BlockPos var1, BlockState var2) {
-      this.minecraft.particleEngine.destroy(var1, var2);
+      if (!var2.isAir() && var2.shouldSpawnTerrainParticles()) {
+         VoxelShape var3 = var2.getShape(this, var1);
+         double var4 = 0.25;
+         var3.forAllBoxes((var3x, var5, var7, var9, var11, var13) -> {
+            double var15 = Math.min(1.0, var9 - var3x);
+            double var17 = Math.min(1.0, var11 - var5);
+            double var19 = Math.min(1.0, var13 - var7);
+            int var21 = Math.max(2, Mth.ceil(var15 / 0.25));
+            int var22 = Math.max(2, Mth.ceil(var17 / 0.25));
+            int var23 = Math.max(2, Mth.ceil(var19 / 0.25));
+
+            for(int var24 = 0; var24 < var21; ++var24) {
+               for(int var25 = 0; var25 < var22; ++var25) {
+                  for(int var26 = 0; var26 < var23; ++var26) {
+                     double var27 = ((double)var24 + 0.5) / (double)var21;
+                     double var29 = ((double)var25 + 0.5) / (double)var22;
+                     double var31 = ((double)var26 + 0.5) / (double)var23;
+                     double var33 = var27 * var15 + var3x;
+                     double var35 = var29 * var17 + var5;
+                     double var37 = var31 * var19 + var7;
+                     this.minecraft.particleEngine.add(new TerrainParticle(this, (double)var1.getX() + var33, (double)var1.getY() + var35, (double)var1.getZ() + var37, var27 - 0.5, var29 - 0.5, var31 - 0.5, var2, var1));
+                  }
+               }
+            }
+
+         });
+      }
+   }
+
+   public void addBreakingBlockEffect(BlockPos var1, Direction var2) {
+      BlockState var3 = this.getBlockState(var1);
+      if (var3.getRenderShape() != RenderShape.INVISIBLE && var3.shouldSpawnTerrainParticles()) {
+         int var4 = var1.getX();
+         int var5 = var1.getY();
+         int var6 = var1.getZ();
+         float var7 = 0.1F;
+         AABB var8 = var3.getShape(this, var1).bounds();
+         double var9 = (double)var4 + this.random.nextDouble() * (var8.maxX - var8.minX - 0.20000000298023224) + 0.10000000149011612 + var8.minX;
+         double var11 = (double)var5 + this.random.nextDouble() * (var8.maxY - var8.minY - 0.20000000298023224) + 0.10000000149011612 + var8.minY;
+         double var13 = (double)var6 + this.random.nextDouble() * (var8.maxZ - var8.minZ - 0.20000000298023224) + 0.10000000149011612 + var8.minZ;
+         if (var2 == Direction.DOWN) {
+            var11 = (double)var5 + var8.minY - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.UP) {
+            var11 = (double)var5 + var8.maxY + 0.10000000149011612;
+         }
+
+         if (var2 == Direction.NORTH) {
+            var13 = (double)var6 + var8.minZ - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.SOUTH) {
+            var13 = (double)var6 + var8.maxZ + 0.10000000149011612;
+         }
+
+         if (var2 == Direction.WEST) {
+            var9 = (double)var4 + var8.minX - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.EAST) {
+            var9 = (double)var4 + var8.maxX + 0.10000000149011612;
+         }
+
+         this.minecraft.particleEngine.add((new TerrainParticle(this, var9, var11, var13, 0.0, 0.0, 0.0, var3, var1)).setPower(0.2F).scale(0.6F));
+      }
    }
 
    public void setServerSimulationDistance(int var1) {

@@ -5,13 +5,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class DirectJoinServerScreen extends Screen {
-   private static final Component ENTER_IP_LABEL = Component.translatable("addServer.enterIp");
+   private static final Component ENTER_IP_LABEL = Component.translatable("manageServer.enterIp");
    private Button selectButton;
    private final ServerData serverData;
    private EditBox ipEdit;
@@ -25,17 +26,17 @@ public class DirectJoinServerScreen extends Screen {
       this.callback = var2;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.selectButton.active || this.getFocused() != this.ipEdit || var1 != 257 && var1 != 335) {
-         return super.keyPressed(var1, var2, var3);
-      } else {
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.selectButton.active && this.getFocused() == this.ipEdit && var1.isConfirmation()) {
          this.onSelect();
          return true;
+      } else {
+         return super.keyPressed(var1);
       }
    }
 
    protected void init() {
-      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, Component.translatable("addServer.enterIp"));
+      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, ENTER_IP_LABEL);
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.minecraft.options.lastMpIp);
       this.ipEdit.setResponder((var1) -> this.updateSelectButtonStatus());

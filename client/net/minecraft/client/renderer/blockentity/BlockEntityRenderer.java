@@ -3,12 +3,19 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-public interface BlockEntityRenderer<T extends BlockEntity> {
-   void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8);
+public interface BlockEntityRenderer<T extends BlockEntity, S extends BlockEntityRenderState> {
+   S createRenderState();
+
+   default void extractRenderState(T var1, S var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderState.extractBase(var1, var2, var5);
+   }
+
+   void submit(S var1, PoseStack var2, SubmitNodeCollector var3);
 
    default boolean shouldRenderOffScreen() {
       return false;

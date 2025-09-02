@@ -14,12 +14,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.BoundedFloatFunction;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.ToFloatFunction;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
@@ -1251,7 +1251,7 @@ public final class DensityFunctions {
          CODEC = DensityFunctions.<Spline>makeCodec(DATA_CODEC);
       }
 
-      public static record Coordinate(Holder<DensityFunction> function) implements ToFloatFunction<Point> {
+      public static record Coordinate(Holder<DensityFunction> function) implements BoundedFloatFunction<Point> {
          public static final Codec<Coordinate> CODEC;
 
          public Coordinate(Holder<DensityFunction> var1) {

@@ -204,9 +204,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       }
 
       Level var6 = this.level();
-      if (var6.isClientSide()) {
-         return InteractionResult.CONSUME;
-      } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
+      if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          if (var6 instanceof ServerLevel) {
             ServerLevel var7 = (ServerLevel)var6;
             this.shear(var7, SoundSource.PLAYERS, var3);
@@ -215,6 +213,8 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          }
 
          return InteractionResult.SUCCESS;
+      } else if (var6.isClientSide()) {
+         return InteractionResult.PASS;
       } else if (var3.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
          var6.levelEvent(this, 3003, this.blockPosition(), 0);
          this.nextWeatheringTick = -2L;

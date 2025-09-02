@@ -266,7 +266,7 @@ public abstract class BaseSpawner {
       return this.spin;
    }
 
-   public double getoSpin() {
+   public double getOSpin() {
       return this.oSpin;
    }
 }

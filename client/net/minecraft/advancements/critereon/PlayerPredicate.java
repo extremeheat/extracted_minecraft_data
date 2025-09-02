@@ -85,7 +85,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameTyp
 
          if (!this.advancements.isEmpty()) {
             PlayerAdvancements var14 = var4.getAdvancements();
-            ServerAdvancementManager var16 = var4.getServer().getAdvancements();
+            ServerAdvancementManager var16 = var4.level().getServer().getAdvancements();
 
             for(Map.Entry var10 : this.advancements.entrySet()) {
                AdvancementHolder var11 = var16.get((ResourceLocation)var10.getKey());

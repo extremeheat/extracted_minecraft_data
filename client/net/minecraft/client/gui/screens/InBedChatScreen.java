@@ -2,6 +2,8 @@ package net.minecraft.client.gui.screens;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
@@ -31,24 +33,24 @@ public class InBedChatScreen extends ChatScreen {
       this.sendWakeUp();
    }
 
-   public boolean charTyped(char var1, int var2) {
-      return !this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer()) ? true : super.charTyped(var1, var2);
+   public boolean charTyped(CharacterEvent var1) {
+      return !this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer()) ? true : super.charTyped(var1);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isEscape()) {
          this.sendWakeUp();
       }
 
       if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
          return true;
-      } else if (var1 != 257 && var1 != 335) {
-         return super.keyPressed(var1, var2, var3);
-      } else {
+      } else if (var1.isConfirmation()) {
          this.handleChatInput(this.input.getValue(), true);
          this.input.setValue("");
          this.minecraft.gui.getChat().resetChatScroll();
          return true;
+      } else {
+         return super.keyPressed(var1);
       }
    }
 

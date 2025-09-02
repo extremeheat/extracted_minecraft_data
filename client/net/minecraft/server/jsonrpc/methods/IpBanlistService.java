@@ -89,12 +89,12 @@ public class IpBanlistService {
       }
 
       IpBan toIpBan(ServerPlayer var1) {
-         return new IpBan(var1.getIpAddress(), (String)this.reason().orElse("Banned by an operator."), (String)this.source().orElse("Management server"), this.expires());
+         return new IpBan(var1.getIpAddress(), (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
       }
 
       @Nullable
       IpBan toIpBan() {
-         return !this.ip().isEmpty() && InetAddresses.isInetAddress((String)this.ip().get()) ? new IpBan((String)this.ip().get(), (String)this.reason().orElse("Banned by an operator."), (String)this.source().orElse("Management server"), this.expires()) : null;
+         return !this.ip().isEmpty() && InetAddresses.isInetAddress((String)this.ip().get()) ? new IpBan((String)this.ip().get(), (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires()) : null;
       }
    }
 
@@ -110,7 +110,7 @@ public class IpBanlistService {
       }
 
       private static IpBanDto from(IpBan var0) {
-         return new IpBanDto(var0.ip(), Optional.of(var0.reason()), Optional.of(var0.source()), var0.expires());
+         return new IpBanDto(var0.ip(), Optional.ofNullable(var0.reason()), Optional.of(var0.source()), var0.expires());
       }
 
       public static IpBanDto from(IpBanListEntry var0) {
@@ -118,12 +118,12 @@ public class IpBanlistService {
       }
 
       private IpBan toIpBan() {
-         return new IpBan(this.ip(), (String)this.reason().orElse("Banned by an operator."), (String)this.source().orElse("Management server"), this.expires());
+         return new IpBan(this.ip(), (String)this.reason().orElse((Object)null), (String)this.source().orElse("Management server"), this.expires());
       }
    }
 
-   static record IpBan(String ip, String reason, String source, Optional<Instant> expires) {
-      IpBan(String var1, String var2, String var3, Optional<Instant> var4) {
+   static record IpBan(String ip, @Nullable String reason, String source, Optional<Instant> expires) {
+      IpBan(String var1, @Nullable String var2, String var3, Optional<Instant> var4) {
          super();
          this.ip = var1;
          this.reason = var2;

@@ -48,6 +48,7 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -97,6 +98,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
@@ -111,6 +113,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -133,11 +136,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -187,6 +192,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -195,6 +201,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.slf4j.Logger;
@@ -266,6 +273,9 @@ public class ServerPlayer extends Player {
    private Vec3 lastKnownClientMovement;
    private Input lastClientInput;
    private final Set<ThrownEnderpearl> enderPearls;
+   private long timeEntitySatOnShoulder;
+   private CompoundTag shoulderEntityLeft;
+   private CompoundTag shoulderEntityRight;
    private final ContainerSynchronizer containerSynchronizer;
    private final ContainerListener containerListener;
    @Nullable
@@ -292,6 +302,8 @@ public class ServerPlayer extends Player {
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
+      this.shoulderEntityLeft = new CompoundTag();
+      this.shoulderEntityRight = new CompoundTag();
       this.containerSynchronizer = new ContainerSynchronizer() {
          private final LoadingCache<TypedDataComponent<?>, Integer> cache = CacheBuilder.newBuilder().maximumSize(256L).build(new CacheLoader<TypedDataComponent<?>, Integer>() {
             private final DynamicOps<HashCode> registryHashOps;
@@ -408,6 +420,8 @@ public class ServerPlayer extends Player {
       this.spawnExtraParticlesOnFall = var1.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
+      this.setShoulderEntityLeft((CompoundTag)var1.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
+      this.setShoulderEntityRight((CompoundTag)var1.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
@@ -423,6 +437,14 @@ public class ServerPlayer extends Player {
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       var1.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
       this.saveEnderPearls(var1);
+      if (!this.getShoulderEntityLeft().isEmpty()) {
+         var1.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
+      }
+
+      if (!this.getShoulderEntityRight().isEmpty()) {
+         var1.store("ShoulderEntityRight", CompoundTag.CODEC, this.getShoulderEntityRight());
+      }
+
    }
 
    private void saveParentVehicle(ValueOutput var1) {
@@ -627,6 +649,25 @@ public class ServerPlayer extends Player {
       try {
          if (!this.isSpectator() || !this.touchingUnloadedChunk()) {
             super.tick();
+            if (!this.containerMenu.stillValid(this)) {
+               this.closeContainer();
+               this.containerMenu = this.inventoryMenu;
+            }
+
+            this.foodData.tick(this);
+            this.awardStat(Stats.PLAY_TIME);
+            this.awardStat(Stats.TOTAL_WORLD_TIME);
+            if (this.isAlive()) {
+               this.awardStat(Stats.TIME_SINCE_DEATH);
+            }
+
+            if (this.isDiscrete()) {
+               this.awardStat(Stats.CROUCH_TIME);
+            }
+
+            if (!this.isSleeping()) {
+               this.awardStat(Stats.TIME_SINCE_REST);
+            }
          }
 
          for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
@@ -722,6 +763,75 @@ public class ServerPlayer extends Player {
 
    }
 
+   public void handleShoulderEntities() {
+      this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
+      this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
+      if (this.fallDistance > 0.5 || this.isInWater() || this.getAbilities().flying || this.isSleeping() || this.isInPowderSnow) {
+         this.removeEntitiesOnShoulder();
+      }
+
+   }
+
+   private void playShoulderEntityAmbientSound(CompoundTag var1) {
+      if (!var1.isEmpty() && !var1.getBooleanOr("Silent", false)) {
+         if (this.random.nextInt(200) == 0) {
+            EntityType var2 = (EntityType)var1.read("id", EntityType.CODEC).orElse((Object)null);
+            if (var2 == EntityType.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
+               this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level(), this.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.random));
+            }
+         }
+
+      }
+   }
+
+   public boolean setEntityOnShoulder(CompoundTag var1) {
+      if (!this.isPassenger() && this.onGround() && !this.isInWater() && !this.isInPowderSnow) {
+         if (this.getShoulderEntityLeft().isEmpty()) {
+            this.setShoulderEntityLeft(var1);
+            this.timeEntitySatOnShoulder = this.level().getGameTime();
+            return true;
+         } else if (this.getShoulderEntityRight().isEmpty()) {
+            this.setShoulderEntityRight(var1);
+            this.timeEntitySatOnShoulder = this.level().getGameTime();
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   protected void removeEntitiesOnShoulder() {
+      if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
+         this.respawnEntityOnShoulder(this.getShoulderEntityLeft());
+         this.setShoulderEntityLeft(new CompoundTag());
+         this.respawnEntityOnShoulder(this.getShoulderEntityRight());
+         this.setShoulderEntityRight(new CompoundTag());
+      }
+
+   }
+
+   private void respawnEntityOnShoulder(CompoundTag var1) {
+      ServerLevel var3 = this.level();
+      if (var3 instanceof ServerLevel) {
+         ServerLevel var2 = var3;
+         if (!var1.isEmpty()) {
+            try (ProblemReporter.ScopedCollector var8 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+               EntityType.create(TagValueInput.create(var8.forChild(() -> ".shoulder"), var2.registryAccess(), var1), var2, EntitySpawnReason.LOAD).ifPresent((var2x) -> {
+                  if (var2x instanceof TamableAnimal var3) {
+                     var3.setOwner(this);
+                  }
+
+                  var2x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
+                  var2.addWithUUID(var2x);
+               });
+            }
+         }
+      }
+
+   }
+
    public void resetFallDistance() {
       if (this.getHealth() > 0.0F && this.startingToFallPosition != null) {
          CriteriaTriggers.FALL_FROM_HEIGHT.trigger(this, this.startingToFallPosition);
@@ -757,7 +867,7 @@ public class ServerPlayer extends Player {
    }
 
    private void updateScoreForCriteria(ObjectiveCriteria var1, int var2) {
-      this.getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.set(var2));
+      this.level().getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.set(var2));
    }
 
    public void die(DamageSource var1) {
@@ -795,7 +905,7 @@ public class ServerPlayer extends Player {
          this.dropAllDeathLoot(this.level(), var1);
       }
 
-      this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
+      this.level().getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
       LivingEntity var5 = this.getKillCredit();
       if (var5 != null) {
          this.awardStat(Stats.ENTITY_KILLED_BY.get(var5.getType()));
@@ -823,10 +933,11 @@ public class ServerPlayer extends Player {
    public void awardKillScore(Entity var1, DamageSource var2) {
       if (var1 != this) {
          super.awardKillScore(var1, var2);
-         this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
+         ServerScoreboard var3 = this.level().getScoreboard();
+         ((Scoreboard)var3).forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
          if (var1 instanceof Player) {
             this.awardStat(Stats.PLAYER_KILLS);
-            this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, this, ScoreAccess::increment);
+            ((Scoreboard)var3).forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, this, ScoreAccess::increment);
          } else {
             this.awardStat(Stats.MOB_KILLS);
          }
@@ -838,11 +949,12 @@ public class ServerPlayer extends Player {
    }
 
    private void handleTeamKill(ScoreHolder var1, ScoreHolder var2, ObjectiveCriteria[] var3) {
-      PlayerTeam var4 = this.getScoreboard().getPlayersTeam(var2.getScoreboardName());
-      if (var4 != null) {
-         int var5 = var4.getColor().getId();
-         if (var5 >= 0 && var5 < var3.length) {
-            this.getScoreboard().forAllObjectives(var3[var5], var1, ScoreAccess::increment);
+      ServerScoreboard var4 = this.level().getScoreboard();
+      PlayerTeam var5 = ((Scoreboard)var4).getPlayersTeam(var2.getScoreboardName());
+      if (var5 != null) {
+         int var6 = var5.getColor().getId();
+         if (var6 >= 0 && var6 < var3.length) {
+            ((Scoreboard)var4).forAllObjectives(var3[var6], var1, ScoreAccess::increment);
          }
       }
 
@@ -1317,12 +1429,12 @@ public class ServerPlayer extends Player {
 
    public void awardStat(Stat<?> var1, int var2) {
       this.stats.increment(this, var1, var2);
-      this.getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.add(var2));
+      this.level().getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.add(var2));
    }
 
    public void resetStat(Stat<?> var1) {
       this.stats.setValue(this, var1, 0);
-      this.getScoreboard().forAllObjectives(var1, this, ScoreAccess::reset);
+      this.level().getScoreboard().forAllObjectives(var1, this, ScoreAccess::reset);
    }
 
    public int awardRecipes(Collection<RecipeHolder<?>> var1) {
@@ -1973,6 +2085,24 @@ public class ServerPlayer extends Player {
 
    public Set<ThrownEnderpearl> getEnderPearls() {
       return this.enderPearls;
+   }
+
+   public CompoundTag getShoulderEntityLeft() {
+      return this.shoulderEntityLeft;
+   }
+
+   protected void setShoulderEntityLeft(CompoundTag var1) {
+      this.shoulderEntityLeft = var1;
+      this.setShoulderParrotLeft(extractParrotVariant(var1));
+   }
+
+   public CompoundTag getShoulderEntityRight() {
+      return this.shoulderEntityRight;
+   }
+
+   protected void setShoulderEntityRight(CompoundTag var1) {
+      this.shoulderEntityRight = var1;
+      this.setShoulderParrotRight(extractParrotVariant(var1));
    }
 
    public long registerAndUpdateEnderPearlTicket(ThrownEnderpearl var1) {

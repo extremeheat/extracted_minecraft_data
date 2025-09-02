@@ -104,7 +104,7 @@ public class ActiveProfiler implements ProfileCollector {
       } else {
          long var1 = Util.getNanos();
          long var3 = this.startTimes.removeLong(this.startTimes.size() - 1);
-         this.paths.remove(this.paths.size() - 1);
+         this.paths.removeLast();
          long var5 = var1 - var3;
          PathEntry var7 = this.getCurrentEntry();
          var7.accumulatedDuration += var5;
@@ -115,7 +115,7 @@ public class ActiveProfiler implements ProfileCollector {
             LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)var5 / 1000000.0));
          }
 
-         this.path = this.paths.isEmpty() ? "" : (String)this.paths.get(this.paths.size() - 1);
+         this.path = this.paths.isEmpty() ? "" : (String)this.paths.getLast();
          this.currentEntry = null;
       }
    }

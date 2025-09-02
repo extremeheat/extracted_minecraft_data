@@ -122,6 +122,15 @@ public class CopperGolemStatueBlock extends BaseEntityBlock implements SimpleWat
       return ((Pose)var1.getValue(POSE)).ordinal() + 1;
    }
 
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      BlockEntity var6 = var1.getBlockEntity(var2);
+      if (var6 instanceof CopperGolemStatueBlockEntity var5) {
+         return var5.getItem(this.asItem().getDefaultInstance(), (Pose)var3.getValue(POSE));
+      } else {
+         return super.getCloneItemStack(var1, var2, var3, var4);
+      }
+   }
+
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
       var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
    }

@@ -18,8 +18,11 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.DecoratedPotRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -33,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
-public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
+public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
    private final MaterialSet materials;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
@@ -107,33 +110,46 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return Sheets.DECORATED_POT_SIDE;
    }
 
-   public void submit(DecoratedPotBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      var3.pushPose();
-      Direction var9 = var1.getDirection();
-      var3.translate(0.5, 0.0, 0.5);
-      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var9.toYRot()));
-      var3.translate(-0.5, 0.0, -0.5);
-      DecoratedPotBlockEntity.WobbleStyle var10 = var1.lastWobbleStyle;
-      if (var10 != null && var1.getLevel() != null) {
-         float var11 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var10.duration;
-         if (var11 >= 0.0F && var11 <= 1.0F) {
-            if (var10 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-               float var12 = 0.015625F;
-               float var13 = var11 * 6.2831855F;
-               float var14 = -1.5F * (Mth.cos(var13) + 0.5F) * Mth.sin(var13 / 2.0F);
-               var3.rotateAround(Axis.XP.rotation(var14 * 0.015625F), 0.5F, 0.0F, 0.5F);
-               float var15 = Mth.sin(var13);
-               var3.rotateAround(Axis.ZP.rotation(var15 * 0.015625F), 0.5F, 0.0F, 0.5F);
-            } else {
-               float var16 = Mth.sin(-var11 * 3.0F * 3.1415927F) * 0.125F;
-               float var17 = 1.0F - var11;
-               var3.rotateAround(Axis.YP.rotation(var16 * var17), 0.5F, 0.0F, 0.5F);
-            }
+   public DecoratedPotRenderState createRenderState() {
+      return new DecoratedPotRenderState();
+   }
+
+   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.decorations = var1.getDecorations();
+      var2.direction = var1.getDirection();
+      DecoratedPotBlockEntity.WobbleStyle var6 = var1.lastWobbleStyle;
+      if (var6 != null && var1.getLevel() != null) {
+         var2.wobbleProgress = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var3) / (float)var6.duration;
+      } else {
+         var2.wobbleProgress = 0.0F;
+      }
+
+   }
+
+   public void submit(DecoratedPotRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      var2.pushPose();
+      Direction var4 = var1.direction;
+      var2.translate(0.5, 0.0, 0.5);
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var4.toYRot()));
+      var2.translate(-0.5, 0.0, -0.5);
+      if (var1.wobbleProgress >= 0.0F && var1.wobbleProgress <= 1.0F) {
+         if (var1.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
+            float var5 = 0.015625F;
+            float var6 = var1.wobbleProgress * 6.2831855F;
+            float var7 = -1.5F * (Mth.cos(var6) + 0.5F) * Mth.sin(var6 / 2.0F);
+            var2.rotateAround(Axis.XP.rotation(var7 * 0.015625F), 0.5F, 0.0F, 0.5F);
+            float var8 = Mth.sin(var6);
+            var2.rotateAround(Axis.ZP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
+         } else {
+            float var9 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
+            float var10 = 1.0F - var1.wobbleProgress;
+            var2.rotateAround(Axis.YP.rotation(var9 * var10), 0.5F, 0.0F, 0.5F);
          }
       }
 
-      this.submit(var3, var8, var4, var5, var1.getDecorations());
-      var3.popPose();
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.decorations);
+      var2.popPose();
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5) {
@@ -157,5 +173,10 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       this.neck.getExtentsForGui(var2, var1);
       this.top.getExtentsForGui(var2, var1);
       this.bottom.getExtentsForGui(var2, var1);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

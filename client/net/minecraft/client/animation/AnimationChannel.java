@@ -3,6 +3,7 @@ package net.minecraft.client.animation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public record AnimationChannel(Target target, Keyframe... keyframes) {
    public AnimationChannel(Target var1, Keyframe... var2) {
@@ -23,15 +24,15 @@ public record AnimationChannel(Target target, Keyframe... keyframes) {
 
    public static class Interpolations {
       public static final Interpolation LINEAR = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3f var6 = var2[var3].postTarget();
-         Vector3f var7 = var2[var4].preTarget();
+         Vector3fc var6 = var2[var3].postTarget();
+         Vector3fc var7 = var2[var4].preTarget();
          return var6.lerp(var7, var1, var0).mul(var5);
       };
       public static final Interpolation CATMULLROM = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3f var6 = var2[Math.max(0, var3 - 1)].postTarget();
-         Vector3f var7 = var2[var3].postTarget();
-         Vector3f var8 = var2[var4].postTarget();
-         Vector3f var9 = var2[Math.min(var2.length - 1, var4 + 1)].postTarget();
+         Vector3fc var6 = var2[Math.max(0, var3 - 1)].postTarget();
+         Vector3fc var7 = var2[var3].postTarget();
+         Vector3fc var8 = var2[var4].postTarget();
+         Vector3fc var9 = var2[Math.min(var2.length - 1, var4 + 1)].postTarget();
          var0.set(Mth.catmullrom(var1, var6.x(), var7.x(), var8.x(), var9.x()) * var5, Mth.catmullrom(var1, var6.y(), var7.y(), var8.y(), var9.y()) * var5, Mth.catmullrom(var1, var6.z(), var7.z(), var8.z(), var9.z()) * var5);
          return var0;
       };

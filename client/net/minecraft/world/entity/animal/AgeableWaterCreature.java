@@ -34,7 +34,7 @@ public abstract class AgeableWaterCreature extends AgeableMob {
    protected void handleAirSupply(int var1) {
       if (this.isAlive() && !this.isInWater()) {
          this.setAirSupply(var1 - 1);
-         if (this.getAirSupply() == -20) {
+         if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
             this.hurt(this.damageSources().drown(), 2.0F);
          }

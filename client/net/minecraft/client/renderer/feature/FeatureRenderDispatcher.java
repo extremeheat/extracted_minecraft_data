@@ -28,6 +28,7 @@ public class FeatureRenderDispatcher {
    private final ItemFeatureRenderer itemFeatureRenderer = new ItemFeatureRenderer();
    private final CustomFeatureRenderer customFeatureRenderer = new CustomFeatureRenderer();
    private final BlockFeatureRenderer blockFeatureRenderer = new BlockFeatureRenderer();
+   private final ParticleFeatureRenderer particleFeatureRenderer = new ParticleFeatureRenderer();
 
    public FeatureRenderDispatcher(SubmitNodeStorage var1, BlockRenderDispatcher var2, MultiBufferSource.BufferSource var3, AtlasManager var4, OutlineBufferSource var5, MultiBufferSource.BufferSource var6, Font var7) {
       super();
@@ -56,6 +57,7 @@ public class FeatureRenderDispatcher {
          this.itemFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.render(var2, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
          this.customFeatureRenderer.render(var2, this.bufferSource);
+         this.particleFeatureRenderer.render(var2, this.bufferSource);
       }
 
       this.submitNodeStorage.clear();

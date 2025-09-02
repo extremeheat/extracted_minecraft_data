@@ -17,38 +17,38 @@ public class ClipboardManager {
       super();
    }
 
-   public String getClipboard(long var1, GLFWErrorCallbackI var3) {
-      GLFWErrorCallback var4 = GLFW.glfwSetErrorCallback(var3);
-      String var5 = GLFW.glfwGetClipboardString(var1);
-      var5 = var5 != null ? StringDecomposer.filterBrokenSurrogates(var5) : "";
-      GLFWErrorCallback var6 = GLFW.glfwSetErrorCallback(var4);
-      if (var6 != null) {
-         var6.free();
+   public String getClipboard(Window var1, GLFWErrorCallbackI var2) {
+      GLFWErrorCallback var3 = GLFW.glfwSetErrorCallback(var2);
+      String var4 = GLFW.glfwGetClipboardString(var1.handle());
+      var4 = var4 != null ? StringDecomposer.filterBrokenSurrogates(var4) : "";
+      GLFWErrorCallback var5 = GLFW.glfwSetErrorCallback(var3);
+      if (var5 != null) {
+         var5.free();
       }
 
-      return var5;
+      return var4;
    }
 
-   private static void pushClipboard(long var0, ByteBuffer var2, byte[] var3) {
-      var2.clear();
-      var2.put(var3);
-      var2.put((byte)0);
-      var2.flip();
-      GLFW.glfwSetClipboardString(var0, var2);
+   private static void pushClipboard(Window var0, ByteBuffer var1, byte[] var2) {
+      var1.clear();
+      var1.put(var2);
+      var1.put((byte)0);
+      var1.flip();
+      GLFW.glfwSetClipboardString(var0.handle(), var1);
    }
 
-   public void setClipboard(long var1, String var3) {
-      byte[] var4 = var3.getBytes(Charsets.UTF_8);
-      int var5 = var4.length + 1;
-      if (var5 < this.clipboardScratchBuffer.capacity()) {
-         pushClipboard(var1, this.clipboardScratchBuffer, var4);
+   public void setClipboard(Window var1, String var2) {
+      byte[] var3 = var2.getBytes(Charsets.UTF_8);
+      int var4 = var3.length + 1;
+      if (var4 < this.clipboardScratchBuffer.capacity()) {
+         pushClipboard(var1, this.clipboardScratchBuffer, var3);
       } else {
-         ByteBuffer var6 = MemoryUtil.memAlloc(var5);
+         ByteBuffer var5 = MemoryUtil.memAlloc(var4);
 
          try {
-            pushClipboard(var1, var6, var4);
+            pushClipboard(var1, var5, var3);
          } finally {
-            MemoryUtil.memFree(var6);
+            MemoryUtil.memFree(var5);
          }
       }
 

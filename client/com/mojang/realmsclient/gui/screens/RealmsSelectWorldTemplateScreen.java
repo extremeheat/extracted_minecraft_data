@@ -31,6 +31,7 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
@@ -244,12 +245,12 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this.addEntry(RealmsSelectWorldTemplateScreen.this.new Entry(var1));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
          if (RealmsSelectWorldTemplateScreen.this.currentLink != null) {
             ConfirmLinkScreen.confirmLinkNow(RealmsSelectWorldTemplateScreen.this, (String)RealmsSelectWorldTemplateScreen.this.currentLink);
             return true;
          } else {
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
       }
 
@@ -298,22 +299,22 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
          RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.template;
          RealmsSelectWorldTemplateScreen.this.updateButtonStates();
-         if (var6 && this.isFocused()) {
+         if (var2 && this.isFocused()) {
             RealmsSelectWorldTemplateScreen.this.callback.accept(this.template);
          }
 
          if (this.websiteButton != null) {
-            this.websiteButton.mouseClicked(var1, var3, var5, var6);
+            this.websiteButton.mouseClicked(var1, var2);
          }
 
          if (this.trailerButton != null) {
-            this.trailerButton.mouseClicked(var1, var3, var5, var6);
+            this.trailerButton.mouseClicked(var1, var2);
          }
 
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {

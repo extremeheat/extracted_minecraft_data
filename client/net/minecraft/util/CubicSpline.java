@@ -16,19 +16,19 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.mutable.MutableObject;
 
-public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFunction<C> {
+public interface CubicSpline<C, I extends BoundedFloatFunction<C>> extends BoundedFloatFunction<C> {
    @VisibleForDebug
    String parityString();
 
    CubicSpline<C, I> mapAll(CoordinateVisitor<I> var1);
 
-   static <C, I extends ToFloatFunction<C>> Codec<CubicSpline<C, I>> codec(Codec<I> var0) {
+   static <C, I extends BoundedFloatFunction<C>> Codec<CubicSpline<C, I>> codec(Codec<I> var0) {
       MutableObject var1 = new MutableObject();
       Codec var2 = RecordCodecBuilder.create((var1x) -> {
          RecordCodecBuilder var10001 = Codec.FLOAT.fieldOf("location").forGetter(1Point::location);
          Objects.requireNonNull(var1);
          return var1x.group(var10001, Codec.lazyInitialized(var1::getValue).fieldOf("value").forGetter(1Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(1Point::derivative)).apply(var1x, (var0, var1xx, var2) -> {
-            record 1Point<C, I extends ToFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
+            record 1Point<C, I extends BoundedFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
                _Point/* $FF was: 1Point*/(float var1, CubicSpline<C, I> var2, float var3) {
                   super();
                   this.location = var1;
@@ -67,20 +67,20 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
       return (Codec)var1.getValue();
    }
 
-   static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> constant(float var0) {
+   static <C, I extends BoundedFloatFunction<C>> CubicSpline<C, I> constant(float var0) {
       return new Constant<C, I>(var0);
    }
 
-   static <C, I extends ToFloatFunction<C>> Builder<C, I> builder(I var0) {
+   static <C, I extends BoundedFloatFunction<C>> Builder<C, I> builder(I var0) {
       return new Builder<C, I>(var0);
    }
 
-   static <C, I extends ToFloatFunction<C>> Builder<C, I> builder(I var0, ToFloatFunction<Float> var1) {
+   static <C, I extends BoundedFloatFunction<C>> Builder<C, I> builder(I var0, BoundedFloatFunction<Float> var1) {
       return new Builder<C, I>(var0, var1);
    }
 
    @VisibleForDebug
-   public static record Multipoint<C, I extends ToFloatFunction<C>>(I coordinate, float[] locations, List<CubicSpline<C, I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<C, I> {
+   public static record Multipoint<C, I extends BoundedFloatFunction<C>>(I coordinate, float[] locations, List<CubicSpline<C, I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<C, I> {
       final float[] locations;
 
       public Multipoint(I var1, float[] var2, List<CubicSpline<C, I>> var3, float[] var4, float var5, float var6) {
@@ -94,7 +94,7 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
          this.maxValue = var6;
       }
 
-      static <C, I extends ToFloatFunction<C>> Multipoint<C, I> create(I var0, float[] var1, List<CubicSpline<C, I>> var2, float[] var3) {
+      static <C, I extends BoundedFloatFunction<C>> Multipoint<C, I> create(I var0, float[] var1, List<CubicSpline<C, I>> var2, float[] var3) {
          validateSizes(var1, var2, var3);
          int var4 = var1.length - 1;
          float var5 = 1.0F / 0.0F;
@@ -156,7 +156,7 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
          return var5 == 0.0F ? var2 : var2 + var5 * (var0 - var1[var4]);
       }
 
-      private static <C, I extends ToFloatFunction<C>> void validateSizes(float[] var0, List<CubicSpline<C, I>> var1, float[] var2) {
+      private static <C, I extends BoundedFloatFunction<C>> void validateSizes(float[] var0, List<CubicSpline<C, I>> var1, float[] var2) {
          if (var0.length == var1.size() && var0.length == var2.length) {
             if (var0.length == 0) {
                throw new IllegalArgumentException("Cannot create a multipoint spline with no points");
@@ -178,8 +178,8 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
             float var5 = this.locations[var3];
             float var6 = this.locations[var3 + 1];
             float var7 = (var2 - var5) / (var6 - var5);
-            ToFloatFunction var8 = (ToFloatFunction)this.values.get(var3);
-            ToFloatFunction var9 = (ToFloatFunction)this.values.get(var3 + 1);
+            BoundedFloatFunction var8 = (BoundedFloatFunction)this.values.get(var3);
+            BoundedFloatFunction var9 = (BoundedFloatFunction)this.values.get(var3 + 1);
             float var10 = this.derivatives[var3];
             float var11 = this.derivatives[var3 + 1];
             float var12 = var8.apply(var1);
@@ -207,12 +207,12 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
       }
 
       public CubicSpline<C, I> mapAll(CoordinateVisitor<I> var1) {
-         return create((ToFloatFunction)var1.visit(this.coordinate), this.locations, this.values().stream().map((var1x) -> var1x.mapAll(var1)).toList(), this.derivatives);
+         return create((BoundedFloatFunction)var1.visit(this.coordinate), this.locations, this.values().stream().map((var1x) -> var1x.mapAll(var1)).toList(), this.derivatives);
       }
    }
 
    @VisibleForDebug
-   public static record Constant<C, I extends ToFloatFunction<C>>(float value) implements CubicSpline<C, I> {
+   public static record Constant<C, I extends BoundedFloatFunction<C>>(float value) implements CubicSpline<C, I> {
       public Constant(float var1) {
          super();
          this.value = var1;
@@ -239,18 +239,18 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
       }
    }
 
-   public static final class Builder<C, I extends ToFloatFunction<C>> {
+   public static final class Builder<C, I extends BoundedFloatFunction<C>> {
       private final I coordinate;
-      private final ToFloatFunction<Float> valueTransformer;
+      private final BoundedFloatFunction<Float> valueTransformer;
       private final FloatList locations;
       private final List<CubicSpline<C, I>> values;
       private final FloatList derivatives;
 
       protected Builder(I var1) {
-         this(var1, ToFloatFunction.IDENTITY);
+         this(var1, BoundedFloatFunction.IDENTITY);
       }
 
-      protected Builder(I var1, ToFloatFunction<Float> var2) {
+      protected Builder(I var1, BoundedFloatFunction<Float> var2) {
          super();
          this.locations = new FloatArrayList();
          this.values = Lists.newArrayList();

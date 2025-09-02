@@ -96,7 +96,7 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default Iterable<VoxelShape> getBlockAndLiquidCollisions(@Nullable Entity var1, AABB var2) {
-      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.empty() : CollisionContext.of(var1, true), var2);
+      return this.getBlockCollisionsFromContext(var1 == null ? CollisionContext.emptyWithFluidCollisions() : CollisionContext.of(var1, true), var2);
    }
 
    private Iterable<VoxelShape> getBlockCollisionsFromContext(CollisionContext var1, AABB var2) {

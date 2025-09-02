@@ -878,7 +878,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       float var7 = (float)(this.getX() - var3);
       float var8 = (float)(this.getZ() - var5);
       this.updateAutoJump(var7, var8);
-      this.walkDist += Mth.length(var7, var8) * 0.6F;
+      this.addWalkedDistance(Mth.length(var7, var8) * 0.6F);
    }
 
    public boolean isAutoJumpEnabled() {

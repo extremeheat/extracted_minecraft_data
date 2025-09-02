@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.PlayerSkinWidget;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
@@ -64,7 +65,7 @@ public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
       super.onReportChanged();
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      return super.mouseReleased(var1, var3, var5) ? true : this.commentBox.mouseReleased(var1, var3, var5);
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      return super.mouseReleased(var1) ? true : this.commentBox.mouseReleased(var1);
    }
 }

@@ -64,11 +64,12 @@ import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientActivePlayersTooltip;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -443,7 +444,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void refreshListAndLayout() {
-      this.realmSelectionList.refreshEntries(this, this.getSelectedServer());
+      this.realmSelectionList.refreshEntries(this);
       this.updateLayout();
       this.updateButtonStates();
    }
@@ -675,12 +676,13 @@ public class RealmsMainScreen extends RealmsScreen {
          return 300;
       }
 
-      void refreshEntries(RealmsMainScreen var1, @Nullable RealmsServer var2) {
+      void refreshEntries(RealmsMainScreen var1) {
+         Entry var2 = (Entry)this.getSelected();
          this.clearEntries();
 
          for(RealmsNotification var4 : RealmsMainScreen.this.notifications) {
             if (var4 instanceof RealmsNotification.VisitUrl var5) {
-               this.addEntriesForNotification(var5, var1);
+               this.addEntriesForNotification(var5, var1, var2);
                RealmsMainScreen.this.markNotificationsAsSeen(List.of(var4));
                break;
             }
@@ -689,35 +691,44 @@ public class RealmsMainScreen extends RealmsScreen {
          this.refreshServerEntries(var2);
       }
 
-      private void refreshServerEntries(@Nullable RealmsServer var1) {
-         for(RealmsServer var3 : RealmsMainScreen.this.availableSnapshotServers) {
-            this.addEntry(RealmsMainScreen.this.new AvailableSnapshotEntry(var3));
-         }
-
-         for(RealmsServer var6 : RealmsMainScreen.this.serverList) {
-            Object var4;
-            if (RealmsMainScreen.isSnapshot() && !var6.isSnapshotRealm()) {
-               if (var6.state == RealmsServer.State.UNINITIALIZED) {
-                  continue;
-               }
-
-               var4 = RealmsMainScreen.this.new ParentEntry(var6);
-            } else {
-               var4 = RealmsMainScreen.this.new ServerEntry(var6);
-            }
-
-            this.addEntry((AbstractSelectionList.Entry)var4);
-            if (var1 != null && var1.id == var6.id) {
-               this.setSelected((Entry)var4);
+      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, @Nullable Entry var3) {
+         Component var4 = var1.getMessage();
+         int var5 = RealmsMainScreen.this.font.wordWrapHeight((FormattedText)var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
+         NotificationMessageEntry var6 = RealmsMainScreen.this.new NotificationMessageEntry(var2, var5, var4, var1);
+         this.addEntry(var6, 38 + var5);
+         if (var3 instanceof NotificationMessageEntry var7) {
+            if (var7.getText().equals(var4)) {
+               this.setSelected((Entry)var6);
             }
          }
 
       }
 
-      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2) {
-         Component var3 = var1.getMessage();
-         int var4 = RealmsMainScreen.this.font.wordWrapHeight((FormattedText)var3, this.getRowWidth());
-         this.addEntry(RealmsMainScreen.this.new NotificationMessageEntry(var2, var4, var3, var1), 48 + var4);
+      private void refreshServerEntries(@Nullable Entry var1) {
+         for(RealmsServer var3 : RealmsMainScreen.this.availableSnapshotServers) {
+            this.addEntry(RealmsMainScreen.this.new AvailableSnapshotEntry(var3));
+         }
+
+         for(RealmsServer var7 : RealmsMainScreen.this.serverList) {
+            Object var4;
+            if (RealmsMainScreen.isSnapshot() && !var7.isSnapshotRealm()) {
+               if (var7.state == RealmsServer.State.UNINITIALIZED) {
+                  continue;
+               }
+
+               var4 = RealmsMainScreen.this.new ParentEntry(var7);
+            } else {
+               var4 = RealmsMainScreen.this.new ServerEntry(var7);
+            }
+
+            this.addEntry((AbstractSelectionList.Entry)var4);
+            if (var1 instanceof ServerEntry var5) {
+               if (var5.serverData.id == var7.id) {
+                  this.setSelected((Entry)var4);
+               }
+            }
+         }
+
       }
    }
 
@@ -864,7 +875,8 @@ public class RealmsMainScreen extends RealmsScreen {
 
    class NotificationMessageEntry extends Entry {
       private static final int SIDE_MARGINS = 40;
-      public static final int HEIGHT_WITHOUT_TEXT = 48;
+      public static final int PADDING = 7;
+      public static final int HEIGHT_WITHOUT_TEXT = 38;
       private final Component text;
       private final List<AbstractWidget> children = new ArrayList();
       @Nullable
@@ -879,7 +891,6 @@ public class RealmsMainScreen extends RealmsScreen {
          super();
          this.text = var4;
          this.gridLayout = new GridLayout();
-         boolean var6 = true;
          this.gridLayout.addChild(ImageWidget.sprite(20, 20, RealmsMainScreen.INFO_SPRITE), 0, 0, this.gridLayout.newCellSettings().padding(7, 7, 0, 0));
          this.gridLayout.addChild(SpacerElement.width(40), 0, 0);
          this.textFrame = (FrameLayout)this.gridLayout.addChild(new FrameLayout(0, var3), 0, 1, this.gridLayout.newCellSettings().paddingTop(7));
@@ -898,15 +909,16 @@ public class RealmsMainScreen extends RealmsScreen {
          var10000.visitWidgets(var10001::add);
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (this.dismissButton != null && this.dismissButton.keyPressed(var1, var2, var3)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (this.dismissButton != null && this.dismissButton.keyPressed(var1)) {
             return true;
          } else {
-            return this.button.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
+            return this.button.keyPressed(var1) ? true : super.keyPressed(var1);
          }
       }
 
-      private void updateEntryWidth(int var1) {
+      private void updateEntryWidth() {
+         int var1 = this.getContentWidth();
          if (this.lastEntryWidth != var1) {
             this.refreshLayout(var1);
             this.lastEntryWidth = var1;
@@ -915,28 +927,36 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void refreshLayout(int var1) {
-         int var2 = var1 - 80;
+         int var2 = textWidth(var1);
          this.textFrame.setMinWidth(var2);
          this.textWidget.setMaxWidth(var2);
          this.gridLayout.arrangeElements();
       }
 
+      public static int textWidth(int var0) {
+         return var0 - 80;
+      }
+
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          this.gridLayout.setPosition(this.getContentX(), this.getContentY());
-         this.updateEntryWidth(this.getContentWidth() - 4);
+         this.updateEntryWidth();
          this.children.forEach((var4x) -> var4x.render(var1, var2, var3, var5));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         if (this.dismissButton != null && this.dismissButton.mouseClicked(var1, var3, var5, var6)) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         if (this.dismissButton != null && this.dismissButton.mouseClicked(var1, var2)) {
             return true;
          } else {
-            return this.button.mouseClicked(var1, var3, var5, var6) ? true : super.mouseClicked(var1, var3, var5, var6);
+            return this.button.mouseClicked(var1, var2) ? true : super.mouseClicked(var1, var2);
          }
       }
 
-      public Component getNarration() {
+      public Component getText() {
          return this.text;
+      }
+
+      public Component getNarration() {
+         return this.getText();
       }
    }
 
@@ -962,17 +982,17 @@ public class RealmsMainScreen extends RealmsScreen {
          this.tooltip.refreshTooltipForNextRenderPass(var1, var2, var3, var4, this.isFocused(), new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
          this.addSnapshotRealm();
          return true;
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (CommonInputs.selected(var1)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
             this.addSnapshotRealm();
             return false;
          } else {
-            return super.keyPressed(var1, var2, var3);
+            return super.keyPressed(var1);
          }
       }
 
@@ -1018,7 +1038,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private static final int PLAYERS_ONLINE_SPRITE_SIZE = 9;
       private static final int PLAYERS_ONLINE_SPRITE_SEPARATION = 3;
       private static final int SKIN_HEAD_LARGE_WIDTH = 36;
-      private final RealmsServer serverData;
+      final RealmsServer serverData;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
       public ServerEntry(final RealmsServer var2) {
@@ -1099,18 +1119,18 @@ public class RealmsMainScreen extends RealmsScreen {
          RealmsMainScreen.this.minecraft.setScreen(var1);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
             this.createUnitializedRealm();
-         } else if (this.serverData.shouldPlayButtonBeActive() && var6 && this.isFocused()) {
+         } else if (this.serverData.shouldPlayButtonBeActive() && var2 && this.isFocused()) {
             this.playRealm();
          }
 
          return true;
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (CommonInputs.selected(var1)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
             if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
                this.createUnitializedRealm();
                return true;
@@ -1122,7 +1142,7 @@ public class RealmsMainScreen extends RealmsScreen {
             }
          }
 
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
 
       public Component getNarration() {

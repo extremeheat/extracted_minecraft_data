@@ -92,7 +92,12 @@ public class LightTexture implements AutoCloseable {
                var6 = new Vector3f(0.99F, 1.12F, 1.0F);
                EndFlashState var7 = var3.endFlashState();
                if (var7 != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
-                  var5 = var7.getIntensity(var1);
+                  float var8 = var7.getIntensity(var1);
+                  if (this.minecraft.gui.getBossOverlay().shouldCreateWorldFog()) {
+                     var5 = var8 / 3.0F;
+                  } else {
+                     var5 = var8;
+                  }
                } else {
                   var5 = 0.0F;
                }
@@ -106,8 +111,8 @@ public class LightTexture implements AutoCloseable {
             }
 
             float var24 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
-            float var8 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var24;
-            float var9 = this.calculateDarknessScale(this.minecraft.player, var8, var1) * var24;
+            float var25 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var24;
+            float var9 = this.calculateDarknessScale(this.minecraft.player, var25, var1) * var24;
             float var11 = this.minecraft.player.getWaterVision();
             float var10;
             if (this.minecraft.player.hasEffect(MobEffects.NIGHT_VISION)) {
@@ -131,14 +136,14 @@ public class LightTexture implements AutoCloseable {
             CommandEncoder var16 = RenderSystem.getDevice().createCommandEncoder();
 
             try (GpuBuffer.MappedView var17 = var16.mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var17.data()).putFloat(var14).putFloat(var5).putFloat(var13).putFloat(var10).putFloat(var9).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var8)).putVec3(var12).putVec3(var6);
+               Std140Builder.intoBuffer(var17.data()).putFloat(var14).putFloat(var5).putFloat(var13).putFloat(var10).putFloat(var9).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var25)).putVec3(var12).putVec3(var6);
             }
 
-            try (RenderPass var25 = var16.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
-               var25.setPipeline(RenderPipelines.LIGHTMAP);
-               RenderSystem.bindDefaultUniforms(var25);
-               var25.setUniform("LightmapInfo", this.ubo.currentBuffer());
-               var25.draw(0, 3);
+            try (RenderPass var26 = var16.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
+               var26.setPipeline(RenderPipelines.LIGHTMAP);
+               RenderSystem.bindDefaultUniforms(var26);
+               var26.setUniform("LightmapInfo", this.ubo.currentBuffer());
+               var26.draw(0, 3);
             }
 
             this.ubo.rotate();

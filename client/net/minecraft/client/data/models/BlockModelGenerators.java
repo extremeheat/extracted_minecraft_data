@@ -64,6 +64,7 @@ import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.DriedGhastBlock;
@@ -1842,7 +1843,7 @@ public class BlockModelGenerators {
       MultiVariant var4 = plainVariant(ModelTemplates.PARTICLE_ONLY.create(var1, TextureMapping.particle(TextureMapping.getBlockTexture(var2)), this.modelOutput));
       ResourceLocation var5 = ModelLocationUtils.decorateItemModelLocation("template_copper_golem_statue");
       this.blockStateOutput.accept(createSimpleBlock(var1, var4));
-      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3)));
+      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.selectBlockItemProperty(CopperGolemStatueBlock.POSE, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.STANDING)), Map.of(CopperGolemStatueBlock.Pose.SITTING, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.SITTING)), CopperGolemStatueBlock.Pose.STAR, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.STAR)), CopperGolemStatueBlock.Pose.RUNNING, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.RUNNING)))));
    }
 
    private void createBanner(Block var1, Block var2, DyeColor var3) {
@@ -1897,7 +1898,7 @@ public class BlockModelGenerators {
       this.createChest(Blocks.COPPER_CHEST, Blocks.COPPER_BLOCK, ChestSpecialRenderer.COPPER_CHEST_TEXTURE, false);
       this.createChest(Blocks.EXPOSED_COPPER_CHEST, Blocks.EXPOSED_COPPER, ChestSpecialRenderer.EXPOSED_COPPER_CHEST_TEXTURE, false);
       this.createChest(Blocks.WEATHERED_COPPER_CHEST, Blocks.WEATHERED_COPPER, ChestSpecialRenderer.WEATHERED_COPPER_CHEST_TEXTURE, false);
-      this.createChest(Blocks.OXIDIZED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, ChestSpecialRenderer.OXIDIZED_CHEST_TEXTURE, false);
+      this.createChest(Blocks.OXIDIZED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, ChestSpecialRenderer.OXIDIZED_COPPER_CHEST_TEXTURE, false);
       this.copyModel(Blocks.COPPER_CHEST, Blocks.WAXED_COPPER_CHEST);
       this.copyModel(Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST);
       this.copyModel(Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST);

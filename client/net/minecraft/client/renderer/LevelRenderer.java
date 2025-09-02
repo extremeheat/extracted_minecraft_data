@@ -47,9 +47,9 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.PrioritizeChunkUpdates;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
@@ -121,6 +121,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final CloudRenderer cloudRenderer = new CloudRenderer();
    private final WorldBorderRenderer worldBorderRenderer = new WorldBorderRenderer();
    private final WeatherEffectRenderer weatherEffectRenderer = new WeatherEffectRenderer();
+   private final ParticlesRenderState particlesRenderState = new ParticlesRenderState();
    @Nullable
    private ClientLevel level;
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
@@ -432,6 +433,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       var11.popPush("extractEntities");
       this.extractVisibleEntities(var4, var20, var2, this.levelRenderState);
+      var11.popPush("extractBlockEntities");
+      this.extractVisibleBlockEntities(var4, var10, this.levelRenderState);
       var11.popPush("terrain_setup");
       this.setupRender(var4, var20, var19, this.minecraft.player.isSpectator());
       var11.popPush("compile_sections");
@@ -473,7 +476,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var28.addToFrame(var22, var23, var24, this.targets);
       }
 
-      this.addParticlesPass(var22, var4, var10, var7);
+      this.minecraft.particleEngine.extract(this.particlesRenderState, (new Frustum(var20)).offset(-3.0F), var4, var10);
+      this.addParticlesPass(var22, var7);
       CloudStatus var29 = this.minecraft.options.getCloudsType();
       if (var29 != CloudStatus.OFF) {
          Optional var30 = this.level.dimensionType().cloudHeight();
@@ -553,11 +557,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          MultiBufferSource.BufferSource var24 = this.renderBuffers.crumblingBufferSource();
          var9.popPush("entities");
          this.submitEntities(var25, var3, var7, this.submitNodeStorage);
-         this.featureRenderDispatcher.renderAllFeatures();
-         var23.endLastBatch();
-         this.checkPoseStack(var25);
-         var9.popPush("blockentities");
-         this.renderBlockEntities(var25, var3, var13x);
+         var9.popPush("blockEntities");
+         this.submitBlockEntities(var25, var3, var7, this.submitNodeStorage);
+         var9.popPush("features");
          this.featureRenderDispatcher.renderAllFeatures();
          var23.endLastBatch();
          this.checkPoseStack(var25);
@@ -610,25 +612,26 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       });
    }
 
-   private void addParticlesPass(FrameGraphBuilder var1, Camera var2, float var3, GpuBufferSlice var4) {
-      FramePass var5 = var1.addPass("particles");
+   private void addParticlesPass(FrameGraphBuilder var1, GpuBufferSlice var2) {
+      FramePass var3 = var1.addPass("particles");
       if (this.targets.particles != null) {
-         this.targets.particles = var5.<RenderTarget>readsAndWrites(this.targets.particles);
-         var5.reads(this.targets.main);
+         this.targets.particles = var3.<RenderTarget>readsAndWrites(this.targets.particles);
+         var3.reads(this.targets.main);
       } else {
-         this.targets.main = var5.<RenderTarget>readsAndWrites(this.targets.main);
+         this.targets.main = var3.<RenderTarget>readsAndWrites(this.targets.main);
       }
 
-      ResourceHandle var6 = this.targets.main;
-      ResourceHandle var7 = this.targets.particles;
-      var5.executes(() -> {
-         RenderSystem.setShaderFog(var4);
-         if (var7 != null) {
-            ((RenderTarget)var7.get()).copyDepthFrom((RenderTarget)var6.get());
+      ResourceHandle var4 = this.targets.main;
+      ResourceHandle var5 = this.targets.particles;
+      var3.executes(() -> {
+         RenderSystem.setShaderFog(var2);
+         if (var5 != null) {
+            ((RenderTarget)var5.get()).copyDepthFrom((RenderTarget)var4.get());
          }
 
-         this.minecraft.particleEngine.render(var2, var3, this.renderBuffers.bufferSource());
+         this.particlesRenderState.submit(this.submitNodeStorage);
          this.featureRenderDispatcher.renderAllFeatures();
+         this.particlesRenderState.reset();
       });
    }
 
@@ -731,42 +734,67 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void renderBlockEntities(PoseStack var1, Camera var2, float var3) {
-      Vec3 var4 = var2.getPosition();
+   private void extractVisibleBlockEntities(Camera var1, float var2, LevelRenderState var3) {
+      Vec3 var4 = var1.getPosition();
       double var5 = var4.x();
       double var7 = var4.y();
       double var9 = var4.z();
-      Iterator var11 = this.visibleSections.iterator();
+      PoseStack var11 = new PoseStack();
+      Iterator var12 = this.visibleSections.iterator();
 
-      while(var11.hasNext()) {
-         SectionRenderDispatcher.RenderSection var12 = (SectionRenderDispatcher.RenderSection)var11.next();
-         List var13 = var12.getSectionMesh().getRenderableBlockEntities();
-         if (!var13.isEmpty()) {
-            for(BlockEntity var15 : var13) {
-               BlockPos var16 = var15.getBlockPos();
-               var1.pushPose();
-               var1.translate((double)var16.getX() - var5, (double)var16.getY() - var7, (double)var16.getZ() - var9);
-               SortedSet var17 = (SortedSet)this.destructionProgress.get(var16.asLong());
-               ModelFeatureRenderer.CrumblingOverlay var18 = var17 != null && !var17.isEmpty() ? new ModelFeatureRenderer.CrumblingOverlay(((BlockDestructionProgress)var17.last()).getProgress(), var1.last()) : null;
-               this.blockEntityRenderDispatcher.submit(var15, var3, var1, var18, this.submitNodeStorage);
-               var1.popPose();
+      while(var12.hasNext()) {
+         SectionRenderDispatcher.RenderSection var13 = (SectionRenderDispatcher.RenderSection)var12.next();
+         List var14 = var13.getSectionMesh().getRenderableBlockEntities();
+         if (!var14.isEmpty()) {
+            for(BlockEntity var16 : var14) {
+               BlockPos var17 = var16.getBlockPos();
+               SortedSet var18 = (SortedSet)this.destructionProgress.get(var17.asLong());
+               ModelFeatureRenderer.CrumblingOverlay var19;
+               if (var18 != null && !var18.isEmpty()) {
+                  var11.pushPose();
+                  var11.translate((double)var17.getX() - var5, (double)var17.getY() - var7, (double)var17.getZ() - var9);
+                  var19 = new ModelFeatureRenderer.CrumblingOverlay(((BlockDestructionProgress)var18.last()).getProgress(), var11.last());
+                  var11.popPose();
+               } else {
+                  var19 = null;
+               }
+
+               BlockEntityRenderState var20 = this.blockEntityRenderDispatcher.tryExtractRenderState(var16, var2, var19);
+               if (var20 != null) {
+                  var3.blockEntityRenderStates.add(var20);
+               }
             }
          }
       }
 
-      var11 = this.level.getGloballyRenderedBlockEntities().iterator();
+      var12 = this.level.getGloballyRenderedBlockEntities().iterator();
 
-      while(var11.hasNext()) {
-         BlockEntity var20 = (BlockEntity)var11.next();
-         if (var20.isRemoved()) {
-            var11.remove();
+      while(var12.hasNext()) {
+         BlockEntity var22 = (BlockEntity)var12.next();
+         if (var22.isRemoved()) {
+            var12.remove();
          } else {
-            BlockPos var21 = var20.getBlockPos();
-            var1.pushPose();
-            var1.translate((double)var21.getX() - var5, (double)var21.getY() - var7, (double)var21.getZ() - var9);
-            this.blockEntityRenderDispatcher.submit(var20, var3, var1, (ModelFeatureRenderer.CrumblingOverlay)null, this.submitNodeStorage);
-            var1.popPose();
+            BlockEntityRenderState var23 = this.blockEntityRenderDispatcher.tryExtractRenderState(var22, var2, (ModelFeatureRenderer.CrumblingOverlay)null);
+            if (var23 != null) {
+               var3.blockEntityRenderStates.add(var23);
+            }
          }
+      }
+
+   }
+
+   private void submitBlockEntities(PoseStack var1, Camera var2, LevelRenderState var3, SubmitNodeStorage var4) {
+      Vec3 var5 = var2.getPosition();
+      double var6 = var5.x();
+      double var8 = var5.y();
+      double var10 = var5.z();
+
+      for(BlockEntityRenderState var13 : var3.blockEntityRenderStates) {
+         BlockPos var14 = var13.blockPos;
+         var1.pushPose();
+         var1.translate((double)var14.getX() - var6, (double)var14.getY() - var8, (double)var14.getZ() - var10);
+         this.blockEntityRenderDispatcher.submit(var13, var1, var4);
+         var1.popPose();
       }
 
    }
@@ -1143,7 +1171,15 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
       try {
-         this.addParticleInternal(var1, var2, var3, var4, var6, var8, var10, var12, var14);
+         Camera var16 = this.minecraft.gameRenderer.getMainCamera();
+         ParticleStatus var20 = this.calculateParticleLevel(var3);
+         if (var2) {
+            this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+         } else if (!(var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0)) {
+            if (var20 != ParticleStatus.MINIMAL) {
+               this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+            }
+         }
       } catch (Throwable var19) {
          CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
          CrashReportCategory var18 = var17.addCategory("Particle being added");
@@ -1156,24 +1192,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public <T extends ParticleOptions> void addParticle(T var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       this.addParticle(var1, var1.getType().getOverrideLimiter(), var2, var4, var6, var8, var10, var12);
-   }
-
-   @Nullable
-   Particle addParticleInternal(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      return this.addParticleInternal(var1, var2, false, var3, var5, var7, var9, var11, var13);
-   }
-
-   @Nullable
-   private Particle addParticleInternal(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
-      Camera var16 = this.minecraft.gameRenderer.getMainCamera();
-      ParticleStatus var17 = this.calculateParticleLevel(var3);
-      if (var2) {
-         return this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-      } else if (var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0) {
-         return null;
-      } else {
-         return var17 == ParticleStatus.MINIMAL ? null : this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-      }
    }
 
    private ParticleStatus calculateParticleLevel(boolean var1) {

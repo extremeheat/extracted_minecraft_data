@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -11,6 +12,8 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -20,25 +23,27 @@ import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<EntityType<?>, EntityRenderer<?, ?>> renderers = ImmutableMap.of();
-   private Map<PlayerSkin.Model, EntityRenderer<? extends Player, ?>> playerRenderers = Map.of();
+   private Map<PlayerModelType, AvatarRenderer<AbstractClientPlayer>> playerRenderers = Map.of();
+   private Map<PlayerModelType, AvatarRenderer<ClientMannequin>> mannequinRenderers = Map.of();
    public final TextureManager textureManager;
    @Nullable
    public Camera camera;
@@ -75,20 +80,43 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
-      if (var1 instanceof AbstractClientPlayer var2) {
-         PlayerSkin.Model var3 = var2.getSkin().model();
-         EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
-         return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerSkin.Model.WIDE);
-      } else {
-         return (EntityRenderer)this.renderers.get(var1.getType());
+      Objects.requireNonNull(var1);
+      byte var3 = 0;
+      Object var10000;
+      //$FF: var3->value
+      //0->net/minecraft/client/player/AbstractClientPlayer
+      //1->net/minecraft/client/entity/ClientMannequin
+      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+         case 0:
+            AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
+            var10000 = this.getAvatarRenderer(this.playerRenderers, var4);
+            break;
+         case 1:
+            ClientMannequin var5 = (ClientMannequin)var1;
+            var10000 = this.getAvatarRenderer(this.mannequinRenderers, var5);
+            break;
+         default:
+            var10000 = (EntityRenderer)this.renderers.get(var1.getType());
       }
+
+      return (EntityRenderer<? super T, ?>)var10000;
+   }
+
+   public AvatarRenderer<AbstractClientPlayer> getPlayerRenderer(AbstractClientPlayer var1) {
+      return this.<AbstractClientPlayer>getAvatarRenderer(this.playerRenderers, var1);
+   }
+
+   private <T extends Avatar & ClientAvatarEntity> AvatarRenderer<T> getAvatarRenderer(Map<PlayerModelType, AvatarRenderer<T>> var1, T var2) {
+      PlayerModelType var3 = ((ClientAvatarEntity)var2).getSkin().model();
+      AvatarRenderer var4 = (AvatarRenderer)var1.get(var3);
+      return var4 != null ? var4 : (AvatarRenderer)var1.get(PlayerModelType.WIDE);
    }
 
    public <S extends EntityRenderState> EntityRenderer<?, ? super S> getRenderer(S var1) {
-      if (var1 instanceof PlayerRenderState var2) {
-         PlayerSkin.Model var3 = var2.skin.model();
+      if (var1 instanceof AvatarRenderState var2) {
+         PlayerModelType var3 = var2.skin.model();
          EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
-         return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerSkin.Model.WIDE);
+         return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerModelType.WIDE);
       } else {
          return (EntityRenderer)this.renderers.get(var1.entityType);
       }
@@ -139,7 +167,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             var9.submitFlame(var8, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
          }
 
-         if (var1 instanceof PlayerRenderState) {
+         if (var1 instanceof AvatarRenderState) {
             var8.translate(-var11.x(), -var11.y(), -var11.z());
          }
 
@@ -147,7 +175,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             var9.submitShadow(var8, var1.shadowRadius, var1.shadowPieces);
          }
 
-         if (!(var1 instanceof PlayerRenderState)) {
+         if (!(var1 instanceof AvatarRenderState)) {
             var8.translate(-var11.x(), -var11.y(), -var11.z());
          }
 
@@ -194,6 +222,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    public void onResourceManagerReload(ResourceManager var1) {
       EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemModelResolver, this.mapRenderer, this.blockRenderDispatcher, var1, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache);
       this.renderers = EntityRenderers.createEntityRenderers(var2);
-      this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);
+      this.playerRenderers = EntityRenderers.createAvatarRenderers(var2);
+      this.mannequinRenderers = EntityRenderers.createAvatarRenderers(var2);
    }
 }

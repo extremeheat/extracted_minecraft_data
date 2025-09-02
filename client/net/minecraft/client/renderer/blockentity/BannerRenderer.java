@@ -12,8 +12,11 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BannerRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -31,7 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
-public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
+public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, BannerRenderState> {
    private static final int MAX_PATTERNS = 16;
    private static final float SIZE = 0.6666667F;
    private final MaterialSet materials;
@@ -57,25 +60,40 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       this.wallFlagModel = new BannerFlagModel(var1.bakeLayer(ModelLayers.WALL_BANNER_FLAG));
    }
 
-   public void submit(BannerBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      BlockState var12 = var1.getBlockState();
-      BannerModel var9;
-      BannerFlagModel var10;
-      float var11;
-      if (var12.getBlock() instanceof BannerBlock) {
-         var11 = -RotationSegment.convertToDegrees((Integer)var12.getValue(BannerBlock.ROTATION));
-         var9 = this.standingModel;
-         var10 = this.standingFlagModel;
+   public BannerRenderState createRenderState() {
+      return new BannerRenderState();
+   }
+
+   public void extractRenderState(BannerBlockEntity var1, BannerRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.baseColor = var1.getBaseColor();
+      var2.patterns = var1.getPatterns();
+      BlockState var6 = var1.getBlockState();
+      if (var6.getBlock() instanceof BannerBlock) {
+         var2.angle = -RotationSegment.convertToDegrees((Integer)var6.getValue(BannerBlock.ROTATION));
+         var2.standing = true;
       } else {
-         var11 = -((Direction)var12.getValue(WallBannerBlock.FACING)).toYRot();
-         var9 = this.wallModel;
-         var10 = this.wallFlagModel;
+         var2.angle = -((Direction)var6.getValue(WallBannerBlock.FACING)).toYRot();
+         var2.standing = false;
       }
 
-      long var13 = var1.getLevel().getGameTime();
-      BlockPos var15 = var1.getBlockPos();
-      float var16 = ((float)Math.floorMod((long)(var15.getX() * 7 + var15.getY() * 9 + var15.getZ() * 13) + var13, 100L) + var2) / 100.0F;
-      submitBanner(this.materials, var3, var8, var4, var5, var11, var9, var10, var16, var1.getBaseColor(), var1.getPatterns(), var7);
+      long var7 = var1.getLevel() != null ? var1.getLevel().getGameTime() : 0L;
+      BlockPos var9 = var1.getBlockPos();
+      var2.phase = ((float)Math.floorMod((long)(var9.getX() * 7 + var9.getY() * 9 + var9.getZ() * 13) + var7, 100L) + var3) / 100.0F;
+   }
+
+   public void submit(BannerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      BannerModel var4;
+      BannerFlagModel var5;
+      if (var1.standing) {
+         var4 = this.standingModel;
+         var5 = this.standingFlagModel;
+      } else {
+         var4 = this.wallModel;
+         var5 = this.wallFlagModel;
+      }
+
+      submitBanner(this.materials, var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.angle, var4, var5, var1.phase, var1.baseColor, var1.patterns, var1.breakProgress);
    }
 
    public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
@@ -105,7 +123,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       for(int var13 = 0; var13 < 16 && var13 < var9.layers().size(); ++var13) {
          BannerPatternLayers.Layer var14 = (BannerPatternLayers.Layer)var9.layers().get(var13);
          Material var15 = var7 ? Sheets.getBannerMaterial(var14.pattern()) : Sheets.getShieldMaterial(var14.pattern());
-         submitPatternLayer(var0, var1, var2, var3, var4, var5, var15, var14.color(), var12);
+         submitPatternLayer(var0, var1, var2, var3, var4, var5, var15, var14.color(), (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }
@@ -122,5 +140,10 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       this.standingModel.root().getExtentsForGui(var2, var1);
       this.standingFlagModel.setupAnim(0.0F);
       this.standingFlagModel.root().getExtentsForGui(var2, var1);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

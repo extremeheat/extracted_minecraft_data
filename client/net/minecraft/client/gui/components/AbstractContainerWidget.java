@@ -5,6 +5,7 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public abstract class AbstractContainerWidget extends AbstractScrollArea implements ContainerEventHandler {
@@ -46,19 +47,19 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
       return ContainerEventHandler.super.nextFocusPath(var1);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      boolean var7 = this.updateScrolling(var1, var3, var5);
-      return ContainerEventHandler.super.mouseClicked(var1, var3, var5, var6) || var7;
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      boolean var3 = this.updateScrolling(var1);
+      return ContainerEventHandler.super.mouseClicked(var1, var2) || var3;
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      super.mouseReleased(var1, var3, var5);
-      return ContainerEventHandler.super.mouseReleased(var1, var3, var5);
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      super.mouseReleased(var1);
+      return ContainerEventHandler.super.mouseReleased(var1);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      super.mouseDragged(var1, var3, var5, var6, var8);
-      return ContainerEventHandler.super.mouseDragged(var1, var3, var5, var6, var8);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      super.mouseDragged(var1, var2, var4);
+      return ContainerEventHandler.super.mouseDragged(var1, var2, var4);
    }
 
    public boolean isFocused() {

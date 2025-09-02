@@ -71,8 +71,8 @@ public interface SideChainPartBlock {
          if (!this.isBeingUpdatedByNeighbor(var3, var4)) {
             Neighbors var5 = this.getNeighbors(var1, var2, this.getFacing(var3));
             SideChainPart var6 = SideChainPart.UNCONNECTED;
-            int var7 = this.getAllBlocksConnectedTo(var1, var5.left().pos()).size();
-            int var8 = this.getAllBlocksConnectedTo(var1, var5.right().pos()).size();
+            int var7 = var5.left().isConnectable() ? this.getAllBlocksConnectedTo(var1, var5.left().pos()).size() : 0;
+            int var8 = var5.right().isConnectable() ? this.getAllBlocksConnectedTo(var1, var5.right().pos()).size() : 0;
             int var9 = 1;
             if (this.canConnect(var7, var9)) {
                var6 = var6.whenConnectedToTheLeft();
@@ -156,6 +156,8 @@ public interface SideChainPartBlock {
    public sealed interface Neighbor permits SideChainPartBlock.EmptyNeighbor, SideChainPartBlock.SideChainNeighbor {
       BlockPos pos();
 
+      boolean isConnectable();
+
       boolean isUnconnectableOrChainEnd();
 
       boolean connectsTowards(SideChainPart var1);
@@ -179,6 +181,10 @@ public interface SideChainPartBlock {
          this.pos = var1;
       }
 
+      public boolean isConnectable() {
+         return false;
+      }
+
       public boolean isUnconnectableOrChainEnd() {
          return true;
       }
@@ -195,6 +201,10 @@ public interface SideChainPartBlock {
          this.block = var2;
          this.pos = var3;
          this.part = var4;
+      }
+
+      public boolean isConnectable() {
+         return true;
       }
 
       public boolean isUnconnectableOrChainEnd() {

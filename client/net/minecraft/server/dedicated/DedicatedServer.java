@@ -54,6 +54,7 @@ import net.minecraft.server.rcon.RconConsoleSource;
 import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.debugchart.DebugSampleSubscriptionTracker;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
@@ -127,7 +128,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
                      }
 
                      try {
-                        var1.put(var6, Files.readString(var4));
+                        String var7 = String.join("\n", Files.readAllLines(var4, StandardCharsets.UTF_8));
+                        var1.put(var6, StringUtil.stripColor(var7));
                      } catch (IOException var9) {
                         throw new IllegalArgumentException("Failed to read Code of Conduct file " + var5, var9);
                      }

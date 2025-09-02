@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 public class EntityCollisionContext implements CollisionContext {
-   protected static final CollisionContext EMPTY;
    private final boolean descending;
    private final double entityBottom;
    private final boolean placement;
@@ -84,11 +83,16 @@ public class EntityCollisionContext implements CollisionContext {
       return this.placement;
    }
 
-   static {
-      EMPTY = new EntityCollisionContext(false, false, -1.7976931348623157E308, ItemStack.EMPTY, false, (Entity)null) {
-         public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
-            return var3;
-         }
-      };
+   protected static class Empty extends EntityCollisionContext {
+      protected static final CollisionContext WITHOUT_FLUID_COLLISIONS = new Empty(false);
+      protected static final CollisionContext WITH_FLUID_COLLISIONS = new Empty(true);
+
+      public Empty(boolean var1) {
+         super(false, false, -1.7976931348623157E308, ItemStack.EMPTY, var1, (Entity)null);
+      }
+
+      public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
+         return var3;
+      }
    }
 }

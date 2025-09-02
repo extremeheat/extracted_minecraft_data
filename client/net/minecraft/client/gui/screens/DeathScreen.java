@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
@@ -124,22 +125,23 @@ public class DeathScreen extends Screen {
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (this.causeOfDeath != null && var3 > 85.0) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (this.causeOfDeath != null && var1.y() > 85.0) {
+         double var10000 = var1.y();
          Objects.requireNonNull(this.font);
-         if (var3 < (double)(85 + 9)) {
-            Style var7 = this.getClickedComponentStyleAt((int)var1);
-            if (var7 != null) {
-               ClickEvent var9 = var7.getClickEvent();
-               if (var9 instanceof ClickEvent.OpenUrl) {
-                  ClickEvent.OpenUrl var8 = (ClickEvent.OpenUrl)var9;
-                  return clickUrlAction(this.minecraft, this, var8.uri());
+         if (var10000 < (double)(85 + 9)) {
+            Style var3 = this.getClickedComponentStyleAt((int)var1.x());
+            if (var3 != null) {
+               ClickEvent var5 = var3.getClickEvent();
+               if (var5 instanceof ClickEvent.OpenUrl) {
+                  ClickEvent.OpenUrl var4 = (ClickEvent.OpenUrl)var5;
+                  return clickUrlAction(this.minecraft, this, var4.uri());
                }
             }
          }
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
    public boolean isPauseScreen() {

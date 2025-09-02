@@ -174,4 +174,8 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       var2.playSound(var1, var3, var4, SoundSource.BLOCKS, 1.0F, 1.0F);
       var2.gameEvent(var1, (Holder)GameEvent.FLUID_PLACE, (BlockPos)var3);
    }
+
+   public Fluid getContent() {
+      return this.content;
+   }
 }

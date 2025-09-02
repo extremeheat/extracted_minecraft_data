@@ -9,7 +9,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
@@ -143,7 +143,7 @@ public class ItemInHandRenderer {
    }
 
    private void renderMapHand(PoseStack var1, SubmitNodeCollector var2, int var3, HumanoidArm var4) {
-      PlayerRenderer var5 = (PlayerRenderer)this.entityRenderDispatcher.getRenderer(this.minecraft.player);
+      AvatarRenderer var5 = this.entityRenderDispatcher.getPlayerRenderer(this.minecraft.player);
       var1.pushPose();
       float var6 = var4 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(92.0F));
@@ -248,7 +248,7 @@ public class ItemInHandRenderer {
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(200.0F));
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * -135.0F));
       var1.translate(var8 * 5.6F, 0.0F, 0.0F);
-      PlayerRenderer var16 = (PlayerRenderer)this.entityRenderDispatcher.getRenderer(var15);
+      AvatarRenderer var16 = this.entityRenderDispatcher.getPlayerRenderer(var15);
       ResourceLocation var17 = ((AbstractClientPlayer)var15).getSkin().texture();
       if (var7) {
          var16.renderRightHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));

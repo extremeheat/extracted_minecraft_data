@@ -30,6 +30,13 @@ public class Frustum {
       this.viewVector = var1.viewVector;
    }
 
+   public Frustum offset(float var1) {
+      this.camX += (double)(this.viewVector.x * var1);
+      this.camY += (double)(this.viewVector.y * var1);
+      this.camZ += (double)(this.viewVector.z * var1);
+      return this;
+   }
+
    public Frustum offsetToFullyIncludeCameraCube(int var1) {
       double var2 = Math.floor(this.camX / (double)var1) * (double)var1;
       double var4 = Math.floor(this.camY / (double)var1) * (double)var1;
@@ -74,6 +81,10 @@ public class Frustum {
       float var17 = (float)(var9 - this.camY);
       float var18 = (float)(var11 - this.camZ);
       return this.intersection.intersectAab(var13, var14, var15, var16, var17, var18);
+   }
+
+   public boolean pointInFrustum(double var1, double var3, double var5) {
+      return this.intersection.testPoint((float)(var1 - this.camX), (float)(var3 - this.camY), (float)(var5 - this.camZ));
    }
 
    public Vector4f[] getFrustumPoints() {

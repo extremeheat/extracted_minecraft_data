@@ -68,7 +68,6 @@ public class ServerChunkCache extends ChunkSource {
    private final TicketStorage ticketStorage;
    private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
-   private boolean spawnFriendlies = true;
    private static final int CACHE_SIZE = 4;
    private final long[] lastChunkPos = new long[4];
    private final ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
@@ -342,17 +341,16 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    private void tickChunks(ProfilerFiller var1, long var2) {
-      var1.popPush("naturalSpawnCount");
+      var1.push("naturalSpawnCount");
       int var4 = this.distanceManager.getNaturalSpawnChunkCount();
       NaturalSpawner.SpawnState var5 = NaturalSpawner.createState(var4, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
       this.lastSpawnState = var5;
-      var1.popPush("spawnAndTick");
       boolean var6 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
       int var7 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
       List var8;
-      if (var6 && (this.spawnEnemies || this.spawnFriendlies)) {
+      if (var6) {
          boolean var9 = this.level.getLevelData().getGameTime() % 400L == 0L;
-         var8 = NaturalSpawner.getFilteredSpawningCategories(var5, this.spawnFriendlies, this.spawnEnemies, var9);
+         var8 = NaturalSpawner.getFilteredSpawningCategories(var5, true, this.spawnEnemies, var9);
       } else {
          var8 = List.of();
       }
@@ -360,7 +358,7 @@ public class ServerChunkCache extends ChunkSource {
       List var15 = this.spawningChunks;
 
       try {
-         var1.push("filteringSpawningChunks");
+         var1.popPush("filteringSpawningChunks");
          this.chunkMap.collectSpawningChunks(var15);
          var1.popPush("shuffleSpawningChunks");
          Util.shuffle(var15, this.level.random);
@@ -375,12 +373,12 @@ public class ServerChunkCache extends ChunkSource {
 
       var1.popPush("tickTickingChunks");
       this.chunkMap.forEachBlockTickingChunk((var2x) -> this.level.tickChunk(var2x, var7));
-      var1.pop();
-      var1.popPush("customSpawners");
       if (var6) {
-         this.level.tickCustomSpawners(this.spawnEnemies, this.spawnFriendlies);
+         var1.popPush("customSpawners");
+         this.level.tickCustomSpawners(this.spawnEnemies);
       }
 
+      var1.pop();
    }
 
    private void tickSpawningChunk(LevelChunk var1, long var2, List<MobCategory> var4, NaturalSpawner.SpawnState var5) {
@@ -525,7 +523,6 @@ public class ServerChunkCache extends ChunkSource {
 
    public void setSpawnSettings(boolean var1) {
       this.spawnEnemies = var1;
-      this.spawnFriendlies = this.spawnFriendlies;
    }
 
    public String getChunkDebugData(ChunkPos var1) {

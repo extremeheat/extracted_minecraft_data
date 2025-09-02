@@ -19,6 +19,7 @@ import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.platform.FramerateLimitTracker;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.IconSet;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -107,6 +108,7 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -122,6 +124,7 @@ import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.LocalPlayerResolver;
 import net.minecraft.client.profiling.ClientMetricsSamplersProvider;
@@ -176,6 +179,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -255,12 +259,11 @@ import org.slf4j.Logger;
 public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements WindowEventHandler {
    static Minecraft instance;
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final boolean ON_OSX;
    private static final int MAX_TICKS_PER_UPDATE = 10;
-   public static final ResourceLocation DEFAULT_FONT;
-   public static final ResourceLocation UNIFORM_FONT;
-   public static final ResourceLocation ALT_FONT;
-   private static final ResourceLocation REGIONAL_COMPLIANCIES;
+   public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
+   public static final ResourceLocation UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
+   public static final ResourceLocation ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
+   private static final ResourceLocation REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK;
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE;
    private static final Component SAVING_LEVEL;
@@ -281,6 +284,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final ItemRenderer itemRenderer;
    private final MapRenderer mapRenderer;
    public final ParticleEngine particleEngine;
+   private final ParticleResources particleResources;
    private final User user;
    public final Font font;
    public final Font fontFilterFishy;
@@ -394,6 +398,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private boolean gameLoadFinished;
    private final long clientStartTimeMs;
    private long clientTickCount;
+   private final PacketProcessor packetProcessor;
 
    public Minecraft(final GameConfig var1) {
       super("Client");
@@ -486,10 +491,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.mouseHandler = new MouseHandler(this);
-      this.mouseHandler.setup(this.window.getWindow());
+      this.mouseHandler.setup(this.window);
       this.keyboardHandler = new KeyboardHandler(this);
-      this.keyboardHandler.setup(this.window.getWindow());
-      RenderSystem.initRenderer(this.window.getWindow(), this.options.glDebugVerbosity, false, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
+      this.keyboardHandler.setup(this.window);
+      RenderSystem.initRenderer(this.window.handle(), this.options.glDebugVerbosity, false, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
       LOGGER.info("Using optional rendering extensions: {}", String.join(", ", RenderSystem.getDevice().getEnabledExtensions()));
       this.mainRenderTarget = new MainTarget(this.window.getWidth(), this.window.getHeight());
       this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
@@ -536,7 +541,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       EquipmentAssetManager var11 = new EquipmentAssetManager();
       this.resourceManager.registerReloadListener(var11);
       this.itemModelResolver = new ItemModelResolver(this.modelManager);
-      this.itemRenderer = new ItemRenderer(this.itemModelResolver);
+      this.itemRenderer = new ItemRenderer();
       this.mapTextureManager = new MapTextureManager(this.textureManager);
       this.mapRenderer = new MapRenderer(this.atlasManager, this.mapTextureManager);
 
@@ -556,8 +561,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
       this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
-      this.particleEngine = new ParticleEngine(this.level);
-      this.resourceManager.registerReloadListener(this.particleEngine);
+      this.particleResources = new ParticleResources();
+      this.resourceManager.registerReloadListener(this.particleResources);
+      this.particleEngine = new ParticleEngine(this.level, this.particleResources);
+      ParticleResources var10000 = this.particleResources;
+      ParticleEngine var10001 = this.particleEngine;
+      Objects.requireNonNull(var10001);
+      var10000.onReload(var10001::clearParticles);
       this.waypointStyles = new WaypointStyleManager();
       this.resourceManager.registerReloadListener(this.waypointStyles);
       this.gameRenderer = new GameRenderer(this, this.entityRenderDispatcher.getItemInHandRenderer(), this.renderBuffers, this.blockRenderer);
@@ -641,6 +651,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.tracyFrameCapture = null;
       }
 
+      this.packetProcessor = new PacketProcessor(this.gameThread);
+   }
+
+   public boolean hasShiftDown() {
+      Window var1 = this.getWindow();
+      return InputConstants.isKeyDown(var1, 340) || InputConstants.isKeyDown(var1, 344);
+   }
+
+   public boolean hasControlDown() {
+      Window var1 = this.getWindow();
+      return InputConstants.isKeyDown(var1, InputQuirks.EDIT_SHORTCUT_KEY_LEFT) || InputConstants.isKeyDown(var1, InputQuirks.EDIT_SHORTCUT_KEY_RIGHT);
+   }
+
+   public boolean hasAltDown() {
+      Window var1 = this.getWindow();
+      return InputConstants.isKeyDown(var1, 342) || InputConstants.isKeyDown(var1, 346);
    }
 
    private void onResourceLoadFinished(@Nullable GameLoadCookie var1) {
@@ -1194,7 +1220,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       int var14 = this.deltaTracker.advanceTime(Util.getMillis(), var1);
       ProfilerFiller var3 = Profiler.get();
       if (var1) {
-         var3.push("scheduledExecutables");
+         var3.push("scheduledPacketProcessing");
+         this.packetProcessor.processQueuedPackets();
+         var3.popPush("scheduledExecutables");
          this.runAllTasks();
          var3.pop();
          var3.push("tick");
@@ -1522,7 +1550,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (!this.level.getBlockState(var3).isAir()) {
                Direction var4 = var2.getDirection();
                if (this.gameMode.continueDestroyBlock(var3, var4)) {
-                  this.particleEngine.crack(var3, var4);
+                  this.level.addBreakingBlockEffect(var3, var4);
                   this.player.swing(InteractionHand.MAIN_HAND);
                }
             }
@@ -1717,6 +1745,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
+      if (this.overlay != null) {
+         this.overlay.tick();
+      }
+
       if (!this.getDebugOverlay().showDebugScreen()) {
          this.gui.clearCache();
       }
@@ -1875,7 +1907,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       while(this.options.keyDrop.consumeClick()) {
-         if (!this.player.isSpectator() && this.player.drop(Screen.hasControlDown())) {
+         if (!this.player.isSpectator() && this.player.drop(this.hasControlDown())) {
             this.player.swing(InteractionHand.MAIN_HAND);
          }
       }
@@ -1913,6 +1945,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          while(this.options.keyPickItem.consumeClick()) {
             this.pickBlock();
+         }
+
+         if (this.player.isSpectator()) {
+            while(this.options.keySpectatorHotbar.consumeClick()) {
+               this.gui.getSpectatorGui().onHotbarActionKeyPressed();
+            }
          }
       }
 
@@ -1981,6 +2019,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       while(!this.singleplayerServer.isReady() || this.overlay != null) {
          long var12 = Util.getNanos() + var17;
          var7.tick();
+         if (this.overlay != null) {
+            this.overlay.tick();
+         }
+
          this.runTick(false);
          this.runAllTasks();
          this.managedBlock(() -> Util.getNanos() > var12);
@@ -2217,7 +2259,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void pickBlock() {
       if (this.hitResult != null && this.hitResult.getType() != HitResult.Type.MISS) {
-         boolean var1 = Screen.hasControlDown();
+         boolean var1 = this.hasControlDown();
          HitResult var10000 = this.hitResult;
          Objects.requireNonNull(var10000);
          HitResult var2 = var10000;
@@ -2751,12 +2793,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return System.getProperty("minecraft.launcher.brand");
    }
 
+   public PacketProcessor packetProcessor() {
+      return this.packetProcessor;
+   }
+
    static {
-      ON_OSX = Util.getPlatform() == Util.OS.OSX;
-      DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
-      UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
-      ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
-      REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
       RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
       SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
       SAVING_LEVEL = Component.translatable("menu.savingLevel");

@@ -1,12 +1,13 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class CampfireSmokeParticle extends TextureSheetParticle {
-   CampfireSmokeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14) {
-      super(var1, var2, var4, var6);
+public class CampfireSmokeParticle extends SingleQuadParticle {
+   CampfireSmokeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, TextureAtlasSprite var15) {
+      super(var1, var2, var4, var6, var15);
       this.scale(3.0F);
       this.setSize(0.25F, 0.25F);
       if (var14) {
@@ -39,8 +40,8 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
       }
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
    public static class CosyProvider implements ParticleProvider<SimpleParticleType> {
@@ -51,16 +52,10 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, false);
-         var15.setAlpha(0.9F);
-         var15.pickSprite(this.sprites);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         CampfireSmokeParticle var16 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, false, this.sprites.get(var15));
+         var16.setAlpha(0.9F);
+         return var16;
       }
    }
 
@@ -72,16 +67,10 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true);
-         var15.setAlpha(0.95F);
-         var15.pickSprite(this.sprites);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         CampfireSmokeParticle var16 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true, this.sprites.get(var15));
+         var16.setAlpha(0.95F);
+         return var16;
       }
    }
 }

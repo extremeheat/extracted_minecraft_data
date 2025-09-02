@@ -4,21 +4,20 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
+import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.model.SquidModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelType;
 import org.slf4j.Logger;
 
 public class EntityRenderers {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<EntityType<?>, EntityRendererProvider<?>> PROVIDERS = new Object2ObjectOpenHashMap();
-   private static final Map<PlayerSkin.Model, EntityRendererProvider<AbstractClientPlayer>> PLAYER_PROVIDERS;
 
    public EntityRenderers() {
       super();
@@ -40,23 +39,19 @@ public class EntityRenderers {
       return var1.build();
    }
 
-   public static Map<PlayerSkin.Model, EntityRenderer<? extends Player, ?>> createPlayerRenderers(EntityRendererProvider.Context var0) {
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
-      PLAYER_PROVIDERS.forEach((var2, var3) -> {
-         try {
-            var1.put(var2, var3.create(var0));
-         } catch (Exception var5) {
-            throw new IllegalArgumentException("Failed to create player model for " + String.valueOf(var2), var5);
-         }
-      });
-      return var1.build();
+   public static <T extends Avatar & ClientAvatarEntity> Map<PlayerModelType, AvatarRenderer<T>> createAvatarRenderers(EntityRendererProvider.Context var0) {
+      try {
+         return Map.of(PlayerModelType.WIDE, new AvatarRenderer(var0, false), PlayerModelType.SLIM, new AvatarRenderer(var0, true));
+      } catch (Exception var2) {
+         throw new IllegalArgumentException("Failed to create avatar models", var2);
+      }
    }
 
    public static boolean validateRegistrations() {
       boolean var0 = true;
 
       for(EntityType var2 : BuiltInRegistries.ENTITY_TYPE) {
-         if (var2 != EntityType.PLAYER && !PROVIDERS.containsKey(var2)) {
+         if (var2 != EntityType.PLAYER && var2 != EntityType.MANNEQUIN && !PROVIDERS.containsKey(var2)) {
             LOGGER.warn("No renderer registered for {}", BuiltInRegistries.ENTITY_TYPE.getKey(var2));
             var0 = false;
          }
@@ -66,7 +61,6 @@ public class EntityRenderers {
    }
 
    static {
-      PLAYER_PROVIDERS = Map.of(PlayerSkin.Model.WIDE, (EntityRendererProvider)(var0) -> new PlayerRenderer(var0, false), PlayerSkin.Model.SLIM, (EntityRendererProvider)(var0) -> new PlayerRenderer(var0, true));
       register(EntityType.ACACIA_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.ACACIA_BOAT));
       register(EntityType.ACACIA_CHEST_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.ACACIA_CHEST_BOAT));
       register(EntityType.ALLAY, AllayRenderer::new);

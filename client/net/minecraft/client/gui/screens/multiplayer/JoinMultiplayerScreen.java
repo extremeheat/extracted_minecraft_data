@@ -10,8 +10,9 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DirectJoinServerScreen;
-import net.minecraft.client.gui.screens.EditServerScreen;
+import net.minecraft.client.gui.screens.ManageServerScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.ServerStatusPinger;
@@ -78,7 +79,7 @@ public class JoinMultiplayerScreen extends Screen {
       }).width(100).build());
       var2.addChild(Button.builder(Component.translatable("selectServer.add"), (var1x) -> {
          this.editingServer = new ServerData("", "", ServerData.Type.OTHER);
-         this.minecraft.setScreen(new EditServerScreen(this, this::addServerCallback, this.editingServer));
+         this.minecraft.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.add.title"), this::addServerCallback, this.editingServer));
       }).width(100).build());
       this.editButton = (Button)var3.addChild(Button.builder(Component.translatable("selectServer.edit"), (var1x) -> {
          ServerSelectionList.Entry var2 = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
@@ -86,7 +87,7 @@ public class JoinMultiplayerScreen extends Screen {
             ServerData var3 = ((ServerSelectionList.OnlineServerEntry)var2).getServerData();
             this.editingServer = new ServerData(var3.name, var3.ip, ServerData.Type.OTHER);
             this.editingServer.copyFrom(var3);
-            this.minecraft.setScreen(new EditServerScreen(this, this::editServerCallback, this.editingServer));
+            this.minecraft.setScreen(new ManageServerScreen(this, Component.translatable("manageServer.edit.title"), this::editServerCallback, this.editingServer));
          }
 
       }).width(74).build());
@@ -209,10 +210,10 @@ public class JoinMultiplayerScreen extends Screen {
 
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (super.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (super.keyPressed(var1)) {
          return true;
-      } else if (var1 == 294) {
+      } else if (var1.key() == 294) {
          this.refreshServerList();
          return true;
       } else {

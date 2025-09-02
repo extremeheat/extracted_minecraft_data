@@ -30,13 +30,13 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       this.keyBindsScreen = var1;
       KeyMapping[] var3 = (KeyMapping[])ArrayUtils.clone(var2.options.keyMappings);
       Arrays.sort(var3);
-      String var4 = null;
+      KeyMapping.Category var4 = null;
 
       for(KeyMapping var8 : var3) {
-         String var9 = var8.getCategory();
-         if (!var9.equals(var4)) {
+         KeyMapping.Category var9 = var8.getCategory();
+         if (var9 != var4) {
             var4 = var9;
-            this.addEntry(new CategoryEntry(Component.translatable(var9)));
+            this.addEntry(new CategoryEntry(Component.translatable(var9.descriptionId())));
          }
 
          MutableComponent var10 = Component.translatable(var8.getName());
@@ -141,7 +141,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          if (this.hasCollision) {
             boolean var9 = true;
             int var10 = this.changeButton.getX() - 6;
-            var1.fill(var10, this.getContentY() - 1, var10 + 3, this.getContentBottom(), -65536);
+            var1.fill(var10, this.getContentY() - 1, var10 + 3, this.getContentBottom(), -256);
          }
 
       }
@@ -161,7 +161,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          MutableComponent var1 = Component.empty();
          if (!this.key.isUnbound()) {
             for(KeyMapping var5 : KeyBindsList.this.minecraft.options.keyMappings) {
-               if (var5 != this.key && this.key.same(var5)) {
+               if (var5 != this.key && this.key.same(var5) && (!var5.isDefault() || !this.key.isDefault())) {
                   if (this.hasCollision) {
                      var1.append(", ");
                   }
@@ -173,7 +173,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          }
 
          if (this.hasCollision) {
-            this.changeButton.setMessage(Component.literal("[ ").append((Component)this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE)).append(" ]").withStyle(ChatFormatting.RED));
+            this.changeButton.setMessage(Component.literal("[ ").append((Component)this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE)).append(" ]").withStyle(ChatFormatting.YELLOW));
             this.changeButton.setTooltip(Tooltip.create(Component.translatable("controls.keybinds.duplicateKeybinds", var1)));
          } else {
             this.changeButton.setTooltip((Tooltip)null);

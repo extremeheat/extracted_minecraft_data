@@ -7,11 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityWithBoundingBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BoundingBoxRenderable;
@@ -21,87 +21,134 @@ import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 import org.joml.Matrix4f;
 
-public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & BoundingBoxRenderable> implements BlockEntityRenderer<T> {
-   public BlockEntityWithBoundingBoxRenderer(BlockEntityRendererProvider.Context var1) {
+public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & BoundingBoxRenderable> implements BlockEntityRenderer<T, BlockEntityWithBoundingBoxRenderState> {
+   public BlockEntityWithBoundingBoxRenderer() {
       super();
    }
 
-   public void submit(T var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      if (Minecraft.getInstance().player.canUseGameMasterBlocks() || Minecraft.getInstance().player.isSpectator()) {
-         BoundingBoxRenderable.Mode var9 = ((BoundingBoxRenderable)var1).renderMode();
-         if (var9 != BoundingBoxRenderable.Mode.NONE) {
-            BoundingBoxRenderable.RenderableBox var10 = ((BoundingBoxRenderable)var1).getRenderableBox();
-            BlockPos var11 = var10.localPos();
-            Vec3i var12 = var10.size();
-            if (var12.getX() >= 1 && var12.getY() >= 1 && var12.getZ() >= 1) {
-               float var13 = 1.0F;
-               float var14 = 0.9F;
-               float var15 = 0.5F;
-               BlockPos var16 = var11.offset(var12);
-               var8.submitCustomGeometry(var3, RenderType.lines(), (var2x, var3x) -> ShapeRenderer.renderLineBox(var2x, var3x, (double)var11.getX(), (double)var11.getY(), (double)var11.getZ(), (double)var16.getX(), (double)var16.getY(), (double)var16.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F));
-               if (var9 == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS && var1.getLevel() != null) {
-                  this.submitInvisibleBlocks(var1, var1.getLevel(), var11, var12, var8, var3);
-               }
+   public BlockEntityWithBoundingBoxRenderState createRenderState() {
+      return new BlockEntityWithBoundingBoxRenderState();
+   }
 
+   public void extractRenderState(T var1, BlockEntityWithBoundingBoxRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      extract(var1, var2);
+   }
+
+   public static <T extends BlockEntity & BoundingBoxRenderable> void extract(T var0, BlockEntityWithBoundingBoxRenderState var1) {
+      var1.isVisible = Minecraft.getInstance().player.canUseGameMasterBlocks() && !Minecraft.getInstance().player.isSpectator();
+      var1.box = ((BoundingBoxRenderable)var0).getRenderableBox();
+      var1.mode = ((BoundingBoxRenderable)var0).renderMode();
+      BlockPos var2 = var1.box.localPos();
+      Vec3i var3 = var1.box.size();
+      BlockPos var4 = var1.blockPos;
+      BlockPos var5 = var4.offset(var2);
+      if (var0.getLevel() != null && var1.mode == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS) {
+         var1.invisibleBlocks = new BlockEntityWithBoundingBoxRenderState.InvisibleBlockType[var3.getX() * var3.getY() * var3.getZ()];
+
+         for(int var6 = 0; var6 < var3.getX(); ++var6) {
+            for(int var7 = 0; var7 < var3.getY(); ++var7) {
+               for(int var8 = 0; var8 < var3.getZ(); ++var8) {
+                  int var9 = var8 * var3.getX() * var3.getY() + var7 * var3.getX() + var6;
+                  BlockState var10 = var0.getLevel().getBlockState(var5.offset(var6, var7, var8));
+                  if (var10.isAir()) {
+                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.AIR;
+                  } else if (var10.is(Blocks.STRUCTURE_VOID)) {
+                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.STRUCUTRE_VOID;
+                  } else if (var10.is(Blocks.BARRIER)) {
+                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.BARRIER;
+                  } else if (var10.is(Blocks.LIGHT)) {
+                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.LIGHT;
+                  }
+               }
+            }
+         }
+      } else {
+         var1.invisibleBlocks = null;
+      }
+
+      var1.structureVoids = null;
+   }
+
+   public void submit(BlockEntityWithBoundingBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      if (var1.isVisible) {
+         BoundingBoxRenderable.Mode var4 = var1.mode;
+         if (var4 != BoundingBoxRenderable.Mode.NONE) {
+            BoundingBoxRenderable.RenderableBox var5 = var1.box;
+            BlockPos var6 = var5.localPos();
+            Vec3i var7 = var5.size();
+            if (var7.getX() >= 1 && var7.getY() >= 1 && var7.getZ() >= 1) {
+               float var8 = 1.0F;
+               float var9 = 0.9F;
+               float var10 = 0.5F;
+               BlockPos var11 = var6.offset(var7);
+               var3.submitCustomGeometry(var2, RenderType.lines(), (var2x, var3x) -> ShapeRenderer.renderLineBox(var2x, var3x, (double)var6.getX(), (double)var6.getY(), (double)var6.getZ(), (double)var11.getX(), (double)var11.getY(), (double)var11.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F));
+               this.submitInvisibleBlocks(var1, var6, var7, var3, var2);
             }
          }
       }
    }
 
-   private void submitInvisibleBlocks(T var1, BlockGetter var2, BlockPos var3, Vec3i var4, SubmitNodeCollector var5, PoseStack var6) {
-      BlockPos var7 = var1.getBlockPos();
-      BlockPos var8 = var7.offset(var3);
-      var5.submitCustomGeometry(var6, RenderType.lines(), (var4x, var5x) -> {
-         for(BlockPos var7x : BlockPos.betweenClosed(var8, var8.offset(var4).offset(-1, -1, -1))) {
-            BlockState var8x = var2.getBlockState(var7x);
-            boolean var9 = var8x.isAir();
-            boolean var10 = var8x.is(Blocks.STRUCTURE_VOID);
-            boolean var11 = var8x.is(Blocks.BARRIER);
-            boolean var12 = var8x.is(Blocks.LIGHT);
-            boolean var13 = var10 || var11 || var12;
-            if (var9 || var13) {
-               float var14 = var9 ? 0.05F : 0.0F;
-               double var15 = (double)((float)(var7x.getX() - var7.getX()) + 0.45F - var14);
-               double var17 = (double)((float)(var7x.getY() - var7.getY()) + 0.45F - var14);
-               double var19 = (double)((float)(var7x.getZ() - var7.getZ()) + 0.45F - var14);
-               double var21 = (double)((float)(var7x.getX() - var7.getX()) + 0.55F + var14);
-               double var23 = (double)((float)(var7x.getY() - var7.getY()) + 0.55F + var14);
-               double var25 = (double)((float)(var7x.getZ() - var7.getZ()) + 0.55F + var14);
-               if (var9) {
-                  ShapeRenderer.renderLineBox(var4x, var5x, var15, var17, var19, var21, var23, var25, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
-               } else if (var10) {
-                  ShapeRenderer.renderLineBox(var4x, var5x, var15, var17, var19, var21, var23, var25, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
-               } else if (var11) {
-                  ShapeRenderer.renderLineBox(var4x, var5x, var15, var17, var19, var21, var23, var25, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
-               } else if (var12) {
-                  ShapeRenderer.renderLineBox(var4x, var5x, var15, var17, var19, var21, var23, var25, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
+   private void submitInvisibleBlocks(BlockEntityWithBoundingBoxRenderState var1, BlockPos var2, Vec3i var3, SubmitNodeCollector var4, PoseStack var5) {
+      if (var1.invisibleBlocks != null) {
+         BlockPos var6 = var1.blockPos;
+         BlockPos var7 = var6.offset(var2);
+         var4.submitCustomGeometry(var5, RenderType.lines(), (var4x, var5x) -> {
+            for(int var6x = 0; var6x < var3.getX(); ++var6x) {
+               for(int var7x = 0; var7x < var3.getY(); ++var7x) {
+                  for(int var8 = 0; var8 < var3.getZ(); ++var8) {
+                     int var9 = var8 * var3.getX() * var3.getY() + var7x * var3.getX() + var6x;
+                     BlockEntityWithBoundingBoxRenderState.InvisibleBlockType var10 = var1.invisibleBlocks[var9];
+                     if (var10 != null) {
+                        float var11 = var10 == BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.AIR ? 0.05F : 0.0F;
+                        double var12 = (double)((float)(var7.getX() + var6x - var6.getX()) + 0.45F - var11);
+                        double var14 = (double)((float)(var7.getY() + var7x - var6.getY()) + 0.45F - var11);
+                        double var16 = (double)((float)(var7.getZ() + var8 - var6.getZ()) + 0.45F - var11);
+                        double var18 = (double)((float)(var7.getX() + var6x - var6.getX()) + 0.55F + var11);
+                        double var20 = (double)((float)(var7.getY() + var7x - var6.getY()) + 0.55F + var11);
+                        double var22 = (double)((float)(var7.getZ() + var8 - var6.getZ()) + 0.55F + var11);
+                        if (var10 == BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.AIR) {
+                           ShapeRenderer.renderLineBox(var4x, var5x, var12, var14, var16, var18, var20, var22, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
+                        } else if (var10 == BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.STRUCUTRE_VOID) {
+                           ShapeRenderer.renderLineBox(var4x, var5x, var12, var14, var16, var18, var20, var22, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
+                        } else if (var10 == BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.BARRIER) {
+                           ShapeRenderer.renderLineBox(var4x, var5x, var12, var14, var16, var18, var20, var22, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
+                        } else if (var10 == BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.LIGHT) {
+                           ShapeRenderer.renderLineBox(var4x, var5x, var12, var14, var16, var18, var20, var22, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
+                        }
+                     }
+                  }
+               }
+            }
+
+         });
+      }
+   }
+
+   private void renderStructureVoids(BlockEntityWithBoundingBoxRenderState var1, BlockPos var2, Vec3i var3, VertexConsumer var4, Matrix4f var5) {
+      if (var1.structureVoids != null) {
+         BlockPos var6 = var1.blockPos;
+         BitSetDiscreteVoxelShape var7 = new BitSetDiscreteVoxelShape(var3.getX(), var3.getY(), var3.getZ());
+
+         for(int var8 = 0; var8 < var3.getX(); ++var8) {
+            for(int var9 = 0; var9 < var3.getY(); ++var9) {
+               for(int var10 = 0; var10 < var3.getZ(); ++var10) {
+                  int var11 = var10 * var3.getX() * var3.getY() + var9 * var3.getX() + var8;
+                  if (var1.structureVoids[var11]) {
+                     ((DiscreteVoxelShape)var7).fill(var8, var9, var10);
+                  }
                }
             }
          }
 
-      });
-   }
-
-   private void renderStructureVoids(T var1, BlockPos var2, Vec3i var3, VertexConsumer var4, Matrix4f var5) {
-      Level var6 = var1.getLevel();
-      if (var6 != null) {
-         BlockPos var7 = var1.getBlockPos();
-         BitSetDiscreteVoxelShape var8 = new BitSetDiscreteVoxelShape(var3.getX(), var3.getY(), var3.getZ());
-
-         for(BlockPos var10 : BlockPos.betweenClosed(var2, var2.offset(var3).offset(-1, -1, -1))) {
-            if (var6.getBlockState(var10).is(Blocks.STRUCTURE_VOID)) {
-               ((DiscreteVoxelShape)var8).fill(var10.getX() - var2.getX(), var10.getY() - var2.getY(), var10.getZ() - var2.getZ());
-            }
-         }
-
-         ((DiscreteVoxelShape)var8).forAllFaces((var4x, var5x, var6x, var7x) -> {
+         ((DiscreteVoxelShape)var7).forAllFaces((var4x, var5x, var6x, var7x) -> {
             float var8 = 0.48F;
-            float var9 = (float)(var5x + var2.getX() - var7.getX()) + 0.5F - 0.48F;
-            float var10 = (float)(var6x + var2.getY() - var7.getY()) + 0.5F - 0.48F;
-            float var11 = (float)(var7x + var2.getZ() - var7.getZ()) + 0.5F - 0.48F;
-            float var12 = (float)(var5x + var2.getX() - var7.getX()) + 0.5F + 0.48F;
-            float var13 = (float)(var6x + var2.getY() - var7.getY()) + 0.5F + 0.48F;
-            float var14 = (float)(var7x + var2.getZ() - var7.getZ()) + 0.5F + 0.48F;
+            float var9 = (float)(var5x + var2.getX() - var6.getX()) + 0.5F - 0.48F;
+            float var10 = (float)(var6x + var2.getY() - var6.getY()) + 0.5F - 0.48F;
+            float var11 = (float)(var7x + var2.getZ() - var6.getZ()) + 0.5F - 0.48F;
+            float var12 = (float)(var5x + var2.getX() - var6.getX()) + 0.5F + 0.48F;
+            float var13 = (float)(var6x + var2.getY() - var6.getY()) + 0.5F + 0.48F;
+            float var14 = (float)(var7x + var2.getZ() - var6.getZ()) + 0.5F + 0.48F;
             ShapeRenderer.renderFace(var5, var4, var4x, var9, var10, var11, var12, var13, var14, 0.75F, 0.75F, 1.0F, 0.2F);
          });
       }
@@ -116,7 +163,12 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
    }
 
    // $FF: synthetic method
-   private void lambda$submitInvisibleBlocks$2(BlockEntity var1, BlockPos var2, Vec3i var3, PoseStack.Pose var4, VertexConsumer var5) {
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
+   }
+
+   // $FF: synthetic method
+   private void lambda$submitInvisibleBlocks$2(BlockEntityWithBoundingBoxRenderState var1, BlockPos var2, Vec3i var3, PoseStack.Pose var4, VertexConsumer var5) {
       this.renderStructureVoids(var1, var2, var3, var5, var4.pose());
    }
 }

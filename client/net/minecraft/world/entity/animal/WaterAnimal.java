@@ -36,7 +36,7 @@ public abstract class WaterAnimal extends PathfinderMob {
    protected void handleAirSupply(ServerLevel var1, int var2) {
       if (this.isAlive() && !this.isInWater()) {
          this.setAirSupply(var2 - 1);
-         if (this.getAirSupply() == -20) {
+         if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
             this.hurtServer(var1, this.damageSources().drown(), 2.0F);
          }

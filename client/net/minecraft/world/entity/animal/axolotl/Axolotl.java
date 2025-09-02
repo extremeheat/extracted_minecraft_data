@@ -192,7 +192,7 @@ public class Axolotl extends Animal implements Bucketable {
    protected void handleAirSupply(ServerLevel var1, int var2) {
       if (this.isAlive() && !this.isInWaterOrRain()) {
          this.setAirSupply(var2 - 1);
-         if (this.getAirSupply() == -20) {
+         if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
             this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
          }

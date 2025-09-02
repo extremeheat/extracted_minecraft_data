@@ -25,7 +25,7 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    public static final ResourceLocation COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper");
    public static final ResourceLocation EXPOSED_COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_exposed");
    public static final ResourceLocation WEATHERED_COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_weathered");
-   public static final ResourceLocation OXIDIZED_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_oxidized");
+   public static final ResourceLocation OXIDIZED_COPPER_CHEST_TEXTURE = ResourceLocation.withDefaultNamespace("copper_oxidized");
    private final MaterialSet materials;
    private final ChestModel model;
    private final Material material;

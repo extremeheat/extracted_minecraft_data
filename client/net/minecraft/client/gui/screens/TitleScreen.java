@@ -26,6 +26,7 @@ import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
@@ -249,11 +250,11 @@ public class TitleScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (super.mouseClicked(var1, var3, var5, var6)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (super.mouseClicked(var1, var2)) {
          return true;
       } else {
-         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5, var6);
+         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var2);
       }
    }
 

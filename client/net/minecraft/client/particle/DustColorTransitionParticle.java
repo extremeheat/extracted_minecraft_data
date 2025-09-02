@@ -1,10 +1,10 @@
 package net.minecraft.client.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.QuadParticleRenderState;
 import net.minecraft.core.particles.DustColorTransitionOptions;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.util.RandomSource;
 import org.joml.Vector3f;
 
 public class DustColorTransitionParticle extends DustParticleBase<DustColorTransitionOptions> {
@@ -30,9 +30,9 @@ public class DustColorTransitionParticle extends DustParticleBase<DustColorTrans
       this.bCol = var3.z();
    }
 
-   public void render(VertexConsumer var1, Camera var2, float var3) {
+   public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
       this.lerpColors(var3);
-      super.render(var1, var2, var3);
+      super.extract(var1, var2, var3);
    }
 
    public static class Provider implements ParticleProvider<DustColorTransitionOptions> {
@@ -43,13 +43,8 @@ public class DustColorTransitionParticle extends DustParticleBase<DustColorTrans
          this.sprites = var1;
       }
 
-      public Particle createParticle(DustColorTransitionOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(DustColorTransitionOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new DustColorTransitionParticle(var2, var3, var5, var7, var9, var11, var13, var1, this.sprites);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((DustColorTransitionOptions)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

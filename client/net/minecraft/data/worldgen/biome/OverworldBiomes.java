@@ -241,7 +241,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(var3);
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addMushroomFieldVegetation(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3, true);
+      BiomeDefaultFeatures.addNearWaterVegetation(var3);
       return biome(true, 0.9F, 1.0F, var2, var3, NORMAL_MUSIC);
    }
 

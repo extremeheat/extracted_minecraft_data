@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -26,7 +27,7 @@ public class Button extends AbstractButton {
       this.createNarration = var7;
    }
 
-   public void onPress() {
+   public void onPress(InputWithModifiers var1) {
       this.onPress.onPress(this);
    }
 

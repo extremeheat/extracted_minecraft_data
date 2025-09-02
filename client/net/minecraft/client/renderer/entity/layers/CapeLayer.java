@@ -9,7 +9,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
@@ -20,11 +20,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 
-public class CapeLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
-   private final HumanoidModel<PlayerRenderState> model;
+public class CapeLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+   private final HumanoidModel<AvatarRenderState> model;
    private final EquipmentAssetManager equipmentAssets;
 
-   public CapeLayer(RenderLayerParent<PlayerRenderState, PlayerModel> var1, EntityModelSet var2, EquipmentAssetManager var3) {
+   public CapeLayer(RenderLayerParent<AvatarRenderState, PlayerModel> var1, EntityModelSet var2, EquipmentAssetManager var3) {
       super(var1);
       this.model = new PlayerCapeModel(var2.bakeLayer(ModelLayers.PLAYER_CAPE));
       this.equipmentAssets = var3;
@@ -40,7 +40,7 @@ public class CapeLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
       }
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, PlayerRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
       if (!var4.isInvisible && var4.showCape) {
          PlayerSkin var7 = var4.skin;
          if (var7.capeTexture() != null) {

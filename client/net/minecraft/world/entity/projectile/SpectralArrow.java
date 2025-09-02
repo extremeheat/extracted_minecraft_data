@@ -2,6 +2,7 @@ package net.minecraft.world.entity.projectile;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -31,7 +32,7 @@ public class SpectralArrow extends AbstractArrow {
    public void tick() {
       super.tick();
       if (this.level().isClientSide() && !this.isInGround()) {
-         this.level().addParticle(ParticleTypes.INSTANT_EFFECT, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
+         this.level().addParticle(SpellParticleOption.create(ParticleTypes.EFFECT, -1, 1.0F), this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
       }
 
    }

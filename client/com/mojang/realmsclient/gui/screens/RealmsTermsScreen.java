@@ -11,6 +11,8 @@ import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -40,12 +42,12 @@ public class RealmsTermsScreen extends RealmsScreen {
       this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (var1x) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), var1, 20).build());
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 256) {
          this.minecraft.setScreen(this.lastScreen);
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 
@@ -61,13 +63,13 @@ public class RealmsTermsScreen extends RealmsScreen {
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       if (this.onLink) {
          this.minecraft.keyboardHandler.setClipboard(CommonLinks.REALMS_TERMS.toString());
          Util.getPlatform().openUri(CommonLinks.REALMS_TERMS);
          return true;
       } else {
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
    }
 

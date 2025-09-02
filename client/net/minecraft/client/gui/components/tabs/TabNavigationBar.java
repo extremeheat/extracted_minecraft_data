@@ -24,6 +24,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -186,8 +187,8 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
 
    }
 
-   public boolean keyPressed(int var1) {
-      if (Screen.hasControlDown()) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.hasControlDown()) {
          int var2 = this.getNextTabIndex(var1);
          if (var2 != -1) {
             this.selectTab(Mth.clamp(var2, 0, this.tabs.size() - 1), true);
@@ -198,17 +199,18 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       return false;
    }
 
-   private int getNextTabIndex(int var1) {
+   private int getNextTabIndex(KeyEvent var1) {
       return this.getNextTabIndex(this.currentTabIndex(), var1);
    }
 
-   private int getNextTabIndex(int var1, int var2) {
-      if (var2 >= 49 && var2 <= 57) {
-         return var2 - 49;
-      } else if (var2 == 258 && var1 != -1) {
-         int var3 = Screen.hasShiftDown() ? var1 - 1 : var1 + 1;
-         int var4 = Math.floorMod(var3, this.tabs.size());
-         return ((TabButton)this.tabButtons.get(var4)).active ? var4 : this.getNextTabIndex(var4, var2);
+   private int getNextTabIndex(int var1, KeyEvent var2) {
+      int var3 = var2.getDigit();
+      if (var3 != -1) {
+         return Math.floorMod(var3 - 1, 10);
+      } else if (var2.isCycleFocus() && var1 != -1) {
+         int var4 = var2.hasShiftDown() ? var1 - 1 : var1 + 1;
+         int var5 = Math.floorMod(var4, this.tabs.size());
+         return ((TabButton)this.tabButtons.get(var5)).active ? var5 : this.getNextTabIndex(var5, var2);
       } else {
          return -1;
       }

@@ -9,6 +9,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
@@ -136,16 +138,16 @@ public class BookViewScreen extends Screen {
       this.backButton.visible = this.currentPage > 0;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (super.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (super.keyPressed(var1)) {
          return true;
       } else {
-         switch (var1) {
+         switch (var1.key()) {
             case 266:
-               this.backButton.onPress();
+               this.backButton.onPress(var1);
                return true;
             case 267:
-               this.forwardButton.onPress();
+               this.forwardButton.onPress(var1);
                return true;
             default:
                return false;
@@ -189,15 +191,15 @@ public class BookViewScreen extends Screen {
       var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (var5 == 0) {
-         Style var7 = this.getClickedComponentStyleAt(var1, var3);
-         if (var7 != null && this.handleComponentClicked(var7)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (var1.button() == 0) {
+         Style var3 = this.getClickedComponentStyleAt(var1.x(), var1.y());
+         if (var3 != null && this.handleComponentClicked(var3)) {
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
    protected void handleClickEvent(Minecraft var1, ClickEvent var2) {

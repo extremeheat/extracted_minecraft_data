@@ -386,7 +386,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             if (this.isInWall()) {
                this.hurtServer(var2, this.damageSources().inWall(), 1.0F);
             } else if (var11 && !var2.getWorldBorder().isWithinBounds(this.getBoundingBox())) {
-               double var4 = var2.getWorldBorder().getDistanceToBorder(this) + var2.getWorldBorder().getDamageSafeZone();
+               double var4 = var2.getWorldBorder().getDistanceToBorder(this) + var2.getWorldBorder().getSafeZone();
                if (var4 < 0.0) {
                   double var6 = var2.getWorldBorder().getDamagePerBlock();
                   if (var6 > 0.0) {
@@ -399,7 +399,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                boolean var12 = !this.canBreatheUnderwater() && !MobEffectUtil.hasWaterBreathing(this) && (!var11 || !((Player)this).getAbilities().invulnerable);
                if (var12) {
                   this.setAirSupply(this.decreaseAirSupply(this.getAirSupply()));
-                  if (this.getAirSupply() == -20) {
+                  if (this.shouldTakeDrowningDamage()) {
                      this.setAirSupply(0);
                      var2.broadcastEntityEvent(this, (byte)67);
                      this.hurtServer(var2, this.damageSources().drown(), 2.0F);
@@ -460,6 +460,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
       var8.pop();
+   }
+
+   protected boolean shouldTakeDrowningDamage() {
+      return this.getAirSupply() <= -20;
    }
 
    protected float getBlockSpeedFactor() {

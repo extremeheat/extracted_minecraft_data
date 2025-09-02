@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -171,47 +172,47 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       var1.pose().popMatrix();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       this.scrolling = false;
       if (this.displayPatterns) {
-         int var7 = this.leftPos + 60;
-         int var8 = this.topPos + 13;
+         int var3 = this.leftPos + 60;
+         int var4 = this.topPos + 13;
 
-         for(int var9 = 0; var9 < 4; ++var9) {
-            for(int var10 = 0; var10 < 4; ++var10) {
-               double var11 = var1 - (double)(var7 + var10 * 14);
-               double var13 = var3 - (double)(var8 + var9 * 14);
-               int var15 = var9 + this.startRow;
-               int var16 = var15 * 4 + var10;
-               if (var11 >= 0.0 && var13 >= 0.0 && var11 < 14.0 && var13 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var16)) {
+         for(int var5 = 0; var5 < 4; ++var5) {
+            for(int var6 = 0; var6 < 4; ++var6) {
+               double var7 = var1.x() - (double)(var3 + var6 * 14);
+               double var9 = var1.y() - (double)(var4 + var5 * 14);
+               int var11 = var5 + this.startRow;
+               int var12 = var11 * 4 + var6;
+               if (var7 >= 0.0 && var9 >= 0.0 && var7 < 14.0 && var9 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var12)) {
                   Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var16);
+                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var12);
                   return true;
                }
             }
          }
 
-         var7 = this.leftPos + 119;
-         var8 = this.topPos + 9;
-         if (var1 >= (double)var7 && var1 < (double)(var7 + 12) && var3 >= (double)var8 && var3 < (double)(var8 + 56)) {
+         var3 = this.leftPos + 119;
+         var4 = this.topPos + 9;
+         if (var1.x() >= (double)var3 && var1.x() < (double)(var3 + 12) && var1.y() >= (double)var4 && var1.y() < (double)(var4 + 56)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      int var10 = this.totalRowCount() - 4;
-      if (this.scrolling && this.displayPatterns && var10 > 0) {
-         int var11 = this.topPos + 13;
-         int var12 = var11 + 56;
-         this.scrollOffs = ((float)var3 - (float)var11 - 7.5F) / ((float)(var12 - var11) - 15.0F);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      int var6 = this.totalRowCount() - 4;
+      if (this.scrolling && this.displayPatterns && var6 > 0) {
+         int var7 = this.topPos + 13;
+         int var8 = var7 + 56;
+         this.scrollOffs = ((float)var1.y() - (float)var7 - 7.5F) / ((float)(var8 - var7) - 15.0F);
          this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
-         this.startRow = Math.max((int)((double)(this.scrollOffs * (float)var10) + 0.5), 0);
+         this.startRow = Math.max((int)((double)(this.scrollOffs * (float)var6) + 0.5), 0);
          return true;
       } else {
-         return super.mouseDragged(var1, var3, var5, var6, var8);
+         return super.mouseDragged(var1, var2, var4);
       }
    }
 
@@ -230,7 +231,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
    }
 
-   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7) {
+   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6) {
       return var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
    }
 

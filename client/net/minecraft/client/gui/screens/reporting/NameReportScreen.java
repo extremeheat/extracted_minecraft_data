@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.NameReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.network.chat.Component;
@@ -43,11 +44,11 @@ public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
       this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, COMMENT_BOX_LABEL, (var0) -> var0.paddingBottom(12)));
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      if (super.mouseReleased(var1, var3, var5)) {
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      if (super.mouseReleased(var1)) {
          return true;
       } else {
-         return this.commentBox != null ? this.commentBox.mouseReleased(var1, var3, var5) : false;
+         return this.commentBox != null ? this.commentBox.mouseReleased(var1) : false;
       }
    }
 }

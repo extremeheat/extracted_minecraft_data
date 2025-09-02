@@ -15,6 +15,8 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -29,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
 
-public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity> {
+public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
    private static final Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(SkullBlock.Types.SKELETON, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
@@ -71,17 +73,25 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
    }
 
-   public void submit(SkullBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      float var9 = var1.getAnimation(var2);
-      BlockState var10 = var1.getBlockState();
-      boolean var11 = var10.getBlock() instanceof WallSkullBlock;
-      Direction var12 = var11 ? (Direction)var10.getValue(WallSkullBlock.FACING) : null;
-      int var13 = var11 ? RotationSegment.convertToSegment(var12.getOpposite()) : (Integer)var10.getValue(SkullBlock.ROTATION);
-      float var14 = RotationSegment.convertToDegrees(var13);
-      SkullBlock.Type var15 = ((AbstractSkullBlock)var10.getBlock()).getType();
-      SkullModelBase var16 = (SkullModelBase)this.modelByType.apply(var15);
-      RenderType var17 = this.resolveSkullRenderType(var15, var1);
-      submitSkull(var12, var14, var9, var3, var8, var4, var16, var17, 0, var7);
+   public SkullBlockRenderState createRenderState() {
+      return new SkullBlockRenderState();
+   }
+
+   public void extractRenderState(SkullBlockEntity var1, SkullBlockRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.animationProgress = var1.getAnimation(var3);
+      BlockState var6 = var1.getBlockState();
+      boolean var7 = var6.getBlock() instanceof WallSkullBlock;
+      var2.direction = var7 ? (Direction)var6.getValue(WallSkullBlock.FACING) : null;
+      int var8 = var7 ? RotationSegment.convertToSegment(var2.direction.getOpposite()) : (Integer)var6.getValue(SkullBlock.ROTATION);
+      var2.rotationDegrees = RotationSegment.convertToDegrees(var8);
+      var2.skullType = ((AbstractSkullBlock)var6.getBlock()).getType();
+      var2.renderType = this.resolveSkullRenderType(var2.skullType, var1);
+   }
+
+   public void submit(SkullBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      SkullModelBase var4 = (SkullModelBase)this.modelByType.apply(var1.skullType);
+      submitSkull(var1.direction, var1.rotationDegrees, var1.animationProgress, var2, var3, var1.lightCoords, var4, var1.renderType, 0, var1.breakProgress);
    }
 
    public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
@@ -118,5 +128,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
 
    public static RenderType getPlayerSkinRenderType(ResourceLocation var0) {
       return RenderType.entityTranslucent(var0);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

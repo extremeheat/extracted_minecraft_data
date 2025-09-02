@@ -13,7 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
+import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
@@ -146,7 +146,7 @@ public class LevelLoadingScreen extends Screen {
             break;
          case 1:
             TextureManager var5 = Minecraft.getInstance().getTextureManager();
-            TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(TheEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(TheEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
+            TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
             var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
             break;
          case 2:

@@ -11,7 +11,8 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -51,8 +52,8 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
       return this.getRight() - 6;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return this.getSelected() != null ? ((Entry)this.getSelected()).keyPressed(var1, var2, var3) : super.keyPressed(var1, var2, var3);
+   public boolean keyPressed(KeyEvent var1) {
+      return this.getSelected() != null ? ((Entry)this.getSelected()).keyPressed(var1) : super.keyPressed(var1);
    }
 
    public void updateList(Stream<PackSelectionModel.Entry> var1, @Nullable PackSelectionModel.EntryBase var2) {
@@ -193,25 +194,24 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          return !this.pack.isFixedPosition() || !this.pack.isRequired();
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         switch (var1) {
-            case 32:
-            case 257:
-               this.keyboardSelection();
-               return true;
-            default:
-               if (Screen.hasShiftDown()) {
-                  switch (var1) {
-                     case 264:
-                        this.keyboardMoveDown();
-                        return true;
-                     case 265:
-                        this.keyboardMoveUp();
-                        return true;
-                  }
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isConfirmation()) {
+            this.keyboardSelection();
+            return true;
+         } else {
+            if (var1.hasShiftDown()) {
+               if (var1.isUp()) {
+                  this.keyboardMoveUp();
+                  return true;
                }
 
-               return super.keyPressed(var1, var2, var3);
+               if (var1.isDown()) {
+                  this.keyboardMoveDown();
+                  return true;
+               }
+            }
+
+            return super.keyPressed(var1);
          }
       }
 
@@ -258,33 +258,33 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          return TransferableSelectionList.this.children().stream().anyMatch((var1) -> var1.getPackId().equals(this.getPackId()));
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         double var7 = var1 - (double)this.getX();
-         double var9 = var3 - (double)this.getY();
-         if (this.showHoverOverlay() && var7 <= 32.0) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         double var3 = var1.x() - (double)this.getX();
+         double var5 = var1.y() - (double)this.getY();
+         if (this.showHoverOverlay() && var3 <= 32.0) {
             this.parent.screen.clearSelected();
             if (this.pack.canSelect()) {
                this.handlePackSelection();
                return true;
             }
 
-            if (var7 < 16.0 && this.pack.canUnselect()) {
+            if (var3 < 16.0 && this.pack.canUnselect()) {
                this.pack.unselect();
                return true;
             }
 
-            if (var7 > 16.0 && var9 < 16.0 && this.pack.canMoveUp()) {
+            if (var3 > 16.0 && var5 < 16.0 && this.pack.canMoveUp()) {
                this.pack.moveUp();
                return true;
             }
 
-            if (var7 > 16.0 && var9 > 16.0 && this.pack.canMoveDown()) {
+            if (var3 > 16.0 && var5 > 16.0 && this.pack.canMoveDown()) {
                this.pack.moveDown();
                return true;
             }
          }
 
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.projectile;
 import java.util.List;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AreaEffectCloud;
@@ -36,7 +37,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
                var3.setOwner((LivingEntity)var4);
             }
 
-            var3.setCustomParticle(ParticleTypes.DRAGON_BREATH);
+            var3.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
             var3.setRadius(3.0F);
             var3.setDuration(600);
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
@@ -61,7 +62,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
    }
 
    protected ParticleOptions getTrailParticle() {
-      return ParticleTypes.DRAGON_BREATH;
+      return PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F);
    }
 
    protected boolean shouldBurn() {

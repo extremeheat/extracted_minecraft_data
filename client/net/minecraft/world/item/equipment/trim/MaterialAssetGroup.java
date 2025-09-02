@@ -55,7 +55,7 @@ public record MaterialAssetGroup(AssetInfo base, Map<ResourceKey<EquipmentAsset>
       IRON = create("iron", Map.of(EquipmentAssets.IRON, "iron_darker"));
       NETHERITE = create("netherite", Map.of(EquipmentAssets.NETHERITE, "netherite_darker"));
       REDSTONE = create("redstone");
-      COPPER = create("copper");
+      COPPER = create("copper", Map.of(EquipmentAssets.COPPER, "copper_darker"));
       GOLD = create("gold", Map.of(EquipmentAssets.GOLD, "gold_darker"));
       EMERALD = create("emerald");
       DIAMOND = create("diamond", Map.of(EquipmentAssets.DIAMOND, "diamond_darker"));

@@ -16,6 +16,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -91,29 +92,29 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       super.removed();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (super.mouseClicked(var1, var3, var5, var6)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (super.mouseClicked(var1, var2)) {
          if (this.gpuWarnlistManager.isShowingWarning()) {
-            ArrayList var7 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
-            String var8 = this.gpuWarnlistManager.getRendererWarnings();
-            if (var8 != null) {
-               var7.add(CommonComponents.NEW_LINE);
-               var7.add(Component.translatable("options.graphics.warning.renderer", var8).withStyle(ChatFormatting.GRAY));
+            ArrayList var3 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
+            String var4 = this.gpuWarnlistManager.getRendererWarnings();
+            if (var4 != null) {
+               var3.add(CommonComponents.NEW_LINE);
+               var3.add(Component.translatable("options.graphics.warning.renderer", var4).withStyle(ChatFormatting.GRAY));
             }
 
-            String var9 = this.gpuWarnlistManager.getVendorWarnings();
-            if (var9 != null) {
-               var7.add(CommonComponents.NEW_LINE);
-               var7.add(Component.translatable("options.graphics.warning.vendor", var9).withStyle(ChatFormatting.GRAY));
+            String var5 = this.gpuWarnlistManager.getVendorWarnings();
+            if (var5 != null) {
+               var3.add(CommonComponents.NEW_LINE);
+               var3.add(Component.translatable("options.graphics.warning.vendor", var5).withStyle(ChatFormatting.GRAY));
             }
 
-            String var10 = this.gpuWarnlistManager.getVersionWarnings();
-            if (var10 != null) {
-               var7.add(CommonComponents.NEW_LINE);
-               var7.add(Component.translatable("options.graphics.warning.version", var10).withStyle(ChatFormatting.GRAY));
+            String var6 = this.gpuWarnlistManager.getVersionWarnings();
+            if (var6 != null) {
+               var3.add(CommonComponents.NEW_LINE);
+               var3.add(Component.translatable("options.graphics.warning.version", var6).withStyle(ChatFormatting.GRAY));
             }
 
-            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var7, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
+            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var3, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
                this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
                Minecraft.getInstance().levelRenderer.allChanged();
                this.gpuWarnlistManager.dismissWarning();
@@ -131,7 +132,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (Screen.hasControlDown()) {
+      if (this.minecraft.hasControlDown()) {
          OptionInstance var9 = this.options.guiScale();
          OptionInstance.ValueSet var11 = var9.values();
          if (var11 instanceof OptionInstance.ClampingLazyMaxIntRange) {

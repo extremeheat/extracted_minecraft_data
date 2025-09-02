@@ -16,7 +16,7 @@ public class ClientboundSetBorderLerpSizePacket implements Packet<ClientGamePack
       super();
       this.oldSize = var1.getSize();
       this.newSize = var1.getLerpTarget();
-      this.lerpTime = var1.getLerpRemainingTime();
+      this.lerpTime = var1.getLerpTime();
    }
 
    private ClientboundSetBorderLerpSizePacket(FriendlyByteBuf var1) {

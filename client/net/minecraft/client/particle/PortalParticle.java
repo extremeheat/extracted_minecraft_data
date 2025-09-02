@@ -1,16 +1,17 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class PortalParticle extends TextureSheetParticle {
+public class PortalParticle extends SingleQuadParticle {
    private final double xStart;
    private final double yStart;
    private final double zStart;
 
-   protected PortalParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(var1, var2, var4, var6);
+   protected PortalParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
+      super(var1, var2, var4, var6, var14);
       this.xd = var8;
       this.yd = var10;
       this.zd = var12;
@@ -21,15 +22,15 @@ public class PortalParticle extends TextureSheetParticle {
       this.yStart = this.y;
       this.zStart = this.z;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.2F + 0.5F);
-      float var14 = this.random.nextFloat() * 0.6F + 0.4F;
-      this.rCol = var14 * 0.9F;
-      this.gCol = var14 * 0.3F;
-      this.bCol = var14;
+      float var15 = this.random.nextFloat() * 0.6F + 0.4F;
+      this.rCol = var15 * 0.9F;
+      this.gCol = var15 * 0.3F;
+      this.bCol = var15;
       this.lifetime = (int)(Math.random() * 10.0) + 40;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public void move(double var1, double var3, double var5) {
@@ -85,15 +86,9 @@ public class PortalParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         PortalParticle var15 = new PortalParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.pickSprite(this.sprite);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         PortalParticle var16 = new PortalParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+         return var16;
       }
    }
 }

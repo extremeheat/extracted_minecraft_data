@@ -76,6 +76,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
 import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -158,7 +159,6 @@ import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.entity.FuelValues;
-import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
@@ -201,7 +201,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final int MAX_TICK_LATENCY = 3;
    public static final int ABSOLUTE_MAX_WORLD_SIZE = 29999984;
    public static final LevelSettings DEMO_SETTINGS;
-   private static final NameAndId ANONYMOUS_PLAYER_PROFILE;
+   public static final NameAndId ANONYMOUS_PLAYER_PROFILE;
    protected final LevelStorageSource.LevelStorageAccess storageSource;
    protected final PlayerDataStorage playerDataStorage;
    private final List<Runnable> tickables = Lists.newArrayList();
@@ -278,6 +278,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final AtomicReference<RuntimeException> fatalException;
    private final SuppressedExceptionCollector suppressedExceptions;
    private final DiscontinuousFrame tickFrame;
+   private final PacketProcessor packetProcessor;
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
       AtomicReference var1 = new AtomicReference();
@@ -338,6 +339,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
          this.notificationManager = new NotificationManager();
+         this.packetProcessor = new PacketProcessor(var1);
       }
    }
 
@@ -413,7 +415,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       DimensionDataStorage var12 = var11.getDataStorage();
       this.readScoreboard(var12);
       this.commandStorage = new CommandStorage(var12);
-      WorldBorder var13 = var11.getWorldBorder();
       if (!var1.isInitialized()) {
          try {
             setInitialSpawn(var11, var1, var4.generateBonusChest(), var2, this.levelLoadListener);
@@ -421,41 +422,62 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             if (var2) {
                this.setupDebugLevel(this.worldData);
             }
-         } catch (Throwable var23) {
-            CrashReport var15 = CrashReport.forThrowable(var23, "Exception initializing level");
+         } catch (Throwable var27) {
+            CrashReport var14 = CrashReport.forThrowable(var27, "Exception initializing level");
 
             try {
-               var11.fillReportDetails(var15);
-            } catch (Throwable var22) {
+               var11.fillReportDetails(var14);
+            } catch (Throwable var26) {
             }
 
-            throw new ReportedException(var15);
+            throw new ReportedException(var14);
          }
 
          var1.setInitialized(true);
       }
 
-      GlobalPos var14 = this.selectLevelLoadFocusPos();
-      this.levelLoadListener.updateFocus(var14.dimension(), new ChunkPos(var14.pos()));
-      this.getPlayerList().addWorldborderListener(var11);
+      GlobalPos var13 = this.selectLevelLoadFocusPos();
+      this.levelLoadListener.updateFocus(var13.dimension(), new ChunkPos(var13.pos()));
       if (this.worldData.getCustomBossEvents() != null) {
          this.getCustomBossEvents().load(this.worldData.getCustomBossEvents(), this.registryAccess());
       }
 
-      RandomSequences var24 = var11.getRandomSequences();
+      RandomSequences var28 = var11.getRandomSequences();
+      boolean var15 = false;
 
       for(Map.Entry var17 : var3.entrySet()) {
          ResourceKey var18 = (ResourceKey)var17.getKey();
+         ServerLevel var19;
          if (var18 != LevelStem.OVERWORLD) {
-            ResourceKey var19 = ResourceKey.create(Registries.DIMENSION, var18.location());
-            DerivedLevelData var20 = new DerivedLevelData(this.worldData, var1);
-            ServerLevel var21 = new ServerLevel(this, this.executor, this.storageSource, var20, var19, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var24);
-            var13.addListener(new BorderChangeListener.DelegateBorderChangeListener(var21.getWorldBorder()));
-            this.levels.put(var19, var21);
+            ResourceKey var20 = ResourceKey.create(Registries.DIMENSION, var18.location());
+            DerivedLevelData var21 = new DerivedLevelData(this.worldData, var1);
+            var19 = new ServerLevel(this, this.executor, this.storageSource, var21, var20, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var28);
+            this.levels.put(var20, var19);
+         } else {
+            var19 = var11;
          }
+
+         Optional var29 = var1.getLegacyWorldBorderSettings();
+         if (var29.isPresent()) {
+            WorldBorder.Settings var30 = (WorldBorder.Settings)var29.get();
+            DimensionDataStorage var22 = var19.getDataStorage();
+            if (var22.get(WorldBorder.TYPE) == null) {
+               double var23 = var19.dimensionType().coordinateScale();
+               WorldBorder.Settings var25 = new WorldBorder.Settings(var30.centerX() / var23, var30.centerZ() / var23, var30.damagePerBlock(), var30.safeZone(), var30.warningBlocks(), var30.warningTime(), var30.size(), var30.lerpTime(), var30.lerpTarget());
+               var22.set(WorldBorder.TYPE, var25.toWorldBorder());
+            }
+
+            var15 = true;
+         }
+
+         var19.getWorldBorder().setAbsoluteMaxSize(this.getAbsoluteMaxWorldSize());
+         this.getPlayerList().addWorldborderListener(var19);
       }
 
-      var13.applySettings(var1.getWorldBorder());
+      if (var15) {
+         var1.setLegacyWorldBorderSettings(Optional.empty());
+      }
+
    }
 
    private static void setInitialSpawn(ServerLevel var0, ServerLevelData var1, boolean var2, boolean var3, LevelLoadListener var4) {
@@ -571,9 +593,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          var4 = true;
       }
 
-      ServerLevel var9 = this.overworld();
-      ServerLevelData var10 = this.worldData.overworldData();
-      var10.setWorldBorder(var9.getWorldBorder().createSettings());
       this.worldData.setCustomBossEvents(this.getCustomBossEvents().save(this.registryAccess()));
       this.storageSource.saveDataTag(this.registryAccess(), this.worldData, this.getPlayerList().getSingleplayerData());
       if (var2) {
@@ -605,6 +624,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void stopServer() {
+      this.packetProcessor.close();
       if (this.metricsRecorder.isRecording()) {
          this.cancelRecordingMetrics();
       }
@@ -862,6 +882,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    protected void waitUntilNextTick() {
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("scheduledPacketProcessing");
+      this.packetProcessor.processQueuedPackets();
+      var1.pop();
       this.runAllTasks();
       this.waitingForNextTick = true;
 
@@ -2165,6 +2189,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    protected int pauseWhenEmptySeconds() {
       return 0;
+   }
+
+   public PacketProcessor packetProcessor() {
+      return this.packetProcessor;
    }
 
    // $FF: synthetic method

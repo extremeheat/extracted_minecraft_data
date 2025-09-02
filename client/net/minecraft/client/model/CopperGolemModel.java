@@ -13,7 +13,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.CopperGolemRenderState;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
 import org.joml.Quaternionfc;
@@ -56,7 +55,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.0F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.015F)).texOffs(56, 0).addBox(-1.0F, -2.0F, -6.0F, 2.0F, 3.0F, 2.0F, CubeDeformation.NONE).texOffs(37, 8).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)), PartPose.offset(0.0F, -6.0F, 0.0F));
       var2.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(36, 16).addBox(-3.0F, -1.0F, -2.0F, 3.0F, 10.0F, 4.0F, CubeDeformation.NONE), PartPose.offset(-4.0F, -6.0F, 0.0F));
       var2.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(50, 16).addBox(0.0F, -1.0F, -2.0F, 3.0F, 10.0F, 4.0F, CubeDeformation.NONE), PartPose.offset(4.0F, -6.0F, 0.0F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 27).addBox(-4.0F, 0.0F, -2.0F, 4.0F, 5.0F, 4.0F, CubeDeformation.NONE), PartPose.offset(0.0F, -5.0F, 0.015F));
+      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 27).addBox(-4.0F, 0.0F, -2.0F, 4.0F, 5.0F, 4.0F, CubeDeformation.NONE), PartPose.offset(0.0F, -5.0F, 0.0F));
       var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(16, 27).addBox(0.0F, 0.0F, -2.0F, 4.0F, 5.0F, 4.0F, CubeDeformation.NONE), PartPose.offset(0.0F, -5.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
@@ -64,12 +63,17 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    public static LayerDefinition createRunningPoseBodyLayer() {
       MeshDefinition var0 = (new MeshDefinition()).transformed((var0x) -> var0x.translated(0.0F, 0.0F, 0.0F));
       PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 15).addBox(-4.0F, -6.0F, -3.5F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-1.0F, -4.8F, 0.5F, 0.1208F, 0.0802F, -0.0674F));
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.0F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)).texOffs(56, 0).addBox(-1.0F, -2.0F, -6.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(37, 8).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)), PartPose.offset(-0.3F, -5.6F, -2.0F));
-      var2.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(36, 16).addBox(-3.0F, -1.0F, -2.0F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-4.4F, -6.0F, -1.0F, 1.0036F, 0.0F, 0.0F));
-      var2.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(50, 16).addBox(0.0F, -1.0F, -2.0F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(3.6F, -6.0F, 0.0F, -0.8727F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 27).addBox(-1.9F, 0.0F, -1.09F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-3.0F, -5.0F, -0.9F, -0.8727F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(16, 27).addBox(-2.1F, 0.0F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, -5.0F, 0.0F, 0.7854F, 0.0F, 0.0F));
+      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(-1.064F, -5.0F, 0.0F));
+      var2.addOrReplaceChild("body_r1", CubeListBuilder.create().texOffs(0, 15).addBox(-4.02F, -6.116F, -3.5F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.1F, 0.1F, 0.7F, 0.1204F, -0.0064F, -0.0779F));
+      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.1F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)).texOffs(56, 0).addBox(-1.02F, -2.1F, -6.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(37, 8).addBox(-1.02F, -9.1F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -13.1F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)), PartPose.offset(0.7F, -5.6F, -1.8F));
+      PartDefinition var3 = var2.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offset(-4.0F, -6.0F, 0.0F));
+      var3.addOrReplaceChild("right_arm_r1", CubeListBuilder.create().texOffs(36, 16).addBox(-3.052F, -1.11F, -2.036F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.7F, -0.248F, -1.62F, 1.0036F, 0.0F, 0.0F));
+      PartDefinition var4 = var2.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offset(4.0F, -6.0F, 0.0F));
+      var4.addOrReplaceChild("left_arm_r1", CubeListBuilder.create().texOffs(50, 16).addBox(0.032F, -1.1F, -2.0F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.732F, 0.0F, 0.0F, -0.8715F, -0.0535F, -0.0449F));
+      PartDefinition var5 = var1.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.offset(-3.064F, -5.0F, 0.0F));
+      var5.addOrReplaceChild("right_leg_r1", CubeListBuilder.create().texOffs(0, 27).addBox(-1.856F, -0.1F, -1.09F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.048F, 0.0F, -0.9F, -0.8727F, 0.0F, 0.0F));
+      PartDefinition var6 = var1.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.offset(0.936F, -5.0F, 0.0F));
+      var6.addOrReplaceChild("left_leg_r1", CubeListBuilder.create().texOffs(16, 27).addBox(-2.088F, -0.1F, -2.0F, 4.0F, 5.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.0F, 0.0F, 0.0F, 0.7854F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -78,8 +82,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       PartDefinition var1 = var0.getRoot();
       PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(3, 19).addBox(-3.0F, -4.0F, -4.525F, 6.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)).texOffs(0, 15).addBox(-4.0F, -3.0F, -3.525F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -3.0F, 2.325F));
       var2.addOrReplaceChild("body_r1", CubeListBuilder.create().texOffs(3, 18).addBox(-4.0F, -3.0F, -2.2F, 8.0F, 6.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -1.0F, -4.325F, 0.0F, 0.0F, -3.1416F));
-      PartDefinition var3 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(37, 8).addBox(-1.0F, -7.0F, -3.3F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -11.0F, -4.3F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)).texOffs(0, 0).addBox(-4.0F, -3.0F, -7.325F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, -0.2F));
-      var3.addOrReplaceChild("head_r1", CubeListBuilder.create().texOffs(56, 0).addBox(-1.025F, -1.5F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 1.5F, -7.125F, 0.0F, 1.5708F, 0.0F));
+      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(37, 8).addBox(-1.0F, -7.0F, -3.3F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -11.0F, -4.3F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)).texOffs(0, 0).addBox(-4.0F, -3.0F, -7.325F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)).texOffs(56, 0).addBox(-1.0F, 0.0F, -8.325F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.0F, -0.2F));
       PartDefinition var4 = var2.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(-4.0F, -5.6F, -1.8F, 0.4363F, 0.0F, 0.0F));
       var4.addOrReplaceChild("right_arm_r1", CubeListBuilder.create().texOffs(36, 16).addBox(-3.075F, -0.9733F, -1.9966F, 3.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0893F, 0.1198F, -1.0472F, 0.0F, 0.0F));
       PartDefinition var5 = var2.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.offsetAndRotation(4.0F, -5.6F, -1.7F, 0.4363F, 0.0F, 0.0F));
@@ -113,12 +116,6 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
          var0.getRoot().retainPartsAndChildren(Set.of("eyes"));
          return var0;
       });
-   }
-
-   public void poseStatue(Direction var1) {
-      this.root.y = 0.0F;
-      this.root.yRot = var1.getOpposite().toYRot() * 0.017453292F;
-      this.root.zRot = 3.1415927F;
    }
 
    public void setupAnim(CopperGolemRenderState var1) {

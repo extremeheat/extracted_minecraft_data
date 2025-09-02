@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 public class MeshData implements AutoCloseable {
@@ -20,7 +19,7 @@ public class MeshData implements AutoCloseable {
       this.drawState = var2;
    }
 
-   private static Vector3f[] unpackQuadCentroids(ByteBuffer var0, int var1, VertexFormat var2) {
+   private static CompactVectorArray unpackQuadCentroids(ByteBuffer var0, int var1, VertexFormat var2) {
       int var3 = var2.getOffset(VertexFormatElement.POSITION);
       if (var3 == -1) {
          throw new IllegalArgumentException("Cannot identify quad centers with no position element");
@@ -29,7 +28,7 @@ public class MeshData implements AutoCloseable {
          int var5 = var2.getVertexSize() / 4;
          int var6 = var5 * 4;
          int var7 = var1 / 4;
-         Vector3f[] var8 = new Vector3f[var7];
+         CompactVectorArray var8 = new CompactVectorArray(var7);
 
          for(int var9 = 0; var9 < var7; ++var9) {
             int var10 = var9 * var6 + var3;
@@ -40,7 +39,10 @@ public class MeshData implements AutoCloseable {
             float var15 = var4.get(var11 + 0);
             float var16 = var4.get(var11 + 1);
             float var17 = var4.get(var11 + 2);
-            var8[var9] = new Vector3f((var12 + var15) / 2.0F, (var13 + var16) / 2.0F, (var14 + var17) / 2.0F);
+            float var18 = (var12 + var15) / 2.0F;
+            float var19 = (var13 + var16) / 2.0F;
+            float var20 = (var14 + var17) / 2.0F;
+            var8.set(var9, var18, var19, var20);
          }
 
          return var8;
@@ -65,7 +67,7 @@ public class MeshData implements AutoCloseable {
       if (this.drawState.mode() != VertexFormat.Mode.QUADS) {
          return null;
       } else {
-         Vector3f[] var3 = unpackQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format());
+         CompactVectorArray var3 = unpackQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format());
          SortState var4 = new SortState(var3, this.drawState.indexType());
          this.indexBuffer = var4.buildSortedIndexBuffer(var1, var2);
          return var4;
@@ -91,8 +93,8 @@ public class MeshData implements AutoCloseable {
       }
    }
 
-   public static record SortState(Vector3f[] centroids, VertexFormat.IndexType indexType) {
-      public SortState(Vector3f[] var1, VertexFormat.IndexType var2) {
+   public static record SortState(CompactVectorArray centroids, VertexFormat.IndexType indexType) {
+      public SortState(CompactVectorArray var1, VertexFormat.IndexType var2) {
          super();
          this.centroids = var1;
          this.indexType = var2;

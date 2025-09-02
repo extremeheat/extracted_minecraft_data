@@ -8,8 +8,8 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
@@ -45,7 +45,7 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
 
    @Nullable
    private static ResourceLocation getPlayerElytraTexture(HumanoidRenderState var0) {
-      if (var0 instanceof PlayerRenderState var1) {
+      if (var0 instanceof AvatarRenderState var1) {
          PlayerSkin var2 = var1.skin;
          if (var2.elytraTexture() != null) {
             return var2.elytraTexture();

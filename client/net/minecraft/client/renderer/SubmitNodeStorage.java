@@ -87,6 +87,10 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitCustomGeometry(var1, var2, var3);
    }
 
+   public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1) {
+      this.order(0).submitParticleGroup(var1);
+   }
+
    public void clear() {
       this.submitsPerOrder.values().forEach(SubmitNodeCollection::clear);
    }

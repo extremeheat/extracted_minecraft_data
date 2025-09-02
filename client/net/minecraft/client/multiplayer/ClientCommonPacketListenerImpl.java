@@ -42,6 +42,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -72,7 +73,6 @@ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
-import net.minecraft.util.thread.BlockableEventLoop;
 import org.slf4j.Logger;
 
 public abstract class ClientCommonPacketListenerImpl implements ClientCommonPacketListener {
@@ -151,14 +151,14 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handlePing(ClientboundPingPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.send(new ServerboundPongPacket(var1.getId()));
    }
 
    public void handleCustomPayload(ClientboundCustomPayloadPacket var1) {
       CustomPacketPayload var2 = var1.payload();
       if (!(var2 instanceof DiscardedPayload)) {
-         PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+         PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
          if (var2 instanceof BrandPayload) {
             BrandPayload var3 = (BrandPayload)var2;
             this.serverBrand = var3.brand();
@@ -173,7 +173,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected abstract void handleCustomPayload(CustomPacketPayload var1);
 
    public void handleResourcePackPush(ClientboundResourcePackPushPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       UUID var2 = var1.id();
       URL var3 = parseResourcePackUrl(var1.url());
       if (var3 == null) {
@@ -192,7 +192,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleResourcePackPop(ClientboundResourcePackPopPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       var1.id().ifPresentOrElse((var1x) -> this.minecraft.getDownloadedPackSource().popPack(var1x), () -> this.minecraft.getDownloadedPackSource().popAll());
    }
 
@@ -212,22 +212,22 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleRequestCookie(ClientboundCookieRequestPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.connection.send(new ServerboundCookieResponsePacket(var1.key(), (byte[])this.serverCookies.get(var1.key())));
    }
 
    public void handleStoreCookie(ClientboundStoreCookiePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.serverCookies.put(var1.key(), var1.payload());
    }
 
    public void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.customReportDetails = var1.details();
    }
 
    public void handleServerLinks(ClientboundServerLinksPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       List var2 = var1.links();
       ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(var2.size());
 
@@ -244,7 +244,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleShowDialog(ClientboundShowDialogPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.showDialog(var1.dialog(), this.minecraft.screen);
    }
 
@@ -293,7 +293,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleClearDialog(ClientboundClearDialogPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.clearDialog();
    }
 
@@ -315,7 +315,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void handleTransfer(ClientboundTransferPacket var1) {
       this.isTransferring = true;
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (this.serverData == null) {
          throw new IllegalStateException("Cannot transfer to server from singleplayer");
       } else {

@@ -29,7 +29,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -86,7 +85,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
 
-   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, Registry<Biome> var4, long var5, @Nullable LevelChunkSection[] var7, @Nullable BlendingData var8) {
+   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, long var5, @Nullable LevelChunkSection[] var7, @Nullable BlendingData var8) {
       super();
       this.chunkPos = var1;
       this.upgradeData = var2;
@@ -107,7 +106,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       replaceMissingSections(var4, this.sections);
    }
 
-   private static void replaceMissingSections(Registry<Biome> var0, LevelChunkSection[] var1) {
+   private static void replaceMissingSections(PalettedContainerFactory var0, LevelChunkSection[] var1) {
       for(int var2 = 0; var2 < var1.length; ++var2) {
          if (var1[var2] == null) {
             var1[var2] = new LevelChunkSection(var0);

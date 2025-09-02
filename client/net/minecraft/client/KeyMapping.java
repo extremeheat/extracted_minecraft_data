@@ -1,64 +1,54 @@
 package net.minecraft.client;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
 public class KeyMapping implements Comparable<KeyMapping> {
    private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
-   private static final Map<InputConstants.Key, KeyMapping> MAP = Maps.newHashMap();
-   private static final Set<String> CATEGORIES = Sets.newHashSet();
-   public static final String CATEGORY_MOVEMENT = "key.categories.movement";
-   public static final String CATEGORY_MISC = "key.categories.misc";
-   public static final String CATEGORY_MULTIPLAYER = "key.categories.multiplayer";
-   public static final String CATEGORY_GAMEPLAY = "key.categories.gameplay";
-   public static final String CATEGORY_INVENTORY = "key.categories.inventory";
-   public static final String CATEGORY_INTERFACE = "key.categories.ui";
-   public static final String CATEGORY_CREATIVE = "key.categories.creative";
-   private static final Map<String, Integer> CATEGORY_SORT_ORDER = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put("key.categories.movement", 1);
-      var0.put("key.categories.gameplay", 2);
-      var0.put("key.categories.inventory", 3);
-      var0.put("key.categories.creative", 4);
-      var0.put("key.categories.multiplayer", 5);
-      var0.put("key.categories.ui", 6);
-      var0.put("key.categories.misc", 7);
-   });
+   private static final Map<InputConstants.Key, List<KeyMapping>> MAP = Maps.newHashMap();
    private final String name;
    private final InputConstants.Key defaultKey;
-   private final String category;
+   private final Category category;
    protected InputConstants.Key key;
    private boolean isDown;
    private int clickCount;
 
    public static void click(InputConstants.Key var0) {
-      KeyMapping var1 = (KeyMapping)MAP.get(var0);
-      if (var1 != null) {
-         ++var1.clickCount;
-      }
-
+      forAllKeyMappings(var0, (var0x) -> ++var0x.clickCount);
    }
 
    public static void set(InputConstants.Key var0, boolean var1) {
-      KeyMapping var2 = (KeyMapping)MAP.get(var0);
-      if (var2 != null) {
-         var2.setDown(var1);
+      forAllKeyMappings(var0, (var1x) -> var1x.setDown(var1));
+   }
+
+   private static void forAllKeyMappings(InputConstants.Key var0, Consumer<KeyMapping> var1) {
+      List var2 = (List)MAP.get(var0);
+      if (var2 != null && !var2.isEmpty()) {
+         for(KeyMapping var4 : var2) {
+            var1.accept(var4);
+         }
       }
 
    }
 
    public static void setAll() {
-      for(KeyMapping var1 : ALL.values()) {
-         if (var1.shouldSetOnIngameFocus()) {
-            var1.setDown(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), var1.key.getValue()));
+      Window var0 = Minecraft.getInstance().getWindow();
+
+      for(KeyMapping var2 : ALL.values()) {
+         if (var2.shouldSetOnIngameFocus()) {
+            var2.setDown(InputConstants.isKeyDown(var0, var2.key.getValue()));
          }
       }
 
@@ -95,31 +85,30 @@ public class KeyMapping implements Comparable<KeyMapping> {
       MAP.clear();
 
       for(KeyMapping var1 : ALL.values()) {
-         MAP.put(var1.key, var1);
+         var1.registerMapping(var1.key);
       }
 
    }
 
-   public KeyMapping(String var1, int var2, String var3) {
+   public KeyMapping(String var1, int var2, Category var3) {
       this(var1, InputConstants.Type.KEYSYM, var2, var3);
    }
 
-   public KeyMapping(String var1, InputConstants.Type var2, int var3, String var4) {
+   public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4) {
       super();
       this.name = var1;
       this.key = var2.getOrCreate(var3);
       this.defaultKey = this.key;
       this.category = var4;
       ALL.put(var1, this);
-      MAP.put(this.key, this);
-      CATEGORIES.add(var4);
+      this.registerMapping(this.key);
    }
 
    public boolean isDown() {
       return this.isDown;
    }
 
-   public String getCategory() {
+   public Category getCategory() {
       return this.category;
    }
 
@@ -154,7 +143,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public int compareTo(KeyMapping var1) {
-      return this.category.equals(var1.category) ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : ((Integer)CATEGORY_SORT_ORDER.get(this.category)).compareTo((Integer)CATEGORY_SORT_ORDER.get(var1.category));
+      return this.category == var1.category ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(this.category.ordinal(), var1.category.ordinal());
    }
 
    public static Supplier<Component> createNameSupplier(String var0) {
@@ -175,16 +164,16 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.key.equals(InputConstants.UNKNOWN);
    }
 
-   public boolean matches(int var1, int var2) {
-      if (var1 == InputConstants.UNKNOWN.getValue()) {
-         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == var2;
+   public boolean matches(KeyEvent var1) {
+      if (var1.key() == InputConstants.UNKNOWN.getValue()) {
+         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == var1.scancode();
       } else {
-         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == var1;
+         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == var1.key();
       }
    }
 
-   public boolean matchesMouse(int var1) {
-      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == var1;
+   public boolean matchesMouse(MouseButtonEvent var1) {
+      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == var1.button();
    }
 
    public Component getTranslatedKeyMessage() {
@@ -203,6 +192,10 @@ public class KeyMapping implements Comparable<KeyMapping> {
       this.isDown = var1;
    }
 
+   private void registerMapping(InputConstants.Key var1) {
+      ((List)MAP.computeIfAbsent(var1, (var0) -> new ArrayList())).add(this);
+   }
+
    @Nullable
    public static KeyMapping get(String var0) {
       return (KeyMapping)ALL.get(var0);
@@ -211,5 +204,31 @@ public class KeyMapping implements Comparable<KeyMapping> {
    // $FF: synthetic method
    public int compareTo(final Object var1) {
       return this.compareTo((KeyMapping)var1);
+   }
+
+   public static enum Category {
+      MOVEMENT("key.categories.movement"),
+      MISC("key.categories.misc"),
+      MULTIPLAYER("key.categories.multiplayer"),
+      GAMEPLAY("key.categories.gameplay"),
+      INVENTORY("key.categories.inventory"),
+      INTERFACE("key.categories.ui"),
+      CREATIVE("key.categories.creative"),
+      SPECTATOR("key.categories.spectator");
+
+      private final String descriptionId;
+
+      private Category(final String var3) {
+         this.descriptionId = var3;
+      }
+
+      public String descriptionId() {
+         return this.descriptionId;
+      }
+
+      // $FF: synthetic method
+      private static Category[] $values() {
+         return new Category[]{MOVEMENT, MISC, MULTIPLAYER, GAMEPLAY, INVENTORY, INTERFACE, CREATIVE, SPECTATOR};
+      }
    }
 }

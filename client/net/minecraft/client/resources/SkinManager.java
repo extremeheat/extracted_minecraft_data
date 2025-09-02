@@ -26,6 +26,7 @@ import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Services;
+import net.minecraft.world.entity.player.PlayerModelType;
 import org.slf4j.Logger;
 
 public class SkinManager {
@@ -94,10 +95,10 @@ public class SkinManager {
    CompletableFuture<PlayerSkin> registerTextures(UUID var1, MinecraftProfileTextures var2) {
       MinecraftProfileTexture var3 = var2.skin();
       CompletableFuture var4;
-      PlayerSkin.Model var5;
+      PlayerModelType var5;
       if (var3 != null) {
          var4 = this.skinTextures.getOrLoad(var3);
-         var5 = PlayerSkin.Model.byName(var3.getMetadata("model"));
+         var5 = PlayerModelType.byName(var3.getMetadata("model"));
       } else {
          PlayerSkin var6 = DefaultPlayerSkin.get(var1);
          var4 = CompletableFuture.completedFuture(var6.texture());

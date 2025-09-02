@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -121,12 +122,12 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       var0.submitEntityRenderState(var12, var5, var6, var7, var8, var1, var2, var3, var4);
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
+   public boolean mouseReleased(MouseButtonEvent var1) {
       if (this.buttonClicked) {
          this.buttonClicked = false;
          return true;
       } else {
-         return super.mouseReleased(var1, var3, var5);
+         return super.mouseReleased(var1);
       }
    }
 }

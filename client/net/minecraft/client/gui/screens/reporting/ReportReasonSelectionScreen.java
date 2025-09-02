@@ -15,6 +15,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.network.chat.CommonComponents;
@@ -181,9 +182,9 @@ public class ReportReasonSelectionScreen extends Screen {
             return Component.translatable("gui.abuseReport.reason.narration", this.reason.title(), this.reason.description());
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             ReasonSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
 
          public ReportReason getReason() {

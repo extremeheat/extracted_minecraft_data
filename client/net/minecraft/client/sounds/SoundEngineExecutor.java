@@ -26,6 +26,13 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
       return var1;
    }
 
+   public void schedule(Runnable var1) {
+      if (!this.shutdown) {
+         super.schedule(var1);
+      }
+
+   }
+
    protected boolean shouldRun(Runnable var1) {
       return !this.shutdown;
    }
@@ -45,8 +52,9 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
       LockSupport.park("waiting for tasks");
    }
 
-   public void flush() {
+   public void shutDown() {
       this.shutdown = true;
+      this.dropAllTasks();
       this.thread.interrupt();
 
       try {
@@ -55,7 +63,9 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
          Thread.currentThread().interrupt();
       }
 
-      this.dropAllTasks();
+   }
+
+   public void startUp() {
       this.shutdown = false;
       this.thread = this.createThread();
    }

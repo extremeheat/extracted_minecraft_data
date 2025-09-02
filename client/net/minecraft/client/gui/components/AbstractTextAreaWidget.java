@@ -1,6 +1,8 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -25,23 +27,23 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       this.showDecorations = var7;
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      boolean var7 = this.updateScrolling(var1, var3, var5);
-      return super.mouseClicked(var1, var3, var5, var6) || var7;
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      boolean var3 = this.updateScrolling(var1);
+      return super.mouseClicked(var1, var2) || var3;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      boolean var4 = var1 == 265;
-      boolean var5 = var1 == 264;
-      if (var4 || var5) {
-         double var6 = this.scrollAmount();
-         this.setScrollAmount(this.scrollAmount() + (double)(var4 ? -1 : 1) * this.scrollRate());
-         if (var6 != this.scrollAmount()) {
+   public boolean keyPressed(KeyEvent var1) {
+      boolean var2 = var1.isUp();
+      boolean var3 = var1.isDown();
+      if (var2 || var3) {
+         double var4 = this.scrollAmount();
+         this.setScrollAmount(this.scrollAmount() + (double)(var2 ? -1 : 1) * this.scrollRate());
+         if (var4 != this.scrollAmount()) {
             return true;
          }
       }
 
-      return super.keyPressed(var1, var2, var3);
+      return super.keyPressed(var1);
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {

@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -232,9 +233,9 @@ public class CreateFlatWorldScreen extends Screen {
             return (Component)(!var1.isEmpty() ? CommonComponents.joinForNarration(Component.translatable("narrator.select", var1.getHoverName()), CreateFlatWorldScreen.DetailsList.HEIGHT_TITLE, Component.literal(String.valueOf(this.layerInfo.getHeight()))) : CommonComponents.EMPTY);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             DetailsList.this.setSelected((Entry)this);
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
 
          private void blitSlot(GuiGraphics var1, int var2, int var3, ItemStack var4) {

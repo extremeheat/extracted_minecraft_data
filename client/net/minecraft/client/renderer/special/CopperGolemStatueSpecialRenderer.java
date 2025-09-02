@@ -3,8 +3,10 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.model.CopperGolemStatueModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -14,12 +16,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import org.joml.Vector3f;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
    private final CopperGolemStatueModel model;
    private final ResourceLocation texture;
+   static final Map<CopperGolemStatueBlock.Pose, ModelLayerLocation> MODELS;
 
    public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, ResourceLocation var2) {
       super();
@@ -43,16 +47,21 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       var1.scale(-1.0F, -1.0F, 1.0F);
    }
 
-   public static record Unbaked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+   static {
+      MODELS = Map.of(CopperGolemStatueBlock.Pose.STANDING, ModelLayers.COPPER_GOLEM, CopperGolemStatueBlock.Pose.SITTING, ModelLayers.COPPER_GOLEM_SITTING, CopperGolemStatueBlock.Pose.STAR, ModelLayers.COPPER_GOLEM_STAR, CopperGolemStatueBlock.Pose.RUNNING, ModelLayers.COPPER_GOLEM_RUNNING);
+   }
 
-      public Unbaked(WeatheringCopper.WeatherState var1) {
-         this(CopperGolemOxidationLevels.getOxidationLevel(var1).texture());
+   public static record Unbaked(ResourceLocation texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(var0, Unbaked::new));
+
+      public Unbaked(WeatheringCopper.WeatherState var1, CopperGolemStatueBlock.Pose var2) {
+         this(CopperGolemOxidationLevels.getOxidationLevel(var1).texture(), var2);
       }
 
-      public Unbaked(ResourceLocation var1) {
+      public Unbaked(ResourceLocation var1, CopperGolemStatueBlock.Pose var2) {
          super();
          this.texture = var1;
+         this.pose = var2;
       }
 
       public MapCodec<Unbaked> type() {
@@ -60,7 +69,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       }
 
       public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer(ModelLayers.COPPER_GOLEM));
+         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer((ModelLayerLocation)CopperGolemStatueSpecialRenderer.MODELS.get(this.pose)));
          return new CopperGolemStatueSpecialRenderer(var2, this.texture);
       }
    }

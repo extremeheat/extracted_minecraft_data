@@ -15,7 +15,11 @@ import net.minecraft.world.level.material.FluidState;
 
 public interface CollisionContext {
    static CollisionContext empty() {
-      return EntityCollisionContext.EMPTY;
+      return EntityCollisionContext.Empty.WITHOUT_FLUID_COLLISIONS;
+   }
+
+   static CollisionContext emptyWithFluidCollisions() {
+      return EntityCollisionContext.Empty.WITH_FLUID_COLLISIONS;
    }
 
    static CollisionContext of(Entity var0) {

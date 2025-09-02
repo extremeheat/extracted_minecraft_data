@@ -9,6 +9,8 @@ import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -111,16 +113,16 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return true;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.commandSuggestions.keyPressed(var1)) {
          return true;
-      } else if (super.keyPressed(var1, var2, var3)) {
+      } else if (super.keyPressed(var1)) {
          return true;
-      } else if (var1 != 257 && var1 != 335) {
-         return false;
-      } else {
+      } else if (var1.isConfirmation()) {
          this.onDone();
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -128,8 +130,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.mouseScrolled(var7) ? true : super.mouseScrolled(var1, var3, var5, var7);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      return this.commandSuggestions.mouseClicked(var1, var3, var5) ? true : super.mouseClicked(var1, var3, var5, var6);
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      return this.commandSuggestions.mouseClicked(var1) ? true : super.mouseClicked(var1, var2);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

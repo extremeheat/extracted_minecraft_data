@@ -9,6 +9,7 @@ import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -130,12 +131,12 @@ public class RenderSystem {
       return pollingEvents.get() && Util.getMillis() - pollEventsWaitStart.get() > 200L;
    }
 
-   public static void flipFrame(long var0, @Nullable TracyFrameCapture var2) {
+   public static void flipFrame(Window var0, @Nullable TracyFrameCapture var1) {
       pollEvents();
       Tesselator.getInstance().clear();
-      GLFW.glfwSwapBuffers(var0);
-      if (var2 != null) {
-         var2.endFrame();
+      GLFW.glfwSwapBuffers(var0.handle());
+      if (var1 != null) {
+         var1.endFrame();
       }
 
       dynamicUniforms.reset();

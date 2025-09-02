@@ -11,15 +11,14 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -30,7 +29,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class BlockEntityRenderDispatcher implements ResourceManagerReloadListener {
-   private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers = ImmutableMap.of();
+   private Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers = ImmutableMap.of();
    private final Font font;
    private final Supplier<EntityModelSet> entityModelSet;
    public Level level;
@@ -56,8 +55,13 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    @Nullable
-   public <E extends BlockEntity> BlockEntityRenderer<E> getRenderer(E var1) {
+   public <E extends BlockEntity, S extends BlockEntityRenderState> BlockEntityRenderer<E, S> getRenderer(E var1) {
       return (BlockEntityRenderer)this.renderers.get(var1.getType());
+   }
+
+   @Nullable
+   public <E extends BlockEntity, S extends BlockEntityRenderState> BlockEntityRenderer<E, S> getRenderer(S var1) {
+      return (BlockEntityRenderer)this.renderers.get(var1.blockEntityType);
    }
 
    public void prepare(Level var1, Camera var2, HitResult var3) {
@@ -69,23 +73,35 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       this.cameraHitResult = var3;
    }
 
-   public <E extends BlockEntity> void submit(E var1, float var2, PoseStack var3, @Nullable ModelFeatureRenderer.CrumblingOverlay var4, SubmitNodeCollector var5) {
-      BlockEntityRenderer var6 = this.getRenderer(var1);
-      if (var6 != null) {
-         if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
-            if (var6.shouldRender(var1, this.camera.getPosition())) {
-               try {
-                  Vec3 var7 = this.camera.getPosition();
-                  Level var11 = var1.getLevel();
-                  int var12 = var11 != null ? LevelRenderer.getLightColor(var11, var1.getBlockPos()) : 15728880;
-                  var6.submit(var1, var2, var3, var12, OverlayTexture.NO_OVERLAY, var7, var4, var5);
-               } catch (Throwable var10) {
-                  CrashReport var8 = CrashReport.forThrowable(var10, "Rendering Block Entity");
-                  CrashReportCategory var9 = var8.addCategory("Block Entity Details");
-                  var1.fillCrashReportCategory(var9);
-                  throw new ReportedException(var8);
-               }
-            }
+   @Nullable
+   public <E extends BlockEntity, S extends BlockEntityRenderState> S tryExtractRenderState(E var1, float var2, @Nullable ModelFeatureRenderer.CrumblingOverlay var3) {
+      BlockEntityRenderer var4 = this.getRenderer(var1);
+      if (var4 == null) {
+         return null;
+      } else if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
+         if (!var4.shouldRender(var1, this.camera.getPosition())) {
+            return null;
+         } else {
+            Vec3 var5 = this.camera.getPosition();
+            BlockEntityRenderState var6 = var4.createRenderState();
+            var4.extractRenderState(var1, var6, var2, var5, var3);
+            return (S)var6;
+         }
+      } else {
+         return null;
+      }
+   }
+
+   public <S extends BlockEntityRenderState> void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
+      BlockEntityRenderer var4 = this.getRenderer(var1);
+      if (var4 != null) {
+         try {
+            var4.submit(var1, var2, var3);
+         } catch (Throwable var8) {
+            CrashReport var6 = CrashReport.forThrowable(var8, "Rendering Block Entity");
+            CrashReportCategory var7 = var6.addCategory("Block Entity Details");
+            var1.fillCrashReportCategory(var7);
+            throw new ReportedException(var6);
          }
       }
    }

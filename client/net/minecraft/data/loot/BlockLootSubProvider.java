@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.CaveVines;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
@@ -207,6 +208,10 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
 
    protected LootTable.Builder createCaveVinesDrop(Block var1) {
       return LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.GLOW_BERRIES)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CaveVines.BERRIES, true))));
+   }
+
+   protected LootTable.Builder createCopperGolemStatueBlock(Block var1) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)).apply(CopyBlockState.copyState(var1).copy(CopperGolemStatueBlock.POSE)))));
    }
 
    protected LootTable.Builder createOreDrop(Block var1, Item var2) {

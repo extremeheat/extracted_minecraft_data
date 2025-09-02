@@ -8,6 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -56,7 +57,7 @@ public class Checkbox extends AbstractButton {
       return 9 + 8;
    }
 
-   public void onPress() {
+   public void onPress(InputWithModifiers var1) {
       this.selected = !this.selected;
       this.onValueChange.onValueChange(this, this.selected);
    }

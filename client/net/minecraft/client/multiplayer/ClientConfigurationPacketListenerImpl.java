@@ -13,6 +13,7 @@ import net.minecraft.client.gui.screens.multiplayer.CodeOfConductScreen;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
@@ -32,7 +33,6 @@ import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
@@ -48,6 +48,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    private KnownPacksManager knownPacks;
    @Nullable
    protected ChatComponent.State chatState;
+   private boolean seenCodeOfConduct;
 
    public ClientConfigurationPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -71,12 +72,12 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    }
 
    public void handleRegistryData(ClientboundRegistryDataPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.registryDataCollector.appendContents(var1.registry(), var1.entries());
    }
 
    public void handleUpdateTags(ClientboundUpdateTagsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.registryDataCollector.appendTags(var1.getTags());
    }
 
@@ -85,7 +86,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    }
 
    public void handleSelectKnownPacks(ClientboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (this.knownPacks == null) {
          this.knownPacks = new KnownPacksManager();
       }
@@ -109,12 +110,17 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    }
 
    public void handleCodeOfConduct(ClientboundCodeOfConductPacket var1) {
-      String var2 = var1.codeOfConduct();
-      if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(var2)) {
-         this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      if (this.seenCodeOfConduct) {
+         throw new IllegalStateException("Server sent duplicate Code of Conduct");
       } else {
-         Screen var3 = this.minecraft.screen;
-         this.minecraft.execute(() -> this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, var2, (var2x) -> {
+         this.seenCodeOfConduct = true;
+         String var2 = var1.codeOfConduct();
+         if (this.serverData != null && this.serverData.hasAcceptedCodeOfConduct(var2)) {
+            this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
+         } else {
+            Screen var3 = this.minecraft.screen;
+            this.minecraft.setScreen(new CodeOfConductScreen(this.serverData, var3, var2, (var2x) -> {
                if (var2x) {
                   this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
                   this.minecraft.setScreen(var3);
@@ -122,13 +128,14 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
                   this.minecraft.disconnectFromWorld(Component.translatable("multiplayer.disconnect.code_of_conduct"));
                }
 
-            })));
-      }
+            }));
+         }
 
+      }
    }
 
    public void handleConfigurationFinished(ClientboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       RegistryAccess.Frozen var2 = (RegistryAccess.Frozen)this.runWithResources((var1x) -> this.registryDataCollector.collectGameRegistries(var1x, this.receivedRegistries, this.connection.isMemoryConnection()));
       this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.levelLoadTracker, this.localGameProfile, this.telemetryManager, var2, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState, this.customReportDetails, this.serverLinks(), this.seenPlayers, this.seenInsecureChatWarning)));
       this.connection.send(ServerboundFinishConfigurationPacket.INSTANCE);

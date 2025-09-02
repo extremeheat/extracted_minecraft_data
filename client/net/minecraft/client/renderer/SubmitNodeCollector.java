@@ -9,4 +9,8 @@ public interface SubmitNodeCollector extends OrderedSubmitNodeCollector {
    public interface CustomGeometryRenderer {
       void render(PoseStack.Pose var1, VertexConsumer var2);
    }
+
+   public interface ParticleGroupRenderer {
+      void render(MultiBufferSource.BufferSource var1);
+   }
 }

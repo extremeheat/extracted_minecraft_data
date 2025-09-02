@@ -5,17 +5,19 @@ import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -263,20 +265,17 @@ public class LevelEventHandler {
             float var26 = (float)(var3 >> 16 & 255) / 255.0F;
             float var33 = (float)(var3 >> 8 & 255) / 255.0F;
             float var42 = (float)(var3 >> 0 & 255) / 255.0F;
-            SimpleParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
+            ParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
 
             for(int var53 = 0; var53 < 100; ++var53) {
                double var61 = var4.nextDouble() * 4.0;
                double var72 = var4.nextDouble() * 3.141592653589793 * 2.0;
                double var80 = Math.cos(var72) * var61;
                double var84 = 0.01 + var4.nextDouble() * 0.5;
-               double var85 = Math.sin(var72) * var61;
-               Particle var21 = this.levelRenderer.addParticleInternal(var47, var47.getType().getOverrideLimiter(), var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var85 * 0.1, var80, var84, var85);
-               if (var21 != null) {
-                  float var22 = 0.75F + var4.nextFloat() * 0.25F;
-                  var21.setColor(var26 * var22, var33 * var22, var42 * var22);
-                  var21.setPower((float)var61);
-               }
+               double var19 = Math.sin(var72) * var61;
+               float var21 = 0.75F + var4.nextFloat() * 0.25F;
+               SpellParticleOption var22 = SpellParticleOption.create(var47, var26 * var21, var33 * var21, var42 * var21, (float)var61);
+               this.levelRenderer.addParticle(var22, var47.getOverrideLimiter(), var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var19 * 0.1, var80, var84, var19);
             }
 
             this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
@@ -311,10 +310,7 @@ public class LevelEventHandler {
                double var71 = (double)(Mth.cos(var67) * var58);
                double var79 = 0.01 + var4.nextDouble() * 0.5;
                double var83 = (double)(Mth.sin(var67) * var58);
-               Particle var19 = this.levelRenderer.addParticleInternal(ParticleTypes.DRAGON_BREATH, false, (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
-               if (var19 != null) {
-                  var19.setPower(var58);
-               }
+               this.levelRenderer.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), false, (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
             }
 
             if (var3 == 1) {

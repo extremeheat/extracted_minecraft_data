@@ -17,8 +17,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
+import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -85,34 +86,34 @@ public class WinScreen extends Screen {
 
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 265) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isUp()) {
          this.direction = -1;
-      } else if (var1 != 341 && var1 != 345) {
-         if (var1 == 32) {
+      } else if (var1.key() != 341 && var1.key() != 345) {
+         if (var1.key() == 32) {
             this.speedupActive = true;
          }
       } else {
-         this.speedupModifiers.add(var1);
+         this.speedupModifiers.add(var1.key());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();
-      return super.keyPressed(var1, var2, var3);
+      return super.keyPressed(var1);
    }
 
-   public boolean keyReleased(int var1, int var2, int var3) {
-      if (var1 == 265) {
+   public boolean keyReleased(KeyEvent var1) {
+      if (var1.isUp()) {
          this.direction = 1;
       }
 
-      if (var1 == 32) {
+      if (var1.key() == 32) {
          this.speedupActive = false;
-      } else if (var1 == 341 || var1 == 345) {
-         this.speedupModifiers.remove(var1);
+      } else if (var1.key() == 341 || var1.key() == 345) {
+         this.speedupModifiers.remove(var1.key());
       }
 
       this.scrollSpeed = this.calculateScrollSpeed();
-      return super.keyReleased(var1, var2, var3);
+      return super.keyReleased(var1);
    }
 
    public void onClose() {
@@ -300,7 +301,7 @@ public class WinScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.poem) {
          TextureManager var5 = Minecraft.getInstance().getTextureManager();
-         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(TheEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(TheEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
+         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
          var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
       } else {
          super.renderBackground(var1, var2, var3, var4);

@@ -1,36 +1,40 @@
 package net.minecraft.world.level.border;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.DynamicLike;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class WorldBorder {
+public class WorldBorder extends SavedData {
    public static final double MAX_SIZE = 5.9999968E7;
    public static final double MAX_CENTER_COORDINATE = 2.9999984E7;
+   public static final Codec<WorldBorder> CODEC;
+   public static final SavedDataType<WorldBorder> TYPE;
    private final List<BorderChangeListener> listeners = Lists.newArrayList();
-   private double damagePerBlock = 0.2;
-   private double damageSafeZone = 5.0;
-   private int warningTime = 15;
-   private int warningBlocks = 5;
-   private double centerX;
-   private double centerZ;
+   double damagePerBlock = 0.2;
+   double safeZone = 5.0;
+   int warningTime = 15;
+   int warningBlocks = 5;
+   double centerX;
+   double centerZ;
    int absoluteMaxSize = 29999984;
-   private BorderExtent extent = new StaticBorderExtent(5.9999968E7);
-   public static final Settings DEFAULT_SETTINGS = new Settings(0.0, 0.0, 0.2, 5.0, 5, 15, 5.9999968E7, 0L, 0.0);
+   BorderExtent extent = new StaticBorderExtent(5.9999968E7);
 
    public WorldBorder() {
       super();
@@ -144,9 +148,10 @@ public class WorldBorder {
       this.centerX = var1;
       this.centerZ = var3;
       this.extent.onCenterChange();
+      this.setDirty();
 
       for(BorderChangeListener var6 : this.getListeners()) {
-         var6.onBorderCenterSet(this, var1, var3);
+         var6.onSetCenter(this, var1, var3);
       }
 
    }
@@ -155,8 +160,8 @@ public class WorldBorder {
       return this.extent.getSize();
    }
 
-   public long getLerpRemainingTime() {
-      return this.extent.getLerpRemainingTime();
+   public long getLerpTime() {
+      return this.extent.getLerpTime();
    }
 
    public double getLerpTarget() {
@@ -165,18 +170,20 @@ public class WorldBorder {
 
    public void setSize(double var1) {
       this.extent = new StaticBorderExtent(var1);
+      this.setDirty();
 
       for(BorderChangeListener var4 : this.getListeners()) {
-         var4.onBorderSizeSet(this, var1);
+         var4.onSetSize(this, var1);
       }
 
    }
 
    public void lerpSizeBetween(double var1, double var3, long var5) {
       this.extent = (BorderExtent)(var1 == var3 ? new StaticBorderExtent(var3) : new MovingBorderExtent(var1, var3, var5));
+      this.setDirty();
 
       for(BorderChangeListener var8 : this.getListeners()) {
-         var8.onBorderSizeLerping(this, var1, var3, var5);
+         var8.onLerpSize(this, var1, var3, var5);
       }
 
    }
@@ -202,15 +209,16 @@ public class WorldBorder {
       return this.absoluteMaxSize;
    }
 
-   public double getDamageSafeZone() {
-      return this.damageSafeZone;
+   public double getSafeZone() {
+      return this.safeZone;
    }
 
-   public void setDamageSafeZone(double var1) {
-      this.damageSafeZone = var1;
+   public void setSafeZone(double var1) {
+      this.safeZone = var1;
+      this.setDirty();
 
       for(BorderChangeListener var4 : this.getListeners()) {
-         var4.onBorderSetDamageSafeZOne(this, var1);
+         var4.onSetSafeZone(this, var1);
       }
 
    }
@@ -221,9 +229,10 @@ public class WorldBorder {
 
    public void setDamagePerBlock(double var1) {
       this.damagePerBlock = var1;
+      this.setDirty();
 
       for(BorderChangeListener var4 : this.getListeners()) {
-         var4.onBorderSetDamagePerBlock(this, var1);
+         var4.onSetDamagePerBlock(this, var1);
       }
 
    }
@@ -238,9 +247,10 @@ public class WorldBorder {
 
    public void setWarningTime(int var1) {
       this.warningTime = var1;
+      this.setDirty();
 
       for(BorderChangeListener var3 : this.getListeners()) {
-         var3.onBorderSetWarningTime(this, var1);
+         var3.onSetWarningTime(this, var1);
       }
 
    }
@@ -251,9 +261,10 @@ public class WorldBorder {
 
    public void setWarningBlocks(int var1) {
       this.warningBlocks = var1;
+      this.setDirty();
 
       for(BorderChangeListener var3 : this.getListeners()) {
-         var3.onBorderSetWarningBlocks(this, var1);
+         var3.onSetWarningBlocks(this, var1);
       }
 
    }
@@ -262,22 +273,23 @@ public class WorldBorder {
       this.extent = this.extent.update();
    }
 
-   public Settings createSettings() {
-      return new Settings(this);
-   }
-
    public void applySettings(Settings var1) {
-      this.setCenter(var1.getCenterX(), var1.getCenterZ());
-      this.setDamagePerBlock(var1.getDamagePerBlock());
-      this.setDamageSafeZone(var1.getSafeZone());
-      this.setWarningBlocks(var1.getWarningBlocks());
-      this.setWarningTime(var1.getWarningTime());
-      if (var1.getSizeLerpTime() > 0L) {
-         this.lerpSizeBetween(var1.getSize(), var1.getSizeLerpTarget(), var1.getSizeLerpTime());
+      this.setCenter(var1.centerX(), var1.centerZ());
+      this.setDamagePerBlock(var1.damagePerBlock());
+      this.setSafeZone(var1.safeZone());
+      this.setWarningBlocks(var1.warningBlocks());
+      this.setWarningTime(var1.warningTime());
+      if (var1.lerpTime() > 0L) {
+         this.lerpSizeBetween(var1.size(), var1.lerpTarget(), var1.lerpTime());
       } else {
-         this.setSize(var1.getSize());
+         this.setSize(var1.size());
       }
 
+   }
+
+   static {
+      CODEC = WorldBorder.Settings.CODEC.xmap(Settings::toWorldBorder, Settings::new);
+      TYPE = new SavedDataType<WorldBorder>("world_border", (var0) -> WorldBorder.Settings.DEFAULT.toWorldBorder(), (var0) -> CODEC, DataFixTypes.SAVED_DATA_WORLD_BORDER);
    }
 
    class MovingBorderExtent implements BorderExtent {
@@ -321,7 +333,7 @@ public class WorldBorder {
          return Math.abs(this.from - this.to) / (double)(this.lerpEnd - this.lerpBegin);
       }
 
-      public long getLerpRemainingTime() {
+      public long getLerpTime() {
          return this.lerpEnd - Util.getMillis();
       }
 
@@ -340,7 +352,12 @@ public class WorldBorder {
       }
 
       public BorderExtent update() {
-         return (BorderExtent)(this.getLerpRemainingTime() <= 0L ? WorldBorder.this.new StaticBorderExtent(this.to) : this);
+         if (this.getLerpTime() <= 0L) {
+            WorldBorder.this.setDirty();
+            return WorldBorder.this.new StaticBorderExtent(this.to);
+         } else {
+            return this;
+         }
       }
 
       public VoxelShape getCollisionShape() {
@@ -390,7 +407,7 @@ public class WorldBorder {
          return 0.0;
       }
 
-      public long getLerpRemainingTime() {
+      public long getLerpTime() {
          return 0L;
       }
 
@@ -433,18 +450,15 @@ public class WorldBorder {
       }
    }
 
-   public static class Settings {
-      private final double centerX;
-      private final double centerZ;
-      private final double damagePerBlock;
-      private final double safeZone;
-      private final int warningBlocks;
-      private final int warningTime;
-      private final double size;
-      private final long sizeLerpTime;
-      private final double sizeLerpTarget;
+   public static record Settings(double centerX, double centerZ, double damagePerBlock, double safeZone, int warningBlocks, int warningTime, double size, long lerpTime, double lerpTarget) {
+      public static final Settings DEFAULT = new Settings(0.0, 0.0, 0.2, 5.0, 5, 15, 5.9999968E7, 0L, 0.0);
+      public static final Codec<Settings> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.doubleRange(-2.9999984E7, 2.9999984E7).fieldOf("center_x").forGetter(Settings::centerX), Codec.doubleRange(-2.9999984E7, 2.9999984E7).fieldOf("center_z").forGetter(Settings::centerZ), Codec.DOUBLE.fieldOf("damage_per_block").forGetter(Settings::damagePerBlock), Codec.DOUBLE.fieldOf("safe_zone").forGetter(Settings::safeZone), Codec.INT.fieldOf("warning_blocks").forGetter(Settings::warningBlocks), Codec.INT.fieldOf("warning_time").forGetter(Settings::warningTime), Codec.DOUBLE.fieldOf("size").forGetter(Settings::size), Codec.LONG.fieldOf("lerp_time").forGetter(Settings::lerpTime), Codec.DOUBLE.fieldOf("lerp_target").forGetter(Settings::lerpTarget)).apply(var0, Settings::new));
 
-      Settings(double var1, double var3, double var5, double var7, int var9, int var10, double var11, long var13, double var15) {
+      public Settings(WorldBorder var1) {
+         this(var1.centerX, var1.centerZ, var1.damagePerBlock, var1.safeZone, var1.warningBlocks, var1.warningTime, var1.extent.getSize(), var1.extent.getLerpTime(), var1.extent.getLerpTarget());
+      }
+
+      public Settings(double var1, double var3, double var5, double var7, int var9, int var10, double var11, long var13, double var15) {
          super();
          this.centerX = var1;
          this.centerZ = var3;
@@ -453,82 +467,14 @@ public class WorldBorder {
          this.warningBlocks = var9;
          this.warningTime = var10;
          this.size = var11;
-         this.sizeLerpTime = var13;
-         this.sizeLerpTarget = var15;
+         this.lerpTime = var13;
+         this.lerpTarget = var15;
       }
 
-      Settings(WorldBorder var1) {
-         super();
-         this.centerX = var1.getCenterX();
-         this.centerZ = var1.getCenterZ();
-         this.damagePerBlock = var1.getDamagePerBlock();
-         this.safeZone = var1.getDamageSafeZone();
-         this.warningBlocks = var1.getWarningBlocks();
-         this.warningTime = var1.getWarningTime();
-         this.size = var1.getSize();
-         this.sizeLerpTime = var1.getLerpRemainingTime();
-         this.sizeLerpTarget = var1.getLerpTarget();
-      }
-
-      public double getCenterX() {
-         return this.centerX;
-      }
-
-      public double getCenterZ() {
-         return this.centerZ;
-      }
-
-      public double getDamagePerBlock() {
-         return this.damagePerBlock;
-      }
-
-      public double getSafeZone() {
-         return this.safeZone;
-      }
-
-      public int getWarningBlocks() {
-         return this.warningBlocks;
-      }
-
-      public int getWarningTime() {
-         return this.warningTime;
-      }
-
-      public double getSize() {
-         return this.size;
-      }
-
-      public long getSizeLerpTime() {
-         return this.sizeLerpTime;
-      }
-
-      public double getSizeLerpTarget() {
-         return this.sizeLerpTarget;
-      }
-
-      public static Settings read(DynamicLike<?> var0, Settings var1) {
-         double var2 = Mth.clamp(var0.get("BorderCenterX").asDouble(var1.centerX), -2.9999984E7, 2.9999984E7);
-         double var4 = Mth.clamp(var0.get("BorderCenterZ").asDouble(var1.centerZ), -2.9999984E7, 2.9999984E7);
-         double var6 = var0.get("BorderSize").asDouble(var1.size);
-         long var8 = var0.get("BorderSizeLerpTime").asLong(var1.sizeLerpTime);
-         double var10 = var0.get("BorderSizeLerpTarget").asDouble(var1.sizeLerpTarget);
-         double var12 = var0.get("BorderSafeZone").asDouble(var1.safeZone);
-         double var14 = var0.get("BorderDamagePerBlock").asDouble(var1.damagePerBlock);
-         int var16 = var0.get("BorderWarningBlocks").asInt(var1.warningBlocks);
-         int var17 = var0.get("BorderWarningTime").asInt(var1.warningTime);
-         return new Settings(var2, var4, var14, var12, var16, var17, var6, var8, var10);
-      }
-
-      public void write(CompoundTag var1) {
-         var1.putDouble("BorderCenterX", this.centerX);
-         var1.putDouble("BorderCenterZ", this.centerZ);
-         var1.putDouble("BorderSize", this.size);
-         var1.putLong("BorderSizeLerpTime", this.sizeLerpTime);
-         var1.putDouble("BorderSafeZone", this.safeZone);
-         var1.putDouble("BorderDamagePerBlock", this.damagePerBlock);
-         var1.putDouble("BorderSizeLerpTarget", this.sizeLerpTarget);
-         var1.putDouble("BorderWarningBlocks", (double)this.warningBlocks);
-         var1.putDouble("BorderWarningTime", (double)this.warningTime);
+      public WorldBorder toWorldBorder() {
+         WorldBorder var1 = new WorldBorder();
+         var1.applySettings(this);
+         return var1;
       }
    }
 
@@ -545,7 +491,7 @@ public class WorldBorder {
 
       double getLerpSpeed();
 
-      long getLerpRemainingTime();
+      long getLerpTime();
 
       double getLerpTarget();
 

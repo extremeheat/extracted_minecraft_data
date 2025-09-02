@@ -31,6 +31,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.render.GuiRenderer;
@@ -460,9 +461,9 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private void bobView(PoseStack var1, float var2) {
       Entity var4 = this.minecraft.getCameraEntity();
       if (var4 instanceof AbstractClientPlayer var3) {
-         float var7 = var3.walkDist - var3.walkDistO;
-         float var5 = -(var3.walkDist + var7 * var2);
-         float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
+         ClientAvatarState var7 = var3.avatarState();
+         float var5 = var7.getBackwardsInterpolatedWalkDistance(var2);
+         float var6 = var7.getInterpolatedBob(var2);
          var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
          var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
          var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
@@ -542,11 +543,10 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var17.getDepthTexture(), 1.0);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
          this.guiRenderState.reset();
+         var3.popPush("guiExtraction");
          GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState);
          if (var4 && var2 && this.minecraft.level != null) {
-            var3.popPush("gui");
             this.minecraft.gui.render(var8, var1);
-            var3.pop();
          }
 
          if (this.minecraft.getOverlay() != null) {
@@ -596,8 +596,10 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          }
 
          this.minecraft.gui.renderDeferredSubtitles();
+         var3.popPush("guiRendering");
          this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
+         var3.pop();
          var8.applyCursor(this.minecraft.getWindow());
          this.submitNodeStorage.endFrame();
          this.resourcePool.endFrame();
@@ -751,7 +753,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
       this.renderItemInHand(var2, var23, var19);
-      var4.popPush("screen effects");
+      var4.popPush("screenEffects");
       MultiBufferSource.BufferSource var24 = this.renderBuffers.bufferSource();
       this.screenEffectRenderer.renderScreenEffect(var23, var2, this.submitNodeStorage);
       this.featureRenderDispatcher.renderAllFeatures();

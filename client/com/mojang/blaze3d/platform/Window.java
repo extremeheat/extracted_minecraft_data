@@ -37,7 +37,7 @@ public final class Window implements AutoCloseable {
    private final GLFWErrorCallback defaultErrorCallback = GLFWErrorCallback.create(this::defaultErrorCallback);
    private final WindowEventHandler eventHandler;
    private final ScreenManager screenManager;
-   private final long window;
+   private final long handle;
    private int windowedX;
    private int windowedY;
    private int windowedWidth;
@@ -89,7 +89,7 @@ public final class Window implements AutoCloseable {
       GLFW.glfwWindowHint(139267, 2);
       GLFW.glfwWindowHint(139272, 204801);
       GLFW.glfwWindowHint(139270, 1);
-      this.window = GLFW.glfwCreateWindow(this.width, this.height, var5, this.fullscreen && var7 != null ? var7.getMonitor() : 0L, 0L);
+      this.handle = GLFW.glfwCreateWindow(this.width, this.height, var5, this.fullscreen && var7 != null ? var7.getMonitor() : 0L, 0L);
       if (var7 != null) {
          VideoMode var8 = var7.getPreferredVidMode(this.fullscreen ? this.preferredFullscreenVideoMode : Optional.empty());
          this.windowedX = this.x = var7.getX() + var8.getWidth() / 2 - this.width / 2;
@@ -97,19 +97,19 @@ public final class Window implements AutoCloseable {
       } else {
          int[] var10 = new int[1];
          int[] var9 = new int[1];
-         GLFW.glfwGetWindowPos(this.window, var10, var9);
+         GLFW.glfwGetWindowPos(this.handle, var10, var9);
          this.windowedX = this.x = var10[0];
          this.windowedY = this.y = var9[0];
       }
 
       this.setMode();
       this.refreshFramebufferSize();
-      GLFW.glfwSetFramebufferSizeCallback(this.window, this::onFramebufferResize);
-      GLFW.glfwSetWindowPosCallback(this.window, this::onMove);
-      GLFW.glfwSetWindowSizeCallback(this.window, this::onResize);
-      GLFW.glfwSetWindowFocusCallback(this.window, this::onFocus);
-      GLFW.glfwSetCursorEnterCallback(this.window, this::onEnter);
-      GLFW.glfwSetWindowIconifyCallback(this.window, this::onIconify);
+      GLFW.glfwSetFramebufferSizeCallback(this.handle, this::onFramebufferResize);
+      GLFW.glfwSetWindowPosCallback(this.handle, this::onMove);
+      GLFW.glfwSetWindowSizeCallback(this.handle, this::onResize);
+      GLFW.glfwSetWindowFocusCallback(this.handle, this::onFocus);
+      GLFW.glfwSetCursorEnterCallback(this.handle, this::onEnter);
+      GLFW.glfwSetWindowIconifyCallback(this.handle, this::onIconify);
    }
 
    public static String getPlatform() {
@@ -208,7 +208,7 @@ public final class Window implements AutoCloseable {
                      }
                   }
 
-                  GLFW.glfwSetWindowIcon(this.window, (GLFWImage.Buffer)var7.position(0));
+                  GLFW.glfwSetWindowIcon(this.handle, (GLFWImage.Buffer)var7.position(0));
                } catch (Throwable var21) {
                   if (var6 != null) {
                      try {
@@ -277,9 +277,9 @@ public final class Window implements AutoCloseable {
 
    public void close() {
       RenderSystem.assertOnRenderThread();
-      Callbacks.glfwFreeCallbacks(this.window);
+      Callbacks.glfwFreeCallbacks(this.handle);
       this.defaultErrorCallback.close();
-      GLFW.glfwDestroyWindow(this.window);
+      GLFW.glfwDestroyWindow(this.handle);
       GLFW.glfwTerminate();
    }
 
@@ -289,7 +289,7 @@ public final class Window implements AutoCloseable {
    }
 
    private void onFramebufferResize(long var1, int var3, int var4) {
-      if (var1 == this.window) {
+      if (var1 == this.handle) {
          int var5 = this.getWidth();
          int var6 = this.getHeight();
          if (var3 != 0 && var4 != 0) {
@@ -317,7 +317,7 @@ public final class Window implements AutoCloseable {
    private void refreshFramebufferSize() {
       int[] var1 = new int[1];
       int[] var2 = new int[1];
-      GLFW.glfwGetFramebufferSize(this.window, var1, var2);
+      GLFW.glfwGetFramebufferSize(this.handle, var1, var2);
       this.framebufferWidth = var1[0] > 0 ? var1[0] : 1;
       this.framebufferHeight = var2[0] > 0 ? var2[0] : 1;
    }
@@ -328,7 +328,7 @@ public final class Window implements AutoCloseable {
    }
 
    private void onFocus(long var1, boolean var3) {
-      if (var1 == this.window) {
+      if (var1 == this.handle) {
          this.eventHandler.setWindowActive(var3);
       }
 
@@ -346,7 +346,7 @@ public final class Window implements AutoCloseable {
    }
 
    public void updateDisplay(@Nullable TracyFrameCapture var1) {
-      RenderSystem.flipFrame(this.window, var1);
+      RenderSystem.flipFrame(this, var1);
       if (this.fullscreen != this.actuallyFullscreen) {
          this.actuallyFullscreen = this.fullscreen;
          this.updateFullscreen(this.vsync, var1);
@@ -377,7 +377,7 @@ public final class Window implements AutoCloseable {
    }
 
    private void setMode() {
-      boolean var1 = GLFW.glfwGetWindowMonitor(this.window) != 0L;
+      boolean var1 = GLFW.glfwGetWindowMonitor(this.handle) != 0L;
       if (this.fullscreen) {
          Monitor var2 = this.screenManager.findBestMonitor(this);
          if (var2 == null) {
@@ -385,7 +385,7 @@ public final class Window implements AutoCloseable {
             this.fullscreen = false;
          } else {
             if (MacosUtil.IS_MACOS) {
-               MacosUtil.exitNativeFullscreen(this.window);
+               MacosUtil.exitNativeFullscreen(this);
             }
 
             VideoMode var3 = var2.getPreferredVidMode(this.preferredFullscreenVideoMode);
@@ -400,9 +400,9 @@ public final class Window implements AutoCloseable {
             this.y = 0;
             this.width = var3.getWidth();
             this.height = var3.getHeight();
-            GLFW.glfwSetWindowMonitor(this.window, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
+            GLFW.glfwSetWindowMonitor(this.handle, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
             if (MacosUtil.IS_MACOS) {
-               MacosUtil.clearResizableBit(this.window);
+               MacosUtil.clearResizableBit(this);
             }
          }
       } else {
@@ -410,7 +410,7 @@ public final class Window implements AutoCloseable {
          this.y = this.windowedY;
          this.width = this.windowedWidth;
          this.height = this.windowedHeight;
-         GLFW.glfwSetWindowMonitor(this.window, 0L, this.x, this.y, this.width, this.height, -1);
+         GLFW.glfwSetWindowMonitor(this.handle, 0L, this.x, this.y, this.width, this.height, -1);
       }
 
    }
@@ -462,11 +462,11 @@ public final class Window implements AutoCloseable {
    }
 
    public void setTitle(String var1) {
-      GLFW.glfwSetWindowTitle(this.window, var1);
+      GLFW.glfwSetWindowTitle(this.handle, var1);
    }
 
-   public long getWindow() {
-      return this.window;
+   public long handle() {
+      return this.handle;
    }
 
    public boolean isFullscreen() {
@@ -527,11 +527,11 @@ public final class Window implements AutoCloseable {
    }
 
    public void updateRawMouseInput(boolean var1) {
-      InputConstants.updateRawMouseInput(this.window, var1);
+      InputConstants.updateRawMouseInput(this, var1);
    }
 
    public void setWindowCloseCallback(Runnable var1) {
-      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> var1.run());
+      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.handle, (var1x) -> var1.run());
       if (var2 != null) {
          var2.free();
       }

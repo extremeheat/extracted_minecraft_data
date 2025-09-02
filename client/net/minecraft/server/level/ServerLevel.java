@@ -132,6 +132,7 @@ import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkSource;
@@ -239,7 +240,6 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.portalForcer = new PortalForcer(this);
       this.updateSkyBrightness();
       this.prepareWeather();
-      this.getWorldBorder().setAbsoluteMaxSize(var1.getAbsoluteMaxWorldSize());
       this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.getType(this.dimensionTypeRegistration()));
       if (!var1.isSingleplayer()) {
          var4.setGameType(var1.getDefaultGameType());
@@ -409,9 +409,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.serverLevelData.setDayTime(var1);
    }
 
-   public void tickCustomSpawners(boolean var1, boolean var2) {
-      for(CustomSpawner var4 : this.customSpawners) {
-         var4.tick(this, var1, var2);
+   public void tickCustomSpawners(boolean var1) {
+      for(CustomSpawner var3 : this.customSpawners) {
+         var3.tick(this, var1);
       }
 
    }
@@ -1253,6 +1253,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    @Nullable
    public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(Predicate<Holder<Biome>> var1, BlockPos var2, int var3, int var4, int var5) {
       return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(var2, var3, var4, var5, var1, this.getChunkSource().randomState().sampler(), this);
+   }
+
+   public WorldBorder getWorldBorder() {
+      return (WorldBorder)this.getDataStorage().computeIfAbsent(WorldBorder.TYPE);
    }
 
    public RecipeManager recipeAccess() {

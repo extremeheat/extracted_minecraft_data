@@ -50,7 +50,7 @@ public class ScreenManager {
 
    @Nullable
    public Monitor findBestMonitor(Window var1) {
-      long var2 = GLFW.glfwGetWindowMonitor(var1.getWindow());
+      long var2 = GLFW.glfwGetWindowMonitor(var1.handle());
       if (var2 != 0L) {
          return this.getMonitor(var2);
       } else {

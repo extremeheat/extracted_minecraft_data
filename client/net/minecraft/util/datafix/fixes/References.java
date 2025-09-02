@@ -17,8 +17,9 @@ public class References {
    public static final DSL.TypeReference SAVED_DATA_MAP_INDEX = reference("saved_data/idcounts");
    public static final DSL.TypeReference SAVED_DATA_RAIDS = reference("saved_data/raids");
    public static final DSL.TypeReference SAVED_DATA_RANDOM_SEQUENCES = reference("saved_data/random_sequences");
-   public static final DSL.TypeReference SAVED_DATA_STRUCTURE_FEATURE_INDICES = reference("saved_data/structure_feature_indices");
    public static final DSL.TypeReference SAVED_DATA_SCOREBOARD = reference("saved_data/scoreboard");
+   public static final DSL.TypeReference SAVED_DATA_STRUCTURE_FEATURE_INDICES = reference("saved_data/structure_feature_indices");
+   public static final DSL.TypeReference SAVED_DATA_WORLD_BORDER = reference("saved_data/world_border");
    public static final DSL.TypeReference ADVANCEMENTS = reference("advancements");
    public static final DSL.TypeReference POI_CHUNK = reference("poi_chunk");
    public static final DSL.TypeReference ENTITY_CHUNK = reference("entity_chunk");

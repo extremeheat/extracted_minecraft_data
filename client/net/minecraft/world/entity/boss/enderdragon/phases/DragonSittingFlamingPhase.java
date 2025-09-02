@@ -3,6 +3,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -39,7 +40,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
             double var13 = var6 + this.dragon.getRandom().nextGaussian() / 2.0;
 
             for(int var15 = 0; var15 < 6; ++var15) {
-               this.dragon.level().addParticle(ParticleTypes.DRAGON_BREATH, var9, var11, var13, -var1.x * 0.07999999821186066 * (double)var15, -var1.y * 0.6000000238418579, -var1.z * 0.07999999821186066 * (double)var15);
+               this.dragon.level().addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F), var9, var11, var13, -var1.x * 0.07999999821186066 * (double)var15, -var1.y * 0.6000000238418579, -var1.z * 0.07999999821186066 * (double)var15);
             }
 
             var1.yRot(0.19634955F);
@@ -80,7 +81,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          this.flame.setOwner(this.dragon);
          this.flame.setRadius(5.0F);
          this.flame.setDuration(200);
-         this.flame.setCustomParticle(ParticleTypes.DRAGON_BREATH);
+         this.flame.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
          this.flame.setPotionDurationScale(0.25F);
          this.flame.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE));
          var1.addFreshEntity(this.flame);

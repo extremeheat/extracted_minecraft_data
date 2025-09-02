@@ -10,6 +10,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -65,7 +66,9 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private int thunderTime;
    private boolean initialized;
    private boolean difficultyLocked;
-   private WorldBorder.Settings worldBorder;
+   /** @deprecated */
+   @Deprecated
+   private Optional<WorldBorder.Settings> legacyWorldBorderSettings;
    private EndDragonFight.Data endDragonFightData;
    @Nullable
    private CompoundTag customBossEvents;
@@ -78,7 +81,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Set<String> removedFeatureFlags;
    private final TimerQueue<MinecraftServer> scheduledEvents;
 
-   private PrimaryLevelData(@Nullable CompoundTag var1, boolean var2, BlockPos var3, float var4, long var5, long var7, int var9, int var10, int var11, boolean var12, int var13, boolean var14, boolean var15, boolean var16, WorldBorder.Settings var17, int var18, int var19, @Nullable UUID var20, Set<String> var21, Set<String> var22, TimerQueue<MinecraftServer> var23, @Nullable CompoundTag var24, EndDragonFight.Data var25, LevelSettings var26, WorldOptions var27, SpecialWorldProperty var28, Lifecycle var29) {
+   private PrimaryLevelData(@Nullable CompoundTag var1, boolean var2, BlockPos var3, float var4, long var5, long var7, int var9, int var10, int var11, boolean var12, int var13, boolean var14, boolean var15, boolean var16, Optional<WorldBorder.Settings> var17, int var18, int var19, @Nullable UUID var20, Set<String> var21, Set<String> var22, TimerQueue<MinecraftServer> var23, @Nullable CompoundTag var24, EndDragonFight.Data var25, LevelSettings var26, WorldOptions var27, SpecialWorldProperty var28, Lifecycle var29) {
       super();
       this.wasModded = var2;
       this.spawnPos = var3;
@@ -93,7 +96,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       this.thundering = var14;
       this.initialized = var15;
       this.difficultyLocked = var16;
-      this.worldBorder = var17;
+      this.legacyWorldBorderSettings = var17;
       this.wanderingTraderSpawnDelay = var18;
       this.wanderingTraderSpawnChance = var19;
       this.wanderingTraderId = var20;
@@ -110,7 +113,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    public PrimaryLevelData(LevelSettings var1, WorldOptions var2, SpecialWorldProperty var3, Lifecycle var4) {
-      this((CompoundTag)null, false, BlockPos.ZERO, 0.0F, 0L, 0L, 19133, 0, 0, false, 0, false, false, false, WorldBorder.DEFAULT_SETTINGS, 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, var1.copy(), var2, var3, var4);
+      this((CompoundTag)null, false, BlockPos.ZERO, 0.0F, 0L, 0L, 19133, 0, 0, false, 0, false, false, false, Optional.empty(), 0, 0, (UUID)null, Sets.newLinkedHashSet(), new HashSet(), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS), (CompoundTag)null, EndDragonFight.Data.DEFAULT, var1.copy(), var2, var3, var4);
    }
 
    public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
@@ -131,7 +134,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       boolean var10013 = var0.get("thundering").asBoolean(false);
       boolean var10014 = var0.get("initialized").asBoolean(true);
       boolean var10015 = var0.get("DifficultyLocked").asBoolean(false);
-      WorldBorder.Settings var10016 = WorldBorder.Settings.read(var0, WorldBorder.DEFAULT_SETTINGS);
+      Optional var10016 = WorldBorder.Settings.CODEC.parse(var0.get("world_border").orElseEmptyMap()).result();
       int var10017 = var0.get("WanderingTraderSpawnDelay").asInt(0);
       int var10018 = var0.get("WanderingTraderSpawnChance").asInt(0);
       UUID var10019 = (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((Object)null);
@@ -192,7 +195,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.putBoolean("hardcore", this.settings.hardcore());
       var2.putBoolean("allowCommands", this.settings.allowCommands());
       var2.putBoolean("initialized", this.initialized);
-      this.worldBorder.write(var2);
+      this.legacyWorldBorderSettings.ifPresent((var1x) -> var2.store("world_border", WorldBorder.Settings.CODEC, var1x));
       var2.putByte("Difficulty", (byte)this.settings.difficulty().getId());
       var2.putBoolean("DifficultyLocked", this.difficultyLocked);
       var2.put("GameRules", this.settings.gameRules().createTag());
@@ -330,12 +333,12 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.settings.gameRules();
    }
 
-   public WorldBorder.Settings getWorldBorder() {
-      return this.worldBorder;
+   public Optional<WorldBorder.Settings> getLegacyWorldBorderSettings() {
+      return this.legacyWorldBorderSettings;
    }
 
-   public void setWorldBorder(WorldBorder.Settings var1) {
-      this.worldBorder = var1;
+   public void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1) {
+      this.legacyWorldBorderSettings = var1;
    }
 
    public Difficulty getDifficulty() {

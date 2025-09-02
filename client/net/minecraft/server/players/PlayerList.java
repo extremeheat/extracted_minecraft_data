@@ -210,32 +210,32 @@ public abstract class PlayerList {
 
    }
 
-   public void addWorldborderListener(ServerLevel var1) {
+   public void addWorldborderListener(final ServerLevel var1) {
       var1.getWorldBorder().addListener(new BorderChangeListener() {
-         public void onBorderSizeSet(WorldBorder var1, double var2) {
-            PlayerList.this.broadcastAll(new ClientboundSetBorderSizePacket(var1));
+         public void onSetSize(WorldBorder var1x, double var2) {
+            PlayerList.this.broadcastAll(new ClientboundSetBorderSizePacket(var1x), var1.dimension());
          }
 
-         public void onBorderSizeLerping(WorldBorder var1, double var2, double var4, long var6) {
-            PlayerList.this.broadcastAll(new ClientboundSetBorderLerpSizePacket(var1));
+         public void onLerpSize(WorldBorder var1x, double var2, double var4, long var6) {
+            PlayerList.this.broadcastAll(new ClientboundSetBorderLerpSizePacket(var1x), var1.dimension());
          }
 
-         public void onBorderCenterSet(WorldBorder var1, double var2, double var4) {
-            PlayerList.this.broadcastAll(new ClientboundSetBorderCenterPacket(var1));
+         public void onSetCenter(WorldBorder var1x, double var2, double var4) {
+            PlayerList.this.broadcastAll(new ClientboundSetBorderCenterPacket(var1x), var1.dimension());
          }
 
-         public void onBorderSetWarningTime(WorldBorder var1, int var2) {
-            PlayerList.this.broadcastAll(new ClientboundSetBorderWarningDelayPacket(var1));
+         public void onSetWarningTime(WorldBorder var1x, int var2) {
+            PlayerList.this.broadcastAll(new ClientboundSetBorderWarningDelayPacket(var1x), var1.dimension());
          }
 
-         public void onBorderSetWarningBlocks(WorldBorder var1, int var2) {
-            PlayerList.this.broadcastAll(new ClientboundSetBorderWarningDistancePacket(var1));
+         public void onSetWarningBlocks(WorldBorder var1x, int var2) {
+            PlayerList.this.broadcastAll(new ClientboundSetBorderWarningDistancePacket(var1x), var1.dimension());
          }
 
-         public void onBorderSetDamagePerBlock(WorldBorder var1, double var2) {
+         public void onSetDamagePerBlock(WorldBorder var1x, double var2) {
          }
 
-         public void onBorderSetDamageSafeZOne(WorldBorder var1, double var2) {
+         public void onSetSafeZone(WorldBorder var1x, double var2) {
          }
       });
    }
@@ -303,7 +303,7 @@ public abstract class PlayerList {
    public Component canPlayerLogin(SocketAddress var1, NameAndId var2) {
       if (this.bans.isBanned(var2)) {
          UserBanListEntry var5 = (UserBanListEntry)this.bans.get(var2);
-         MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", var5.getReason());
+         MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", this.getReasonMessage(var5));
          if (var5.getExpires() != null) {
             var6.append((Component)Component.translatable("multiplayer.disconnect.banned.expiration", BAN_DATE_FORMAT.format(var5.getExpires())));
          }
@@ -313,7 +313,7 @@ public abstract class PlayerList {
          return Component.translatable("multiplayer.disconnect.not_whitelisted");
       } else if (this.ipBans.isBanned(var1)) {
          IpBanListEntry var3 = this.ipBans.get(var1);
-         MutableComponent var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", var3.getReason());
+         MutableComponent var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", this.getReasonMessage(var3));
          if (var3.getExpires() != null) {
             var4.append((Component)Component.translatable("multiplayer.disconnect.banned_ip.expiration", BAN_DATE_FORMAT.format(var3.getExpires())));
          }
@@ -322,6 +322,11 @@ public abstract class PlayerList {
       } else {
          return this.players.size() >= this.getMaxPlayers() && !this.canBypassPlayerLimit(var2) ? Component.translatable("multiplayer.disconnect.server_full") : null;
       }
+   }
+
+   private Component getReasonMessage(BanListEntry<?> var1) {
+      String var2 = var1.getReason();
+      return var2 == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(var2);
    }
 
    public boolean disconnectAllPlayersWithProfile(UUID var1) {
@@ -346,9 +351,9 @@ public abstract class PlayerList {
    }
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2, Entity.RemovalReason var3) {
+      TeleportTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(!var2, TeleportTransition.DO_NOTHING);
       this.players.remove(var1);
       var1.level().removePlayerImmediately(var1, var3);
-      TeleportTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(!var2, TeleportTransition.DO_NOTHING);
       ServerLevel var5 = var4.newLevel();
       ServerPlayer var6 = new ServerPlayer(this.server, var5, var1.getGameProfile(), var1.clientInformation());
       var6.connection = var1.connection;
@@ -590,7 +595,7 @@ public abstract class PlayerList {
    }
 
    public void sendLevelInfo(ServerPlayer var1, ServerLevel var2) {
-      WorldBorder var3 = this.server.overworld().getWorldBorder();
+      WorldBorder var3 = var2.getWorldBorder();
       var1.connection.send(new ClientboundInitializeBorderPacket(var3));
       var1.connection.send(new ClientboundSetTimePacket(var2.getGameTime(), var2.getDayTime(), var2.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
       var1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle()));

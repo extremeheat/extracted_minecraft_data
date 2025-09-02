@@ -19,7 +19,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
@@ -92,7 +91,7 @@ public class LevelChunk extends ChunkAccess {
    }
 
    public LevelChunk(Level var1, ChunkPos var2, UpgradeData var3, LevelChunkTicks<Block> var4, LevelChunkTicks<Fluid> var5, long var6, @Nullable LevelChunkSection[] var8, @Nullable PostLoadProcessor var9, @Nullable BlendingData var10) {
-      super(var2, var3, var1, var1.registryAccess().lookupOrThrow(Registries.BIOME), var6, var8, var10);
+      super(var2, var3, var1, var1.palettedContainerFactory(), var6, var8, var10);
       this.tickersInLevel = Maps.newHashMap();
       this.unsavedListener = (var0) -> {
       };

@@ -38,7 +38,6 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ErrorScreen;
@@ -48,6 +47,8 @@ import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -499,30 +500,30 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          return this.getContentX() + 32 + 3;
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         if (this.canInteract() && (var6 || var1 - (double)this.list.getRowLeft() <= 32.0 && this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER)) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         if (this.canInteract() && (var2 || var1.x() - (double)this.list.getRowLeft() <= 32.0 && this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER)) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            Consumer var7 = this.list.onEntryInteract;
-            if (var7 != null) {
-               var7.accept(this);
+            Consumer var3 = this.list.onEntryInteract;
+            if (var3 != null) {
+               var3.accept(this);
                return true;
             }
          }
 
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (CommonInputs.selected(var1) && this.canInteract()) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection() && this.canInteract()) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            Consumer var4 = this.list.onEntryInteract;
-            if (var4 != null) {
-               var4.accept(this);
+            Consumer var2 = this.list.onEntryInteract;
+            if (var2 != null) {
+               var2.accept(this);
                return true;
             }
          }
 
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
 
       public boolean canInteract() {

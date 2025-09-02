@@ -19,6 +19,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -225,12 +226,12 @@ public class SocialInteractionsScreen extends Screen {
       this.blockingHintButton.visible = this.page == SocialInteractionsScreen.Page.BLOCKED;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(var1, var2)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (!this.searchBox.isFocused() && this.minecraft.options.keySocialInteractions.matches(var1)) {
          this.onClose();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

@@ -14,7 +14,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -175,8 +177,8 @@ public class EditBox extends AbstractWidget {
       this.updateTextPosition();
    }
 
-   private void deleteText(int var1) {
-      if (Screen.hasControlDown()) {
+   private void deleteText(int var1, boolean var2) {
+      if (var2) {
          this.deleteWords(var1);
       } else {
          this.deleteChars(var1);
@@ -284,12 +286,12 @@ public class EditBox extends AbstractWidget {
       this.moveCursorTo(this.value.length(), var1);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       if (this.isActive() && this.isFocused()) {
-         switch (var1) {
+         switch (var1.key()) {
             case 259:
                if (this.isEditable) {
-                  this.deleteText(-1);
+                  this.deleteText(-1, var1.hasControlDown());
                }
 
                return true;
@@ -299,21 +301,21 @@ public class EditBox extends AbstractWidget {
             case 266:
             case 267:
             default:
-               if (Screen.isSelectAll(var1)) {
+               if (var1.isSelectAll()) {
                   this.moveCursorToEnd(false);
                   this.setHighlightPos(0);
                   return true;
-               } else if (Screen.isCopy(var1)) {
+               } else if (var1.isCopy()) {
                   Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                   return true;
-               } else if (Screen.isPaste(var1)) {
+               } else if (var1.isPaste()) {
                   if (this.isEditable()) {
                      this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
                   }
 
                   return true;
                } else {
-                  if (Screen.isCut(var1)) {
+                  if (var1.isCut()) {
                      Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                      if (this.isEditable()) {
                         this.insertText("");
@@ -326,31 +328,31 @@ public class EditBox extends AbstractWidget {
                }
             case 261:
                if (this.isEditable) {
-                  this.deleteText(1);
+                  this.deleteText(1, var1.hasControlDown());
                }
 
                return true;
             case 262:
-               if (Screen.hasControlDown()) {
-                  this.moveCursorTo(this.getWordPosition(1), Screen.hasShiftDown());
+               if (var1.hasControlDown()) {
+                  this.moveCursorTo(this.getWordPosition(1), var1.hasShiftDown());
                } else {
-                  this.moveCursor(1, Screen.hasShiftDown());
+                  this.moveCursor(1, var1.hasShiftDown());
                }
 
                return true;
             case 263:
-               if (Screen.hasControlDown()) {
-                  this.moveCursorTo(this.getWordPosition(-1), Screen.hasShiftDown());
+               if (var1.hasControlDown()) {
+                  this.moveCursorTo(this.getWordPosition(-1), var1.hasShiftDown());
                } else {
-                  this.moveCursor(-1, Screen.hasShiftDown());
+                  this.moveCursor(-1, var1.hasShiftDown());
                }
 
                return true;
             case 268:
-               this.moveCursorToStart(Screen.hasShiftDown());
+               this.moveCursorToStart(var1.hasShiftDown());
                return true;
             case 269:
-               this.moveCursorToEnd(Screen.hasShiftDown());
+               this.moveCursorToEnd(var1.hasShiftDown());
                return true;
          }
       } else {
@@ -362,12 +364,12 @@ public class EditBox extends AbstractWidget {
       return this.isActive() && this.isFocused() && this.isEditable();
    }
 
-   public boolean charTyped(char var1, int var2) {
+   public boolean charTyped(CharacterEvent var1) {
       if (!this.canConsumeInput()) {
          return false;
-      } else if (StringUtil.isAllowedChatCharacter(var1)) {
+      } else if (var1.isAllowedChatCharacter()) {
          if (this.isEditable) {
-            this.insertText(Character.toString(var1));
+            this.insertText(var1.codepointAsString());
          }
 
          return true;
@@ -376,18 +378,31 @@ public class EditBox extends AbstractWidget {
       }
    }
 
-   private void handleClick(double var1, boolean var3) {
-      int var4 = Math.min(Mth.floor(var1) - this.textX, this.getInnerWidth());
-      String var5 = this.value.substring(this.displayPos);
-      this.moveCursorTo(this.displayPos + this.font.plainSubstrByWidth(var5, var4).length(), var3);
+   private int findClickedPositionInText(MouseButtonEvent var1) {
+      int var2 = Math.min(Mth.floor(var1.x()) - this.textX, this.getInnerWidth());
+      String var3 = this.value.substring(this.displayPos);
+      return this.displayPos + this.font.plainSubstrByWidth(var3, var2).length();
    }
 
-   public void onClick(double var1, double var3, boolean var5) {
-      this.handleClick(var1, Screen.hasShiftDown());
+   private void selectWord(MouseButtonEvent var1) {
+      int var2 = this.findClickedPositionInText(var1);
+      int var3 = this.getWordPosition(-1, var2);
+      int var4 = this.getWordPosition(1, var2);
+      this.moveCursorTo(var3, false);
+      this.moveCursorTo(var4, true);
    }
 
-   protected void onDrag(double var1, double var3, double var5, double var7) {
-      this.handleClick(var1, true);
+   public void onClick(MouseButtonEvent var1, boolean var2) {
+      if (var2) {
+         this.selectWord(var1);
+      } else {
+         this.moveCursorTo(this.findClickedPositionInText(var1), var1.hasShiftDown());
+      }
+
+   }
+
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
+      this.moveCursorTo(this.findClickedPositionInText(var1), true);
    }
 
    public void playDownSound(SoundManager var1) {

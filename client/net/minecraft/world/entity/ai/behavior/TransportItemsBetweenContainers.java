@@ -26,6 +26,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -217,12 +218,25 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       AABB var3 = this.getTargetSearchArea(var2);
       Set var4 = getVisitedPositions(var2);
       Set var5 = getUnreachablePositions(var2);
-      BlockPos var6 = var2.blockPosition();
-      return ChunkPos.rangeClosed(new ChunkPos(var6), Math.floorDiv(this.horizontalSearchDistance, 16) + 1).flatMap((var1x) -> var1.getChunk(var1x.x, var1x.z).getBlockEntities().entrySet().stream()).sorted(Comparator.comparing((var1x) -> ((BlockPos)var1x.getKey()).distToCenterSqr((double)var6.getX(), (double)var6.getY(), (double)var6.getZ()))).flatMap((var6x) -> this.isTargetValidToPick(var2, var1, (BlockPos)var6x.getKey(), (BlockEntity)var6x.getValue(), var4, var5, var3).stream()).findFirst();
+      return ChunkPos.rangeClosed(new ChunkPos(var2.blockPosition()), Math.floorDiv(this.horizontalSearchDistance, 16) + 1).flatMap((var1x) -> var1.getChunk(var1x.x, var1x.z).getBlockEntities().entrySet().stream()).sorted(Comparator.comparing((var1x) -> ((BlockPos)var1x.getKey()).distToCenterSqr(var2.position()))).flatMap((var6) -> this.isTargetValidToPick(var2, var1, (BlockPos)var6.getKey(), (BlockEntity)var6.getValue(), var4, var5, var3).stream()).findFirst();
    }
 
    private Optional<TransportItemTarget> isTargetValidToPick(PathfinderMob var1, Level var2, BlockPos var3, BlockEntity var4, Set<GlobalPos> var5, Set<GlobalPos> var6, AABB var7) {
-      return TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var4, var2).filter((var6x) -> this.isWantedBlock(var1, var6x.state) && !this.isPositionAlreadyVisited(var5, var6, var6x, var2) && var7.contains((double)var6x.pos.getX(), (double)var6x.pos.getY(), (double)var6x.pos.getZ()));
+      return TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var4, var2).filter((var6x) -> this.isWantedBlock(var1, var6x.state) && !this.isPositionAlreadyVisited(var5, var6, var6x, var2) && var7.contains((double)var6x.pos.getX(), (double)var6x.pos.getY(), (double)var6x.pos.getZ()) && !this.isContainerLocked(var6x));
+   }
+
+   private boolean isContainerLocked(TransportItemTarget var1) {
+      BlockEntity var3 = var1.blockEntity;
+      boolean var10000;
+      if (var3 instanceof BaseContainerBlockEntity var2) {
+         if (var2.isLocked()) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    private boolean hasValidTarget(Level var1, PathfinderMob var2) {
@@ -348,11 +362,13 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private void pickUpItems(PathfinderMob var1, Container var2) {
       var1.setItemSlot(EquipmentSlot.MAINHAND, pickupItemFromContainer(var2));
       var1.setGuaranteedDrop(EquipmentSlot.MAINHAND);
+      var2.setChanged();
       this.clearMemoriesAfterMatchingTargetFound(var1);
    }
 
    private void putDownItem(PathfinderMob var1, Container var2) {
       ItemStack var3 = addItemsToContainer(var1, var2);
+      var2.setChanged();
       var1.setItemSlot(EquipmentSlot.MAINHAND, var3);
       if (var3.isEmpty()) {
          this.clearMemoriesAfterMatchingTargetFound(var1);

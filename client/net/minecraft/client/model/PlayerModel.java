@@ -11,11 +11,11 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class PlayerModel extends HumanoidModel<PlayerRenderState> {
+public class PlayerModel extends HumanoidModel<AvatarRenderState> {
    protected static final String LEFT_SLEEVE = "left_sleeve";
    protected static final String RIGHT_SLEEVE = "right_sleeve";
    protected static final String LEFT_PANTS = "left_pants";
@@ -81,7 +81,7 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       });
    }
 
-   public void setupAnim(PlayerRenderState var1) {
+   public void setupAnim(AvatarRenderState var1) {
       boolean var2 = !var1.isSpectator;
       this.body.visible = var2;
       this.rightArm.visible = var2;
@@ -106,7 +106,7 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       this.jacket.visible = var1;
    }
 
-   public void translateToHand(PlayerRenderState var1, HumanoidArm var2, PoseStack var3) {
+   public void translateToHand(AvatarRenderState var1, HumanoidArm var2, PoseStack var3) {
       this.root().translateAndRotate(var3);
       ModelPart var4 = this.getArm(var2);
       if (this.slim) {

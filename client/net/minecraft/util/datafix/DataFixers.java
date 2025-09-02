@@ -174,6 +174,7 @@ import net.minecraft.util.datafix.fixes.LeavesFix;
 import net.minecraft.util.datafix.fixes.LegacyDimensionIdFix;
 import net.minecraft.util.datafix.fixes.LegacyDragonFightFix;
 import net.minecraft.util.datafix.fixes.LegacyHoverEventFix;
+import net.minecraft.util.datafix.fixes.LegacyWorldBorderFix;
 import net.minecraft.util.datafix.fixes.LevelDataGeneratorOptionsFix;
 import net.minecraft.util.datafix.fixes.LevelFlatGeneratorInfoFix;
 import net.minecraft.util.datafix.fixes.LevelLegacyWorldGenSettingsFix;
@@ -366,6 +367,7 @@ import net.minecraft.util.datafix.schemas.V4421;
 import net.minecraft.util.datafix.schemas.V4531;
 import net.minecraft.util.datafix.schemas.V4532;
 import net.minecraft.util.datafix.schemas.V4533;
+import net.minecraft.util.datafix.schemas.V4543;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -863,9 +865,9 @@ public class DataFixers {
       Map var175 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var174, "Rename british shorthair", References.ENTITY, "minecraft:cat", var175));
       var0.addFixer(new CriteriaRenameFix(var174, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var175.getOrDefault(var1x, var1x)));
-      Set var285 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var285);
-      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var285::contains));
+      Set var287 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var287);
+      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var287::contains));
       Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
       Schema var177 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1110,6 +1112,10 @@ public class DataFixers {
       Schema var283 = var0.addSchema(4541, SAME_NAMESPACED);
       var0.addFixer(BlockRenameFix.create(var283, "Rename chain to iron_chain", createRenamer("minecraft:chain", "minecraft:iron_chain")));
       var0.addFixer(ItemRenameFix.create(var283, "Rename chain to iron_chain", createRenamer("minecraft:chain", "minecraft:iron_chain")));
+      Schema var284 = var0.addSchema(4543, V4543::new);
+      var0.addFixer(new AddNewChoices(var284, "Added Mannequin", References.ENTITY));
+      Schema var285 = var0.addSchema(4544, SAME_NAMESPACED);
+      var0.addFixer(new LegacyWorldBorderFix(var285));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

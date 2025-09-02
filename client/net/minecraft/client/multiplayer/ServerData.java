@@ -162,7 +162,7 @@ public class ServerData {
       private final Component name;
 
       private ServerPackStatus(final String var3) {
-         this.name = Component.translatable("addServer.resourcePack." + var3);
+         this.name = Component.translatable("manageServer.resourcePack." + var3);
       }
 
       public Component getName() {

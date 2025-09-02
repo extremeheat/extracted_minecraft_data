@@ -57,7 +57,7 @@ public class PlayerSkinRenderCache {
    }
 
    public RenderInfo getOrDefault(ResolvableProfile var1) {
-      RenderInfo var2 = (RenderInfo)((Optional)((CompletableFuture)this.renderInfoCache.getUnchecked(var1)).getNow(Optional.empty())).orElse((Object)null);
+      RenderInfo var2 = (RenderInfo)((Optional)this.lookup(var1).getNow(Optional.empty())).orElse((Object)null);
       return var2 != null ? var2 : (RenderInfo)this.defaultSkinCache.getUnchecked(var1);
    }
 
@@ -71,6 +71,10 @@ public class PlayerSkinRenderCache {
       } else {
          return () -> (RenderInfo)((Optional)var3.getNow(Optional.empty())).orElse(var2);
       }
+   }
+
+   public CompletableFuture<Optional<RenderInfo>> lookup(ResolvableProfile var1) {
+      return (CompletableFuture)this.renderInfoCache.getUnchecked(var1);
    }
 
    static RenderType playerSkinRenderType(PlayerSkin var0) {

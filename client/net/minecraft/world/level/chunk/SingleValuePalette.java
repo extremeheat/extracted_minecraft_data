@@ -9,29 +9,25 @@ import net.minecraft.network.VarInt;
 import org.apache.commons.lang3.Validate;
 
 public class SingleValuePalette<T> implements Palette<T> {
-   private final IdMap<T> registry;
    @Nullable
    private T value;
-   private final PaletteResize<T> resizeHandler;
 
-   public SingleValuePalette(IdMap<T> var1, PaletteResize<T> var2, List<T> var3) {
+   public SingleValuePalette(List<T> var1) {
       super();
-      this.registry = var1;
-      this.resizeHandler = var2;
-      if (var3.size() > 0) {
-         Validate.isTrue(var3.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var3.size());
-         this.value = (T)var3.get(0);
+      if (var1.size() > 0) {
+         Validate.isTrue(var1.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var1.size());
+         this.value = (T)var1.get(0);
       }
 
    }
 
-   public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new SingleValuePalette<A>(var1, var2, var3);
+   public static <A> Palette<A> create(int var0, List<A> var1) {
+      return new SingleValuePalette<A>(var1);
    }
 
-   public int idFor(T var1) {
+   public int idFor(T var1, PaletteResize<T> var2) {
       if (this.value != null && this.value != var1) {
-         return this.resizeHandler.onResize(1, var1);
+         return var2.onResize(1, var1);
       } else {
          this.value = var1;
          return 0;
@@ -54,23 +50,23 @@ public class SingleValuePalette<T> implements Palette<T> {
       }
    }
 
-   public void read(FriendlyByteBuf var1) {
-      this.value = this.registry.byIdOrThrow(var1.readVarInt());
+   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
+      this.value = (T)var2.byIdOrThrow(var1.readVarInt());
    }
 
-   public void write(FriendlyByteBuf var1) {
+   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {
-         var1.writeVarInt(this.registry.getId(this.value));
+         var1.writeVarInt(var2.getId(this.value));
       }
    }
 
-   public int getSerializedSize() {
+   public int getSerializedSize(IdMap<T> var1) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {
-         return VarInt.getByteSize(this.registry.getId(this.value));
+         return VarInt.getByteSize(var1.getId(this.value));
       }
    }
 
@@ -78,7 +74,7 @@ public class SingleValuePalette<T> implements Palette<T> {
       return 1;
    }
 
-   public Palette<T> copy(PaletteResize<T> var1) {
+   public Palette<T> copy() {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {

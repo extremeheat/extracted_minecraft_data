@@ -12,6 +12,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
@@ -46,6 +47,10 @@ public class WeatheringCopperGolemStatueBlock extends CopperGolemStatueBlock imp
       BlockEntity var9 = var3.getBlockEntity(var4);
       if (var9 instanceof CopperGolemStatueBlockEntity var8) {
          if (!var1.is(ItemTags.AXES)) {
+            if (var1.is(Items.HONEYCOMB)) {
+               return InteractionResult.PASS;
+            }
+
             this.updatePose(var3, var2, var4, var5);
             return InteractionResult.SUCCESS;
          }

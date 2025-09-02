@@ -9,6 +9,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarrationSupplier;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
@@ -70,7 +71,7 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
 
       public abstract Component getNarration();
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
          return true;
       }
 

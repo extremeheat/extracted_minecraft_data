@@ -9,7 +9,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -18,12 +17,12 @@ import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 
 public abstract class HangingEntity extends BlockAttachedEntity {
-   protected static final Predicate<Entity> HANGING_ENTITY = (var0) -> var0 instanceof HangingEntity;
    private static final EntityDataAccessor<Direction> DATA_DIRECTION;
    private static final Direction DEFAULT_DIRECTION;
 
@@ -84,12 +83,21 @@ public abstract class HangingEntity extends BlockAttachedEntity {
             BlockState var2 = this.level().getBlockState(var1x);
             return var2.isSolid() || DiodeBlock.isDiode(var2);
          });
-         return !var1 ? false : this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+         return var1 && this.canCoexist(false);
       }
    }
 
    protected AABB calculateSupportBox() {
       return this.getBoundingBox().move(this.getDirection().step().mul(-0.5F)).deflate(1.0E-7);
+   }
+
+   protected boolean canCoexist(boolean var1) {
+      Predicate var2 = (var2x) -> {
+         boolean var3 = !var1 && var2x.getType() == this.getType();
+         boolean var4 = var2x.getDirection() == this.getDirection();
+         return var2x != this && (var3 || var4);
+      };
+      return !this.level().hasEntities(EntityTypeTest.forClass(HangingEntity.class), this.getBoundingBox(), var2);
    }
 
    public abstract void playPlacementSound();

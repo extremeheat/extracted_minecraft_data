@@ -179,8 +179,7 @@ public class SoundEngine {
 
    public void stopAll() {
       if (this.loaded) {
-         this.executor.flush();
-         this.instanceToChannel.values().forEach((var0) -> var0.execute(Channel::stop));
+         this.executor.shutDown();
          this.instanceToChannel.clear();
          this.channelAccess.clear();
          this.queuedSounds.clear();
@@ -188,6 +187,7 @@ public class SoundEngine {
          this.instanceBySource.clear();
          this.soundDeleteTime.clear();
          this.queuedTickableSounds.clear();
+         this.executor.startUp();
       }
 
    }

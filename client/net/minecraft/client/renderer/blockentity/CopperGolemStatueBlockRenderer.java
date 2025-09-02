@@ -9,6 +9,8 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.CopperGolemStatueRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
@@ -19,7 +21,7 @@ import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
-public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<CopperGolemStatueBlockEntity> {
+public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<CopperGolemStatueBlockEntity, CopperGolemStatueRenderState> {
    private final Map<CopperGolemStatueBlock.Pose, CopperGolemStatueModel> models = new HashMap();
 
    public CopperGolemStatueBlockRenderer(BlockEntityRendererProvider.Context var1) {
@@ -31,17 +33,32 @@ public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<Coppe
       this.models.put(CopperGolemStatueBlock.Pose.STAR, new CopperGolemStatueModel(var2.bakeLayer(ModelLayers.COPPER_GOLEM_STAR)));
    }
 
-   public void submit(CopperGolemStatueBlockEntity var1, float var2, PoseStack var3, int var4, int var5, Vec3 var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
-      Block var10 = var1.getBlockState().getBlock();
-      if (var10 instanceof CopperGolemStatueBlock var9) {
-         var3.pushPose();
-         var3.translate(0.5F, 0.0F, 0.5F);
-         CopperGolemStatueModel var13 = (CopperGolemStatueModel)this.models.get(var1.getBlockState().getValue(BlockStateProperties.COPPER_GOLEM_POSE));
-         Direction var11 = (Direction)var1.getBlockState().getValue(CopperGolemStatueBlock.FACING);
-         RenderType var12 = RenderType.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var9.getWeatheringState()).texture());
-         var8.submitModel(var13, var11, var3, var12, var4, OverlayTexture.NO_OVERLAY, 0, var7);
-         var3.popPose();
+   public CopperGolemStatueRenderState createRenderState() {
+      return new CopperGolemStatueRenderState();
+   }
+
+   public void extractRenderState(CopperGolemStatueBlockEntity var1, CopperGolemStatueRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.direction = (Direction)var1.getBlockState().getValue(CopperGolemStatueBlock.FACING);
+      var2.pose = (CopperGolemStatueBlock.Pose)var1.getBlockState().getValue(BlockStateProperties.COPPER_GOLEM_POSE);
+   }
+
+   public void submit(CopperGolemStatueRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+      Block var5 = var1.blockState.getBlock();
+      if (var5 instanceof CopperGolemStatueBlock var4) {
+         var2.pushPose();
+         var2.translate(0.5F, 0.0F, 0.5F);
+         CopperGolemStatueModel var8 = (CopperGolemStatueModel)this.models.get(var1.pose);
+         Direction var6 = var1.direction;
+         RenderType var7 = RenderType.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var4.getWeatheringState()).texture());
+         var3.submitModel(var8, var6, var2, var7, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0, var1.breakProgress);
+         var2.popPose();
       }
 
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

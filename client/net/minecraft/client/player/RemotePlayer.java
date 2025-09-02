@@ -52,18 +52,10 @@ public class RemotePlayer extends AbstractClientPlayer {
          --this.lerpDeltaMovementSteps;
       }
 
-      this.oBob = this.bob;
       this.updateSwingTime();
-      float var1;
-      if (this.onGround() && !this.isDeadOrDying()) {
-         var1 = (float)Math.min(0.1, this.getDeltaMovement().horizontalDistance());
-      } else {
-         var1 = 0.0F;
-      }
+      this.updateBob();
 
-      this.bob += (var1 - this.bob) * 0.4F;
-
-      try (Zone var2 = Profiler.get().zone("push")) {
+      try (Zone var1 = Profiler.get().zone("push")) {
          this.pushEntities();
       }
 

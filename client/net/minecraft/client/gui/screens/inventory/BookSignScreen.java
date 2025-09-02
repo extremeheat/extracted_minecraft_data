@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -72,13 +73,13 @@ public class BookSignScreen extends Screen {
       return true;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.titleBox.isFocused() || this.titleBox.getValue().isEmpty() || var1 != 257 && var1 != 335) {
-         return super.keyPressed(var1, var2, var3);
-      } else {
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.titleBox.isFocused() && !this.titleBox.getValue().isEmpty() && var1.isConfirmation()) {
          this.saveChanges();
          this.minecraft.setScreen((Screen)null);
          return true;
+      } else {
+         return super.keyPressed(var1);
       }
    }
 

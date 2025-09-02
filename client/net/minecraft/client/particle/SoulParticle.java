@@ -1,15 +1,15 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 public class SoulParticle extends RisingParticle {
    private final SpriteSet sprites;
    protected boolean isGlowing;
 
    SoulParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
-      super(var1, var2, var4, var6, var8, var10, var12);
+      super(var1, var2, var4, var6, var8, var10, var12, var14.first());
       this.sprites = var14;
       this.scale(1.5F);
       this.setSpriteFromAge(var14);
@@ -19,8 +19,8 @@ public class SoulParticle extends RisingParticle {
       return this.isGlowing ? 240 : super.getLightColor(var1);
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
    public void tick() {
@@ -36,15 +36,10 @@ public class SoulParticle extends RisingParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SoulParticle var15 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setAlpha(1.0F);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         SoulParticle var16 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         var16.setAlpha(1.0F);
+         return var16;
       }
    }
 
@@ -56,16 +51,11 @@ public class SoulParticle extends RisingParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SoulParticle var15 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setAlpha(1.0F);
-         var15.isGlowing = true;
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         SoulParticle var16 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         var16.setAlpha(1.0F);
+         var16.isGlowing = true;
+         return var16;
       }
    }
 }

@@ -17,8 +17,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -246,11 +247,11 @@ public class PresetFlatWorldScreen extends Screen {
          PresetFlatWorldScreen.this.updateButtonValidity(var1 != null);
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (super.keyPressed(var1, var2, var3)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (super.keyPressed(var1)) {
             return true;
          } else {
-            if (CommonInputs.selected(var1) && this.getSelected() != null) {
+            if (var1.isSelection() && this.getSelected() != null) {
                ((Entry)this.getSelected()).select();
             }
 
@@ -274,9 +275,9 @@ public class PresetFlatWorldScreen extends Screen {
             var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, this.getContentX() + 18 + 5, this.getContentY() + 6, -1);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             this.select();
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
 
          void select() {

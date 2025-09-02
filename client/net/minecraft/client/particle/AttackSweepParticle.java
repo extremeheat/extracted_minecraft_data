@@ -1,14 +1,14 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class AttackSweepParticle extends TextureSheetParticle {
+public class AttackSweepParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
    AttackSweepParticle(ClientLevel var1, double var2, double var4, double var6, double var8, SpriteSet var10) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var10.first());
       this.sprites = var10;
       this.lifetime = 4;
       float var11 = this.random.nextFloat() * 0.6F + 0.4F;
@@ -34,8 +34,8 @@ public class AttackSweepParticle extends TextureSheetParticle {
       }
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -46,13 +46,8 @@ public class AttackSweepParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new AttackSweepParticle(var2, var3, var5, var7, var9, this.sprites);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

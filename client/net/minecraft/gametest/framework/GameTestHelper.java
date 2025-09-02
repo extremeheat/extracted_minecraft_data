@@ -483,8 +483,7 @@ public class GameTestHelper {
    }
 
    public void assertEntityPresent(EntityType<?> var1) {
-      List var2 = this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
-      if (var2.isEmpty()) {
+      if (!this.getLevel().hasEntities(var1, this.getBounds(), Entity::isAlive)) {
          throw this.assertionException("test.error.expected_entity_in_test", var1.getDescription());
       }
    }
@@ -495,16 +494,14 @@ public class GameTestHelper {
 
    public void assertEntityPresent(EntityType<?> var1, BlockPos var2) {
       BlockPos var3 = this.absolutePos(var2);
-      List var4 = this.getLevel().getEntities(var1, new AABB(var3), Entity::isAlive);
-      if (var4.isEmpty()) {
+      if (!this.getLevel().hasEntities(var1, new AABB(var3), Entity::isAlive)) {
          throw this.assertionException(var2, "test.error.expected_entity", var1.getDescription());
       }
    }
 
    public void assertEntityPresent(EntityType<?> var1, AABB var2) {
       AABB var3 = this.absoluteAABB(var2);
-      List var4 = this.getLevel().getEntities(var1, var3, Entity::isAlive);
-      if (var4.isEmpty()) {
+      if (!this.getLevel().hasEntities(var1, var3, Entity::isAlive)) {
          throw this.assertionException(BlockPos.containing(var2.getCenter()), "test.error.expected_entity", var1.getDescription());
       }
    }
@@ -570,48 +567,32 @@ public class GameTestHelper {
 
    public void assertItemEntityPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
-
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), Entity::isAlive)) {
-         ItemEntity var9 = (ItemEntity)var8;
-         if (var9.getItem().getItem().equals(var1)) {
-            return;
-         }
+      Predicate var6 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), var6)) {
+         throw this.assertionException(var2, "test.error.expected_item", var1.getName());
       }
-
-      throw this.assertionException(var2, "test.error.expected_item", var1.getName());
    }
 
    public void assertItemEntityNotPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
-
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), Entity::isAlive)) {
-         ItemEntity var9 = (ItemEntity)var8;
-         if (var9.getItem().getItem().equals(var1)) {
-            throw this.assertionException(var2, "test.error.unexpected_item", var1.getName());
-         }
+      Predicate var6 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
+      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(var5)).inflate(var3), var6)) {
+         throw this.assertionException(var2, "test.error.unexpected_item", var1.getName());
       }
-
    }
 
    public void assertItemEntityPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
-         ItemEntity var5 = (ItemEntity)var4;
-         if (var5.getItem().getItem().equals(var1)) {
-            return;
-         }
+      Predicate var2 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), var2)) {
+         throw this.assertionException("test.error.expected_item", var1.getName());
       }
-
-      throw this.assertionException("test.error.expected_item", var1.getName());
    }
 
    public void assertItemEntityNotPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
-         ItemEntity var5 = (ItemEntity)var4;
-         if (var5.getItem().getItem().equals(var1)) {
-            throw this.assertionException("test.error.unexpected_item", var1.getName());
-         }
+      Predicate var2 = (var1x) -> var1x.isAlive() && var1x.getItem().is(var1);
+      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), var2)) {
+         throw this.assertionException("test.error.unexpected_item", var1.getName());
       }
-
    }
 
    public void assertEntityNotPresent(EntityType<?> var1) {
@@ -627,8 +608,7 @@ public class GameTestHelper {
 
    public void assertEntityNotPresent(EntityType<?> var1, BlockPos var2) {
       BlockPos var3 = this.absolutePos(var2);
-      List var4 = this.getLevel().getEntities(var1, new AABB(var3), Entity::isAlive);
-      if (!var4.isEmpty()) {
+      if (this.getLevel().hasEntities(var1, new AABB(var3), Entity::isAlive)) {
          throw this.assertionException(var2, "test.error.unexpected_entity", var1.getDescription());
       }
    }
@@ -645,8 +625,7 @@ public class GameTestHelper {
       Vec3 var8 = new Vec3(var2, var4, var6);
       Vec3 var9 = this.absoluteVec(var8);
       Predicate var10 = (var1x) -> var1x.getBoundingBox().intersects(var9, var9);
-      List var11 = this.getLevel().getEntities(var1, this.getBounds(), var10);
-      if (var11.isEmpty()) {
+      if (!this.getLevel().hasEntities(var1, this.getBounds(), var10)) {
          throw this.assertionException("test.error.expected_entity_touching", var1.getDescription(), var9.x(), var9.y(), var9.z(), var2, var4, var6);
       }
    }
@@ -655,8 +634,7 @@ public class GameTestHelper {
       Vec3 var8 = new Vec3(var2, var4, var6);
       Vec3 var9 = this.absoluteVec(var8);
       Predicate var10 = (var1x) -> !var1x.getBoundingBox().intersects(var9, var9);
-      List var11 = this.getLevel().getEntities(var1, this.getBounds(), var10);
-      if (var11.isEmpty()) {
+      if (!this.getLevel().hasEntities(var1, this.getBounds(), var10)) {
          throw this.assertionException("test.error.expected_entity_not_touching", var1.getDescription(), var9.x(), var9.y(), var9.z(), var2, var4, var6);
       }
    }

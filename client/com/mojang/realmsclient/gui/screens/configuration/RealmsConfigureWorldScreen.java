@@ -38,6 +38,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -169,8 +170,8 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       var1.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+   public boolean keyPressed(KeyEvent var1) {
+      return this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {

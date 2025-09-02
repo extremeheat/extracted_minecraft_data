@@ -15,6 +15,7 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -125,9 +126,9 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
 
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             RegionSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
       }
    }

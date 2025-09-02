@@ -3,11 +3,11 @@ package net.minecraft.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 
-public class BaseAshSmokeParticle extends TextureSheetParticle {
+public abstract class BaseAshSmokeParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
    protected BaseAshSmokeParticle(ClientLevel var1, double var2, double var4, double var6, float var8, float var9, float var10, double var11, double var13, double var15, float var17, SpriteSet var18, float var19, int var20, float var21, boolean var22) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var18.first());
       this.friction = 0.96F;
       this.gravity = var21;
       this.speedUpWhenYMotionIsBlocked = true;
@@ -18,19 +18,19 @@ public class BaseAshSmokeParticle extends TextureSheetParticle {
       this.xd += var11;
       this.yd += var13;
       this.zd += var15;
-      float var23 = var1.random.nextFloat() * var19;
+      float var23 = this.random.nextFloat() * var19;
       this.rCol = var23;
       this.gCol = var23;
       this.bCol = var23;
       this.quadSize *= 0.75F * var17;
-      this.lifetime = (int)((double)var20 / ((double)var1.random.nextFloat() * 0.8 + 0.2) * (double)var17);
+      this.lifetime = (int)((double)var20 / ((double)this.random.nextFloat() * 0.8 + 0.2) * (double)var17);
       this.lifetime = Math.max(this.lifetime, 1);
       this.setSpriteFromAge(var18);
       this.hasPhysics = var22;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public float getQuadSize(float var1) {

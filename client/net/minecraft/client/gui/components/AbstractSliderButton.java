@@ -6,7 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -73,7 +74,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
 
    }
 
-   public void onClick(double var1, double var3, boolean var5) {
+   public void onClick(MouseButtonEvent var1, boolean var2) {
       this.dragging = this.active;
       this.setValueFromMouse(var1);
    }
@@ -91,16 +92,17 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (CommonInputs.selected(var1)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isSelection()) {
          this.canChangeValue = !this.canChangeValue;
          return true;
       } else {
          if (this.canChangeValue) {
-            boolean var4 = var1 == 263;
-            if (var4 || var1 == 262) {
-               float var5 = var4 ? -1.0F : 1.0F;
-               this.setValue(this.value + (double)(var5 / (float)(this.width - 8)));
+            boolean var2 = var1.isLeft();
+            boolean var3 = var1.isRight();
+            if (var2 || var3) {
+               float var4 = var2 ? -1.0F : 1.0F;
+               this.setValue(this.value + (double)(var4 / (float)(this.width - 8)));
                return true;
             }
          }
@@ -109,8 +111,8 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       }
    }
 
-   private void setValueFromMouse(double var1) {
-      this.setValue((var1 - (double)(this.getX() + 4)) / (double)(this.width - 8));
+   private void setValueFromMouse(MouseButtonEvent var1) {
+      this.setValue((var1.x() - (double)(this.getX() + 4)) / (double)(this.width - 8));
    }
 
    private void setValue(double var1) {
@@ -123,15 +125,15 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.updateMessage();
    }
 
-   protected void onDrag(double var1, double var3, double var5, double var7) {
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
       this.setValueFromMouse(var1);
-      super.onDrag(var1, var3, var5, var7);
+      super.onDrag(var1, var2, var4);
    }
 
    public void playDownSound(SoundManager var1) {
    }
 
-   public void onRelease(double var1, double var3) {
+   public void onRelease(MouseButtonEvent var1) {
       this.dragging = false;
       super.playDownSound(Minecraft.getInstance().getSoundManager());
    }

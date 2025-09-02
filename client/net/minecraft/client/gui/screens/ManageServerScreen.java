@@ -11,9 +11,9 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-public class EditServerScreen extends Screen {
-   private static final Component NAME_LABEL = Component.translatable("addServer.enterName");
-   private static final Component IP_LABEL = Component.translatable("addServer.enterIp");
+public class ManageServerScreen extends Screen {
+   private static final Component NAME_LABEL = Component.translatable("manageServer.enterName");
+   private static final Component IP_LABEL = Component.translatable("manageServer.enterIp");
    private static final Component DEFAULT_SERVER_NAME = Component.translatable("selectServer.defaultName");
    private Button addButton;
    private final BooleanConsumer callback;
@@ -22,26 +22,26 @@ public class EditServerScreen extends Screen {
    private EditBox nameEdit;
    private final Screen lastScreen;
 
-   public EditServerScreen(Screen var1, BooleanConsumer var2, ServerData var3) {
-      super(Component.translatable("addServer.title"));
+   public ManageServerScreen(Screen var1, Component var2, BooleanConsumer var3, ServerData var4) {
+      super(var2);
       this.lastScreen = var1;
-      this.callback = var2;
-      this.serverData = var3;
+      this.callback = var3;
+      this.serverData = var4;
    }
 
    protected void init() {
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, NAME_LABEL);
       this.nameEdit.setValue(this.serverData.name);
       this.nameEdit.setHint(DEFAULT_SERVER_NAME);
       this.nameEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.nameEdit);
-      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, Component.translatable("addServer.enterIp"));
+      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, IP_LABEL);
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.serverData.ip);
       this.ipEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.ipEdit);
-      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues(ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("addServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
-      this.addButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("addServer.add"), (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues(ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
+      this.addButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
       this.updateAddButtonStatus();
    }

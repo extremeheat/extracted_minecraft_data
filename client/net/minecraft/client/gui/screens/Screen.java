@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import java.net.URI;
 import java.nio.file.Path;
@@ -35,6 +34,7 @@ import net.minecraft.client.gui.narration.ScreenNarrationCollector;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.commands.Commands;
@@ -117,17 +117,17 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256 && this.shouldCloseOnEsc()) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isEscape() && this.shouldCloseOnEsc()) {
          this.onClose();
          return true;
-      } else if (super.keyPressed(var1, var2, var3)) {
+      } else if (super.keyPressed(var1)) {
          return true;
       } else {
          Object var10000;
-         switch (var1) {
+         switch (var1.key()) {
             case 258:
-               var10000 = this.createTabEvent();
+               var10000 = this.createTabEvent(!var1.hasShiftDown());
                break;
             case 259:
             case 260:
@@ -148,16 +148,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                var10000 = this.createArrowEvent(ScreenDirection.UP);
          }
 
-         Object var4 = var10000;
-         if (var4 != null) {
-            ComponentPath var5 = super.nextFocusPath((FocusNavigationEvent)var4);
-            if (var5 == null && var4 instanceof FocusNavigationEvent.TabNavigation) {
+         Object var2 = var10000;
+         if (var2 != null) {
+            ComponentPath var3 = super.nextFocusPath((FocusNavigationEvent)var2);
+            if (var3 == null && var2 instanceof FocusNavigationEvent.TabNavigation) {
                this.clearFocus();
-               var5 = super.nextFocusPath((FocusNavigationEvent)var4);
+               var3 = super.nextFocusPath((FocusNavigationEvent)var2);
             }
 
-            if (var5 != null) {
-               this.changeFocus(var5);
+            if (var3 != null) {
+               this.changeFocus(var3);
             }
          }
 
@@ -165,8 +165,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
    }
 
-   private FocusNavigationEvent.TabNavigation createTabEvent() {
-      boolean var1 = !hasShiftDown();
+   private FocusNavigationEvent.TabNavigation createTabEvent(boolean var1) {
       return new FocusNavigationEvent.TabNavigation(var1);
    }
 
@@ -262,7 +261,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public boolean handleComponentClicked(Style var1) {
       ClickEvent var2 = var1.getClickEvent();
-      if (hasShiftDown()) {
+      if (this.minecraft.hasShiftDown()) {
          if (var1.getInsertion() != null) {
             this.insertText(var1.getInsertion(), false);
          }
@@ -527,38 +526,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return this.isPauseScreen();
    }
 
-   public static boolean hasControlDown() {
-      if (Minecraft.ON_OSX) {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 343) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 347);
-      } else {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 341) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 345);
-      }
-   }
-
-   public static boolean hasShiftDown() {
-      return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344);
-   }
-
-   public static boolean hasAltDown() {
-      return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 342) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 346);
-   }
-
-   public static boolean isCut(int var0) {
-      return var0 == 88 && hasControlDown() && !hasShiftDown() && !hasAltDown();
-   }
-
-   public static boolean isPaste(int var0) {
-      return var0 == 86 && hasControlDown() && !hasShiftDown() && !hasAltDown();
-   }
-
-   public static boolean isCopy(int var0) {
-      return var0 == 67 && hasControlDown() && !hasShiftDown() && !hasAltDown();
-   }
-
-   public static boolean isSelectAll(int var0) {
-      return var0 == 65 && hasControlDown() && !hasShiftDown() && !hasAltDown();
-   }
-
    protected void repositionElements() {
       this.rebuildWidgets();
    }
@@ -574,15 +541,15 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       var2.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
    }
 
-   protected boolean isValidCharacterForName(String var1, char var2, int var3) {
+   protected boolean isValidCharacterForName(String var1, int var2, int var3) {
       int var4 = var1.indexOf(58);
       int var5 = var1.indexOf(47);
-      if (var2 == ':') {
+      if (var2 == 58) {
          return (var5 == -1 || var3 <= var5) && var4 == -1;
-      } else if (var2 == '/') {
+      } else if (var2 == 47) {
          return var3 > var4;
       } else {
-         return var2 == '_' || var2 == '-' || var2 >= 'a' && var2 <= 'z' || var2 >= '0' && var2 <= '9' || var2 == '.';
+         return var2 == 95 || var2 == 45 || var2 >= 97 && var2 <= 122 || var2 >= 48 && var2 <= 57 || var2 == 46;
       }
    }
 

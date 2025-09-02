@@ -21,9 +21,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.FaviconTexture;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -212,20 +212,20 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         if (var6) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         if (var2) {
             this.join();
          }
 
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (CommonInputs.selected(var1)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
             this.join();
             return true;
          } else {
-            return super.keyPressed(var1, var2, var3);
+            return super.keyPressed(var1);
          }
       }
 
@@ -462,25 +462,25 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          return true;
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (CommonInputs.selected(var1)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
             this.join();
             return true;
          } else {
-            if (Screen.hasShiftDown()) {
-               ServerSelectionList var4 = this.screen.serverSelectionList;
-               int var5 = var4.children().indexOf(this);
-               if (var5 == -1) {
+            if (var1.hasShiftDown()) {
+               ServerSelectionList var2 = this.screen.serverSelectionList;
+               int var3 = var2.children().indexOf(this);
+               if (var3 == -1) {
                   return true;
                }
 
-               if (var1 == 264 && var5 < this.screen.getServers().size() - 1 || var1 == 265 && var5 > 0) {
-                  this.swap(var5, var1 == 264 ? var5 + 1 : var5 - 1);
+               if (var1.isDown() && var3 < this.screen.getServers().size() - 1 || var1.isUp() && var3 > 0) {
+                  this.swap(var3, var1.isDown() ? var3 + 1 : var3 - 1);
                   return true;
                }
             }
 
-            return super.keyPressed(var1, var2, var3);
+            return super.keyPressed(var1);
          }
       }
 
@@ -493,32 +493,32 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.screen.serverSelectionList.swap(var1, var2);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         double var7 = var1 - (double)this.getX();
-         double var9 = var3 - (double)this.getY();
-         if (var7 <= 32.0) {
-            if (var7 < 32.0 && var7 > 16.0 && this.canJoin()) {
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         double var3 = var1.x() - (double)this.getX();
+         double var5 = var1.y() - (double)this.getY();
+         if (var3 <= 32.0) {
+            if (var3 < 32.0 && var3 > 16.0 && this.canJoin()) {
                this.join();
                return true;
             }
 
-            int var11 = this.screen.serverSelectionList.children().indexOf(this);
-            if (var7 < 16.0 && var9 < 16.0 && var11 > 0) {
-               this.swap(var11, var11 - 1);
+            int var7 = this.screen.serverSelectionList.children().indexOf(this);
+            if (var3 < 16.0 && var5 < 16.0 && var7 > 0) {
+               this.swap(var7, var7 - 1);
                return true;
             }
 
-            if (var7 < 16.0 && var9 > 16.0 && var11 < this.screen.getServers().size() - 1) {
-               this.swap(var11, var11 + 1);
+            if (var3 < 16.0 && var5 > 16.0 && var7 < this.screen.getServers().size() - 1) {
+               this.swap(var7, var7 + 1);
                return true;
             }
          }
 
-         if (var6) {
+         if (var2) {
             this.join();
          }
 
-         return super.mouseClicked(var1, var3, var5, var6);
+         return super.mouseClicked(var1, var2);
       }
 
       public ServerData getServerData() {

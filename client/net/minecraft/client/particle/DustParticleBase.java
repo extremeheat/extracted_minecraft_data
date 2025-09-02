@@ -4,11 +4,11 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ScalableParticleOptionsBase;
 import net.minecraft.util.Mth;
 
-public class DustParticleBase<T extends ScalableParticleOptionsBase> extends TextureSheetParticle {
+public class DustParticleBase<T extends ScalableParticleOptionsBase> extends SingleQuadParticle {
    private final SpriteSet sprites;
 
    protected DustParticleBase(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, T var14, SpriteSet var15) {
-      super(var1, var2, var4, var6, var8, var10, var12);
+      super(var1, var2, var4, var6, var8, var10, var12, var15.first());
       this.friction = 0.96F;
       this.speedUpWhenYMotionIsBlocked = true;
       this.sprites = var15;
@@ -25,8 +25,8 @@ public class DustParticleBase<T extends ScalableParticleOptionsBase> extends Tex
       return (this.random.nextFloat() * 0.2F + 0.8F) * var1 * var2;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public float getQuadSize(float var1) {

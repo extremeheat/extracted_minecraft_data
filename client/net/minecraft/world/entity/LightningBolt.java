@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -168,24 +167,14 @@ public class LightningBolt extends Entity {
 
    private static void clearCopperOnLightningStrike(Level var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
-      BlockPos var3;
-      BlockState var4;
-      if (var2.is(BlockTags.LIGHTNING_RODS)) {
-         var3 = var1.relative(((Direction)var2.getValue(LightningRodBlock.FACING)).getOpposite());
-         var4 = var0.getBlockState(var3);
-      } else {
-         var3 = var1;
-         var4 = var2;
-      }
+      if (var2.getBlock() instanceof WeatheringCopper) {
+         var0.setBlockAndUpdate(var1, WeatheringCopper.getFirst(var0.getBlockState(var1)));
+         BlockPos.MutableBlockPos var3 = var1.mutable();
+         int var4 = var0.random.nextInt(3) + 3;
 
-      if (var4.getBlock() instanceof WeatheringCopper) {
-         var0.setBlockAndUpdate(var3, WeatheringCopper.getFirst(var0.getBlockState(var3)));
-         BlockPos.MutableBlockPos var5 = var1.mutable();
-         int var6 = var0.random.nextInt(3) + 3;
-
-         for(int var7 = 0; var7 < var6; ++var7) {
-            int var8 = var0.random.nextInt(8) + 1;
-            randomWalkCleaningCopper(var0, var3, var5, var8);
+         for(int var5 = 0; var5 < var4; ++var5) {
+            int var6 = var0.random.nextInt(8) + 1;
+            randomWalkCleaningCopper(var0, var1, var3, var6);
          }
 
       }

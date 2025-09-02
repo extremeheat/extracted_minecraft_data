@@ -14,6 +14,7 @@ import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -70,12 +71,12 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
 
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 256) {
          this.cancel();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

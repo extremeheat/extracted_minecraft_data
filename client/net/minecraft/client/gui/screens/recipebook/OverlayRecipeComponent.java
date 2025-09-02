@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.recipebook.PlaceRecipeHelper;
@@ -104,13 +105,13 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       return this.lastRecipeClicked;
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-      if (var5 != 0) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (var1.button() != 0) {
          return false;
       } else {
-         for(OverlayRecipeButton var8 : this.recipeButtons) {
-            if (var8.mouseClicked(var1, var3, var5, var6)) {
-               this.lastRecipeClicked = var8.recipe;
+         for(OverlayRecipeButton var4 : this.recipeButtons) {
+            if (var4.mouseClicked(var1, var2)) {
+               this.lastRecipeClicked = var4.recipe;
                return true;
             }
          }

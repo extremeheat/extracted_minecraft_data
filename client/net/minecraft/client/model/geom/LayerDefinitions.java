@@ -315,9 +315,9 @@ public class LayerDefinitions {
       var0.put(ModelLayers.HORSE_BABY_SADDLE, var12.apply(var62));
       MeshTransformer var63 = MeshTransformer.scaling(1.0625F);
       var0.put(ModelLayers.HUSK, var1.apply(var63));
-      ModelLayers.HUSK_ARMOR.putFrom(var2, var0);
+      ModelLayers.HUSK_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var63)), var0);
       var0.put(ModelLayers.HUSK_BABY, var1.apply(HumanoidModel.BABY_TRANSFORMER).apply(var63));
-      ModelLayers.HUSK_BABY_ARMOR.putFrom(var3, var0);
+      ModelLayers.HUSK_BABY_ARMOR.putFrom(var3.map((var1x) -> var1x.apply(var63)), var0);
       var0.put(ModelLayers.ILLUSIONER, var14);
       var0.put(ModelLayers.IRON_GOLEM, IronGolemModel.createBodyLayer());
       var0.put(ModelLayers.LEASH_KNOT, LeashKnotModel.createBodyLayer());

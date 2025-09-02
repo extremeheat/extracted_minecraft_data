@@ -11,6 +11,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -26,14 +28,10 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
 
    @Nullable
    public CopperGolem removeStatue(BlockState var1) {
-      Component var2 = (Component)this.components().get(DataComponents.CUSTOM_NAME);
-      CopperGolem var3 = EntityType.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
-      if (var3 != null) {
-         if (var2 != null) {
-            var3.setCustomName(var2);
-         }
-
-         return this.initCopperGolem(var1, var3);
+      CopperGolem var2 = EntityType.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
+      if (var2 != null) {
+         var2.setCustomName((Component)this.components().get(DataComponents.CUSTOM_NAME));
+         return this.initCopperGolem(var1, var2);
       } else {
          return null;
       }
@@ -50,6 +48,12 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
+   }
+
+   public ItemStack getItem(ItemStack var1, CopperGolemStatueBlock.Pose var2) {
+      var1.applyComponents(this.collectComponents());
+      var1.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(CopperGolemStatueBlock.POSE, var2));
+      return var1;
    }
 
    // $FF: synthetic method

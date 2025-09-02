@@ -43,6 +43,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.MovingBlockSubmit> movingBlockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList();
    private final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList();
+   private final List<SubmitNodeCollector.ParticleGroupRenderer> particleGroupRenderers = new ArrayList();
    private final Map<RenderType, List<SubmitNodeStorage.ModelSubmit<?>>> opaqueModelSubmits = new HashMap();
    private final List<SubmitNodeStorage.TranslucentModelSubmit<?>> translucentModelSubmits = new ArrayList();
    private final Set<RenderType> usedModelSubmitBuckets = new ObjectOpenHashSet();
@@ -151,6 +152,11 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       var4.add(new SubmitNodeStorage.CustomGeometrySubmit(var1.last().copy(), var3));
    }
 
+   public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1) {
+      this.wasUsed = true;
+      this.particleGroupRenderers.add(var1);
+   }
+
    public List<SubmitNodeStorage.ShadowSubmit> getShadowSubmits() {
       return this.shadowSubmits;
    }
@@ -199,6 +205,10 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.itemSubmits;
    }
 
+   public List<SubmitNodeCollector.ParticleGroupRenderer> getParticleGroupRenderers() {
+      return this.particleGroupRenderers;
+   }
+
    public Map<RenderType, List<SubmitNodeStorage.ModelSubmit<?>>> getOpaqueModelSubmits() {
       return this.opaqueModelSubmits;
    }
@@ -228,6 +238,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.blockModelSubmits.clear();
       this.itemSubmits.clear();
       this.translucentModelSubmits.clear();
+      this.particleGroupRenderers.clear();
 
       for(Map.Entry var2 : this.opaqueModelSubmits.entrySet()) {
          List var3 = (List)var2.getValue();

@@ -33,22 +33,22 @@ public class WorldBorderCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("worldborder").requires(Commands.hasPermission(2))).then(Commands.literal("add").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getLerpRemainingTime() + (long)IntegerArgumentType.getInteger(var0x, "time") * 1000L)))))).then(Commands.literal("set").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), (long)IntegerArgumentType.getInteger(var0x, "time") * 1000L)))))).then(Commands.literal("center").then(Commands.argument("pos", Vec2Argument.vec2()).executes((var0x) -> setCenter((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "pos")))))).then(((LiteralArgumentBuilder)Commands.literal("damage").then(Commands.literal("amount").then(Commands.argument("damagePerBlock", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageAmount((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "damagePerBlock")))))).then(Commands.literal("buffer").then(Commands.argument("distance", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageBuffer((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "distance"))))))).then(Commands.literal("get").executes((var0x) -> getSize((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("warning").then(Commands.literal("distance").then(Commands.argument("distance", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningDistance((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "distance")))))).then(Commands.literal("time").then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningTime((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "time")))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("worldborder").requires(Commands.hasPermission(2))).then(Commands.literal("add").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getLerpTime() + (long)IntegerArgumentType.getInteger(var0x, "time") * 1000L)))))).then(Commands.literal("set").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), (long)IntegerArgumentType.getInteger(var0x, "time") * 1000L)))))).then(Commands.literal("center").then(Commands.argument("pos", Vec2Argument.vec2()).executes((var0x) -> setCenter((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "pos")))))).then(((LiteralArgumentBuilder)Commands.literal("damage").then(Commands.literal("amount").then(Commands.argument("damagePerBlock", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageAmount((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "damagePerBlock")))))).then(Commands.literal("buffer").then(Commands.argument("distance", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageBuffer((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "distance"))))))).then(Commands.literal("get").executes((var0x) -> getSize((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("warning").then(Commands.literal("distance").then(Commands.argument("distance", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningDistance((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "distance")))))).then(Commands.literal("time").then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningTime((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "time")))))));
    }
 
    private static int setDamageBuffer(CommandSourceStack var0, float var1) throws CommandSyntaxException {
-      WorldBorder var2 = var0.getServer().overworld().getWorldBorder();
-      if (var2.getDamageSafeZone() == (double)var1) {
+      WorldBorder var2 = var0.getLevel().getWorldBorder();
+      if (var2.getSafeZone() == (double)var1) {
          throw ERROR_SAME_DAMAGE_BUFFER.create();
       } else {
-         var2.setDamageSafeZone((double)var1);
+         var2.setSafeZone((double)var1);
          var0.sendSuccess(() -> Component.translatable("commands.worldborder.damage.buffer.success", String.format(Locale.ROOT, "%.2f", var1)), true);
          return (int)var1;
       }
    }
 
    private static int setDamageAmount(CommandSourceStack var0, float var1) throws CommandSyntaxException {
-      WorldBorder var2 = var0.getServer().overworld().getWorldBorder();
+      WorldBorder var2 = var0.getLevel().getWorldBorder();
       if (var2.getDamagePerBlock() == (double)var1) {
          throw ERROR_SAME_DAMAGE_AMOUNT.create();
       } else {
@@ -59,7 +59,7 @@ public class WorldBorderCommand {
    }
 
    private static int setWarningTime(CommandSourceStack var0, int var1) throws CommandSyntaxException {
-      WorldBorder var2 = var0.getServer().overworld().getWorldBorder();
+      WorldBorder var2 = var0.getLevel().getWorldBorder();
       if (var2.getWarningTime() == var1) {
          throw ERROR_SAME_WARNING_TIME.create();
       } else {
@@ -70,7 +70,7 @@ public class WorldBorderCommand {
    }
 
    private static int setWarningDistance(CommandSourceStack var0, int var1) throws CommandSyntaxException {
-      WorldBorder var2 = var0.getServer().overworld().getWorldBorder();
+      WorldBorder var2 = var0.getLevel().getWorldBorder();
       if (var2.getWarningBlocks() == var1) {
          throw ERROR_SAME_WARNING_DISTANCE.create();
       } else {
@@ -81,13 +81,13 @@ public class WorldBorderCommand {
    }
 
    private static int getSize(CommandSourceStack var0) {
-      double var1 = var0.getServer().overworld().getWorldBorder().getSize();
+      double var1 = var0.getLevel().getWorldBorder().getSize();
       var0.sendSuccess(() -> Component.translatable("commands.worldborder.get", String.format(Locale.ROOT, "%.0f", var1)), false);
       return Mth.floor(var1 + 0.5);
    }
 
    private static int setCenter(CommandSourceStack var0, Vec2 var1) throws CommandSyntaxException {
-      WorldBorder var2 = var0.getServer().overworld().getWorldBorder();
+      WorldBorder var2 = var0.getLevel().getWorldBorder();
       if (var2.getCenterX() == (double)var1.x && var2.getCenterZ() == (double)var1.y) {
          throw ERROR_SAME_CENTER.create();
       } else if (!((double)Math.abs(var1.x) > 2.9999984E7) && !((double)Math.abs(var1.y) > 2.9999984E7)) {
@@ -100,7 +100,7 @@ public class WorldBorderCommand {
    }
 
    private static int setSize(CommandSourceStack var0, double var1, long var3) throws CommandSyntaxException {
-      WorldBorder var5 = var0.getServer().overworld().getWorldBorder();
+      WorldBorder var5 = var0.getLevel().getWorldBorder();
       double var6 = var5.getSize();
       if (var6 == var1) {
          throw ERROR_SAME_SIZE.create();

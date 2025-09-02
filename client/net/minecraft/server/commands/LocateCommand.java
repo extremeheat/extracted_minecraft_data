@@ -36,6 +36,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class LocateCommand {
@@ -68,40 +69,41 @@ public class LocateCommand {
    private static int locateStructure(CommandSourceStack var0, ResourceOrTagKeyArgument.Result<Structure> var1) throws CommandSyntaxException {
       Registry var2 = var0.getLevel().registryAccess().lookupOrThrow(Registries.STRUCTURE);
       HolderSet var3 = (HolderSet)getHolders(var1, var2).orElseThrow(() -> ERROR_STRUCTURE_INVALID.create(var1.asPrintable()));
-      BlockPos var4 = BlockPos.containing(var0.getPosition());
-      ServerLevel var5 = var0.getLevel();
+      ServerLevel var4 = var0.getLevel();
+      BlockPos var5 = getSourceWithinLevelBounds(var4, var0.getPosition());
       Stopwatch var6 = Stopwatch.createStarted(Util.TICKER);
-      Pair var7 = var5.getChunkSource().getGenerator().findNearestMapStructure(var5, var3, var4, 100, false);
+      Pair var7 = var4.getChunkSource().getGenerator().findNearestMapStructure(var4, var3, var5, 100, false);
       var6.stop();
       if (var7 == null) {
          throw ERROR_STRUCTURE_NOT_FOUND.create(var1.asPrintable());
       } else {
-         return showLocateResult(var0, var1, var4, var7, "commands.locate.structure.success", false, var6.elapsed());
+         return showLocateResult(var0, var1, var5, var7, "commands.locate.structure.success", false, var6.elapsed());
       }
    }
 
    private static int locateBiome(CommandSourceStack var0, ResourceOrTagArgument.Result<Biome> var1) throws CommandSyntaxException {
-      BlockPos var2 = BlockPos.containing(var0.getPosition());
-      Stopwatch var3 = Stopwatch.createStarted(Util.TICKER);
-      Pair var4 = var0.getLevel().findClosestBiome3d(var1, var2, 6400, 32, 64);
-      var3.stop();
-      if (var4 == null) {
+      ServerLevel var2 = var0.getLevel();
+      BlockPos var3 = getSourceWithinLevelBounds(var2, var0.getPosition());
+      Stopwatch var4 = Stopwatch.createStarted(Util.TICKER);
+      Pair var5 = var2.findClosestBiome3d(var1, var3, 6400, 32, 64);
+      var4.stop();
+      if (var5 == null) {
          throw ERROR_BIOME_NOT_FOUND.create(var1.asPrintable());
       } else {
-         return showLocateResult(var0, var1, var2, var4, "commands.locate.biome.success", true, var3.elapsed());
+         return showLocateResult(var0, var1, var3, var5, "commands.locate.biome.success", true, var4.elapsed());
       }
    }
 
    private static int locatePoi(CommandSourceStack var0, ResourceOrTagArgument.Result<PoiType> var1) throws CommandSyntaxException {
-      BlockPos var2 = BlockPos.containing(var0.getPosition());
-      ServerLevel var3 = var0.getLevel();
+      ServerLevel var2 = var0.getLevel();
+      BlockPos var3 = getSourceWithinLevelBounds(var2, var0.getPosition());
       Stopwatch var4 = Stopwatch.createStarted(Util.TICKER);
-      Optional var5 = var3.getPoiManager().findClosestWithType(var1, var2, 256, PoiManager.Occupancy.ANY);
+      Optional var5 = var2.getPoiManager().findClosestWithType(var1, var3, 256, PoiManager.Occupancy.ANY);
       var4.stop();
       if (var5.isEmpty()) {
          throw ERROR_POI_NOT_FOUND.create(var1.asPrintable());
       } else {
-         return showLocateResult(var0, var1, var2, ((Pair)var5.get()).swap(), "commands.locate.poi.success", false, var4.elapsed());
+         return showLocateResult(var0, var1, var3, ((Pair)var5.get()).swap(), "commands.locate.poi.success", false, var4.elapsed());
       }
    }
 
@@ -135,5 +137,10 @@ public class LocateCommand {
       int var4 = var2 - var0;
       int var5 = var3 - var1;
       return Mth.sqrt((float)(var4 * var4 + var5 * var5));
+   }
+
+   private static BlockPos getSourceWithinLevelBounds(ServerLevel var0, Vec3 var1) {
+      double var2 = Mth.clamp(var1.y(), (double)var0.getMinY(), (double)var0.getMaxY());
+      return BlockPos.containing(var1.x(), var2, var1.z());
    }
 }

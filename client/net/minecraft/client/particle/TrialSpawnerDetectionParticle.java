@@ -1,16 +1,16 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 
-public class TrialSpawnerDetectionParticle extends TextureSheetParticle {
+public class TrialSpawnerDetectionParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
    private static final int BASE_LIFETIME = 8;
 
    protected TrialSpawnerDetectionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, SpriteSet var15) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var15.first());
       this.sprites = var15;
       this.friction = 0.96F;
       this.gravity = -0.1F;
@@ -28,8 +28,8 @@ public class TrialSpawnerDetectionParticle extends TextureSheetParticle {
       this.hasPhysics = true;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public int getLightColor(float var1) {
@@ -57,13 +57,8 @@ public class TrialSpawnerDetectionParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new TrialSpawnerDetectionParticle(var2, var3, var5, var7, var9, var11, var13, 1.5F, this.sprites);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

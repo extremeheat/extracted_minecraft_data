@@ -1,14 +1,15 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
 
-public class BubbleParticle extends TextureSheetParticle {
-   BubbleParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(var1, var2, var4, var6);
+public class BubbleParticle extends SingleQuadParticle {
+   BubbleParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
+      super(var1, var2, var4, var6, var14);
       this.setSize(0.02F, 0.02F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
       this.xd = var8 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
@@ -36,8 +37,8 @@ public class BubbleParticle extends TextureSheetParticle {
       }
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -48,15 +49,9 @@ public class BubbleParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         BubbleParticle var15 = new BubbleParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.pickSprite(this.sprite);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         BubbleParticle var16 = new BubbleParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+         return var16;
       }
    }
 }

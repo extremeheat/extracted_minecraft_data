@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -61,12 +62,13 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setValue(var4);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isEscape()) {
          this.minecraft.player.closeContainer();
+         return true;
+      } else {
+         return !this.name.keyPressed(var1) && !this.name.canConsumeInput() ? super.keyPressed(var1) : true;
       }
-
-      return !this.name.keyPressed(var1, var2, var3) && !this.name.canConsumeInput() ? super.keyPressed(var1, var2, var3) : true;
    }
 
    private void onNameChanged(String var1) {

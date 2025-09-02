@@ -13,6 +13,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -123,8 +124,8 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          this.dragging = var1;
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
-         return ContainerEventHandler.super.mouseClicked(var1, var3, var5, var6);
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         return ContainerEventHandler.super.mouseClicked(var1, var2);
       }
 
       public void setFocused(@Nullable GuiEventListener var1) {

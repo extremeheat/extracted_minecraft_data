@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -114,9 +115,9 @@ public class CreateBuffetWorldScreen extends Screen {
             var1.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             BiomeList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
       }
    }

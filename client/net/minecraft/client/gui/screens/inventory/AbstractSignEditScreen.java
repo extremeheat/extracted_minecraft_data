@@ -6,6 +6,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
 import net.minecraft.network.chat.CommonComponents;
@@ -59,13 +61,13 @@ public abstract class AbstractSignEditScreen extends Screen {
       return this.minecraft != null && this.minecraft.player != null && !this.sign.isRemoved() && !this.sign.playerIsTooFarAwayToEdit(this.minecraft.player.getUUID());
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 265) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isUp()) {
          this.line = this.line - 1 & 3;
          this.signField.setCursorToEnd();
          return true;
-      } else if (var1 != 264 && var1 != 257 && var1 != 335) {
-         return this.signField.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+      } else if (!var1.isDown() && !var1.isConfirmation()) {
+         return this.signField.keyPressed(var1) ? true : super.keyPressed(var1);
       } else {
          this.line = this.line + 1 & 3;
          this.signField.setCursorToEnd();
@@ -73,7 +75,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       }
    }
 
-   public boolean charTyped(char var1, int var2) {
+   public boolean charTyped(CharacterEvent var1) {
       this.signField.charTyped(var1);
       return true;
    }

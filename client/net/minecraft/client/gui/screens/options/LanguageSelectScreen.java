@@ -9,9 +9,10 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -106,23 +107,23 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          }
 
-         public boolean keyPressed(int var1, int var2, int var3) {
-            if (CommonInputs.selected(var1)) {
+         public boolean keyPressed(KeyEvent var1) {
+            if (var1.isSelection()) {
                this.select();
                LanguageSelectScreen.this.onDone();
                return true;
             } else {
-               return super.keyPressed(var1, var2, var3);
+               return super.keyPressed(var1);
             }
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             this.select();
-            if (var6) {
+            if (var2) {
                LanguageSelectScreen.this.onDone();
             }
 
-            return super.mouseClicked(var1, var3, var5, var6);
+            return super.mouseClicked(var1, var2);
          }
 
          private void select() {

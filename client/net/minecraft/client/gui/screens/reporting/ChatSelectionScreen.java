@@ -17,9 +17,10 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
@@ -204,9 +205,9 @@ public class ChatSelectionScreen extends Screen {
 
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         Entry var4 = (Entry)this.getSelected();
-         return var4 != null && var4.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
+      public boolean keyPressed(KeyEvent var1) {
+         Entry var2 = (Entry)this.getSelected();
+         return var2 != null && var2.keyPressed(var1) ? true : super.keyPressed(var1);
       }
 
       public int getFooterTop() {
@@ -254,7 +255,7 @@ public class ChatSelectionScreen extends Screen {
             return this.canSelect();
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             return this.canSelect();
          }
       }
@@ -343,13 +344,13 @@ public class ChatSelectionScreen extends Screen {
             return (Component)(this.isSelected() ? Component.translatable("narrator.select", this.narration) : this.narration);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             ChatSelectionList.this.setSelected((Entry)null);
             return this.toggleReport();
          }
 
-         public boolean keyPressed(int var1, int var2, int var3) {
-            return CommonInputs.selected(var1) ? this.toggleReport() : false;
+         public boolean keyPressed(KeyEvent var1) {
+            return var1.isSelection() ? this.toggleReport() : false;
          }
 
          public boolean isSelected() {

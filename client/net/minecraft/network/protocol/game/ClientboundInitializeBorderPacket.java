@@ -35,7 +35,7 @@ public class ClientboundInitializeBorderPacket implements Packet<ClientGamePacke
       this.newCenterZ = var1.getCenterZ();
       this.oldSize = var1.getSize();
       this.newSize = var1.getLerpTarget();
-      this.lerpTime = var1.getLerpRemainingTime();
+      this.lerpTime = var1.getLerpTime();
       this.newAbsoluteMaxSize = var1.getAbsoluteMaxSize();
       this.warningBlocks = var1.getWarningBlocks();
       this.warningTime = var1.getWarningTime();

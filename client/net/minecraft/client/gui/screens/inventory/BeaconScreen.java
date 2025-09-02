@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
@@ -193,7 +194,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          return Component.translatable(((MobEffect)var1.value()).getDescriptionId());
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          if (!this.isSelected()) {
             if (this.isPrimary) {
                BeaconScreen.this.primary = this.effect;
@@ -259,7 +260,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          BeaconScreen.this.minecraft.getConnection().send(new ServerboundSetBeaconPacket(Optional.ofNullable(BeaconScreen.this.primary), Optional.ofNullable(BeaconScreen.this.secondary)));
          BeaconScreen.this.minecraft.player.closeContainer();
       }
@@ -274,7 +275,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          BeaconScreen.this.minecraft.player.closeContainer();
       }
 

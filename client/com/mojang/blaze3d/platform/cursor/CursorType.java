@@ -15,7 +15,7 @@ public class CursorType {
    }
 
    public void select(Window var1) {
-      GLFW.glfwSetCursor(var1.getWindow(), this.handle);
+      GLFW.glfwSetCursor(var1.handle(), this.handle);
    }
 
    public String toString() {

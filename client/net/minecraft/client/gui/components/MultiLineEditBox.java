@@ -8,12 +8,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.StringUtil;
 
 public class MultiLineEditBox extends AbstractTextAreaWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -69,29 +70,29 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
    }
 
-   public void onClick(double var1, double var3, boolean var5) {
-      if (var5) {
+   public void onClick(MouseButtonEvent var1, boolean var2) {
+      if (var2) {
          this.textField.selectWordAtCursor();
       } else {
-         this.textField.setSelecting(Screen.hasShiftDown());
-         this.seekCursorScreen(var1, var3);
+         this.textField.setSelecting(var1.hasShiftDown());
+         this.seekCursorScreen(var1.x(), var1.y());
       }
 
    }
 
-   protected void onDrag(double var1, double var3, double var5, double var7) {
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
       this.textField.setSelecting(true);
-      this.seekCursorScreen(var1, var3);
-      this.textField.setSelecting(Screen.hasShiftDown());
+      this.seekCursorScreen(var1.x(), var1.y());
+      this.textField.setSelecting(var1.hasShiftDown());
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       return this.textField.keyPressed(var1);
    }
 
-   public boolean charTyped(char var1, int var2) {
-      if (this.visible && this.isFocused() && StringUtil.isAllowedChatCharacter(var1)) {
-         this.textField.insertText(Character.toString(var1));
+   public boolean charTyped(CharacterEvent var1) {
+      if (this.visible && this.isFocused() && var1.isAllowedChatCharacter()) {
+         this.textField.insertText(var1.codepointAsString());
          return true;
       } else {
          return false;

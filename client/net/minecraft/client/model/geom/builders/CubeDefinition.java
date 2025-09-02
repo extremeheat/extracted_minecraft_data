@@ -5,12 +5,13 @@ import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public final class CubeDefinition {
    @Nullable
    private final String comment;
-   private final Vector3f origin;
-   private final Vector3f dimensions;
+   private final Vector3fc origin;
+   private final Vector3fc dimensions;
    private final CubeDeformation grow;
    private final boolean mirror;
    private final UVPair texCoord;

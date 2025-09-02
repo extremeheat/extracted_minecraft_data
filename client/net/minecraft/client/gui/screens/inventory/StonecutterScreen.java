@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -118,44 +119,44 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       this.scrolling = false;
       if (this.displayRecipes) {
-         int var7 = this.leftPos + 52;
-         int var8 = this.topPos + 14;
-         int var9 = this.startIndex + 12;
+         int var3 = this.leftPos + 52;
+         int var4 = this.topPos + 14;
+         int var5 = this.startIndex + 12;
 
-         for(int var10 = this.startIndex; var10 < var9; ++var10) {
-            int var11 = var10 - this.startIndex;
-            double var12 = var1 - (double)(var7 + var11 % 4 * 16);
-            double var14 = var3 - (double)(var8 + var11 / 4 * 18);
-            if (var12 >= 0.0 && var14 >= 0.0 && var12 < 16.0 && var14 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var10)) {
+         for(int var6 = this.startIndex; var6 < var5; ++var6) {
+            int var7 = var6 - this.startIndex;
+            double var8 = var1.x() - (double)(var3 + var7 % 4 * 16);
+            double var10 = var1.y() - (double)(var4 + var7 / 4 * 18);
+            if (var8 >= 0.0 && var10 >= 0.0 && var8 < 16.0 && var10 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var6)) {
                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var10);
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var6);
                return true;
             }
          }
 
-         var7 = this.leftPos + 119;
-         var8 = this.topPos + 9;
-         if (var1 >= (double)var7 && var1 < (double)(var7 + 12) && var3 >= (double)var8 && var3 < (double)(var8 + 54)) {
+         var3 = this.leftPos + 119;
+         var4 = this.topPos + 9;
+         if (var1.x() >= (double)var3 && var1.x() < (double)(var3 + 12) && var1.y() >= (double)var4 && var1.y() < (double)(var4 + 54)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
       if (this.scrolling && this.isScrollBarActive()) {
-         int var10 = this.topPos + 14;
-         int var11 = var10 + 54;
-         this.scrollOffs = ((float)var3 - (float)var10 - 7.5F) / ((float)(var11 - var10) - 15.0F);
+         int var6 = this.topPos + 14;
+         int var7 = var6 + 54;
+         this.scrollOffs = ((float)var1.y() - (float)var6 - 7.5F) / ((float)(var7 - var6) - 15.0F);
          this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
          this.startIndex = (int)((double)(this.scrollOffs * (float)this.getOffscreenRows()) + 0.5) * 4;
          return true;
       } else {
-         return super.mouseDragged(var1, var3, var5, var6, var8);
+         return super.mouseDragged(var1, var2, var4);
       }
    }
 

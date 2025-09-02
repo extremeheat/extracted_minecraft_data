@@ -375,7 +375,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       var5.renderContent(var1, var2, var3, Objects.equals(this.hovered, var5), var4);
    }
 
-   protected void renderSelection(GuiGraphics var1, Entry<?> var2, int var3) {
+   protected void renderSelection(GuiGraphics var1, E var2, int var3) {
       int var4 = var2.getX();
       int var5 = var2.getY();
       int var6 = var4 + var2.getWidth();

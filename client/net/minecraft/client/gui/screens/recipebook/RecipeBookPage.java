@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -147,11 +148,11 @@ public class RecipeBookPage {
       this.overlay.setVisible(false);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, int var6, int var7, int var8, int var9, boolean var10) {
+   public boolean mouseClicked(MouseButtonEvent var1, int var2, int var3, int var4, int var5, boolean var6) {
       this.lastClickedRecipe = null;
       this.lastClickedRecipeCollection = null;
       if (this.overlay.isVisible()) {
-         if (this.overlay.mouseClicked(var1, var3, var5, var10)) {
+         if (this.overlay.mouseClicked(var1, var6)) {
             this.lastClickedRecipe = this.overlay.getLastRecipeClicked();
             this.lastClickedRecipeCollection = this.overlay.getRecipeCollection();
          } else {
@@ -159,24 +160,24 @@ public class RecipeBookPage {
          }
 
          return true;
-      } else if (this.forwardButton.mouseClicked(var1, var3, var5, var10)) {
+      } else if (this.forwardButton.mouseClicked(var1, var6)) {
          ++this.currentPage;
          this.updateButtonsForPage();
          return true;
-      } else if (this.backButton.mouseClicked(var1, var3, var5, var10)) {
+      } else if (this.backButton.mouseClicked(var1, var6)) {
          --this.currentPage;
          this.updateButtonsForPage();
          return true;
       } else {
-         ContextMap var11 = SlotDisplayContext.fromLevel(this.minecraft.level);
+         ContextMap var7 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
-         for(RecipeButton var13 : this.buttons) {
-            if (var13.mouseClicked(var1, var3, var5, var10)) {
-               if (var5 == 0) {
-                  this.lastClickedRecipe = var13.getCurrentRecipe();
-                  this.lastClickedRecipeCollection = var13.getCollection();
-               } else if (var5 == 1 && !this.overlay.isVisible() && !var13.isOnlyOption()) {
-                  this.overlay.init(var13.getCollection(), var11, this.isFiltering, var13.getX(), var13.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var13.getWidth());
+         for(RecipeButton var9 : this.buttons) {
+            if (var9.mouseClicked(var1, var6)) {
+               if (var1.button() == 0) {
+                  this.lastClickedRecipe = var9.getCurrentRecipe();
+                  this.lastClickedRecipeCollection = var9.getCollection();
+               } else if (var1.button() == 1 && !this.overlay.isVisible() && !var9.isOnlyOption()) {
+                  this.overlay.init(var9.getCollection(), var7, this.isFiltering, var9.getX(), var9.getY(), var2 + var4 / 2, var3 + 13 + var5 / 2, (float)var9.getWidth());
                }
 
                return true;

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -253,30 +254,30 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       }
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      int var10 = ((MerchantMenu)this.menu).getOffers().size();
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      int var6 = ((MerchantMenu)this.menu).getOffers().size();
       if (this.isDragging) {
-         int var11 = this.topPos + 18;
-         int var12 = var11 + 139;
-         int var13 = var10 - 7;
-         float var14 = ((float)var3 - (float)var11 - 13.5F) / ((float)(var12 - var11) - 27.0F);
-         var14 = var14 * (float)var13 + 0.5F;
-         this.scrollOff = Mth.clamp((int)var14, 0, var13);
+         int var7 = this.topPos + 18;
+         int var8 = var7 + 139;
+         int var9 = var6 - 7;
+         float var10 = ((float)var1.y() - (float)var7 - 13.5F) / ((float)(var8 - var7) - 27.0F);
+         var10 = var10 * (float)var9 + 0.5F;
+         this.scrollOff = Mth.clamp((int)var10, 0, var9);
          return true;
       } else {
-         return super.mouseDragged(var1, var3, var5, var6, var8);
+         return super.mouseDragged(var1, var2, var4);
       }
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5, boolean var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       this.isDragging = false;
-      int var7 = (this.width - this.imageWidth) / 2;
-      int var8 = (this.height - this.imageHeight) / 2;
-      if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && var1 > (double)(var7 + 94) && var1 < (double)(var7 + 94 + 6) && var3 > (double)(var8 + 18) && var3 <= (double)(var8 + 18 + 139 + 1)) {
+      int var3 = (this.width - this.imageWidth) / 2;
+      int var4 = (this.height - this.imageHeight) / 2;
+      if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && var1.x() > (double)(var3 + 94) && var1.x() < (double)(var3 + 94 + 6) && var1.y() > (double)(var4 + 18) && var1.y() <= (double)(var4 + 18 + 139 + 1)) {
          this.isDragging = true;
       }
 
-      return super.mouseClicked(var1, var3, var5, var6);
+      return super.mouseClicked(var1, var2);
    }
 
    class TradeOfferButton extends Button {

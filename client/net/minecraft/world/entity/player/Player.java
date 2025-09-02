@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
-import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,7 +51,6 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
@@ -64,6 +62,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
@@ -71,7 +70,6 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -79,7 +77,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Parrot;
@@ -122,20 +119,14 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
-import org.slf4j.Logger;
 
-public abstract class Player extends LivingEntity implements ContainerUser {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final HumanoidArm DEFAULT_MAIN_HAND;
-   public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
+public abstract class Player extends Avatar implements ContainerUser {
    public static final int MAX_HEALTH = 20;
    public static final int SLEEP_DURATION = 100;
    public static final int WAKE_UP_DURATION = 10;
@@ -147,17 +138,13 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    public static final float CROUCH_BB_HEIGHT = 1.5F;
    public static final float SWIMMING_BB_WIDTH = 0.6F;
    public static final float SWIMMING_BB_HEIGHT = 0.6F;
-   public static final float DEFAULT_EYE_HEIGHT = 1.62F;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
-   public static final Vec3 DEFAULT_VEHICLE_ATTACHMENT;
    public static final EntityDimensions STANDING_DIMENSIONS;
    private static final Map<Pose, EntityDimensions> POSES;
    private static final EntityDataAccessor<Float> DATA_PLAYER_ABSORPTION_ID;
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID;
-   protected static final EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
-   protected static final EntityDataAccessor<Byte> DATA_PLAYER_MAIN_HAND;
-   protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_LEFT;
-   protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
+   private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_LEFT;
+   private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_RIGHT;
    public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private static final short DEFAULT_SLEEP_TIMER = 0;
    private static final float DEFAULT_EXPERIENCE_PROGRESS = 0.0F;
@@ -168,7 +155,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    private static final int DEFAULT_SCORE = 0;
    private static final boolean DEFAULT_IGNORE_FALL_DAMAGE_FROM_CURRENT_IMPULSE = false;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
-   private long timeEntitySatOnShoulder;
    final Inventory inventory;
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
@@ -177,15 +163,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    protected int jumpTriggerTime;
    private boolean clientLoaded = false;
    protected int clientLoadedTimeoutTimer = 60;
-   public float oBob;
-   public float bob;
    public int takeXpDelay;
-   public double xCloakO;
-   public double yCloakO;
-   public double zCloakO;
-   public double xCloak;
-   public double yCloak;
-   public double zCloak;
    private int sleepCounter = 0;
    protected boolean wasUnderwater;
    private final Abilities abilities = new Abilities();
@@ -249,10 +227,8 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       super.defineSynchedData(var1);
       var1.define(DATA_PLAYER_ABSORPTION_ID, 0.0F);
       var1.define(DATA_SCORE_ID, 0);
-      var1.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
-      var1.define(DATA_PLAYER_MAIN_HAND, (byte)DEFAULT_MAIN_HAND.getId());
-      var1.define(DATA_SHOULDER_LEFT, new CompoundTag());
-      var1.define(DATA_SHOULDER_RIGHT, new CompoundTag());
+      var1.define(DATA_SHOULDER_PARROT_LEFT, OptionalInt.empty());
+      var1.define(DATA_SHOULDER_PARROT_RIGHT, OptionalInt.empty());
    }
 
    public void tick() {
@@ -283,30 +259,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
 
       this.updateIsUnderwater();
       super.tick();
-      if (!this.level().isClientSide() && this.containerMenu != null && !this.containerMenu.stillValid(this)) {
-         this.closeContainer();
-         this.containerMenu = this.inventoryMenu;
-      }
-
-      this.moveCloak();
-      if (this instanceof ServerPlayer var1) {
-         this.foodData.tick(var1);
-         this.awardStat(Stats.PLAY_TIME);
-         this.awardStat(Stats.TOTAL_WORLD_TIME);
-         if (this.isAlive()) {
-            this.awardStat(Stats.TIME_SINCE_DEATH);
-         }
-
-         if (this.isDiscrete()) {
-            this.awardStat(Stats.CROUCH_TIME);
-         }
-
-         if (!this.isSleeping()) {
-            this.awardStat(Stats.TIME_SINCE_REST);
-         }
-      }
-
-      int var7 = 29999999;
+      int var1 = 29999999;
       double var2 = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
       double var4 = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
       if (var2 != this.getX() || var4 != this.getZ()) {
@@ -388,49 +341,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
 
    protected ItemCooldowns createItemCooldowns() {
       return new ItemCooldowns();
-   }
-
-   private void moveCloak() {
-      this.xCloakO = this.xCloak;
-      this.yCloakO = this.yCloak;
-      this.zCloakO = this.zCloak;
-      double var1 = this.getX() - this.xCloak;
-      double var3 = this.getY() - this.yCloak;
-      double var5 = this.getZ() - this.zCloak;
-      double var7 = 10.0;
-      if (var1 > 10.0) {
-         this.xCloak = this.getX();
-         this.xCloakO = this.xCloak;
-      }
-
-      if (var5 > 10.0) {
-         this.zCloak = this.getZ();
-         this.zCloakO = this.zCloak;
-      }
-
-      if (var3 > 10.0) {
-         this.yCloak = this.getY();
-         this.yCloakO = this.yCloak;
-      }
-
-      if (var1 < -10.0) {
-         this.xCloak = this.getX();
-         this.xCloakO = this.xCloak;
-      }
-
-      if (var5 < -10.0) {
-         this.zCloak = this.getZ();
-         this.zCloakO = this.zCloak;
-      }
-
-      if (var3 < -10.0) {
-         this.yCloak = this.getY();
-         this.yCloakO = this.yCloak;
-      }
-
-      this.xCloak += var1 * 0.25;
-      this.zCloak += var5 * 0.25;
-      this.yCloak += var3 * 0.25;
    }
 
    protected void updatePlayerPose() {
@@ -526,8 +436,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
          this.setShiftKeyDown(false);
       } else {
          super.rideTick();
-         this.oBob = this.bob;
-         this.bob = 0.0F;
       }
    }
 
@@ -538,7 +446,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
 
       this.tickRegeneration();
       this.inventory.tick();
-      this.oBob = this.bob;
       if (this.abilities.flying && !this.isPassenger()) {
          this.resetFallDistance();
       }
@@ -547,59 +454,40 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       this.updateSwingTime();
       this.yHeadRot = this.getYRot();
       this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-      float var1;
-      if (this.onGround() && !this.isDeadOrDying() && !this.isSwimming()) {
-         var1 = Math.min(0.1F, (float)this.getDeltaMovement().horizontalDistance());
-      } else {
-         var1 = 0.0F;
-      }
-
-      this.bob += (var1 - this.bob) * 0.4F;
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
-         AABB var2;
+         AABB var1;
          if (this.isPassenger() && !this.getVehicle().isRemoved()) {
-            var2 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
+            var1 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0, 0.0, 1.0);
          } else {
-            var2 = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
+            var1 = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
          }
 
-         List var3 = this.level().getEntities(this, var2);
-         ArrayList var4 = Lists.newArrayList();
+         List var2 = this.level().getEntities(this, var1);
+         ArrayList var3 = Lists.newArrayList();
 
-         for(Entity var6 : var3) {
-            if (var6.getType() == EntityType.EXPERIENCE_ORB) {
-               var4.add(var6);
-            } else if (!var6.isRemoved()) {
-               this.touch(var6);
+         for(Entity var5 : var2) {
+            if (var5.getType() == EntityType.EXPERIENCE_ORB) {
+               var3.add(var5);
+            } else if (!var5.isRemoved()) {
+               this.touch(var5);
             }
          }
 
-         if (!var4.isEmpty()) {
-            this.touch((Entity)Util.getRandom(var4, this.random));
+         if (!var3.isEmpty()) {
+            this.touch((Entity)Util.getRandom(var3, this.random));
          }
       }
 
-      this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
-      this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
-      if (!this.level().isClientSide() && (this.fallDistance > 0.5 || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
-         this.removeEntitiesOnShoulder();
-      }
-
+      this.handleShoulderEntities();
    }
 
    protected void tickRegeneration() {
    }
 
-   private void playShoulderEntityAmbientSound(CompoundTag var1) {
-      if (!var1.isEmpty() && !var1.getBooleanOr("Silent", false)) {
-         if (this.level().random.nextInt(200) == 0) {
-            EntityType var2 = (EntityType)var1.read("id", EntityType.CODEC).orElse((Object)null);
-            if (var2 == EntityType.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
-               this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level(), this.level().random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.level().random));
-            }
-         }
+   public void handleShoulderEntities() {
+   }
 
-      }
+   protected void removeEntitiesOnShoulder() {
    }
 
    private void touch(Entity var1) {
@@ -756,8 +644,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       var10000.ifPresent(var10001::apply);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
       this.enderChestInventory.fromSlots(var1.listOrEmpty("EnderItems", ItemStackWithSlot.CODEC));
-      this.setShoulderEntityLeft((CompoundTag)var1.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
-      this.setShoulderEntityRight((CompoundTag)var1.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
       this.setLastDeathLocation(var1.read("LastDeathLocation", GlobalPos.CODEC));
       this.currentImpulseImpactPos = (Vec3)var1.read("current_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
       this.ignoreFallDamageFromCurrentImpulse = var1.getBooleanOr("ignore_fall_damage_from_current_explosion", false);
@@ -778,14 +664,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       this.foodData.addAdditionalSaveData(var1);
       var1.store("abilities", Abilities.Packed.CODEC, this.abilities.pack());
       this.enderChestInventory.storeAsSlots(var1.list("EnderItems", ItemStackWithSlot.CODEC));
-      if (!this.getShoulderEntityLeft().isEmpty()) {
-         var1.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
-      }
-
-      if (!this.getShoulderEntityRight().isEmpty()) {
-         var1.store("ShoulderEntityRight", CompoundTag.CODEC, this.getShoulderEntityRight());
-      }
-
       this.lastDeathLocation.ifPresent((var1x) -> var1.store("LastDeathLocation", GlobalPos.CODEC, var1x));
       var1.storeNullable("current_explosion_impact_pos", Vec3.CODEC, this.currentImpulseImpactPos);
       var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
@@ -1243,7 +1121,7 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    public void remove(Entity.RemovalReason var1) {
       super.remove(var1);
       this.inventoryMenu.removed(this);
-      if (this.containerMenu != null && this.hasContainerOpen()) {
+      if (this.hasContainerOpen()) {
          this.doCloseContainer();
       }
 
@@ -1637,53 +1515,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       return this.inventory.add(var1);
    }
 
-   public boolean setEntityOnShoulder(CompoundTag var1) {
-      if (!this.isPassenger() && this.onGround() && !this.isInWater() && !this.isInPowderSnow) {
-         if (this.getShoulderEntityLeft().isEmpty()) {
-            this.setShoulderEntityLeft(var1);
-            this.timeEntitySatOnShoulder = this.level().getGameTime();
-            return true;
-         } else if (this.getShoulderEntityRight().isEmpty()) {
-            this.setShoulderEntityRight(var1);
-            this.timeEntitySatOnShoulder = this.level().getGameTime();
-            return true;
-         } else {
-            return false;
-         }
-      } else {
-         return false;
-      }
-   }
-
-   protected void removeEntitiesOnShoulder() {
-      if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
-         this.respawnEntityOnShoulder(this.getShoulderEntityLeft());
-         this.setShoulderEntityLeft(new CompoundTag());
-         this.respawnEntityOnShoulder(this.getShoulderEntityRight());
-         this.setShoulderEntityRight(new CompoundTag());
-      }
-
-   }
-
-   private void respawnEntityOnShoulder(CompoundTag var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         if (!var1.isEmpty()) {
-            try (ProblemReporter.ScopedCollector var8 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-               EntityType.create(TagValueInput.create(var8.forChild(() -> ".shoulder"), var2.registryAccess(), var1), var2, EntitySpawnReason.LOAD).ifPresent((var2x) -> {
-                  if (var2x instanceof TamableAnimal var3) {
-                     var3.setOwner(this);
-                  }
-
-                  var2x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
-                  var2.addWithUUID(var2x);
-               });
-            }
-         }
-      }
-
-   }
-
    @Nullable
    public abstract GameType gameMode();
 
@@ -1707,10 +1538,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       return !this.abilities.flying;
    }
 
-   public Scoreboard getScoreboard() {
-      return this.level().getScoreboard();
-   }
-
    public Component getDisplayName() {
       MutableComponent var1 = PlayerTeam.formatNameForTeam(this.getTeam(), this.getName());
       return this.decorateDisplayNameComponent(var1);
@@ -1731,10 +1558,6 @@ public abstract class Player extends LivingEntity implements ContainerUser {
 
    public float getAbsorptionAmount() {
       return (Float)this.getEntityData().get(DATA_PLAYER_ABSORPTION_ID);
-   }
-
-   public boolean isModelPartShown(PlayerModelPart var1) {
-      return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & var1.getMask()) == var1.getMask();
    }
 
    public SlotAccess getSlot(int var1) {
@@ -1784,28 +1607,39 @@ public abstract class Player extends LivingEntity implements ContainerUser {
       super.setRemainingFireTicks(this.abilities.invulnerable ? Math.min(var1, 1) : var1);
    }
 
-   public HumanoidArm getMainArm() {
-      return (Byte)this.entityData.get(DATA_PLAYER_MAIN_HAND) == 0 ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
+   protected static Optional<Parrot.Variant> extractParrotVariant(CompoundTag var0) {
+      if (!var0.isEmpty()) {
+         EntityType var1 = (EntityType)var0.read("id", EntityType.CODEC).orElse((Object)null);
+         if (var1 == EntityType.PARROT) {
+            return var0.read("Variant", Parrot.Variant.LEGACY_CODEC);
+         }
+      }
+
+      return Optional.empty();
    }
 
-   public void setMainArm(HumanoidArm var1) {
-      this.entityData.set(DATA_PLAYER_MAIN_HAND, (byte)(var1 == HumanoidArm.LEFT ? 0 : 1));
+   protected static OptionalInt convertParrotVariant(Optional<Parrot.Variant> var0) {
+      return (OptionalInt)var0.map((var0x) -> OptionalInt.of(var0x.getId())).orElse(OptionalInt.empty());
    }
 
-   public CompoundTag getShoulderEntityLeft() {
-      return (CompoundTag)this.entityData.get(DATA_SHOULDER_LEFT);
+   private static Optional<Parrot.Variant> convertParrotVariant(OptionalInt var0) {
+      return var0.isPresent() ? Optional.of(Parrot.Variant.byId(var0.getAsInt())) : Optional.empty();
    }
 
-   protected void setShoulderEntityLeft(CompoundTag var1) {
-      this.entityData.set(DATA_SHOULDER_LEFT, var1);
+   public void setShoulderParrotLeft(Optional<Parrot.Variant> var1) {
+      this.entityData.set(DATA_SHOULDER_PARROT_LEFT, convertParrotVariant(var1));
    }
 
-   public CompoundTag getShoulderEntityRight() {
-      return (CompoundTag)this.entityData.get(DATA_SHOULDER_RIGHT);
+   public Optional<Parrot.Variant> getShoulderParrotLeft() {
+      return convertParrotVariant((OptionalInt)this.entityData.get(DATA_SHOULDER_PARROT_LEFT));
    }
 
-   protected void setShoulderEntityRight(CompoundTag var1) {
-      this.entityData.set(DATA_SHOULDER_RIGHT, var1);
+   public void setShoulderParrotRight(Optional<Parrot.Variant> var1) {
+      this.entityData.set(DATA_SHOULDER_PARROT_RIGHT, convertParrotVariant(var1));
+   }
+
+   public Optional<Parrot.Variant> getShoulderParrotRight() {
+      return convertParrotVariant((OptionalInt)this.entityData.get(DATA_SHOULDER_PARROT_RIGHT));
    }
 
    public float getCurrentItemAttackStrengthDelay() {
@@ -2040,16 +1874,12 @@ public abstract class Player extends LivingEntity implements ContainerUser {
    }
 
    static {
-      DEFAULT_MAIN_HAND = HumanoidArm.RIGHT;
-      DEFAULT_VEHICLE_ATTACHMENT = new Vec3(0.0, 0.6, 0.0);
       STANDING_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.8F).withEyeHeight(1.62F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT));
       POSES = ImmutableMap.builder().put(Pose.STANDING, STANDING_DIMENSIONS).put(Pose.SLEEPING, SLEEPING_DIMENSIONS).put(Pose.FALL_FLYING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SWIMMING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SPIN_ATTACK, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.CROUCHING, EntityDimensions.scalable(0.6F, 1.5F).withEyeHeight(1.27F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT))).put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F).withEyeHeight(1.62F)).build();
       DATA_PLAYER_ABSORPTION_ID = SynchedEntityData.<Float>defineId(Player.class, EntityDataSerializers.FLOAT);
       DATA_SCORE_ID = SynchedEntityData.<Integer>defineId(Player.class, EntityDataSerializers.INT);
-      DATA_PLAYER_MODE_CUSTOMISATION = SynchedEntityData.<Byte>defineId(Player.class, EntityDataSerializers.BYTE);
-      DATA_PLAYER_MAIN_HAND = SynchedEntityData.<Byte>defineId(Player.class, EntityDataSerializers.BYTE);
-      DATA_SHOULDER_LEFT = SynchedEntityData.<CompoundTag>defineId(Player.class, EntityDataSerializers.COMPOUND_TAG);
-      DATA_SHOULDER_RIGHT = SynchedEntityData.<CompoundTag>defineId(Player.class, EntityDataSerializers.COMPOUND_TAG);
+      DATA_SHOULDER_PARROT_LEFT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
+      DATA_SHOULDER_PARROT_RIGHT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
    }
 
    public static enum BedSleepingProblem {

@@ -3,12 +3,12 @@ package net.minecraft.client.renderer.entity.player;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
@@ -25,23 +25,16 @@ import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer;
 import net.minecraft.client.renderer.entity.layers.WingsLayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -49,14 +42,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.DisplaySlot;
-import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.ReadOnlyScoreInfo;
-import net.minecraft.world.scores.Scoreboard;
 import org.joml.Quaternionfc;
 
-public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerRenderState, PlayerModel> {
-   public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
+public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity> extends LivingEntityRenderer<AvatarlikeEntity, AvatarRenderState, PlayerModel> {
+   public AvatarRenderer(EntityRendererProvider.Context var1, boolean var2) {
       super(var1, new PlayerModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
       this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var2 ? ModelLayers.PLAYER_SLIM_ARMOR : ModelLayers.PLAYER_ARMOR, var1.getModelSet(), (var1x) -> new PlayerModel(var1x, var2)), var1.getEquipmentRenderer()));
       this.addLayer(new PlayerItemInHandLayer(this));
@@ -70,16 +59,16 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       this.addLayer(new BeeStingerLayer(this, var1));
    }
 
-   protected boolean shouldRenderLayers(PlayerRenderState var1) {
+   protected boolean shouldRenderLayers(AvatarRenderState var1) {
       return !var1.isSpectator;
    }
 
-   public Vec3 getRenderOffset(PlayerRenderState var1) {
+   public Vec3 getRenderOffset(AvatarRenderState var1) {
       Vec3 var2 = super.getRenderOffset(var1);
       return var1.isCrouching ? var2.add(0.0, (double)(var1.scale * -2.0F) / 16.0, 0.0) : var2;
    }
 
-   private static HumanoidModel.ArmPose getArmPose(AbstractClientPlayer var0, HumanoidArm var1) {
+   private static HumanoidModel.ArmPose getArmPose(Avatar var0, HumanoidArm var1) {
       ItemStack var2 = var0.getItemInHand(InteractionHand.MAIN_HAND);
       ItemStack var3 = var0.getItemInHand(InteractionHand.OFF_HAND);
       HumanoidModel.ArmPose var4 = getArmPose(var0, var2, InteractionHand.MAIN_HAND);
@@ -91,7 +80,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       return var0.getMainArm() == var1 ? var4 : var5;
    }
 
-   private static HumanoidModel.ArmPose getArmPose(Player var0, ItemStack var1, InteractionHand var2) {
+   private static HumanoidModel.ArmPose getArmPose(Avatar var0, ItemStack var1, InteractionHand var2) {
       if (var1.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
       } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
@@ -132,16 +121,16 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       }
    }
 
-   public ResourceLocation getTextureLocation(PlayerRenderState var1) {
+   public ResourceLocation getTextureLocation(AvatarRenderState var1) {
       return var1.skin.texture();
    }
 
-   protected void scale(PlayerRenderState var1, PoseStack var2) {
+   protected void scale(AvatarRenderState var1, PoseStack var2) {
       float var3 = 0.9375F;
       var2.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
-   protected void submitNameTag(PlayerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   protected void submitNameTag(AvatarRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
       var2.pushPose();
       if (var1.scoreText != null) {
          var3.submitNameTag(var2, var1.nameTagAttachment, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
@@ -156,16 +145,16 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.popPose();
    }
 
-   public PlayerRenderState createRenderState() {
-      return new PlayerRenderState();
+   public AvatarRenderState createRenderState() {
+      return new AvatarRenderState();
    }
 
-   public void extractRenderState(AbstractClientPlayer var1, PlayerRenderState var2, float var3) {
+   public void extractRenderState(AvatarlikeEntity var1, AvatarRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
       var2.leftArmPose = getArmPose(var1, HumanoidArm.LEFT);
       var2.rightArmPose = getArmPose(var1, HumanoidArm.RIGHT);
-      var2.skin = var1.getSkin();
+      var2.skin = ((ClientAvatarEntity)var1).getSkin();
       var2.arrowCount = var1.getArrowCount();
       var2.stingerCount = var1.getStingerCount();
       var2.isSpectator = var1.isSpectator();
@@ -176,80 +165,62 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.showLeftSleeve = var1.isModelPartShown(PlayerModelPart.LEFT_SLEEVE);
       var2.showRightSleeve = var1.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
       var2.showCape = var1.isModelPartShown(PlayerModelPart.CAPE);
-      extractFlightData(var1, var2, var3);
-      extractCapeState(var1, var2, var3);
+      this.extractFlightData(var1, var2, var3);
+      this.extractCapeState(var1, var2, var3);
       if (var2.distanceToCameraSq < 100.0) {
-         Scoreboard var4 = var1.getScoreboard();
-         Objective var5 = var4.getDisplayObjective(DisplaySlot.BELOW_NAME);
-         if (var5 != null) {
-            ReadOnlyScoreInfo var6 = var4.getPlayerScoreInfo(var1, var5);
-            MutableComponent var7 = ReadOnlyScoreInfo.safeFormatValue(var6, var5.numberFormatOrDefault(StyledFormat.NO_STYLE));
-            var2.scoreText = Component.empty().append((Component)var7).append(CommonComponents.SPACE).append(var5.getDisplayName());
-         } else {
-            var2.scoreText = null;
-         }
+         var2.scoreText = ((ClientAvatarEntity)var1).belowNameDisplay();
       } else {
          var2.scoreText = null;
       }
 
-      var2.parrotOnLeftShoulder = getParrotOnShoulder(var1, true);
-      var2.parrotOnRightShoulder = getParrotOnShoulder(var1, false);
+      var2.parrotOnLeftShoulder = ((ClientAvatarEntity)var1).getParrotVariantOnShoulder(true);
+      var2.parrotOnRightShoulder = ((ClientAvatarEntity)var1).getParrotVariantOnShoulder(false);
       var2.id = var1.getId();
-      var2.name = var1.getGameProfile().name();
+      var2.showDeadMouseEars = ((ClientAvatarEntity)var1).showExtraEars();
       var2.heldOnHead.clear();
       if (var2.isUsingItem) {
-         ItemStack var8 = var1.getItemInHand(var2.useItemHand);
-         if (var8.is(Items.SPYGLASS)) {
-            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, var1);
+         ItemStack var4 = var1.getItemInHand(var2.useItemHand);
+         if (var4.is(Items.SPYGLASS)) {
+            this.itemModelResolver.updateForLiving(var2.heldOnHead, var4, ItemDisplayContext.HEAD, var1);
          }
       }
 
    }
 
-   private static void extractFlightData(AbstractClientPlayer var0, PlayerRenderState var1, float var2) {
-      var1.fallFlyingTimeInTicks = (float)var0.getFallFlyingTicks() + var2;
-      Vec3 var3 = var0.getViewVector(var2);
-      Vec3 var4 = var0.getDeltaMovementLerped(var2);
-      if (var4.horizontalDistanceSqr() > 9.999999747378752E-6 && var3.horizontalDistanceSqr() > 9.999999747378752E-6) {
-         var1.shouldApplyFlyingYRot = true;
-         double var5 = var4.horizontal().normalize().dot(var3.horizontal().normalize());
-         double var7 = var4.x * var3.z - var4.z * var3.x;
-         var1.flyingYRot = (float)(Math.signum(var7) * Math.acos(Math.min(1.0, Math.abs(var5))));
+   private void extractFlightData(AvatarlikeEntity var1, AvatarRenderState var2, float var3) {
+      var2.fallFlyingTimeInTicks = (float)var1.getFallFlyingTicks() + var3;
+      Vec3 var4 = var1.getViewVector(var3);
+      Vec3 var5 = ((ClientAvatarEntity)var1).avatarState().deltaMovementOnPreviousTick().lerp(var1.getDeltaMovement(), (double)var3);
+      if (var5.horizontalDistanceSqr() > 9.999999747378752E-6 && var4.horizontalDistanceSqr() > 9.999999747378752E-6) {
+         var2.shouldApplyFlyingYRot = true;
+         double var6 = var5.horizontal().normalize().dot(var4.horizontal().normalize());
+         double var8 = var5.x * var4.z - var5.z * var4.x;
+         var2.flyingYRot = (float)(Math.signum(var8) * Math.acos(Math.min(1.0, Math.abs(var6))));
       } else {
-         var1.shouldApplyFlyingYRot = false;
-         var1.flyingYRot = 0.0F;
+         var2.shouldApplyFlyingYRot = false;
+         var2.flyingYRot = 0.0F;
       }
 
    }
 
-   private static void extractCapeState(AbstractClientPlayer var0, PlayerRenderState var1, float var2) {
-      double var3 = Mth.lerp((double)var2, var0.xCloakO, var0.xCloak) - Mth.lerp((double)var2, var0.xo, var0.getX());
-      double var5 = Mth.lerp((double)var2, var0.yCloakO, var0.yCloak) - Mth.lerp((double)var2, var0.yo, var0.getY());
-      double var7 = Mth.lerp((double)var2, var0.zCloakO, var0.zCloak) - Mth.lerp((double)var2, var0.zo, var0.getZ());
-      float var9 = Mth.rotLerp(var2, var0.yBodyRotO, var0.yBodyRot);
-      double var10 = (double)Mth.sin(var9 * 0.017453292F);
-      double var12 = (double)(-Mth.cos(var9 * 0.017453292F));
-      var1.capeFlap = (float)var5 * 10.0F;
-      var1.capeFlap = Mth.clamp(var1.capeFlap, -6.0F, 32.0F);
-      var1.capeLean = (float)(var3 * var10 + var7 * var12) * 100.0F;
-      var1.capeLean *= 1.0F - var1.fallFlyingScale();
-      var1.capeLean = Mth.clamp(var1.capeLean, 0.0F, 150.0F);
-      var1.capeLean2 = (float)(var3 * var12 - var7 * var10) * 100.0F;
-      var1.capeLean2 = Mth.clamp(var1.capeLean2, -20.0F, 20.0F);
-      float var14 = Mth.lerp(var2, var0.oBob, var0.bob);
-      float var15 = Mth.lerp(var2, var0.walkDistO, var0.walkDist);
-      var1.capeFlap += Mth.sin(var15 * 6.0F) * 32.0F * var14;
-   }
-
-   @Nullable
-   private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
-      CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      if (var2.isEmpty()) {
-         return null;
-      } else {
-         EntityType var3 = (EntityType)var2.read("id", EntityType.CODEC).orElse((Object)null);
-         return var3 == EntityType.PARROT ? (Parrot.Variant)var2.read("Variant", Parrot.Variant.LEGACY_CODEC).orElse(Parrot.Variant.RED_BLUE) : null;
-      }
+   private void extractCapeState(AvatarlikeEntity var1, AvatarRenderState var2, float var3) {
+      ClientAvatarState var4 = ((ClientAvatarEntity)var1).avatarState();
+      double var5 = var4.getInterpolatedCloakX(var3) - Mth.lerp((double)var3, var1.xo, var1.getX());
+      double var7 = var4.getInterpolatedCloakY(var3) - Mth.lerp((double)var3, var1.yo, var1.getY());
+      double var9 = var4.getInterpolatedCloakZ(var3) - Mth.lerp((double)var3, var1.zo, var1.getZ());
+      float var11 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
+      double var12 = (double)Mth.sin(var11 * 0.017453292F);
+      double var14 = (double)(-Mth.cos(var11 * 0.017453292F));
+      var2.capeFlap = (float)var7 * 10.0F;
+      var2.capeFlap = Mth.clamp(var2.capeFlap, -6.0F, 32.0F);
+      var2.capeLean = (float)(var5 * var12 + var9 * var14) * 100.0F;
+      var2.capeLean *= 1.0F - var2.fallFlyingScale();
+      var2.capeLean = Mth.clamp(var2.capeLean, 0.0F, 150.0F);
+      var2.capeLean2 = (float)(var5 * var14 - var9 * var12) * 100.0F;
+      var2.capeLean2 = Mth.clamp(var2.capeLean2, -20.0F, 20.0F);
+      float var16 = var4.getInterpolatedBob(var3);
+      float var17 = var4.getInterpolatedWalkDistance(var3);
+      var2.capeFlap += Mth.sin(var17 * 6.0F) * 32.0F * var16;
    }
 
    public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
@@ -271,7 +242,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.submitModelPart(var5, var1, RenderType.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
    }
 
-   protected void setupRotations(PlayerRenderState var1, PoseStack var2, float var3, float var4) {
+   protected void setupRotations(AvatarRenderState var1, PoseStack var2, float var3, float var4) {
       float var5 = var1.swimAmount;
       float var6 = var1.xRot;
       if (var1.isFallFlying) {
@@ -300,12 +271,12 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
 
    // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((PlayerRenderState)var1);
+      return this.getTextureLocation((AvatarRenderState)var1);
    }
 
    // $FF: synthetic method
    protected boolean shouldRenderLayers(final LivingEntityRenderState var1) {
-      return this.shouldRenderLayers((PlayerRenderState)var1);
+      return this.shouldRenderLayers((AvatarRenderState)var1);
    }
 
    // $FF: synthetic method
@@ -315,11 +286,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
 
    // $FF: synthetic method
    protected void submitNameTag(final EntityRenderState var1, final PoseStack var2, final SubmitNodeCollector var3) {
-      this.submitNameTag((PlayerRenderState)var1, var2, var3);
+      this.submitNameTag((AvatarRenderState)var1, var2, var3);
    }
 
    // $FF: synthetic method
    public Vec3 getRenderOffset(final EntityRenderState var1) {
-      return this.getRenderOffset((PlayerRenderState)var1);
+      return this.getRenderOffset((AvatarRenderState)var1);
    }
 }

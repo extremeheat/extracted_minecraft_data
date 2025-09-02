@@ -69,7 +69,6 @@ import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -3314,11 +3313,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
 
    public SlotAccess getSlot(int var1) {
       return SlotAccess.NULL;
-   }
-
-   @Nullable
-   public MinecraftServer getServer() {
-      return this.level().getServer();
    }
 
    public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {

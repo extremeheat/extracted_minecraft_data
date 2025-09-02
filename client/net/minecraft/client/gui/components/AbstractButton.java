@@ -4,7 +4,9 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +20,7 @@ public abstract class AbstractButton extends AbstractWidget {
       super(var1, var2, var3, var4, var5);
    }
 
-   public abstract void onPress();
+   public abstract void onPress(InputWithModifiers var1);
 
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
@@ -35,16 +37,16 @@ public abstract class AbstractButton extends AbstractWidget {
       this.renderScrollingString(var1, var2, 2, var3);
    }
 
-   public void onClick(double var1, double var3, boolean var5) {
-      this.onPress();
+   public void onClick(MouseButtonEvent var1, boolean var2) {
+      this.onPress(var1);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       if (!this.isActive()) {
          return false;
-      } else if (CommonInputs.selected(var1)) {
+      } else if (var1.isSelection()) {
          this.playDownSound(Minecraft.getInstance().getSoundManager());
-         this.onPress();
+         this.onPress(var1);
          return true;
       } else {
          return false;
