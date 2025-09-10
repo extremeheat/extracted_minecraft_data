@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -65,7 +66,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -83,6 +83,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.LevelDebugSynchronizers;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.random.WeightedList;
@@ -103,6 +105,7 @@ import net.minecraft.world.entity.ReputationEventHandler;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.horse.SkeletonHorse;
 import net.minecraft.world.entity.boss.EnderDragonPart;
@@ -129,6 +132,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -218,6 +222,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private final StructureCheck structureCheck;
    private final boolean tickTime;
    private final RandomSequences randomSequences;
+   final LevelDebugSynchronizers debugSynchronizers = new LevelDebugSynchronizers(this);
 
    public ServerLevel(MinecraftServer var1, Executor var2, LevelStorageSource.LevelStorageAccess var3, ServerLevelData var4, ResourceKey<Level> var5, LevelStem var6, boolean var7, long var8, List<CustomSpawner> var10, boolean var11, @Nullable RandomSequences var12) {
       super(var4, var5, var1.registryAccess(), var6.type(), false, var7, var8, var1.getMaxChainedNeighborUpdates());
@@ -384,6 +389,15 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       var2.push("entityManagement");
       this.entityManager.tick();
+      var2.pop();
+      var2.push("debugSynchronizers");
+      if (this.debugSynchronizers.hasAnySubscriberFor(DebugSubscriptions.NEIGHBOR_UPDATES)) {
+         this.neighborUpdater.setDebugListener((var1x) -> this.debugSynchronizers.broadcastEventToTracking(var1x, DebugSubscriptions.NEIGHBOR_UPDATES, var1x));
+      } else {
+         this.neighborUpdater.setDebugListener((Consumer)null);
+      }
+
+      this.debugSynchronizers.tick(this.server.debugSubscribers());
       var2.pop();
    }
 
@@ -927,6 +941,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    public void unload(LevelChunk var1) {
       var1.clearAllBlockEntities();
       var1.unregisterTickContainerFromLevel(this);
+      this.debugSynchronizers.dropChunk(var1.getPos());
    }
 
    public void removePlayerImmediately(ServerPlayer var1, Entity.RemovalReason var2) {
@@ -1069,11 +1084,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void broadcastEntityEvent(Entity var1, byte var2) {
-      this.getChunkSource().broadcastAndSend(var1, new ClientboundEntityEventPacket(var1, var2));
+      this.getChunkSource().sendToTrackingPlayersAndSelf(var1, new ClientboundEntityEventPacket(var1, var2));
    }
 
    public void broadcastDamageEvent(Entity var1, DamageSource var2) {
-      this.getChunkSource().broadcastAndSend(var1, new ClientboundDamageEventPacket(var1, var2));
+      this.getChunkSource().sendToTrackingPlayersAndSelf(var1, new ClientboundDamageEventPacket(var1, var2));
    }
 
    public ServerChunkCache getChunkSource() {
@@ -1322,11 +1337,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          BlockPos var6 = var1.immutable();
          var4.ifPresent((var2x) -> this.getServer().execute(() -> {
                this.getPoiManager().remove(var6);
-               DebugPackets.sendPoiRemovedPacket(this, var6);
+               this.debugSynchronizers.dropPoi(var6);
             }));
          var5.ifPresent((var2x) -> this.getServer().execute(() -> {
-               this.getPoiManager().add(var6, var2x);
-               DebugPackets.sendPoiAddedPacket(this, var6);
+               PoiRecord var3 = this.getPoiManager().add(var6, var2x);
+               if (var3 != null) {
+                  this.debugSynchronizers.registerPoi(var3);
+               }
+
             }));
       }
    }
@@ -1707,6 +1725,15 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.chunkSource.getGenerator().getSeaLevel();
    }
 
+   public void onBlockEntityAdded(BlockEntity var1) {
+      super.onBlockEntityAdded(var1);
+      this.debugSynchronizers.registerBlockEntity(var1);
+   }
+
+   public LevelDebugSynchronizers debugSynchronizers() {
+      return this.debugSynchronizers;
+   }
+
    // $FF: synthetic method
    public RecipeAccess recipeAccess() {
       return this.recipeAccess();
@@ -1821,6 +1848,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          }
 
          var1.updateDynamicGameEventListener(DynamicGameEventListener::remove);
+         ServerLevel.this.debugSynchronizers.dropEntity(var1);
       }
 
       public void onSectionChange(Entity var1) {

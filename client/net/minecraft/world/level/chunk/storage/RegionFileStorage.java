@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
@@ -119,31 +120,33 @@ public final class RegionFileStorage implements AutoCloseable {
    }
 
    protected void write(ChunkPos var1, @Nullable CompoundTag var2) throws IOException {
-      RegionFile var3 = this.getRegionFile(var1);
-      if (var2 == null) {
-         var3.clear(var1);
-      } else {
-         DataOutputStream var4 = var3.getChunkDataOutputStream(var1);
+      if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {
+         RegionFile var3 = this.getRegionFile(var1);
+         if (var2 == null) {
+            var3.clear(var1);
+         } else {
+            DataOutputStream var4 = var3.getChunkDataOutputStream(var1);
 
-         try {
-            NbtIo.write(var2, (DataOutput)var4);
-         } catch (Throwable var8) {
-            if (var4 != null) {
-               try {
-                  var4.close();
-               } catch (Throwable var7) {
-                  var8.addSuppressed(var7);
+            try {
+               NbtIo.write(var2, (DataOutput)var4);
+            } catch (Throwable var8) {
+               if (var4 != null) {
+                  try {
+                     var4.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
                }
+
+               throw var8;
             }
 
-            throw var8;
+            if (var4 != null) {
+               var4.close();
+            }
          }
 
-         if (var4 != null) {
-            var4.close();
-         }
       }
-
    }
 
    public void close() throws IOException {

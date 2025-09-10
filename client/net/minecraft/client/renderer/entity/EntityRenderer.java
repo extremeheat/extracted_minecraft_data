@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
+import net.minecraft.client.renderer.entity.state.ServerHitboxesRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -337,7 +339,18 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
    private void extractHitboxes(T var1, S var2, float var3) {
       var2.hitboxesRenderState = this.extractHitboxes(var1, var3, false);
-      var2.serverHitboxesRenderState = null;
+      if (SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES) {
+         Entity var4 = getServerSideEntity(var1);
+         if (var4 != null) {
+            Vec3 var5 = var4.getDeltaMovement();
+            var2.serverHitboxesRenderState = new ServerHitboxesRenderState(false, var4.getX(), var4.getY(), var4.getZ(), var5.x, var5.y, var5.z, var4.getEyeHeight(), this.extractHitboxes(var4, 1.0F, true));
+         } else {
+            var2.serverHitboxesRenderState = new ServerHitboxesRenderState(true);
+         }
+      } else {
+         var2.serverHitboxesRenderState = null;
+      }
+
    }
 
    private HitboxesRenderState extractHitboxes(T var1, float var2, boolean var3) {

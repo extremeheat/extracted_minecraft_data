@@ -17,7 +17,6 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -421,11 +420,6 @@ public class Sniffer extends Animal {
       SnifferAi.updateActivity(this);
       var2.pop();
       super.customServerAiStep(var1);
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    static {

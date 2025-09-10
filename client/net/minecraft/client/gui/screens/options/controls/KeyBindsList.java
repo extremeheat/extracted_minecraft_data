@@ -36,7 +36,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          KeyMapping.Category var9 = var8.getCategory();
          if (var9 != var4) {
             var4 = var9;
-            this.addEntry(new CategoryEntry(Component.translatable(var9.descriptionId())));
+            this.addEntry(new CategoryEntry(var9));
          }
 
          MutableComponent var10 = Component.translatable(var8.getName());
@@ -74,9 +74,9 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
    public class CategoryEntry extends Entry {
       private final FocusableTextWidget categoryName;
 
-      public CategoryEntry(final Component var2) {
+      public CategoryEntry(final KeyMapping.Category var2) {
          super();
-         this.categoryName = new FocusableTextWidget(KeyBindsList.this.getRowWidth(), var2, KeyBindsList.this.minecraft.font, false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
+         this.categoryName = new FocusableTextWidget(KeyBindsList.this.getRowWidth(), var2.label(), KeyBindsList.this.minecraft.font, false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {

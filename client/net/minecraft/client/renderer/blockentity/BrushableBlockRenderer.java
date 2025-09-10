@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.BrushableBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.ItemOwner;
@@ -39,8 +38,7 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
          var2.lightCoords = LevelRenderer.getLightColor(LevelRenderer.BrightnessGetter.DEFAULT, var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var1.getHitDirection()));
       }
 
-      ItemStackRenderState var6 = new ItemStackRenderState();
-      this.itemModelResolver.updateForTopItem(var6, var1.getItem(), ItemDisplayContext.FIXED, var1.getLevel(), (ItemOwner)null, 0);
+      this.itemModelResolver.updateForTopItem(var2.itemState, var1.getItem(), ItemDisplayContext.FIXED, var1.getLevel(), (ItemOwner)null, 0);
    }
 
    public void submit(BrushableBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {

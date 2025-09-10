@@ -43,7 +43,7 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(AllowlistService::set, PlayerDto.CODEC.codec().listOf(), PlayerDto.CODEC.codec().listOf()).description("Set the allowlist").param(new ParamInfo("players", Schema.PLAYER_SCHEMA.asArray())).response(new ResultInfo("allowlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "allowlist/set");
       IncomingRpcMethod.method(AllowlistService::add, PlayerDto.CODEC.codec().listOf(), PlayerDto.CODEC.codec().listOf()).description("Add players to allowlist").param(new ParamInfo("add", Schema.PLAYER_SCHEMA.asArray())).response(new ResultInfo("allowlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "allowlist/add");
       IncomingRpcMethod.method(AllowlistService::remove, PlayerDto.CODEC.codec().listOf(), PlayerDto.CODEC.codec().listOf()).description("Remove players from allowlist").param(new ParamInfo("remove", Schema.PLAYER_SCHEMA.asArray())).response(new ResultInfo("allowlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "allowlist/remove");
-      IncomingRpcMethod.method(AllowlistService::clear, Codec.BOOL).description("Clear all players in allowlist").response(new ResultInfo("allowlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "allowlist/clear");
+      IncomingRpcMethod.method(AllowlistService::clear, PlayerDto.CODEC.codec().listOf()).description("Clear all players in allowlist").response(new ResultInfo("allowlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "allowlist/clear");
    }
 
    private static void registerBanlistService(Registry<IncomingRpcMethod> var0) {
@@ -51,15 +51,15 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(BanlistService::set, BanlistService.UserBanDto.CODEC.codec().listOf(), BanlistService.UserBanDto.CODEC.codec().listOf()).description("Set the banlist").param(new ParamInfo("bans", Schema.PLAYER_BAN_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.PLAYER_BAN_SCHEMA.asArray())).register(var0, "minecraft", "bans/set");
       IncomingRpcMethod.method(BanlistService::add, BanlistService.UserBanDto.CODEC.codec().listOf(), BanlistService.UserBanDto.CODEC.codec().listOf()).description("Add players to ban list").param(new ParamInfo("add", Schema.PLAYER_BAN_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.PLAYER_BAN_SCHEMA.asArray())).register(var0, "minecraft", "bans/add");
       IncomingRpcMethod.method(BanlistService::remove, PlayerDto.CODEC.codec().listOf(), BanlistService.UserBanDto.CODEC.codec().listOf()).description("Remove players from ban list").param(new ParamInfo("remove", Schema.PLAYER_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.PLAYER_BAN_SCHEMA.asArray())).register(var0, "minecraft", "bans/remove");
-      IncomingRpcMethod.method(BanlistService::clear, Codec.BOOL).description("Clear all players in ban list").response(new ResultInfo("banlist", Schema.PLAYER_BAN_SCHEMA.asArray())).register(var0, "minecraft", "bans/clear");
+      IncomingRpcMethod.method(BanlistService::clear, BanlistService.UserBanDto.CODEC.codec().listOf()).description("Clear all players in ban list").response(new ResultInfo("banlist", Schema.PLAYER_BAN_SCHEMA.asArray())).register(var0, "minecraft", "bans/clear");
    }
 
    private static void registerIpBanlistService(Registry<IncomingRpcMethod> var0) {
-      IncomingRpcMethod.method(IpBanlistService::get, IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Get the ip ban list").response(new ResultInfo("banlist", Schema.PLAYER_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans");
+      IncomingRpcMethod.method(IpBanlistService::get, IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Get the ip ban list").response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans");
       IncomingRpcMethod.method(IpBanlistService::set, IpBanlistService.IpBanDto.CODEC.codec().listOf(), IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Set the ip banlist").param(new ParamInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans/set");
       IncomingRpcMethod.method(IpBanlistService::add, IpBanlistService.IncomingIpBanDto.CODEC.codec().listOf(), IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Add ip to ban list").param(new ParamInfo("add", Schema.INCOMING_IP_BAN_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans/add");
       IncomingRpcMethod.method(IpBanlistService::remove, Codec.STRING.listOf(), IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Remove ip from ban list").param(new ParamInfo("ip", Schema.STRING_SCHEMA.asArray())).response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans/remove");
-      IncomingRpcMethod.method(IpBanlistService::clear, Codec.BOOL).description("Clear all ips in ban list").response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans/clear");
+      IncomingRpcMethod.method(IpBanlistService::clear, IpBanlistService.IpBanDto.CODEC.codec().listOf()).description("Clear all ips in ban list").response(new ResultInfo("banlist", Schema.IP_BAN_SCHEMA.asArray())).register(var0, "minecraft", "ip_bans/clear");
    }
 
    private static void registerPlayerService(Registry<IncomingRpcMethod> var0) {
@@ -72,7 +72,7 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(OperatorService::set, OperatorService.OperatorDto.CODEC.codec().listOf(), OperatorService.OperatorDto.CODEC.codec().listOf()).description("Set all oped players").param(new ParamInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).response(new ResultInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).register(var0, "minecraft", "operators/set");
       IncomingRpcMethod.method(OperatorService::add, OperatorService.OperatorDto.CODEC.codec().listOf(), OperatorService.OperatorDto.CODEC.codec().listOf()).description("Op players").param(new ParamInfo("add", Schema.OPERATOR_SCHEMA.asArray())).response(new ResultInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).register(var0, "minecraft", "operators/add");
       IncomingRpcMethod.method(OperatorService::remove, PlayerDto.CODEC.codec().listOf(), OperatorService.OperatorDto.CODEC.codec().listOf()).description("Deop players").param(new ParamInfo("remove", Schema.PLAYER_SCHEMA.asArray())).response(new ResultInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).register(var0, "minecraft", "operators/remove");
-      IncomingRpcMethod.method(OperatorService::clear, Codec.BOOL).description("Deop all players").response(new ResultInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).register(var0, "minecraft", "operators/clear");
+      IncomingRpcMethod.method(OperatorService::clear, OperatorService.OperatorDto.CODEC.codec().listOf()).description("Deop all players").response(new ResultInfo("operators", Schema.OPERATOR_SCHEMA.asArray())).register(var0, "minecraft", "operators/clear");
    }
 
    private static void registerServerStateService(Registry<IncomingRpcMethod> var0) {

@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -314,11 +313,6 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.HOGLIN_STEP, 0.15F, 1.0F);
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    @Nullable

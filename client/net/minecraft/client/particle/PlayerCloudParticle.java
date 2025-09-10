@@ -79,7 +79,7 @@ public class PlayerCloudParticle extends SingleQuadParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          PlayerCloudParticle var16 = new PlayerCloudParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
-         var16.setColor(200.0F, 50.0F, 120.0F);
+         var16.setColor(0.22F, 1.0F, 0.53F);
          var16.setAlpha(0.4F);
          return var16;
       }

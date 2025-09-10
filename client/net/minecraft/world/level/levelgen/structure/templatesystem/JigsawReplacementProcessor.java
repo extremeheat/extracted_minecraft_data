@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -25,7 +26,7 @@ public class JigsawReplacementProcessor extends StructureProcessor {
    @Nullable
    public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       BlockState var7 = var5.state();
-      if (var7.is(Blocks.JIGSAW)) {
+      if (var7.is(Blocks.JIGSAW) && !SharedConstants.DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN) {
          if (var5.nbt() == null) {
             LOGGER.warn("Jigsaw block at {} is missing nbt, will not replace", var2);
             return var5;

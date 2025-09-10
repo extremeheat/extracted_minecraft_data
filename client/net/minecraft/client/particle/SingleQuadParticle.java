@@ -1,11 +1,13 @@
 package net.minecraft.client.particle;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.QuadParticleRenderState;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -123,24 +125,22 @@ public abstract class SingleQuadParticle extends Particle {
       void setRotation(Quaternionf var1, Camera var2, float var3);
    }
 
-   public static enum Layer {
-      TERRAIN(RenderType.translucentParticle(TextureAtlas.LOCATION_BLOCKS)),
-      OPAQUE(RenderType.opaqueParticle(TextureAtlas.LOCATION_PARTICLES)),
-      TRANSLUCENT(RenderType.translucentParticle(TextureAtlas.LOCATION_PARTICLES));
+   public static record Layer(boolean translucent, ResourceLocation textureAtlasLocation, RenderPipeline pipeline) {
+      public static final Layer TERRAIN;
+      public static final Layer OPAQUE;
+      public static final Layer TRANSLUCENT;
 
-      private final RenderType renderType;
-
-      private Layer(final RenderType var3) {
-         this.renderType = var3;
+      public Layer(boolean var1, ResourceLocation var2, RenderPipeline var3) {
+         super();
+         this.translucent = var1;
+         this.textureAtlasLocation = var2;
+         this.pipeline = var3;
       }
 
-      public RenderType getRenderType() {
-         return this.renderType;
-      }
-
-      // $FF: synthetic method
-      private static Layer[] $values() {
-         return new Layer[]{TERRAIN, OPAQUE, TRANSLUCENT};
+      static {
+         TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE);
+         OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.OPAQUE_PARTICLE);
+         TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE);
       }
    }
 }

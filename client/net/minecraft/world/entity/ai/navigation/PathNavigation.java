@@ -7,9 +7,11 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.ServerDebugSubscribers;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
@@ -66,6 +68,11 @@ public abstract class PathNavigation {
       this.mob = var1;
       this.level = var2;
       this.pathFinder = this.createPathFinder(Mth.floor(var1.getAttributeBaseValue(Attributes.FOLLOW_RANGE) * 16.0));
+      if (var2 instanceof ServerLevel var3) {
+         ServerDebugSubscribers var4 = var3.getServer().debugSubscribers();
+         this.pathFinder.setCaptureDebug(() -> var4.hasAnySubscriberFor(DebugSubscriptions.ENTITY_PATHS));
+      }
+
    }
 
    public void updatePathfinderMaxVisitedNodes() {
@@ -239,7 +246,6 @@ public abstract class PathNavigation {
             }
          }
 
-         DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
             Vec3 var3 = this.path.getNextEntityPos(this.mob);
             this.mob.getMoveControl().setWantedPosition(var3.x, this.getGroundY(var3), var3.z, this.speedModifier);

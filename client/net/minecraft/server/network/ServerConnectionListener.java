@@ -36,6 +36,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.BandwidthDebugMonitor;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
@@ -109,6 +110,10 @@ public class ServerConnectionListener {
                ServerConnectionListener.this.connections.add(var2);
                ChannelPipeline var3 = var1.pipeline();
                Connection.configureInMemoryPipeline(var3, PacketFlow.SERVERBOUND);
+               if (SharedConstants.DEBUG_FAKE_LATENCY_MS > 0) {
+                  var3.addLast("latency", new LatencySimulator(SharedConstants.DEBUG_FAKE_LATENCY_MS, SharedConstants.DEBUG_FAKE_JITTER_MS));
+               }
+
                var2.configurePacketHandler(var3);
             }
          }).group((EventLoopGroup)SERVER_EVENT_GROUP.get()).localAddress(LocalAddress.ANY)).bind().syncUninterruptibly();

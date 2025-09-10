@@ -1887,9 +1887,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             ClientboundAnimatePacket var3 = new ClientboundAnimatePacket(this, var1 == InteractionHand.MAIN_HAND ? 0 : 3);
             ServerChunkCache var4 = ((ServerLevel)this.level()).getChunkSource();
             if (var2) {
-               var4.broadcastAndSend(this, var3);
+               var4.sendToTrackingPlayersAndSelf(this, var3);
             } else {
-               var4.broadcast(this, var3);
+               var4.sendToTrackingPlayers(this, var3);
             }
          }
       }
@@ -2686,7 +2686,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       ItemStack var2 = (ItemStack)var1.get(EquipmentSlot.MAINHAND);
       ItemStack var3 = (ItemStack)var1.get(EquipmentSlot.OFFHAND);
       if (var2 != null && var3 != null && ItemStack.matches(var2, (ItemStack)this.lastEquipmentItems.get(EquipmentSlot.OFFHAND)) && ItemStack.matches(var3, (ItemStack)this.lastEquipmentItems.get(EquipmentSlot.MAINHAND))) {
-         ((ServerLevel)this.level()).getChunkSource().broadcast(this, new ClientboundEntityEventPacket(this, (byte)55));
+         ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundEntityEventPacket(this, (byte)55));
          var1.remove(EquipmentSlot.MAINHAND);
          var1.remove(EquipmentSlot.OFFHAND);
          this.lastEquipmentItems.put(EquipmentSlot.MAINHAND, var2.copy());
@@ -2702,7 +2702,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          var2.add(Pair.of(var2x, var4));
          this.lastEquipmentItems.put(var2x, var4);
       });
-      ((ServerLevel)this.level()).getChunkSource().broadcast(this, new ClientboundSetEquipmentPacket(this.getId(), var2));
+      ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(this, new ClientboundSetEquipmentPacket(this.getId(), var2));
    }
 
    protected void tickHeadTurn(float var1) {
@@ -3024,7 +3024,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void take(Entity var1, int var2) {
       if (!var1.isRemoved() && !this.level().isClientSide() && (var1 instanceof ItemEntity || var1 instanceof AbstractArrow || var1 instanceof ExperienceOrb)) {
-         ((ServerLevel)this.level()).getChunkSource().broadcast(var1, new ClientboundTakeItemEntityPacket(var1.getId(), this.getId(), var2));
+         ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(var1, new ClientboundTakeItemEntityPacket(var1.getId(), this.getId(), var2));
       }
 
    }

@@ -225,7 +225,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
    private void upload() {
       Path var1 = this.minecraft.gameDirectory.toPath().resolve("saves").resolve(this.selectedLevel.getLevelId());
-      RealmsWorldOptions var2 = RealmsWorldOptions.createFromSettings(this.selectedLevel.getSettings(), true, this.selectedLevel.levelVersion().minecraftVersionName());
+      RealmsWorldOptions var2 = RealmsWorldOptions.createFromSettings(this.selectedLevel.getSettings(), this.selectedLevel.levelVersion().minecraftVersionName());
       RealmsSlot var3 = new RealmsSlot(this.slotId, var2, List.of(RealmsSetting.hardcoreSetting(this.selectedLevel.getSettings().hardcore())));
       RealmsWorldUpload var4 = new RealmsWorldUpload(var1, var3, this.minecraft.getUser(), this.realmId, this);
       if (!this.currentUpload.compareAndSet((Object)null, var4)) {

@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -49,35 +51,42 @@ public class SpawnEggItem extends Item {
 
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
-      if (var2.isClientSide()) {
+      if (!(var2 instanceof ServerLevel var3)) {
          return InteractionResult.SUCCESS;
       } else {
-         ItemStack var3 = var1.getItemInHand();
-         BlockPos var4 = var1.getClickedPos();
-         Direction var5 = var1.getClickedFace();
-         BlockState var6 = var2.getBlockState(var4);
-         BlockEntity var8 = var2.getBlockEntity(var4);
-         if (var8 instanceof Spawner) {
-            Spawner var9 = (Spawner)var8;
-            EntityType var10 = this.getType(var3);
-            if (var10 == null) {
+         ItemStack var4 = var1.getItemInHand();
+         BlockPos var5 = var1.getClickedPos();
+         Direction var6 = var1.getClickedFace();
+         BlockState var7 = var2.getBlockState(var5);
+         BlockEntity var9 = var2.getBlockEntity(var5);
+         if (var9 instanceof Spawner var12) {
+            EntityType var13 = this.getType(var4);
+            if (var13 == null) {
+               return InteractionResult.FAIL;
+            } else if (!var3.getServer().isSpawnerBlockEnabled()) {
+               Player var11 = var1.getPlayer();
+               if (var11 instanceof ServerPlayer) {
+                  ServerPlayer var10 = (ServerPlayer)var11;
+                  var10.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
+               }
+
                return InteractionResult.FAIL;
             } else {
-               var9.setEntityId(var10, var2.getRandom());
-               var2.sendBlockUpdated(var4, var6, var6, 3);
-               var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
-               var3.shrink(1);
+               var12.setEntityId(var13, var2.getRandom());
+               var2.sendBlockUpdated(var5, var7, var7, 3);
+               var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var5);
+               var4.shrink(1);
                return InteractionResult.SUCCESS;
             }
          } else {
-            BlockPos var7;
-            if (var6.getCollisionShape(var2, var4).isEmpty()) {
-               var7 = var4;
+            BlockPos var8;
+            if (var7.getCollisionShape(var2, var5).isEmpty()) {
+               var8 = var5;
             } else {
-               var7 = var4.relative(var5);
+               var8 = var5.relative(var6);
             }
 
-            return this.spawnMob(var1.getPlayer(), var3, var2, var7, true, !Objects.equals(var4, var7) && var5 == Direction.UP);
+            return this.spawnMob(var1.getPlayer(), var4, var2, var8, true, !Objects.equals(var5, var8) && var6 == Direction.UP);
          }
       }
    }

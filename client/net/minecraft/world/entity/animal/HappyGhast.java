@@ -4,7 +4,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -81,7 +80,7 @@ public class HappyGhast extends Animal {
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
             this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-            var2.getChunkSource().chunkMap.broadcast(this, ClientboundEntityPositionSyncPacket.of(this));
+            var2.getChunkSource().chunkMap.sendToTrackingPlayers(this, ClientboundEntityPositionSyncPacket.of(this));
          }
       }
 
@@ -420,11 +419,6 @@ public class HappyGhast extends Animal {
          }
       }
 
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

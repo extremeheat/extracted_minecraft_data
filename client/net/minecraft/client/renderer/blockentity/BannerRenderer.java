@@ -6,9 +6,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BannerModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -107,30 +107,25 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
       Material var12 = ModelBakery.BANNER_BASE;
       var2.submitModel(var6, Unit.INSTANCE, var1, var12.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var12), 0, var11);
-      var7.setupAnim(var8);
-      submitPatterns(var0, var1, var2, var3, var4, var7.root(), var12, true, var9, var10, var11);
+      submitPatterns(var0, var1, var2, var3, var4, var7, var8, var12, true, var9, var10, var11);
       var1.popPose();
    }
 
-   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
-      submitPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, false, true, var10);
-   }
+   public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11) {
+      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var7), 0, var11);
+      submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var8 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var9, var11);
 
-   public static void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, boolean var7, DyeColor var8, BannerPatternLayers var9, boolean var10, boolean var11, @Nullable ModelFeatureRenderer.CrumblingOverlay var12) {
-      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entitySolid), var3, var4, var0.get(var6), var11, var10);
-      submitPatternLayer(var0, var1, var2, var3, var4, var5, var7 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var8, var12);
-
-      for(int var13 = 0; var13 < 16 && var13 < var9.layers().size(); ++var13) {
-         BannerPatternLayers.Layer var14 = (BannerPatternLayers.Layer)var9.layers().get(var13);
-         Material var15 = var7 ? Sheets.getBannerMaterial(var14.pattern()) : Sheets.getShieldMaterial(var14.pattern());
-         submitPatternLayer(var0, var1, var2, var3, var4, var5, var15, var14.color(), (ModelFeatureRenderer.CrumblingOverlay)null);
+      for(int var12 = 0; var12 < 16 && var12 < var10.layers().size(); ++var12) {
+         BannerPatternLayers.Layer var13 = (BannerPatternLayers.Layer)var10.layers().get(var12);
+         Material var14 = var8 ? Sheets.getBannerMaterial(var13.pattern()) : Sheets.getShieldMaterial(var13.pattern());
+         submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var14, var13.color(), (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }
 
-   private static void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, ModelPart var5, Material var6, DyeColor var7, @Nullable ModelFeatureRenderer.CrumblingOverlay var8) {
-      int var9 = var7.getTextureDiffuseColor();
-      var2.submitModelPart(var5, var1, var6.renderType(RenderType::entityNoOutline), var3, var4, var0.get(var6), var9, var8);
+   private static <S> void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, DyeColor var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
+      int var10 = var8.getTextureDiffuseColor();
+      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entityNoOutline), var3, var4, var10, var0.get(var7), 0, var9);
    }
 
    public void getExtents(Set<Vector3f> var1) {

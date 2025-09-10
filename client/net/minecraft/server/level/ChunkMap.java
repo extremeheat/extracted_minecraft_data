@@ -1,7 +1,6 @@
 package net.minecraft.server.level;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -32,7 +31,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -43,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -57,6 +56,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.network.ServerPlayerConnection;
@@ -203,7 +203,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       return this.randomState;
    }
 
-   boolean isChunkTracked(ServerPlayer var1, int var2, int var3) {
+   public boolean isChunkTracked(ServerPlayer var1, int var2, int var3) {
       return var1.getChunkTrackingView().contains(var2, var3) && !var1.connection.chunkSender.isPending(ChunkPos.asLong(var2, var3));
    }
 
@@ -684,6 +684,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       }
 
       this.level.getChunkSource().onChunkReadyToSend(var1);
+      this.level.debugSynchronizers().registerChunk(var2);
    }
 
    public CompletableFuture<ChunkResult<LevelChunk>> prepareAccessibleChunk(ChunkHolder var1) {
@@ -832,10 +833,6 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    public net.minecraft.server.level.DistanceManager getDistanceManager() {
       return this.distanceManager;
-   }
-
-   protected Iterable<ChunkHolder> getChunks() {
-      return Iterables.unmodifiableIterable(this.visibleChunkMap.values());
    }
 
    void dumpChunks(Writer var1) throws IOException {
@@ -1162,18 +1159,47 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    }
 
-   public void broadcast(Entity var1, Packet<?> var2) {
+   public void sendToTrackingPlayers(Entity var1, Packet<? super ClientGamePacketListener> var2) {
       TrackedEntity var3 = (TrackedEntity)this.entityMap.get(var1.getId());
       if (var3 != null) {
-         var3.broadcast(var2);
+         var3.sendToTrackingPlayers(var2);
       }
 
    }
 
-   protected void broadcastAndSend(Entity var1, Packet<?> var2) {
+   public void sendToTrackingPlayersFiltered(Entity var1, Packet<? super ClientGamePacketListener> var2, Predicate<ServerPlayer> var3) {
+      TrackedEntity var4 = (TrackedEntity)this.entityMap.get(var1.getId());
+      if (var4 != null) {
+         var4.sendToTrackingPlayersFiltered(var2, var3);
+      }
+
+   }
+
+   protected void sendToTrackingPlayersAndSelf(Entity var1, Packet<? super ClientGamePacketListener> var2) {
       TrackedEntity var3 = (TrackedEntity)this.entityMap.get(var1.getId());
       if (var3 != null) {
-         var3.broadcastAndSend(var2);
+         var3.sendToTrackingPlayersAndSelf(var2);
+      }
+
+   }
+
+   public boolean isTrackedByAnyPlayer(Entity var1) {
+      TrackedEntity var2 = (TrackedEntity)this.entityMap.get(var1.getId());
+      if (var2 != null) {
+         return !var2.seenBy.isEmpty();
+      } else {
+         return false;
+      }
+   }
+
+   public void forEachEntityTrackedBy(ServerPlayer var1, Consumer<Entity> var2) {
+      ObjectIterator var3 = this.entityMap.values().iterator();
+
+      while(var3.hasNext()) {
+         TrackedEntity var4 = (TrackedEntity)var3.next();
+         if (var4.seenBy.contains(var1.connection)) {
+            var2.accept(var4.entity);
+         }
       }
 
    }
@@ -1221,6 +1247,19 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       });
    }
 
+   public void forEachReadyToSendChunk(Consumer<LevelChunk> var1) {
+      ObjectIterator var2 = this.visibleChunkMap.values().iterator();
+
+      while(var2.hasNext()) {
+         ChunkHolder var3 = (ChunkHolder)var2.next();
+         LevelChunk var4 = var3.getChunkToSend();
+         if (var4 != null) {
+            var1.accept(var4);
+         }
+      }
+
+   }
+
    static {
       UNLOADED_CHUNK_LIST_FUTURE = CompletableFuture.completedFuture(UNLOADED_CHUNK_LIST_RESULT);
       LOGGER = LogUtils.getLogger();
@@ -1247,16 +1286,16 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       }
    }
 
-   class TrackedEntity {
+   class TrackedEntity implements ServerEntity.Synchronizer {
       final ServerEntity serverEntity;
       final Entity entity;
       private final int range;
       SectionPos lastSectionPos;
-      private final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
+      final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
 
       public TrackedEntity(final Entity var2, final int var3, final int var4, final boolean var5) {
          super();
-         this.serverEntity = new ServerEntity(ChunkMap.this.level, var2, var4, var5, this::broadcast, this::broadcastIgnorePlayers);
+         this.serverEntity = new ServerEntity(ChunkMap.this.level, var2, var4, var5, this);
          this.entity = var2;
          this.range = var3;
          this.lastSectionPos = SectionPos.of((EntityAccess)var2);
@@ -1274,26 +1313,27 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          return this.entity.getId();
       }
 
-      public void broadcast(Packet<?> var1) {
+      public void sendToTrackingPlayers(Packet<? super ClientGamePacketListener> var1) {
          for(ServerPlayerConnection var3 : this.seenBy) {
             var3.send(var1);
          }
 
       }
 
-      public void broadcastIgnorePlayers(Packet<?> var1, List<UUID> var2) {
-         for(ServerPlayerConnection var4 : this.seenBy) {
-            if (!var2.contains(var4.getPlayer().getUUID())) {
-               var4.send(var1);
-            }
+      public void sendToTrackingPlayersAndSelf(Packet<? super ClientGamePacketListener> var1) {
+         this.sendToTrackingPlayers(var1);
+         Entity var3 = this.entity;
+         if (var3 instanceof ServerPlayer var2) {
+            var2.connection.send(var1);
          }
 
       }
 
-      public void broadcastAndSend(Packet<?> var1) {
-         this.broadcast(var1);
-         if (this.entity instanceof ServerPlayer) {
-            ((ServerPlayer)this.entity).connection.send(var1);
+      public void sendToTrackingPlayersFiltered(Packet<? super ClientGamePacketListener> var1, Predicate<ServerPlayer> var2) {
+         for(ServerPlayerConnection var4 : this.seenBy) {
+            if (var2.test(var4.getPlayer())) {
+               var4.send(var1);
+            }
          }
 
       }
@@ -1308,6 +1348,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       public void removePlayer(ServerPlayer var1) {
          if (this.seenBy.remove(var1.connection)) {
             this.serverEntity.removePairing(var1);
+            if (this.seenBy.isEmpty()) {
+               ChunkMap.this.level.debugSynchronizers().dropEntity(this.entity);
+            }
          }
 
       }
@@ -1323,9 +1366,14 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             if (var10) {
                if (this.seenBy.add(var1.connection)) {
                   this.serverEntity.addPairing(var1);
+                  if (this.seenBy.size() == 1) {
+                     ChunkMap.this.level.debugSynchronizers().registerEntity(this.entity);
+                  }
+
+                  ChunkMap.this.level.debugSynchronizers().startTrackingEntity(var1, this.entity);
                }
-            } else if (this.seenBy.remove(var1.connection)) {
-               this.serverEntity.removePairing(var1);
+            } else {
+               this.removePlayer(var1);
             }
 
          }

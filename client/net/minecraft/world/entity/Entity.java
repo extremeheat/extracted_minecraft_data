@@ -84,6 +84,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.debug.DebugEntityBlockIntersection;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
@@ -151,7 +154,7 @@ import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
-public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, EntityAccess, ScoreHolder, DataComponentGetter {
+public abstract class Entity implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, EntityAccess, ScoreHolder, DataComponentGetter {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String TAG_ID = "id";
    public static final String TAG_UUID = "UUID";
@@ -744,7 +747,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
 
             Vec3 var13 = this.position();
             Vec3 var8 = var13.add(var4);
-            this.addMovementThisTick(new Movement(var13, var8, true));
+            this.addMovementThisTick(new Movement(var13, var8, var2));
             this.setPos(var8);
          }
 
@@ -839,9 +842,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       this.finalMovementsThisTick.addAll(this.movementThisTick);
       this.movementThisTick.clear();
       if (this.finalMovementsThisTick.isEmpty()) {
-         this.finalMovementsThisTick.add(new Movement(this.oldPosition(), this.position(), false));
+         this.finalMovementsThisTick.add(new Movement(this.oldPosition(), this.position()));
       } else if (((Movement)this.finalMovementsThisTick.getLast()).to.distanceToSqr(this.position()) > 9.999999439624929E-11) {
-         this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position(), false));
+         this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position()));
       }
 
       this.applyEffectsFromBlocks(this.finalMovementsThisTick);
@@ -851,7 +854,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       if (this.movementThisTick.size() >= 100) {
          Movement var2 = (Movement)this.movementThisTick.removeFirst();
          Movement var3 = (Movement)this.movementThisTick.removeFirst();
-         Movement var4 = new Movement(var2.from(), var3.to(), false);
+         Movement var4 = new Movement(var2.from(), var3.to());
          this.movementThisTick.addFirst(var4);
       }
 
@@ -870,7 +873,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
    }
 
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
-      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2, false)));
+      this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
    }
 
    private void applyEffectsFromBlocks(List<Movement> var1) {
@@ -1044,6 +1047,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       return var2;
    }
 
+   public double getAvailableSpaceBelow(double var1) {
+      AABB var3 = this.getBoundingBox();
+      AABB var4 = var3.setMinY(var3.minY - var1).setMaxY(var3.minY);
+      List var5 = collectAllColliders(this, this.level, var4);
+      return var5.isEmpty() ? var1 : -Shapes.collide(Direction.Axis.Y, var3, var5, -var1);
+   }
+
    private Vec3 collide(Vec3 var1) {
       AABB var2 = this.getBoundingBox();
       List var3 = this.level().getEntityCollisions(this, var2.expandTowards(var1));
@@ -1105,6 +1115,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       return collideWithShapes(var1, var2, var5);
    }
 
+   public static List<VoxelShape> collectAllColliders(@Nullable Entity var0, Level var1, AABB var2) {
+      List var3 = var1.getEntityCollisions(var0, var2);
+      return collectColliders(var0, var1, var3, var2);
+   }
+
    private static List<VoxelShape> collectColliders(@Nullable Entity var0, Level var1, List<VoxelShape> var2, AABB var3) {
       ImmutableList.Builder var4 = ImmutableList.builderWithExpectedSize(var2.size() + 1);
       if (!var2.isEmpty()) {
@@ -1164,9 +1179,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
          for(Movement var5 : var1) {
             Vec3 var6 = var5.from;
             Vec3 var7 = var5.to().subtract(var5.from());
-            if (var5.axisIndependant && var7.lengthSqr() > 0.0) {
-               int var8 = 16;
-               UnmodifiableIterator var9 = Direction.axisStepOrder(var7).iterator();
+            int var8 = 16;
+            if (var5.axisDependentOriginalMovement().isPresent() && var7.lengthSqr() > 0.0) {
+               UnmodifiableIterator var9 = Direction.axisStepOrder((Vec3)var5.axisDependentOriginalMovement().get()).iterator();
 
                while(var9.hasNext()) {
                   Direction.Axis var10 = (Direction.Axis)var9.next();
@@ -1177,12 +1192,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
                      var6 = var13;
                   }
                }
-
-               if (var8 <= 0) {
-                  this.checkInsideBlocks(var5.to(), var5.to(), var2, var3, 1);
-               }
             } else {
-               this.checkInsideBlocks(var5.from(), var5.to(), var2, var3, 16);
+               var8 -= this.checkInsideBlocks(var5.from(), var5.to(), var2, var3, 16);
+            }
+
+            if (var8 <= 0) {
+               this.checkInsideBlocks(var5.to(), var5.to(), var2, var3, 1);
             }
          }
 
@@ -1191,45 +1206,66 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
    }
 
    private int checkInsideBlocks(Vec3 var1, Vec3 var2, InsideBlockEffectApplier.StepBasedCollector var3, LongSet var4, int var5) {
-      AABB var6 = this.makeBoundingBox(var2).deflate(9.999999747378752E-6);
-      AtomicInteger var7 = new AtomicInteger();
-      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var6, (var7x, var8) -> {
+      AABB var6;
+      boolean var10000;
+      label12: {
+         var6 = this.makeBoundingBox(var2).deflate(9.999999747378752E-6);
+         Level var9 = this.level;
+         if (var9 instanceof ServerLevel var8) {
+            if (var8.getServer().debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS)) {
+               var10000 = true;
+               break label12;
+            }
+         }
+
+         var10000 = false;
+      }
+
+      boolean var7 = var10000;
+      AtomicInteger var10 = new AtomicInteger();
+      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var6, (var8x, var9x) -> {
          if (!this.isAlive()) {
             return false;
-         } else if (var8 >= var5) {
+         } else if (var9x >= var5) {
             return false;
          } else {
-            var7.set(var8);
-            BlockState var9 = this.level().getBlockState(var7x);
-            if (var9.isAir()) {
-               this.debugBlockIntersection(var7x, false, false);
+            var10.set(var9x);
+            BlockState var10x = this.level().getBlockState(var8x);
+            if (var10x.isAir()) {
+               if (var7) {
+                  this.debugBlockIntersection((ServerLevel)this.level(), var8x.immutable(), false, false);
+               }
+
                return true;
             } else {
-               VoxelShape var10 = var9.getEntityInsideCollisionShape(this.level(), var7x, this);
-               boolean var11 = var10 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var10.move(new Vec3(var7x)).toAabbs());
-               boolean var12 = this.collidedWithFluid(var9.getFluidState(), var7x, var1, var2);
-               if ((var11 || var12) && var4.add(var7x.asLong())) {
-                  if (var11) {
+               VoxelShape var11 = var10x.getEntityInsideCollisionShape(this.level(), var8x, this);
+               boolean var12 = var11 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var11.move(new Vec3(var8x)).toAabbs());
+               boolean var13 = this.collidedWithFluid(var10x.getFluidState(), var8x, var1, var2);
+               if ((var12 || var13) && var4.add(var8x.asLong())) {
+                  if (var12) {
                      try {
-                        var3.advanceStep(var8);
-                        var9.entityInside(this.level(), var7x, this, var3);
-                        this.onInsideBlock(var9);
-                     } catch (Throwable var17) {
-                        CrashReport var14 = CrashReport.forThrowable(var17, "Colliding entity with block");
-                        CrashReportCategory var15 = var14.addCategory("Block being collided with");
-                        CrashReportCategory.populateBlockDetails(var15, this.level(), var7x, var9);
-                        CrashReportCategory var16 = var14.addCategory("Entity being checked for collision");
-                        this.fillCrashReportCategory(var16);
-                        throw new ReportedException(var14);
+                        var3.advanceStep(var9x);
+                        var10x.entityInside(this.level(), var8x, this, var3);
+                        this.onInsideBlock(var10x);
+                     } catch (Throwable var18) {
+                        CrashReport var15 = CrashReport.forThrowable(var18, "Colliding entity with block");
+                        CrashReportCategory var16 = var15.addCategory("Block being collided with");
+                        CrashReportCategory.populateBlockDetails(var16, this.level(), var8x, var10x);
+                        CrashReportCategory var17 = var15.addCategory("Entity being checked for collision");
+                        this.fillCrashReportCategory(var17);
+                        throw new ReportedException(var15);
                      }
                   }
 
-                  if (var12) {
-                     var3.advanceStep(var8);
-                     var9.getFluidState().entityInside(this.level(), var7x, this, var3);
+                  if (var13) {
+                     var3.advanceStep(var9x);
+                     var10x.getFluidState().entityInside(this.level(), var8x, this, var3);
                   }
 
-                  this.debugBlockIntersection(var7x, var11, var12);
+                  if (var7) {
+                     this.debugBlockIntersection((ServerLevel)this.level(), var8x.immutable(), var12, var13);
+                  }
+
                   return true;
                } else {
                   return true;
@@ -1237,10 +1273,20 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
             }
          }
       });
-      return var7.get();
+      return var10.get() + 1;
    }
 
-   private void debugBlockIntersection(BlockPos var1, boolean var2, boolean var3) {
+   private void debugBlockIntersection(ServerLevel var1, BlockPos var2, boolean var3, boolean var4) {
+      DebugEntityBlockIntersection var5;
+      if (var4) {
+         var5 = DebugEntityBlockIntersection.IN_FLUID;
+      } else if (var3) {
+         var5 = DebugEntityBlockIntersection.IN_BLOCK;
+      } else {
+         var5 = DebugEntityBlockIntersection.IN_AIR;
+      }
+
+      var1.debugSynchronizers().sendBlockValue(var2, DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, var5);
    }
 
    public boolean collidedWithFluid(FluidState var1, BlockPos var2, Vec3 var3, Vec3 var4) {
@@ -3041,7 +3087,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
    }
 
    public void forceSetRotation(float var1, boolean var2, float var3, boolean var4) {
-      Set var5 = Relative.union(Relative.DELTA, Relative.rotation(var2, var4));
+      Set var5 = Relative.rotation(var2, var4);
       PositionMoveRotation var6 = PositionMoveRotation.of(this);
       PositionMoveRotation var7 = var6.withRotation(var1, var3);
       PositionMoveRotation var8 = PositionMoveRotation.calculateAbsolute(var6, var7, var5);
@@ -3997,6 +4043,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       return new EntityPathElement(this);
    }
 
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+   }
+
    static {
       TAG_LIST_CODEC = Codec.STRING.sizeLimitedListOf(1024);
       INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -4011,16 +4060,23 @@ public abstract class Entity implements SyncedDataHolder, Nameable, ItemOwner, E
       DATA_TICKS_FROZEN = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);
    }
 
-   static record Movement(Vec3 from, Vec3 to, boolean axisIndependant) {
+   static record Movement(Vec3 from, Vec3 to, Optional<Vec3> axisDependentOriginalMovement) {
       final Vec3 from;
       final Vec3 to;
-      final boolean axisIndependant;
 
-      Movement(Vec3 var1, Vec3 var2, boolean var3) {
+      public Movement(Vec3 var1, Vec3 var2, Vec3 var3) {
+         this(var1, var2, Optional.of(var3));
+      }
+
+      public Movement(Vec3 var1, Vec3 var2) {
+         this(var1, var2, Optional.empty());
+      }
+
+      private Movement(Vec3 var1, Vec3 var2, Optional<Vec3> var3) {
          super();
          this.from = var1;
          this.to = var2;
-         this.axisIndependant = var3;
+         this.axisDependentOriginalMovement = var3;
       }
    }
 

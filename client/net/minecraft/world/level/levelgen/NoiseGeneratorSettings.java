@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -48,7 +49,11 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    public boolean isAquifersEnabled() {
-      return this.aquifersEnabled;
+      return this.aquifersEnabled && !SharedConstants.DEBUG_DISABLE_AQUIFERS;
+   }
+
+   public boolean oreVeinsEnabled() {
+      return this.oreVeinsEnabled && !SharedConstants.DEBUG_DISABLE_ORE_VEINS;
    }
 
    public WorldgenRandom.Algorithm getRandomSource() {

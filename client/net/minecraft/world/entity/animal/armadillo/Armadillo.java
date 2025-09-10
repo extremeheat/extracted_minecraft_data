@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -100,11 +99,6 @@ public class Armadillo extends Animal {
 
    public ArmadilloState getState() {
       return (ArmadilloState)this.entityData.get(ARMADILLO_STATE);
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    public void switchToState(ArmadilloState var1) {

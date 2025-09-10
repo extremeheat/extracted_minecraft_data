@@ -25,6 +25,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -38,12 +39,15 @@ import net.minecraft.client.gui.components.debugchart.FpsDebugChart;
 import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.progress.ChunkLoadStatusView;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
@@ -204,10 +208,10 @@ public class DebugScreenOverlay {
             if (!var19.isEmpty()) {
                int var20 = (var19.size() + 1) / 2;
 
-               for(int var25 = 0; var25 < var19.size(); ++var25) {
-                  Collection var14 = (Collection)var19.get(var25);
+               for(int var26 = 0; var26 < var19.size(); ++var26) {
+                  Collection var14 = (Collection)var19.get(var26);
                   if (!var14.isEmpty()) {
-                     if (var25 < var20) {
+                     if (var26 < var20) {
                         var17.addAll(var14);
                         var17.add("");
                      } else {
@@ -223,8 +227,8 @@ public class DebugScreenOverlay {
                boolean var21 = this.minecraft.getSingleplayerServer() != null;
                String var10001 = this.renderProfilerChart ? "visible" : "hidden";
                var17.add("Debug charts: [F3+1] Profiler " + var10001 + "; [F3+2] " + (var21 ? "FPS + TPS " : "FPS ") + (this.renderFpsCharts ? "visible" : "hidden") + "; [F3+3] " + (!this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping") + (this.renderNetworkCharts ? " visible" : " hidden"));
-               boolean var26 = this.minecraft.screen == null || this.minecraft.gui.getChat().isChatFocused();
-               if (this.minecraft.level != null && var26 && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
+               boolean var27 = this.minecraft.screen == null || this.minecraft.gui.getChat().isChatFocused();
+               if (this.minecraft.level != null && var27 && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
                   var17.add("To edit: press F3 + F5. For help: press F3 + Q");
                } else {
                   var17.add("To edit: press F3 + F5");
@@ -237,11 +241,11 @@ public class DebugScreenOverlay {
             this.profilerPieChart.setBottomOffset(10);
             if (this.showFpsCharts()) {
                int var22 = var1.guiWidth();
-               int var27 = var22 / 2;
-               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var27));
+               int var28 = var22 / 2;
+               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var28));
                if (this.tickTimeLogger.size() > 0) {
-                  int var29 = this.tpsChart.getWidth(var27);
-                  this.tpsChart.drawChart(var1, var22 - var29, var29);
+                  int var31 = this.tpsChart.getWidth(var28);
+                  this.tpsChart.drawChart(var1, var22 - var31, var31);
                }
 
                this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
@@ -249,17 +253,26 @@ public class DebugScreenOverlay {
 
             if (this.showNetworkCharts() && this.minecraft.getConnection() != null) {
                int var23 = var1.guiWidth();
-               int var28 = var23 / 2;
+               int var29 = var23 / 2;
                if (!this.minecraft.isLocalServer()) {
-                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var28));
+                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var29));
                }
 
-               int var30 = this.pingChart.getWidth(var28);
-               this.pingChart.drawChart(var1, var23 - var30, var30);
+               int var32 = this.pingChart.getWidth(var29);
+               this.pingChart.drawChart(var1, var23 - var32, var32);
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 
-            try (Zone var24 = var3.zone("profilerPie")) {
+            if (SharedConstants.DEBUG_CHUNKS) {
+               IntegratedServer var24 = this.minecraft.getSingleplayerServer();
+               if (var24 != null) {
+                  ChunkLoadStatusView var30 = var24.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
+                  var30.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
+                  LevelLoadingScreen.renderChunks(var1, var1.guiWidth() / 2, var1.guiHeight() / 2, 4, 1, var30);
+               }
+            }
+
+            try (Zone var25 = var3.zone("profilerPie")) {
                this.profilerPieChart.render(var1);
             }
 

@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -466,7 +467,7 @@ public final class NaturalSpawner {
       }
 
       boolean canSpawnForCategoryLocal(MobCategory var1, ChunkPos var2) {
-         return this.localMobCapCalculator.canSpawn(var1, var2);
+         return this.localMobCapCalculator.canSpawn(var1, var2) || SharedConstants.DEBUG_IGNORE_LOCAL_MOB_CAP;
       }
    }
 

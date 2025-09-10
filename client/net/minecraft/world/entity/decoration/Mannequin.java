@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import java.util.Arrays;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,7 +23,8 @@ public class Mannequin extends Avatar {
    protected static final EntityDataAccessor<Either<MannequinProfile, ResolvableProfile>> DATA_PROFILE;
    private static final byte ALL_LAYERS;
    private static final Codec<Byte> LAYERS_CODEC;
-   private static final MannequinProfile DEFAULT_PROFILE;
+   public static final MannequinProfile DEFAULT_PROFILE;
+   protected static EntityType.EntityFactory<Mannequin> constructor;
    private static final String PROFILE_FIELD = "profile";
    private static final String HIDDEN_LAYERS_FIELD = "hidden_layers";
    private static final String MAIN_HAND_FIELD = "main_hand";
@@ -34,6 +36,11 @@ public class Mannequin extends Avatar {
 
    protected Mannequin(Level var1) {
       this(EntityType.MANNEQUIN, var1);
+   }
+
+   @Nullable
+   public static Mannequin create(EntityType<Mannequin> var0, Level var1) {
+      return constructor.create(var0, var1);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -68,5 +75,6 @@ public class Mannequin extends Avatar {
       ALL_LAYERS = (byte)Arrays.stream(PlayerModelPart.values()).mapToInt(PlayerModelPart::getMask).reduce(0, (var0, var1) -> var0 | var1);
       LAYERS_CODEC = PlayerModelPart.CODEC.listOf().xmap((var0) -> (byte)var0.stream().mapToInt(PlayerModelPart::getMask).reduce(ALL_LAYERS, (var0x, var1) -> var0x & ~var1), (var0) -> Arrays.stream(PlayerModelPart.values()).filter((var1) -> (var0 & var1.getMask()) == 0).toList());
       DEFAULT_PROFILE = new MannequinProfile(ResourceLocation.withDefaultNamespace("entity/player/wide/steve"), Optional.empty(), Optional.empty(), PlayerModelType.WIDE);
+      constructor = Mannequin::new;
    }
 }

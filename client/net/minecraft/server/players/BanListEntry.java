@@ -69,6 +69,11 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       return this.reason;
    }
 
+   public Component getReasonMessage() {
+      String var1 = this.getReason();
+      return var1 == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(var1);
+   }
+
    public abstract Component getDisplayName();
 
    boolean hasExpired() {

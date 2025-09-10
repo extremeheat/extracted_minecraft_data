@@ -128,15 +128,13 @@ public final class ModelPart {
 
    public void getExtentsForGui(PoseStack var1, Set<Vector3f> var2) {
       this.visit(var1, (var1x, var2x, var3, var4) -> {
-         Vector3f var5 = new Vector3f();
-
-         for(Polygon var9 : var4.polygons) {
-            for(Vertex var13 : var9.vertices()) {
-               float var14 = var13.worldX();
-               float var15 = var13.worldY();
-               float var16 = var13.worldZ();
-               Vector3f var17 = var1x.pose().transformPosition(var14, var15, var16, var5);
-               var2.add(var17);
+         for(Polygon var8 : var4.polygons) {
+            for(Vertex var12 : var8.vertices()) {
+               float var13 = var12.worldX();
+               float var14 = var12.worldY();
+               float var15 = var12.worldZ();
+               Vector3f var16 = var1x.pose().transformPosition(var13, var14, var15, new Vector3f());
+               var2.add(var16);
             }
          }
 

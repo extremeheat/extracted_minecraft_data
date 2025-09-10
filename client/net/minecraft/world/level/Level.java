@@ -78,7 +78,6 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
-import net.minecraft.world.level.redstone.NeighborUpdater;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -103,7 +102,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
    private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
    protected final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList();
-   protected final NeighborUpdater neighborUpdater;
+   protected final CollectingNeighborUpdater neighborUpdater;
    private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
    private boolean tickingBlockEntities;
    private final Thread thread;

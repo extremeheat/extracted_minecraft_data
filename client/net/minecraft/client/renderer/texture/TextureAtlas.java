@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
@@ -79,8 +80,8 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
             try {
                var5.uploadFirstFrame(this.texture);
-            } catch (Throwable var9) {
-               CrashReport var7 = CrashReport.forThrowable(var9, "Stitching texture atlas");
+            } catch (Throwable var10) {
+               CrashReport var7 = CrashReport.forThrowable(var10, "Stitching texture atlas");
                CrashReportCategory var8 = var7.addCategory("Texture being stitched together");
                var8.setDetail("Atlas path", this.location);
                var8.setDetail("Sprite", var5);
@@ -95,6 +96,17 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
          this.sprites = List.copyOf(var2);
          this.animatedTextures = List.copyOf(var3);
+         if (SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS) {
+            Path var11 = TextureUtil.getDebugTexturePath();
+
+            try {
+               Files.createDirectories(var11);
+               this.dumpContents(this.location, var11);
+            } catch (IOException var9) {
+               LOGGER.warn("Failed to dump atlas contents to {}", var11);
+            }
+         }
+
       }
    }
 

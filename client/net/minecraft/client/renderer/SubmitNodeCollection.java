@@ -1,12 +1,8 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,25 +13,24 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
+import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.feature.ModelPartFeatureRenderer;
+import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
-import org.joml.Vector3f;
 
 public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.ShadowSubmit> shadowSubmits = new ArrayList();
    private final List<SubmitNodeStorage.FlameSubmit> flameSubmits = new ArrayList();
-   private final List<SubmitNodeStorage.NameTagSubmit> nameTagSubmitsSeethrough = new ArrayList();
-   private final List<SubmitNodeStorage.NameTagSubmit> nameTagSubmitsNormal = new ArrayList();
+   private final NameTagFeatureRenderer.Storage nameTagSubmits = new NameTagFeatureRenderer.Storage();
    private final List<SubmitNodeStorage.TextSubmit> textSubmits = new ArrayList();
    private final List<SubmitNodeStorage.HitboxSubmit> hitboxSubmits = new ArrayList();
    private final List<SubmitNodeStorage.LeashSubmit> leashSubmits = new ArrayList();
@@ -44,13 +39,9 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList();
    private final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList();
    private final List<SubmitNodeCollector.ParticleGroupRenderer> particleGroupRenderers = new ArrayList();
-   private final Map<RenderType, List<SubmitNodeStorage.ModelSubmit<?>>> opaqueModelSubmits = new HashMap();
-   private final List<SubmitNodeStorage.TranslucentModelSubmit<?>> translucentModelSubmits = new ArrayList();
-   private final Set<RenderType> usedModelSubmitBuckets = new ObjectOpenHashSet();
-   private final Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> modelPartSubmits = new HashMap();
-   private final Set<RenderType> modelPartSubmitsUsage = new ObjectOpenHashSet();
-   private final Map<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> customGeometrySubmits = new HashMap();
-   private final Set<RenderType> customGeometrySubmitsUsage = new ObjectOpenHashSet();
+   private final ModelFeatureRenderer.Storage modelSubmits = new ModelFeatureRenderer.Storage();
+   private final ModelPartFeatureRenderer.Storage modelPartSubmits = new ModelPartFeatureRenderer.Storage();
+   private final CustomFeatureRenderer.Storage customGeometrySubmits = new CustomFeatureRenderer.Storage();
    private final SubmitNodeStorage submitNodeStorage;
    private boolean wasUsed = false;
 
@@ -72,25 +63,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6) {
       this.wasUsed = true;
-      if (var2 != null) {
-         int var8 = "deadmau5".equals(var3.getString()) ? -10 : 0;
-         Minecraft var9 = Minecraft.getInstance();
-         var1.pushPose();
-         var1.translate(var2.x, var2.y + 0.5, var2.z);
-         var1.mulPose((Quaternionfc)var9.getEntityRenderDispatcher().cameraOrientation());
-         var1.scale(0.025F, -0.025F, 0.025F);
-         Matrix4f var10 = new Matrix4f(var1.last().pose());
-         float var11 = (float)(-var9.font.width((FormattedText)var3)) / 2.0F;
-         int var12 = (int)(var9.options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
-         if (var4) {
-            this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, LightTexture.lightCoordsWithEmission(var5, 2), -1, 0, var6));
-            this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, var5, -2130706433, var12, var6));
-         } else {
-            this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, var5, -2130706433, var12, var6));
-         }
-
-         var1.popPose();
-      }
+      this.nameTagSubmits.add(var1, var2, var3, var4, var5, var6);
    }
 
    public void submitText(PoseStack var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10) {
@@ -111,18 +84,12 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
       this.wasUsed = true;
       SubmitNodeStorage.ModelSubmit var11 = new SubmitNodeStorage.ModelSubmit(var3.last().copy(), var1, var2, var5, var6, var7, var8, var9, var10);
-      if (var4.pipeline().getBlendFunction().isEmpty()) {
-         ((List)this.opaqueModelSubmits.computeIfAbsent(var4, (var0) -> new ArrayList())).add(var11);
-      } else {
-         Vector3f var12 = var3.last().pose().transformPosition(new Vector3f());
-         this.translucentModelSubmits.add(new SubmitNodeStorage.TranslucentModelSubmit(var11, var4, var12));
-      }
-
+      this.modelSubmits.add(var4, var11);
    }
 
    public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
       this.wasUsed = true;
-      ((List)this.modelPartSubmits.computeIfAbsent(var3, (var0) -> new ArrayList())).add(new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10));
+      this.modelPartSubmits.add(var3, new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10));
    }
 
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
@@ -148,8 +115,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    public void submitCustomGeometry(PoseStack var1, RenderType var2, SubmitNodeCollector.CustomGeometryRenderer var3) {
       this.wasUsed = true;
-      List var4 = (List)this.customGeometrySubmits.computeIfAbsent(var2, (var0) -> new ArrayList());
-      var4.add(new SubmitNodeStorage.CustomGeometrySubmit(var1.last().copy(), var3));
+      this.customGeometrySubmits.add(var1, var2, var3);
    }
 
    public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1) {
@@ -165,12 +131,8 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.flameSubmits;
    }
 
-   public List<SubmitNodeStorage.NameTagSubmit> getNameTagSubmitsSeethrough() {
-      return this.nameTagSubmitsSeethrough;
-   }
-
-   public List<SubmitNodeStorage.NameTagSubmit> getNameTagSubmitsNormal() {
-      return this.nameTagSubmitsNormal;
+   public NameTagFeatureRenderer.Storage getNameTagSubmits() {
+      return this.nameTagSubmits;
    }
 
    public List<SubmitNodeStorage.TextSubmit> getTextSubmits() {
@@ -197,7 +159,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.blockModelSubmits;
    }
 
-   public Map<RenderType, List<SubmitNodeStorage.ModelPartSubmit>> getModelPartSubmits() {
+   public ModelPartFeatureRenderer.Storage getModelPartSubmits() {
       return this.modelPartSubmits;
    }
 
@@ -209,15 +171,11 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.particleGroupRenderers;
    }
 
-   public Map<RenderType, List<SubmitNodeStorage.ModelSubmit<?>>> getOpaqueModelSubmits() {
-      return this.opaqueModelSubmits;
+   public ModelFeatureRenderer.Storage getModelSubmits() {
+      return this.modelSubmits;
    }
 
-   public List<SubmitNodeStorage.TranslucentModelSubmit<?>> getTranslucentModelSubmits() {
-      return this.translucentModelSubmits;
-   }
-
-   public Map<RenderType, List<SubmitNodeStorage.CustomGeometrySubmit>> getCustomGeometrySubmits() {
+   public CustomFeatureRenderer.Storage getCustomGeometrySubmits() {
       return this.customGeometrySubmits;
    }
 
@@ -228,8 +186,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public void clear() {
       this.shadowSubmits.clear();
       this.flameSubmits.clear();
-      this.nameTagSubmitsNormal.clear();
-      this.nameTagSubmitsSeethrough.clear();
+      this.nameTagSubmits.clear();
       this.textSubmits.clear();
       this.hitboxSubmits.clear();
       this.leashSubmits.clear();
@@ -237,40 +194,16 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.movingBlockSubmits.clear();
       this.blockModelSubmits.clear();
       this.itemSubmits.clear();
-      this.translucentModelSubmits.clear();
       this.particleGroupRenderers.clear();
-
-      for(Map.Entry var2 : this.opaqueModelSubmits.entrySet()) {
-         List var3 = (List)var2.getValue();
-         if (!var3.isEmpty()) {
-            this.usedModelSubmitBuckets.add((RenderType)var2.getKey());
-            var3.clear();
-         }
-      }
-
-      for(Map.Entry var6 : this.customGeometrySubmits.entrySet()) {
-         if (!((List)var6.getValue()).isEmpty()) {
-            this.customGeometrySubmitsUsage.add((RenderType)var6.getKey());
-            ((List)var6.getValue()).clear();
-         }
-      }
-
-      for(Map.Entry var7 : this.modelPartSubmits.entrySet()) {
-         if (!((List)var7.getValue()).isEmpty()) {
-            this.modelPartSubmitsUsage.add((RenderType)var7.getKey());
-            ((List)var7.getValue()).clear();
-         }
-      }
-
+      this.modelSubmits.clear();
+      this.customGeometrySubmits.clear();
+      this.modelPartSubmits.clear();
    }
 
    public void endFrame() {
-      this.opaqueModelSubmits.keySet().removeIf((var1) -> !this.usedModelSubmitBuckets.contains(var1));
-      this.usedModelSubmitBuckets.clear();
-      this.modelPartSubmits.keySet().removeIf((var1) -> !this.modelPartSubmitsUsage.contains(var1));
-      this.modelPartSubmitsUsage.clear();
-      this.customGeometrySubmits.keySet().removeIf((var1) -> !this.customGeometrySubmitsUsage.contains(var1));
-      this.customGeometrySubmitsUsage.clear();
+      this.modelSubmits.endFrame();
+      this.modelPartSubmits.endFrame();
+      this.customGeometrySubmits.endFrame();
       this.wasUsed = false;
    }
 }

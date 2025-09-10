@@ -47,6 +47,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private static final double CLOSE_ENOUGH_TO_START_QUEUING_DISTANCE = 3.0;
    private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_DISTANCE = 0.2;
    private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_PATH_END_DISTANCE = 1.0;
+   private static final double CLOSE_ENOUGH_TO_CONTINUE_INTERACTING_WITH_TARGET = 2.0;
    private final float speedModifier;
    private final int horizontalSearchDistance;
    private final int verticalSearchDistance;
@@ -101,7 +102,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
          }
 
          if (this.state.equals(TransportItemsBetweenContainers.TransportItemState.INTERACTING)) {
-            this.onReachedTarget(this.target, var2);
+            this.onReachedTarget(this.target, var1, var2);
          }
 
       }
@@ -140,12 +141,16 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    }
 
-   protected void onReachedTarget(TransportItemTarget var1, PathfinderMob var2) {
-      ++this.ticksSinceReachingTarget;
-      this.onTargetInteraction(var1, var2);
-      if (this.ticksSinceReachingTarget >= 60) {
-         this.doReachedTargetInteraction(var2, var1.container, this::pickUpItems, (var2x, var3) -> this.stopTargetingCurrentTarget(var2), this::putDownItem, (var2x, var3) -> this.stopTargetingCurrentTarget(var2));
-         this.onStartTravelling(var2);
+   protected void onReachedTarget(TransportItemTarget var1, Level var2, PathfinderMob var3) {
+      if (!this.isWithinTargetDistance(2.0, var1, var2, var3)) {
+         this.onStartTravelling(var3);
+      } else {
+         ++this.ticksSinceReachingTarget;
+         this.onTargetInteraction(var1, var3);
+         if (this.ticksSinceReachingTarget >= 60) {
+            this.doReachedTargetInteraction(var3, var1.container, this::pickUpItems, (var2x, var3x) -> this.stopTargetingCurrentTarget(var3), this::putDownItem, (var2x, var3x) -> this.stopTargetingCurrentTarget(var3));
+            this.onStartTravelling(var3);
+         }
       }
 
    }
@@ -176,6 +181,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       this.onStartTravelling.accept(var1);
       this.setTransportingState(TransportItemsBetweenContainers.TransportItemState.TRAVELLING);
       this.interactionState = null;
+      this.ticksSinceReachingTarget = 0;
    }
 
    private BiConsumer<PathfinderMob, Container> onReachedInteraction(ContainerInteractionState var1) {
@@ -241,10 +247,12 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    private boolean hasValidTarget(Level var1, PathfinderMob var2) {
       boolean var3 = this.target != null && this.isWantedBlock(var2, this.target.state) && this.targetHasNotChanged(var1, this.target);
-      if (var3) {
+      if (var3 && !this.isTargetBlocked(var1, this.target)) {
          Path var4 = var2.getNavigation().getPath();
          BlockPos var5 = var4 != null && var4.getEndNode() != null ? var4.getEndNode().asBlockPos() : var2.blockPosition();
-         if (var4 == null || this.targetIsReachableFromPosition(var1, var5, this.target, var2)) {
+         boolean var6 = var5.distChessboard(this.target.pos) <= 1;
+         boolean var7 = var4 == null && !var6;
+         if (var7 || this.targetIsReachableFromPosition(var1, var6, var5, this.target, var2)) {
             return true;
          }
 
@@ -252,6 +260,10 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       }
 
       return false;
+   }
+
+   private boolean isTargetBlocked(Level var1, TransportItemTarget var2) {
+      return ChestBlock.isChestBlockedAt(var1, var2.pos);
    }
 
    private boolean targetHasNotChanged(Level var1, TransportItemTarget var2) {
@@ -324,11 +336,10 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       return var3.state.getCollisionShape(var4, var3.pos).bounds().inflate(var1, 0.5, var1).move(var3.pos).intersects(var5.getBoundingBox());
    }
 
-   private boolean targetIsReachableFromPosition(Level var1, BlockPos var2, TransportItemTarget var3, PathfinderMob var4) {
-      boolean var5 = var2.distChessboard(var3.pos) <= 1;
-      BlockHitResult var6 = var1.clip(new ClipContext(new Vec3(var2.getCenter().x, (double)((float)var2.getY() + var4.getEyeHeight()), var2.getCenter().z), var3.pos.getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var4));
-      boolean var7 = var6.getType() == HitResult.Type.BLOCK && var6.getBlockPos().equals(var3.pos);
-      return var5 && var7;
+   private boolean targetIsReachableFromPosition(Level var1, boolean var2, BlockPos var3, TransportItemTarget var4, PathfinderMob var5) {
+      BlockHitResult var6 = var1.clip(new ClipContext(new Vec3(var3.getCenter().x, (double)((float)var3.getY() + var5.getEyeHeight()), var3.getCenter().z), var4.pos.getCenter(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var5));
+      boolean var7 = var6.getType() == HitResult.Type.BLOCK && var6.getBlockPos().equals(var4.pos);
+      return var2 && var7;
    }
 
    private boolean isAnotherMobInteractingWithTarget(TransportItemTarget var1, Level var2) {
@@ -449,7 +460,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
       var1.setXxa(0.0F);
       var1.setYya(0.0F);
       var1.setSpeed(0.0F);
-      var1.setDeltaMovement(0.0, 0.0, 0.0);
+      var1.setDeltaMovement(0.0, var1.getDeltaMovement().y, 0.0);
    }
 
    // $FF: synthetic method

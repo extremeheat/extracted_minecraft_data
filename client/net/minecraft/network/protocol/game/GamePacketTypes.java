@@ -31,6 +31,10 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundCooldownPacket> CLIENTBOUND_COOLDOWN = createClientbound("cooldown");
    public static final PacketType<ClientboundCustomChatCompletionsPacket> CLIENTBOUND_CUSTOM_CHAT_COMPLETIONS = createClientbound("custom_chat_completions");
    public static final PacketType<ClientboundDamageEventPacket> CLIENTBOUND_DAMAGE_EVENT = createClientbound("damage_event");
+   public static final PacketType<ClientboundDebugBlockValuePacket> CLIENTBOUND_DEBUG_BLOCK_VALUE = createClientbound("debug/block_value");
+   public static final PacketType<ClientboundDebugChunkValuePacket> CLIENTBOUND_DEBUG_CHUNK_VALUE = createClientbound("debug/chunk_value");
+   public static final PacketType<ClientboundDebugEntityValuePacket> CLIENTBOUND_DEBUG_ENTITY_VALUE = createClientbound("debug/entity_value");
+   public static final PacketType<ClientboundDebugEventPacket> CLIENTBOUND_DEBUG_EVENT = createClientbound("debug/event");
    public static final PacketType<ClientboundDebugSamplePacket> CLIENTBOUND_DEBUG_SAMPLE = createClientbound("debug_sample");
    public static final PacketType<ClientboundDeleteChatPacket> CLIENTBOUND_DELETE_CHAT = createClientbound("delete_chat");
    public static final PacketType<ClientboundDisguisedChatPacket> CLIENTBOUND_DISGUISED_CHAT = createClientbound("disguised_chat");
@@ -39,6 +43,7 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundExplodePacket> CLIENTBOUND_EXPLODE = createClientbound("explode");
    public static final PacketType<ClientboundForgetLevelChunkPacket> CLIENTBOUND_FORGET_LEVEL_CHUNK = createClientbound("forget_level_chunk");
    public static final PacketType<ClientboundGameEventPacket> CLIENTBOUND_GAME_EVENT = createClientbound("game_event");
+   public static final PacketType<ClientboundGameTestHighlightPosPacket> CLIENTBOUND_GAME_TEST_HIGHLIGHT_POS = createClientbound("game_test_highlight_pos");
    public static final PacketType<ClientboundHorseScreenOpenPacket> CLIENTBOUND_HORSE_SCREEN_OPEN = createClientbound("horse_screen_open");
    public static final PacketType<ClientboundHurtAnimationPacket> CLIENTBOUND_HURT_ANIMATION = createClientbound("hurt_animation");
    public static final PacketType<ClientboundInitializeBorderPacket> CLIENTBOUND_INITIALIZE_BORDER = createClientbound("initialize_border");
@@ -140,7 +145,7 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundContainerClickPacket> SERVERBOUND_CONTAINER_CLICK = createServerbound("container_click");
    public static final PacketType<ServerboundContainerClosePacket> SERVERBOUND_CONTAINER_CLOSE = createServerbound("container_close");
    public static final PacketType<ServerboundContainerSlotStateChangedPacket> SERVERBOUND_CONTAINER_SLOT_STATE_CHANGED = createServerbound("container_slot_state_changed");
-   public static final PacketType<ServerboundDebugSampleSubscriptionPacket> SERVERBOUND_DEBUG_SAMPLE_SUBSCRIPTION = createServerbound("debug_sample_subscription");
+   public static final PacketType<ServerboundDebugSubscriptionRequestPacket> SERVERBOUND_DEBUG_SUBSCRIPTION_REQUEST = createServerbound("debug_subscription_request");
    public static final PacketType<ServerboundEditBookPacket> SERVERBOUND_EDIT_BOOK = createServerbound("edit_book");
    public static final PacketType<ServerboundEntityTagQueryPacket> SERVERBOUND_ENTITY_TAG_QUERY = createServerbound("entity_tag_query");
    public static final PacketType<ServerboundInteractPacket> SERVERBOUND_INTERACT = createServerbound("interact");

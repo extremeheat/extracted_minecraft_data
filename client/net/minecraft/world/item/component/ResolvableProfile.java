@@ -23,6 +23,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public abstract sealed class ResolvableProfile implements TooltipProvider {
+   private static final GameProfile NIL_PROFILE;
    public static final Codec<ResolvableProfile> CODEC;
    public static final StreamCodec<ByteBuf, ResolvableProfile> STREAM_CODEC;
    protected final GameProfile partialProfile;
@@ -53,14 +54,19 @@ public abstract sealed class ResolvableProfile implements TooltipProvider {
    }
 
    static GameProfile createPartialProfile(Optional<String> var0, Optional<UUID> var1, PropertyMap var2) {
-      String var3 = (String)var0.orElse("");
-      UUID var4 = (UUID)var1.orElseGet(() -> UUIDUtil.createOfflinePlayerUUID(var3));
-      return new GameProfile(var4, var3, var2);
+      if (var0.isEmpty() && var1.isEmpty()) {
+         return NIL_PROFILE;
+      } else {
+         String var3 = (String)var0.orElse("");
+         UUID var4 = (UUID)var1.orElseGet(() -> UUIDUtil.createOfflinePlayerUUID(var3));
+         return new GameProfile(var4, var3, var2);
+      }
    }
 
    public abstract Optional<String> name();
 
    static {
+      NIL_PROFILE = new GameProfile(Util.NIL_UUID, "");
       CODEC = Codec.either(ExtraCodecs.STORED_GAME_PROFILE, ResolvableProfile.Partial.CODEC).xmap(ResolvableProfile::create, ResolvableProfile::unpack);
       STREAM_CODEC = ByteBufCodecs.either(ByteBufCodecs.GAME_PROFILE, ResolvableProfile.Partial.STREAM_CODEC).map(ResolvableProfile::create, ResolvableProfile::unpack);
    }

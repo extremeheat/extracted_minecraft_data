@@ -19,13 +19,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.debug.DebugHiveInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -248,7 +251,6 @@ public class BeehiveBlockEntity extends BlockEntity {
          var0.playSound((Entity)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
-      DebugPackets.sendHiveInfo(var0, var1, var2, var3);
    }
 
    protected void loadAdditional(ValueInput var1) {
@@ -283,6 +285,10 @@ public class BeehiveBlockEntity extends BlockEntity {
 
    private List<Occupant> getBees() {
       return this.stored.stream().map(BeeData::toOccupant).toList();
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      var2.register(DebugSubscriptions.BEE_HIVES, () -> DebugHiveInfo.pack(this));
    }
 
    public static enum BeeReleaseStatus {

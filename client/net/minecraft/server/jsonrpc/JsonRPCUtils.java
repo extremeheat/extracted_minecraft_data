@@ -15,11 +15,11 @@ public class JsonRPCUtils {
       super();
    }
 
-   public static JsonObject createResult(@Nullable Integer var0, @Nullable JsonElement var1) {
+   public static JsonObject createResult(@Nullable JsonElement var0, @Nullable JsonElement var1) {
       JsonObject var2 = new JsonObject();
       var2.addProperty("jsonrpc", "2.0");
       if (var0 != null) {
-         var2.addProperty("id", var0);
+         var2.add("id", var0);
       }
 
       if (var1 != null) {
@@ -50,11 +50,11 @@ public class JsonRPCUtils {
       return var3;
    }
 
-   public static JsonObject createError(@Nullable Integer var0, String var1, int var2, @Nullable String var3) {
+   public static JsonObject createError(@Nullable JsonElement var0, String var1, int var2, @Nullable String var3) {
       JsonObject var4 = new JsonObject();
       var4.addProperty("jsonrpc", "2.0");
       if (var0 != null) {
-         var4.addProperty("id", var0);
+         var4.add("id", var0);
       }
 
       JsonObject var5 = new JsonObject();
@@ -69,9 +69,9 @@ public class JsonRPCUtils {
    }
 
    @Nullable
-   public static Integer getRequestId(JsonObject var0) {
+   public static JsonElement getRequestId(JsonObject var0) {
       JsonElement var1 = var0.get("id");
-      return var1 != null && GsonHelper.isNumberValue(var1) ? var1.getAsInt() : null;
+      return var1 == null || !GsonHelper.isNumberValue(var1) && !GsonHelper.isStringValue(var1) && !var1.isJsonNull() ? null : var1;
    }
 
    @Nullable

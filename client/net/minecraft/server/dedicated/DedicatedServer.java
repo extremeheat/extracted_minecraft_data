@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import io.netty.handler.ssl.SslContext;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -40,7 +41,12 @@ import net.minecraft.server.ServerLinks;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.gui.MinecraftServerGui;
+import net.minecraft.server.jsonrpc.JsonRpcNotificationService;
 import net.minecraft.server.jsonrpc.ManagementServer;
+import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
+import net.minecraft.server.jsonrpc.security.AuthenticationHandler;
+import net.minecraft.server.jsonrpc.security.JsonRpcSslContextProvider;
+import net.minecraft.server.jsonrpc.security.SecurityConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
@@ -56,7 +62,7 @@ import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.TimeUtil;
-import net.minecraft.util.debugchart.DebugSampleSubscriptionTracker;
+import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.RemoteSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
@@ -87,8 +93,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private final ServerTextFilter serverTextFilter;
    @Nullable
    private RemoteSampleLogger tickTimeLogger;
-   @Nullable
-   private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
+   private boolean isTickTimeLoggingEnabled;
    private final ServerLinks serverLinks;
    private final Map<String, String> codeOfConductTexts;
    @Nullable
@@ -158,14 +163,37 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
    }
 
+   private SslContext createSslContext() {
+      try {
+         return JsonRpcSslContextProvider.createFrom(this.getProperties().managementServerTlsKeystore, this.getProperties().managementServerTlsKeystorePassword);
+      } catch (Exception var2) {
+         JsonRpcSslContextProvider.printInstructions();
+         throw new IllegalStateException("Failed to configure TLS for the server management protocol", var2);
+      }
+   }
+
    public boolean initServer() throws IOException {
       int var1 = this.getProperties().managementServerPort;
       if (this.getProperties().managementServerEnabled) {
-         String var2 = this.getProperties().managementServerHost;
-         HostAndPort var3 = HostAndPort.fromParts(var2, var1);
-         LOGGER.info("Starting json RPC server on {}", var3);
-         this.jsonRpcServer = new ManagementServer(var3);
-         this.jsonRpcServer.start(this);
+         String var2 = this.settings.getProperties().managementServerSecret;
+         if (!SecurityConfig.isValid(var2)) {
+            throw new IllegalStateException("Invalid management server secret, must be 40 alphanumeric characters");
+         }
+
+         String var3 = this.getProperties().managementServerHost;
+         HostAndPort var4 = HostAndPort.fromParts(var3, var1);
+         SecurityConfig var5 = new SecurityConfig(var2);
+         AuthenticationHandler var6 = new AuthenticationHandler(var5);
+         LOGGER.info("Starting json RPC server on {}", var4);
+         this.jsonRpcServer = new ManagementServer(var4, var6);
+         MinecraftApi var7 = MinecraftApi.of(this);
+         var7.notificationManager().registerService(new JsonRpcNotificationService(var7, this.jsonRpcServer));
+         if (this.getProperties().managementServerTlsEnabled) {
+            SslContext var8 = this.createSslContext();
+            this.jsonRpcServer.startWithTls(var7, var8);
+         } else {
+            this.jsonRpcServer.startWithoutTls(var7);
+         }
       }
 
       Thread var12 = new Thread("Server console handler") {
@@ -203,9 +231,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       this.worldData.setGameType(var13.gameMode.get());
       LOGGER.info("Default game type: {}", var13.gameMode.get());
-      InetAddress var4 = null;
+      InetAddress var14 = null;
       if (!this.getLocalIp().isEmpty()) {
-         var4 = InetAddress.getByName(this.getLocalIp());
+         var14 = InetAddress.getByName(this.getLocalIp());
       }
 
       if (this.getPort() < 0) {
@@ -216,7 +244,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       LOGGER.info("Starting Minecraft server on {}:{}", this.getLocalIp().isEmpty() ? "*" : this.getLocalIp(), this.getPort());
 
       try {
-         this.getConnection().startTcpServerListener(var4, this.getPort());
+         this.getConnection().startTcpServerListener(var14, this.getPort());
       } catch (IOException var11) {
          LOGGER.warn("**** FAILED TO BIND TO PORT!");
          LOGGER.warn("The exception was: {}", var11.toString());
@@ -239,14 +267,13 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          return false;
       } else {
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
-         this.debugSampleSubscriptionTracker = new DebugSampleSubscriptionTracker(this.getPlayerList());
-         this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSampleSubscriptionTracker, RemoteDebugSampleType.TICK_TIME);
-         long var5 = Util.getNanos();
+         this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSubscribers(), RemoteDebugSampleType.TICK_TIME);
+         long var15 = Util.getNanos();
          this.services.nameToIdCache().resolveOfflineUsers(!this.usesAuthentication());
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
          this.loadLevel();
-         long var7 = Util.getNanos() - var5;
-         String var9 = String.format(Locale.ROOT, "%.3fs", (double)var7 / 1.0E9);
+         long var16 = Util.getNanos() - var15;
+         String var9 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
          LOGGER.info("Done ({})! For help, type \"help\"", var9);
          if (var13.announcePlayerAchievements != null) {
             ((GameRules.BooleanValue)this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
@@ -413,6 +440,14 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       if (this.queryThreadGs4 != null) {
          this.queryThreadGs4.stop();
+      }
+
+      if (this.jsonRpcServer != null) {
+         try {
+            this.jsonRpcServer.stop(true);
+         } catch (InterruptedException var2) {
+            LOGGER.error("Interrupted while stopping the management server", var2);
+         }
       }
 
    }
@@ -736,7 +771,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public void endMetricsRecordingTick() {
       super.endMetricsRecordingTick();
-      this.debugSampleSubscriptionTracker.tick(this.getTickCount());
+      this.isTickTimeLoggingEnabled = this.debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.DEDICATED_SERVER_TICK_TIME);
    }
 
    public SampleLogger getTickTimeLogger() {
@@ -744,11 +779,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public boolean isTickTimeLoggingEnabled() {
-      return this.debugSampleSubscriptionTracker.shouldLogSamples(RemoteDebugSampleType.TICK_TIME);
-   }
-
-   public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
-      this.debugSampleSubscriptionTracker.subscribe(var1, var2);
+      return this.isTickTimeLoggingEnabled;
    }
 
    public boolean acceptsTransfers() {

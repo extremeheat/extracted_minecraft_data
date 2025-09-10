@@ -23,9 +23,9 @@ public class OperatorService {
       return var0.operatorListService().getEntries().stream().filter((var0x) -> var0x.getUser() != null).map(OperatorDto::from).toList();
    }
 
-   public static boolean clear(MinecraftApi var0, ClientInfo var1) {
+   public static List<OperatorDto> clear(MinecraftApi var0, ClientInfo var1) {
       var0.operatorListService().clear(var1);
-      return true;
+      return get(var0);
    }
 
    public static List<OperatorDto> remove(MinecraftApi var0, List<PlayerDto> var1, ClientInfo var2) {

@@ -8,13 +8,12 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlayerService {
-   private static final MutableComponent DEFAULT_KICK_MESSAGE = Component.translatable("multiplayer.disconnect.kicked");
+   private static final Component DEFAULT_KICK_MESSAGE = Component.translatable("multiplayer.disconnect.kicked");
 
    public PlayerService() {
       super();
@@ -31,23 +30,7 @@ public class PlayerService {
          ServerPlayer var6 = getServerPlayer(var0, var5);
          if (var6 != null) {
             var0.playerListService().remove(var6, var2);
-            Object var7;
-            if (var1.message().isPresent() && (((Message)var1.message().get()).literal().isPresent() || ((Message)var1.message().get()).translatable().isPresent())) {
-               Message var8 = (Message)var1.message().get();
-               if (var8.translatable().isPresent()) {
-                  if (var8.translatableParams().isPresent() && !((List)var8.translatableParams().get()).isEmpty()) {
-                     var7 = Component.translatable((String)var8.translatable().get(), ((List)var8.translatableParams().get()).toArray());
-                  } else {
-                     var7 = Component.translatable((String)var8.translatable().get());
-                  }
-               } else {
-                  var7 = (Component)var8.literal().map(Component::literal).orElse(DEFAULT_KICK_MESSAGE);
-               }
-            } else {
-               var7 = DEFAULT_KICK_MESSAGE;
-            }
-
-            var6.connection.disconnect((Component)var7);
+            var6.connection.disconnect((Component)var1.message.flatMap(Message::asComponent).orElse(DEFAULT_KICK_MESSAGE));
             var3.add(var5);
          }
       }
@@ -65,6 +48,7 @@ public class PlayerService {
    }
 
    public static record KickDto(List<PlayerDto> players, Optional<Message> message) {
+      final Optional<Message> message;
       public static final Codec<KickDto> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlayerDto.CODEC.codec().listOf().fieldOf("players").forGetter(KickDto::players), Message.CODEC.optionalFieldOf("message").forGetter(KickDto::message)).apply(var0, KickDto::new));
 
       public KickDto(List<PlayerDto> var1, Optional<Message> var2) {

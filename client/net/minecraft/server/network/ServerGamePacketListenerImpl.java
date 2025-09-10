@@ -103,7 +103,7 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
-import net.minecraft.network.protocol.game.ServerboundDebugSampleSubscriptionPacket;
+import net.minecraft.network.protocol.game.ServerboundDebugSubscriptionRequestPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQueryPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -1981,9 +1981,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.chunkSender.onChunkBatchReceivedByClient(var1.desiredChunksPerTick());
    }
 
-   public void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1) {
+   public void handleDebugSubscriptionRequest(ServerboundDebugSubscriptionRequestPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      this.server.subscribeToDebugSample(this.player, var1.sampleType());
+      this.player.requestDebugSubscriptions(var1.subscriptions());
    }
 
    private void resetPlayerChatState(RemoteChatSession var1) {

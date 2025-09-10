@@ -115,6 +115,7 @@ import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
+import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
@@ -283,6 +284,7 @@ public class ServerPlayer extends Player {
    @Nullable
    public final Object object;
    private final CommandSource commandSource;
+   private Set<DebugSubscription<?>> requestedDebugSubscriptions;
    private int containerCounter;
    public boolean wonGame;
 
@@ -387,6 +389,7 @@ public class ServerPlayer extends Player {
             ServerPlayer.this.sendSystemMessage(var1);
          }
       };
+      this.requestedDebugSubscriptions = Set.of();
       this.server = var1;
       this.textFilter = var1.createTextFilterForPlayer(this);
       this.gameMode = var1.createGameModeForPlayer(this);
@@ -1217,7 +1220,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(boolean var1, boolean var2) {
       if (this.isSleeping()) {
-         this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 2));
       }
 
       super.stopSleepInBed(var1, var2);
@@ -1553,6 +1556,7 @@ public class ServerPlayer extends Player {
       this.seenCredits = var1.seenCredits;
       this.enteredNetherPosition = var1.enteredNetherPosition;
       this.chunkTrackingView = var1.chunkTrackingView;
+      this.requestedDebugSubscriptions = var1.requestedDebugSubscriptions;
       this.setShoulderEntityLeft(var1.getShoulderEntityLeft());
       this.setShoulderEntityRight(var1.getShoulderEntityRight());
       this.setLastDeathLocation(var1.getLastDeathLocation());
@@ -1619,11 +1623,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(Entity var1) {
-      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(var1, 4));
    }
 
    public void magicCrit(Entity var1) {
-      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(var1, 5));
    }
 
    public void onUpdateAbilities() {
@@ -2120,6 +2124,14 @@ public class ServerPlayer extends Player {
    public static long placeEnderPearlTicket(ServerLevel var0, ChunkPos var1) {
       var0.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, var1, 2);
       return TicketType.ENDER_PEARL.timeout();
+   }
+
+   public void requestDebugSubscriptions(Set<DebugSubscription<?>> var1) {
+      this.requestedDebugSubscriptions = Set.copyOf(var1);
+   }
+
+   public Set<DebugSubscription<?>> debugSubscriptions() {
+      return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
    }
 
    // $FF: synthetic method

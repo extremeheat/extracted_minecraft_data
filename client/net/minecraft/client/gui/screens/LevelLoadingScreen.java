@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -127,11 +128,15 @@ public class LevelLoadingScreen extends Screen {
       int var8 = var7 * var6 - var4;
       int var9 = var1 - var8 / 2;
       int var10 = var2 - var8 / 2;
+      if (SharedConstants.DEBUG_CHUNKS) {
+         int var11 = var6 / 2 + 1;
+         var0.fill(var1 - var11, var2 - var11, var1 + var11, var2 + var11, -65536);
+      }
 
-      for(int var11 = 0; var11 < var7; ++var11) {
+      for(int var16 = 0; var16 < var7; ++var16) {
          for(int var12 = 0; var12 < var7; ++var12) {
-            ChunkStatus var13 = var5.get(var11, var12);
-            int var14 = var9 + var11 * var6;
+            ChunkStatus var13 = var5.get(var16, var12);
+            int var14 = var9 + var16 * var6;
             int var15 = var10 + var12 * var6;
             var0.fill(var14, var15, var14 + var3, var15 + var3, ARGB.opaque(COLORS.getInt(var13)));
          }

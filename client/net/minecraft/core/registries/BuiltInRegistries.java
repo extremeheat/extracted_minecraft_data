@@ -54,6 +54,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.debug.DebugSubscription;
+import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.valueproviders.FloatProviderType;
 import net.minecraft.util.valueproviders.IntProviderType;
 import net.minecraft.world.effect.MobEffect;
@@ -158,6 +160,7 @@ public class BuiltInRegistries {
    public static final DefaultedRegistry<Fluid> FLUID;
    public static final Registry<MobEffect> MOB_EFFECT;
    public static final DefaultedRegistry<Block> BLOCK;
+   public static final Registry<DebugSubscription<?>> DEBUG_SUBSCRIPTION;
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE;
    public static final DefaultedRegistry<Item> ITEM;
    public static final Registry<Potion> POTION;
@@ -327,6 +330,7 @@ public class BuiltInRegistries {
       FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> Fluids.EMPTY);
       MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
       BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> Blocks.AIR);
+      DEBUG_SUBSCRIPTION = registerSimple(Registries.DEBUG_SUBSCRIPTION, DebugSubscriptions::bootstrap);
       ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> EntityType.PIG);
       ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> Items.AIR);
       POTION = registerSimple(Registries.POTION, Potions::bootstrap);

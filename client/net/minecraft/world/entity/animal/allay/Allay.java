@@ -12,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -325,11 +324,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
       InventoryCarrier.pickUpItem(var1, this, this, var2);
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    public boolean isFlapping() {

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
@@ -31,48 +30,37 @@ public class ServerStateService {
    }
 
    public static boolean systemMessage(MinecraftApi var0, SystemMessage var1, ClientInfo var2) {
-      Message var3 = var1.message();
-      MutableComponent var4;
-      if (var3.translatable().isPresent()) {
-         if (var3.translatableParams().isPresent() && !((List)var3.translatableParams().get()).isEmpty()) {
-            var4 = Component.translatable((String)var3.translatable().get(), ((List)var3.translatableParams().get()).toArray());
-         } else {
-            var4 = Component.translatable((String)var3.translatable().get());
-         }
+      Component var3 = (Component)var1.message().asComponent().orElse((Object)null);
+      if (var3 == null) {
+         return false;
       } else {
-         if (!var3.literal().isPresent()) {
-            return false;
-         }
+         if (var1.receivingPlayers().isPresent()) {
+            if (((List)var1.receivingPlayers().get()).isEmpty()) {
+               return false;
+            }
 
-         var4 = Component.literal((String)var3.literal().get());
-      }
+            for(PlayerDto var5 : (List)var1.receivingPlayers().get()) {
+               ServerPlayer var6;
+               if (var5.id().isPresent()) {
+                  var6 = var0.playerListService().getPlayer((UUID)var5.id().get());
+               } else {
+                  if (!var5.name().isPresent()) {
+                     continue;
+                  }
 
-      if (var1.receivingPlayers().isPresent()) {
-         if (((List)var1.receivingPlayers().get()).isEmpty()) {
-            return false;
-         }
-
-         for(PlayerDto var6 : (List)var1.receivingPlayers().get()) {
-            ServerPlayer var7;
-            if (var6.id().isPresent()) {
-               var7 = var0.playerListService().getPlayer((UUID)var6.id().get());
-            } else {
-               if (!var6.name().isPresent()) {
-                  continue;
+                  var6 = var0.playerListService().getPlayerByName((String)var5.name().get());
                }
 
-               var7 = var0.playerListService().getPlayerByName((String)var6.name().get());
+               if (var6 != null) {
+                  var6.sendSystemMessage(var3, var1.overlay());
+               }
             }
-
-            if (var7 != null) {
-               var7.sendSystemMessage(var4, var1.overlay());
-            }
+         } else {
+            var0.serverStateService().broadcastSystemMessage(var3, var1.overlay(), var2);
          }
-      } else {
-         var0.serverStateService().broadcastSystemMessage(var4, var1.overlay(), var2);
-      }
 
-      return true;
+         return true;
+      }
    }
 
    public static record ServerState(boolean started, List<PlayerDto> players, ServerStatus.Version version) {

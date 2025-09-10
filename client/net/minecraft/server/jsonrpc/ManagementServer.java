@@ -7,9 +7,11 @@ import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -17,17 +19,13 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftAllowListService;
+import javax.annotation.Nullable;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftBanListService;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftGameRuleService;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftOperatorListService;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftPlayerListService;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftServerSettingsService;
-import net.minecraft.server.jsonrpc.internalapi.MinecraftServerStateService;
+import net.minecraft.server.jsonrpc.security.AuthenticationHandler;
 import net.minecraft.server.jsonrpc.websocket.JsonToWebSocketEncoder;
 import net.minecraft.server.jsonrpc.websocket.WebSocketToJsonCodec;
 import org.slf4j.Logger;
@@ -35,11 +33,24 @@ import org.slf4j.Logger;
 public class ManagementServer {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final HostAndPort hostAndPort;
+   final AuthenticationHandler authenticationHandler;
+   @Nullable
+   private Channel serverChannel;
+   private final NioEventLoopGroup nioEventLoopGroup;
    private final Set<Connection> connections = Sets.newIdentityHashSet();
 
-   public ManagementServer(HostAndPort var1) {
+   public ManagementServer(HostAndPort var1, AuthenticationHandler var2) {
       super();
       this.hostAndPort = var1;
+      this.authenticationHandler = var2;
+      this.nioEventLoopGroup = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Management server IO #%d").setDaemon(true).build());
+   }
+
+   public ManagementServer(HostAndPort var1, AuthenticationHandler var2, NioEventLoopGroup var3) {
+      super();
+      this.hostAndPort = var1;
+      this.authenticationHandler = var2;
+      this.nioEventLoopGroup = var3;
    }
 
    public void onConnected(Connection var1) {
@@ -54,36 +65,57 @@ public class ManagementServer {
       }
    }
 
-   public void start(DedicatedServer var1) {
-      final JsonRpcLogger var2 = new JsonRpcLogger();
-      final MinecraftApi var3 = getApiService(var1, var2);
-      var1.notificationManager().registerService(new JsonRpcNotificationService(var3, this));
-      LOGGER.info("Json-RPC Management connection listening on " + String.valueOf(this.hostAndPort));
-      ((ServerBootstrap)((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).handler(new LoggingHandler(LogLevel.DEBUG))).channel(NioServerSocketChannel.class)).childHandler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1) {
+   public void startWithoutTls(MinecraftApi var1) {
+      this.start(var1, (SslContext)null);
+   }
+
+   public void startWithTls(MinecraftApi var1, SslContext var2) {
+      this.start(var1, var2);
+   }
+
+   private void start(final MinecraftApi var1, @Nullable final SslContext var2) {
+      final JsonRpcLogger var3 = new JsonRpcLogger();
+      ChannelFuture var4 = ((ServerBootstrap)((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).handler(new LoggingHandler(LogLevel.DEBUG))).channel(NioServerSocketChannel.class)).childHandler(new ChannelInitializer<Channel>() {
+         protected void initChannel(Channel var1x) {
             try {
-               var1.config().setOption(ChannelOption.TCP_NODELAY, true);
+               var1x.config().setOption(ChannelOption.TCP_NODELAY, true);
             } catch (ChannelException var3x) {
             }
 
-            var1.pipeline().addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(var1, ManagementServer.this, var3, var2)});
+            ChannelPipeline var2x = var1x.pipeline();
+            if (var2 != null) {
+               var2x.addLast(new ChannelHandler[]{var2.newHandler(var1x.alloc())});
+            }
+
+            var2x.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(var1x, ManagementServer.this, var1, var3)});
          }
-      }).group(new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Management server IO #%d").setDaemon(true).build())).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind().syncUninterruptibly();
+      }).group(this.nioEventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
+      this.serverChannel = var4.channel();
+      var4.syncUninterruptibly();
+      Logger var10000 = LOGGER;
+      String var10001 = this.hostAndPort.getHost();
+      var10000.info("Json-RPC Management connection listening on " + var10001 + ":" + this.getPort());
    }
 
-   private static MinecraftApi getApiService(DedicatedServer var0, JsonRpcLogger var1) {
-      MinecraftAllowListService var2 = new MinecraftAllowListService(var0, var1);
-      MinecraftBanListService var3 = new MinecraftBanListService(var0, var1);
-      MinecraftPlayerListService var4 = new MinecraftPlayerListService(var0, var1);
-      MinecraftGameRuleService var5 = new MinecraftGameRuleService(var0, var1);
-      MinecraftOperatorListService var6 = new MinecraftOperatorListService(var0, var1);
-      MinecraftServerSettingsService var7 = new MinecraftServerSettingsService(var0, var1);
-      MinecraftServerStateService var8 = new MinecraftServerStateService(var0, var1);
-      return new MinecraftApi(var2, var3, var4, var5, var6, var7, var8, var0);
+   public void stop(boolean var1) throws InterruptedException {
+      if (this.serverChannel != null) {
+         this.serverChannel.close().sync();
+         this.serverChannel = null;
+      }
+
+      this.connections.clear();
+      if (var1) {
+         this.nioEventLoopGroup.shutdownGracefully().sync();
+      }
+
    }
 
    public void tick() {
       this.forEachConnection(Connection::tick);
+   }
+
+   public int getPort() {
+      return this.serverChannel != null ? ((InetSocketAddress)this.serverChannel.localAddress()).getPort() : this.hostAndPort.getPort();
    }
 
    void forEachConnection(Consumer<Connection> var1) {

@@ -7,7 +7,9 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.ShortListIterator;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -25,6 +27,9 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.debug.DebugStructureInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
@@ -47,6 +52,9 @@ import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -56,7 +64,7 @@ import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
 import org.slf4j.Logger;
 
-public class LevelChunk extends ChunkAccess {
+public class LevelChunk extends ChunkAccess implements DebugValueSource {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final TickingBlockEntity NULL_TICKER = new TickingBlockEntity() {
       public void tick() {
@@ -460,6 +468,7 @@ public class LevelChunk extends ChunkAccess {
             if (var4 instanceof ServerLevel) {
                ServerLevel var3 = (ServerLevel)var4;
                this.removeGameEventListener(var2, var3);
+               var3.debugSynchronizers().dropBlockEntity(var1);
             }
 
             var2.setRemoved();
@@ -624,6 +633,31 @@ public class LevelChunk extends ChunkAccess {
    public void unregisterTickContainerFromLevel(ServerLevel var1) {
       var1.getBlockTicks().removeContainer(this.chunkPos);
       var1.getFluidTicks().removeContainer(this.chunkPos);
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      if (!this.getAllStarts().isEmpty()) {
+         var2.register(DebugSubscriptions.STRUCTURES, () -> {
+            ArrayList var1 = new ArrayList();
+
+            for(StructureStart var3 : this.getAllStarts().values()) {
+               BoundingBox var4 = var3.getBoundingBox();
+               List var5 = var3.getPieces();
+               ArrayList var6 = new ArrayList(var5.size());
+
+               for(int var7 = 0; var7 < var5.size(); ++var7) {
+                  boolean var8 = var7 == 0;
+                  var6.add(new DebugStructureInfo.Piece(((StructurePiece)var5.get(var7)).getBoundingBox(), var8));
+               }
+
+               var1.add(new DebugStructureInfo(var4, var6));
+            }
+
+            return var1;
+         });
+      }
+
+      var2.register(DebugSubscriptions.RAIDS, () -> var1.getRaids().getRaidCentersInChunk(this.chunkPos));
    }
 
    public ChunkStatus getPersistedStatus() {

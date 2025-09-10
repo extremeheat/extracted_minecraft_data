@@ -44,7 +44,7 @@ public class SlotRanges {
       addSingleSlot(var0, "player.cursor", 499);
       addSlotRange(var0, "player.crafting.", 500, 4);
    });
-   public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray(new SlotRange[0]));
+   public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray((var0) -> new SlotRange[var0]));
    private static final Function<String, SlotRange> NAME_LOOKUP;
 
    public SlotRanges() {
@@ -97,6 +97,6 @@ public class SlotRanges {
    }
 
    static {
-      NAME_LOOKUP = StringRepresentable.createNameLookup((SlotRange[])SLOTS.toArray(new SlotRange[0]), (var0) -> var0);
+      NAME_LOOKUP = StringRepresentable.createNameLookup((SlotRange[])SLOTS.toArray((var0) -> new SlotRange[var0]));
    }
 }

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
@@ -169,6 +170,10 @@ public class TicketStorage extends SavedData {
       int var7 = getTicketLevelAt(var4, true);
       int var8 = getTicketLevelAt(var4, false);
       var4.add(var3);
+      if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+         LOGGER.debug("ATI {} {}", new ChunkPos(var1), var3);
+      }
+
       if (var3.getType().doesSimulate() && var3.getTicketLevel() < var7 && this.simulationChunkUpdatedListener != null) {
          this.simulationChunkUpdatedListener.update(var1, var3.getTicketLevel(), true);
       }
@@ -240,6 +245,10 @@ public class TicketStorage extends SavedData {
             Ticket var7 = (Ticket)var6.next();
             if (isTicketSameTypeAndLevel(var3, var7)) {
                var6.remove();
+               if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+                  LOGGER.debug("RTI {} {}", new ChunkPos(var1), var7);
+               }
+
                var5 = true;
                break;
             }

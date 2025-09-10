@@ -41,7 +41,7 @@ public class MerchantMenu extends AbstractContainerMenu {
       this.tradeContainer = new MerchantContainer(var3);
       this.addSlot(new Slot(this.tradeContainer, 0, 136, 37));
       this.addSlot(new Slot(this.tradeContainer, 1, 162, 37));
-      this.addSlot(new MerchantResultSlot(var2.player, var3, this.tradeContainer, 2, 220, 38));
+      this.addSlot(new MerchantResultSlot(var2.player, var3, this.tradeContainer, 2, 220, 37));
       this.addStandardInventorySlots(var2, 108, 84);
    }
 

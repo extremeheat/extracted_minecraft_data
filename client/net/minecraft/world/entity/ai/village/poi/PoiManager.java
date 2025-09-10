@@ -17,6 +17,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -28,6 +29,7 @@ import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.debug.DebugPoiInfo;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -49,8 +51,9 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
       super(new SimpleRegionStorage(var1, var2, var3, var4, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, var5, var6, var7);
    }
 
-   public void add(BlockPos var1, Holder<PoiType> var2) {
-      ((PoiSection)this.getOrCreate(SectionPos.asLong(var1))).add(var1, var2);
+   @Nullable
+   public PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
+      return ((PoiSection)this.getOrCreate(SectionPos.asLong(var1))).add(var1, var2);
    }
 
    public void remove(BlockPos var1) {
@@ -135,11 +138,10 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
       return this.getOrLoad(SectionPos.asLong(var1)).flatMap((var1x) -> var1x.getType(var1));
    }
 
-   /** @deprecated */
-   @Deprecated
+   @Nullable
    @VisibleForDebug
-   public int getFreeTickets(BlockPos var1) {
-      return (Integer)this.getOrLoad(SectionPos.asLong(var1)).map((var1x) -> var1x.getFreeTickets(var1)).orElse(0);
+   public DebugPoiInfo getDebugPoiInfo(BlockPos var1) {
+      return (DebugPoiInfo)this.getOrLoad(SectionPos.asLong(var1)).flatMap((var1x) -> var1x.getDebugPoiInfo(var1)).orElse((Object)null);
    }
 
    public int sectionsToVillage(SectionPos var1) {

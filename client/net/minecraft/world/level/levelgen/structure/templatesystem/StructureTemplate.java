@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
@@ -274,7 +275,7 @@ public class StructureTemplate {
                         if (var21.nbt != null) {
                            BlockEntity var25 = var1.getBlockEntity(var22);
                            if (var25 != null) {
-                              if (var25 instanceof RandomizableContainer) {
+                              if (!SharedConstants.DEBUG_STRUCTURE_EDIT_MODE && var25 instanceof RandomizableContainer) {
                                  var21.nbt.putLong("LootTableSeed", var5.nextLong());
                               }
 

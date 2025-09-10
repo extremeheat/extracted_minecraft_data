@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -589,7 +590,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    private boolean shouldRunNarration() {
-      return this.minecraft.getNarrator().isActive();
+      return SharedConstants.DEBUG_UI_NARRATION || this.minecraft.getNarrator().isActive();
    }
 
    public void handleDelayedNarration() {

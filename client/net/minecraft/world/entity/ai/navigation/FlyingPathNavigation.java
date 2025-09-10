@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.navigation;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -53,7 +52,6 @@ public class FlyingPathNavigation extends PathNavigation {
             }
          }
 
-         DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
             Vec3 var2 = this.path.getNextEntityPos(this.mob);
             this.mob.getMoveControl().setWantedPosition(var2.x, var2.y, var2.z, this.speedModifier);

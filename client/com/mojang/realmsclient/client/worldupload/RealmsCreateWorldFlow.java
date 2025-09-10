@@ -48,7 +48,7 @@ public class RealmsCreateWorldFlow {
             return true;
          }
 
-         RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), var8.getLevelSettings().allowCommands(), SharedConstants.getCurrentVersion().name());
+         RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), SharedConstants.getCurrentVersion().name());
          RealmsSlot var12 = new RealmsSlot(var3, var11, List.of(RealmsSetting.hardcoreSetting(var8.getLevelSettings().hardcore())));
          RealmsWorldUpload var13 = new RealmsWorldUpload(var10, var12, var0.getUser(), var4.id, RealmsWorldUploadStatusTracker.noOp());
          Objects.requireNonNull(var13);

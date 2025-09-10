@@ -15,6 +15,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -30,35 +31,35 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      double var9 = (double)Util.getNanos();
-      if (var9 - this.lastUpdateTime > 3.0E9) {
-         this.lastUpdateTime = var9;
-         IntegratedServer var11 = this.minecraft.getSingleplayerServer();
-         if (var11 != null) {
-            this.data = new ChunkData(var11, var3, var7);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+      double var10 = (double)Util.getNanos();
+      if (var10 - this.lastUpdateTime > 3.0E9) {
+         this.lastUpdateTime = var10;
+         IntegratedServer var12 = this.minecraft.getSingleplayerServer();
+         if (var12 != null) {
+            this.data = new ChunkData(var12, var3, var7);
          } else {
             this.data = null;
          }
       }
 
       if (this.data != null) {
-         Map var24 = (Map)this.data.serverData.getNow((Object)null);
-         double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
+         Map var25 = (Map)this.data.serverData.getNow((Object)null);
+         double var13 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
 
-         for(Map.Entry var15 : this.data.clientData.entrySet()) {
-            ChunkPos var16 = (ChunkPos)var15.getKey();
-            String var17 = (String)var15.getValue();
-            if (var24 != null) {
-               var17 = var17 + (String)var24.get(var16);
+         for(Map.Entry var16 : this.data.clientData.entrySet()) {
+            ChunkPos var17 = (ChunkPos)var16.getKey();
+            String var18 = (String)var16.getValue();
+            if (var25 != null) {
+               var18 = var18 + (String)var25.get(var17);
             }
 
-            String[] var18 = var17.split("\n");
-            int var19 = 0;
+            String[] var19 = var18.split("\n");
+            int var20 = 0;
 
-            for(String var23 : var18) {
-               DebugRenderer.renderFloatingText(var1, var2, var23, (double)SectionPos.sectionToBlockCoord(var16.x, 8), var12 + (double)var19, (double)SectionPos.sectionToBlockCoord(var16.z, 8), -1, 0.15F, true, 0.0F, true);
-               var19 -= 2;
+            for(String var24 : var19) {
+               DebugRenderer.renderFloatingText(var1, var2, var24, (double)SectionPos.sectionToBlockCoord(var17.x, 8), var13 + (double)var20, (double)SectionPos.sectionToBlockCoord(var17.z, 8), -1, 0.15F, true, 0.0F, true);
+               var20 -= 2;
             }
          }
       }

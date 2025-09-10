@@ -14,6 +14,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class KeyMapping implements Comparable<KeyMapping> {
    private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
@@ -143,7 +144,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public int compareTo(KeyMapping var1) {
-      return this.category == var1.category ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(this.category.ordinal(), var1.category.ordinal());
+      return this.category == var1.category ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
    }
 
    public static Supplier<Component> createNameSupplier(String var0) {
@@ -206,29 +207,37 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.compareTo((KeyMapping)var1);
    }
 
-   public static enum Category {
-      MOVEMENT("key.categories.movement"),
-      MISC("key.categories.misc"),
-      MULTIPLAYER("key.categories.multiplayer"),
-      GAMEPLAY("key.categories.gameplay"),
-      INVENTORY("key.categories.inventory"),
-      INTERFACE("key.categories.ui"),
-      CREATIVE("key.categories.creative"),
-      SPECTATOR("key.categories.spectator");
+   public static record Category(ResourceLocation id) {
+      static final List<Category> SORT_ORDER = new ArrayList();
+      public static final Category MOVEMENT = register("movement");
+      public static final Category MISC = register("misc");
+      public static final Category MULTIPLAYER = register("multiplayer");
+      public static final Category GAMEPLAY = register("gameplay");
+      public static final Category INVENTORY = register("inventory");
+      public static final Category CREATIVE = register("creative");
+      public static final Category SPECTATOR = register("spectator");
 
-      private final String descriptionId;
-
-      private Category(final String var3) {
-         this.descriptionId = var3;
+      public Category(ResourceLocation var1) {
+         super();
+         this.id = var1;
       }
 
-      public String descriptionId() {
-         return this.descriptionId;
+      public static Category register(String var0) {
+         return register(ResourceLocation.withDefaultNamespace(var0));
       }
 
-      // $FF: synthetic method
-      private static Category[] $values() {
-         return new Category[]{MOVEMENT, MISC, MULTIPLAYER, GAMEPLAY, INVENTORY, INTERFACE, CREATIVE, SPECTATOR};
+      public static Category register(ResourceLocation var0) {
+         Category var1 = new Category(var0);
+         if (SORT_ORDER.contains(var1)) {
+            throw new IllegalArgumentException(String.format("Category '%s' is already registered.", var0));
+         } else {
+            SORT_ORDER.add(var1);
+            return var1;
+         }
+      }
+
+      public Component label() {
+         return Component.translatable(this.id.toLanguageKey("key.category"));
       }
    }
 }

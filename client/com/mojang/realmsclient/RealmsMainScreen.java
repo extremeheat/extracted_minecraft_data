@@ -1091,9 +1091,11 @@ public class RealmsMainScreen extends RealmsScreen {
 
             PlayerSkinRenderCache var16 = RealmsMainScreen.this.minecraft.playerSkinRenderCache();
 
-            for(ResolvableProfile var18 : var9) {
+            for(int var17 = 0; var17 < var9.size(); ++var17) {
+               ResolvableProfile var18 = (ResolvableProfile)var9.get(var17);
                PlayerSkinRenderCache.RenderInfo var19 = var16.getOrDefault(var18);
-               PlayerFaceRenderer.draw(var1, var19.playerSkin(), var14, var12, 9);
+               int var20 = var14 + 12 * var17;
+               PlayerFaceRenderer.draw(var1, var19.playerSkin(), var20, var12, 9);
                if (var15 != null) {
                   var15.add(var19);
                }

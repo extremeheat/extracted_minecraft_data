@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
@@ -130,7 +131,7 @@ public interface Aquifer {
                return var7.at(var5);
             } else if (var7.at(var5).is(Blocks.LAVA)) {
                this.shouldScheduleFluidUpdate = false;
-               return Blocks.LAVA.defaultBlockState();
+               return SharedConstants.DEBUG_DISABLE_FLUID_GENERATION ? Blocks.AIR.defaultBlockState() : Blocks.LAVA.defaultBlockState();
             } else {
                int var8 = gridX(var4 + -5);
                int var9 = gridY(var5 + 1);
@@ -161,10 +162,10 @@ public interface Aquifer {
                            this.aquiferLocationCache[var25] = var26;
                         }
 
-                        int var44 = BlockPos.getX(var26) - var4;
+                        int var45 = BlockPos.getX(var26) - var4;
                         int var31 = BlockPos.getY(var26) - var5;
                         int var32 = BlockPos.getZ(var26) - var6;
-                        int var33 = var44 * var44 + var31 * var31 + var32 * var32;
+                        int var33 = var45 * var45 + var31 * var31 + var32 * var32;
                         if (var11 >= var33) {
                            var18 = var17;
                            var17 = var16;
@@ -197,55 +198,56 @@ public interface Aquifer {
                FluidStatus var36 = this.getAquiferStatus(var15);
                double var37 = similarity(var11, var12);
                BlockState var38 = var36.at(var5);
+               BlockState var39 = SharedConstants.DEBUG_DISABLE_FLUID_GENERATION ? Blocks.AIR.defaultBlockState() : var38;
                if (var37 <= 0.0) {
                   if (var37 >= FLOWING_UPDATE_SIMULARITY) {
-                     FluidStatus var40 = this.getAquiferStatus(var16);
-                     this.shouldScheduleFluidUpdate = !var36.equals(var40);
+                     FluidStatus var41 = this.getAquiferStatus(var16);
+                     this.shouldScheduleFluidUpdate = !var36.equals(var41);
                   } else {
                      this.shouldScheduleFluidUpdate = false;
                   }
 
-                  return var38;
+                  return var39;
                } else if (var38.is(Blocks.WATER) && this.globalFluidPicker.computeFluid(var4, var5 - 1, var6).at(var5 - 1).is(Blocks.LAVA)) {
                   this.shouldScheduleFluidUpdate = true;
-                  return var38;
+                  return var39;
                } else {
-                  MutableDouble var39 = new MutableDouble(0.0 / 0.0);
-                  FluidStatus var41 = this.getAquiferStatus(var16);
-                  double var42 = var37 * this.calculatePressure(var1, var39, var36, var41);
-                  if (var2 + var42 > 0.0) {
+                  MutableDouble var40 = new MutableDouble(0.0 / 0.0);
+                  FluidStatus var42 = this.getAquiferStatus(var16);
+                  double var43 = var37 * this.calculatePressure(var1, var40, var36, var42);
+                  if (var2 + var43 > 0.0) {
                      this.shouldScheduleFluidUpdate = false;
                      return null;
                   } else {
-                     FluidStatus var43 = this.getAquiferStatus(var17);
+                     FluidStatus var44 = this.getAquiferStatus(var17);
                      double var29 = similarity(var11, var13);
                      if (var29 > 0.0) {
-                        double var45 = var37 * var29 * this.calculatePressure(var1, var39, var36, var43);
-                        if (var2 + var45 > 0.0) {
+                        double var46 = var37 * var29 * this.calculatePressure(var1, var40, var36, var44);
+                        if (var2 + var46 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     double var46 = similarity(var12, var13);
-                     if (var46 > 0.0) {
-                        double var47 = var37 * var46 * this.calculatePressure(var1, var39, var41, var43);
-                        if (var2 + var47 > 0.0) {
+                     double var47 = similarity(var12, var13);
+                     if (var47 > 0.0) {
+                        double var48 = var37 * var47 * this.calculatePressure(var1, var40, var42, var44);
+                        if (var2 + var48 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     boolean var48 = !var36.equals(var41);
-                     boolean var34 = var46 >= FLOWING_UPDATE_SIMULARITY && !var41.equals(var43);
-                     boolean var35 = var29 >= FLOWING_UPDATE_SIMULARITY && !var36.equals(var43);
-                     if (!var48 && !var34 && !var35) {
+                     boolean var49 = !var36.equals(var42);
+                     boolean var34 = var47 >= FLOWING_UPDATE_SIMULARITY && !var42.equals(var44);
+                     boolean var35 = var29 >= FLOWING_UPDATE_SIMULARITY && !var36.equals(var44);
+                     if (!var49 && !var34 && !var35) {
                         this.shouldScheduleFluidUpdate = var29 >= FLOWING_UPDATE_SIMULARITY && similarity(var11, var14) >= FLOWING_UPDATE_SIMULARITY && !var36.equals(this.getAquiferStatus(var18));
                      } else {
                         this.shouldScheduleFluidUpdate = true;
                      }
 
-                     return var38;
+                     return var39;
                   }
                }
             }

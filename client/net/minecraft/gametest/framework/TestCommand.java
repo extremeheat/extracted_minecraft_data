@@ -45,10 +45,11 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.InCommandFunction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -67,7 +68,6 @@ public class TestCommand {
    private static final int DEFAULT_CLEAR_RADIUS = 250;
    private static final int MAX_CLEAR_RADIUS = 1024;
    private static final int TEST_POS_Z_OFFSET_FROM_PLAYER = 3;
-   private static final int SHOW_POS_DURATION_MS = 10000;
    private static final int DEFAULT_X_SIZE = 5;
    private static final int DEFAULT_Y_SIZE = 5;
    private static final int DEFAULT_Z_SIZE = 5;
@@ -98,7 +98,6 @@ public class TestCommand {
       stopTests();
       CommandSourceStack var1 = var0.source();
       ServerLevel var2 = var1.getLevel();
-      GameTestRunner.clearMarkers(var2);
       List var3 = var0.findTestPos().flatMap((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK).stream()).toList();
 
       for(TestInstanceBlockEntity var5 : var3) {
@@ -150,7 +149,6 @@ public class TestCommand {
       ServerLevel var2 = var1.getLevel();
       BlockPos var3 = createTestPositionAround(var1);
       List var4 = Stream.concat(toGameTestInfos(var1, RetryOptions.noRetries(), var0), toGameTestInfo(var1, RetryOptions.noRetries(), var0, 0)).toList();
-      GameTestRunner.clearMarkers(var2);
       FailedTestTracker.forgetFailedTests();
       ArrayList var5 = new ArrayList();
 
@@ -184,7 +182,6 @@ public class TestCommand {
          var4.sendSuccess(() -> Component.translatable("commands.test.no_tests"), false);
          return 0;
       } else {
-         GameTestRunner.clearMarkers(var5);
          FailedTestTracker.forgetFailedTests();
          var4.sendSuccess(() -> Component.translatable("commands.test.run.running", var7.size()), false);
          GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3, false)).build();
@@ -317,28 +314,29 @@ public class TestCommand {
    }
 
    private static int showPos(CommandSourceStack var0, String var1) throws CommandSyntaxException {
-      BlockHitResult var2 = (BlockHitResult)var0.getPlayerOrException().pick(10.0, 1.0F, false);
-      BlockPos var3 = var2.getBlockPos();
-      ServerLevel var4 = var0.getLevel();
-      Optional var5 = StructureUtils.findTestContainingPos(var3, 15, var4);
-      if (var5.isEmpty()) {
-         var5 = StructureUtils.findTestContainingPos(var3, 250, var4);
+      ServerPlayer var2 = var0.getPlayerOrException();
+      BlockHitResult var3 = (BlockHitResult)var2.pick(10.0, 1.0F, false);
+      BlockPos var4 = var3.getBlockPos();
+      ServerLevel var5 = var0.getLevel();
+      Optional var6 = StructureUtils.findTestContainingPos(var4, 15, var5);
+      if (var6.isEmpty()) {
+         var6 = StructureUtils.findTestContainingPos(var4, 250, var5);
       }
 
-      if (var5.isEmpty()) {
-         throw NO_TEST_CONTAINING.create(var3.getX(), var3.getY(), var3.getZ());
+      if (var6.isEmpty()) {
+         throw NO_TEST_CONTAINING.create(var4.getX(), var4.getY(), var4.getZ());
       } else {
-         BlockEntity var7 = var4.getBlockEntity((BlockPos)var5.get());
-         if (var7 instanceof TestInstanceBlockEntity) {
-            TestInstanceBlockEntity var6 = (TestInstanceBlockEntity)var7;
-            BlockPos var12 = var6.getStructurePos();
-            BlockPos var8 = var3.subtract(var12);
-            int var10000 = var8.getX();
-            String var9 = var10000 + ", " + var8.getY() + ", " + var8.getZ();
-            String var10 = var6.getTestName().getString();
-            MutableComponent var11 = Component.translatable("commands.test.coordinates", var8.getX(), var8.getY(), var8.getZ()).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent.ShowText(Component.translatable("commands.test.coordinates.copy"))).withClickEvent(new ClickEvent.CopyToClipboard("final BlockPos " + var1 + " = new BlockPos(" + var9 + ");")));
-            var0.sendSuccess(() -> Component.translatable("commands.test.relative_position", var10, var11), false);
-            DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var9, -2147418368, 10000);
+         BlockEntity var8 = var5.getBlockEntity((BlockPos)var6.get());
+         if (var8 instanceof TestInstanceBlockEntity) {
+            TestInstanceBlockEntity var7 = (TestInstanceBlockEntity)var8;
+            BlockPos var13 = var7.getStructurePos();
+            BlockPos var9 = var4.subtract(var13);
+            int var10000 = var9.getX();
+            String var10 = var10000 + ", " + var9.getY() + ", " + var9.getZ();
+            String var11 = var7.getTestName().getString();
+            MutableComponent var12 = Component.translatable("commands.test.coordinates", var9.getX(), var9.getY(), var9.getZ()).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent.ShowText(Component.translatable("commands.test.coordinates.copy"))).withClickEvent(new ClickEvent.CopyToClipboard("final BlockPos " + var1 + " = new BlockPos(" + var10 + ");")));
+            var0.sendSuccess(() -> Component.translatable("commands.test.relative_position", var11, var12), false);
+            var2.connection.send(new ClientboundGameTestHighlightPosPacket(var4, var9));
             return 1;
          } else {
             throw TEST_INSTANCE_COULD_NOT_BE_FOUND.create();

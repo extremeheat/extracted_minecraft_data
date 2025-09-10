@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -50,7 +51,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final float BANNER_PATTERN_TEXTURE_SIZE = 64.0F;
    private static final float BANNER_PATTERN_WIDTH = 21.0F;
    private static final float BANNER_PATTERN_HEIGHT = 40.0F;
-   private ModelPart flag;
+   private BannerFlagModel flag;
    @Nullable
    private BannerPatternLayers resultBannerPatterns;
    private ItemStack bannerStack;
@@ -73,7 +74,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
    protected void init() {
       super.init();
-      this.flag = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER_FLAG).getChild("flag");
+      ModelPart var1 = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER_FLAG);
+      this.flag = new BannerFlagModel(var1);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

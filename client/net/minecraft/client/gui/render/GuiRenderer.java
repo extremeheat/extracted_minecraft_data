@@ -37,6 +37,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -148,6 +149,11 @@ public class GuiRenderer implements AutoCloseable {
       this.renderState.reset();
       this.firstDrawIndexAfterBlur = 2147483647;
       this.clearUnusedOversizedItemRenderers();
+      if (SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER) {
+         RenderPipeline.updateSortKeySeed();
+         TextureSetup.updateSortKeySeed();
+      }
+
    }
 
    private void clearUnusedOversizedItemRenderers() {
@@ -469,8 +475,11 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void recordMesh(BufferBuilder var1, RenderPipeline var2, TextureSetup var3, @Nullable ScreenRectangle var4) {
-      MeshData var5 = var1.buildOrThrow();
-      this.meshesToDraw.add(new MeshToDraw(var5, var2, var3, var4));
+      MeshData var5 = var1.build();
+      if (var5 != null) {
+         this.meshesToDraw.add(new MeshToDraw(var5, var2, var3, var4));
+      }
+
    }
 
    private void recordDraws() {

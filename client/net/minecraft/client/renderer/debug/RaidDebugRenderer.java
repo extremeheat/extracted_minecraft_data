@@ -1,37 +1,33 @@
 package net.minecraft.client.renderer.debug;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Collection;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueAccess;
 
 public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int MAX_RENDER_DIST = 160;
    private static final float TEXT_SCALE = 0.04F;
    private final Minecraft minecraft;
-   private Collection<BlockPos> raidCenters = Lists.newArrayList();
 
    public RaidDebugRenderer(Minecraft var1) {
       super();
       this.minecraft = var1;
    }
 
-   public void setRaidCenters(Collection<BlockPos> var1) {
-      this.raidCenters = var1;
-   }
-
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      BlockPos var9 = this.getCamera().getBlockPosition();
-
-      for(BlockPos var11 : this.raidCenters) {
-         if (var9.closerThan(var11, 160.0)) {
-            highlightRaidCenter(var1, var2, var11);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+      BlockPos var10 = this.getCamera().getBlockPosition();
+      var9.forEachChunk(DebugSubscriptions.RAIDS, (var3x, var4) -> {
+         for(BlockPos var6 : var4) {
+            if (var10.closerThan(var6, 160.0)) {
+               highlightRaidCenter(var1, var2, var6);
+            }
          }
-      }
 
+      });
    }
 
    private static void highlightRaidCenter(PoseStack var0, MultiBufferSource var1, BlockPos var2) {

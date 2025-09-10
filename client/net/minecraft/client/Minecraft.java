@@ -72,6 +72,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -494,7 +495,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.mouseHandler.setup(this.window);
       this.keyboardHandler = new KeyboardHandler(this);
       this.keyboardHandler.setup(this.window);
-      RenderSystem.initRenderer(this.window.handle(), this.options.glDebugVerbosity, false, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
+      RenderSystem.initRenderer(this.window.handle(), this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
       LOGGER.info("Using optional rendering extensions: {}", String.join(", ", RenderSystem.getDevice().getEnabledExtensions()));
       this.mainRenderTarget = new MainTarget(this.window.getWidth(), this.window.getHeight());
       this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
@@ -524,6 +525,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.atlasManager);
       LocalPlayerResolver var10 = new LocalPlayerResolver(this, this.services.profileResolver());
       this.playerSkinRenderCache = new PlayerSkinRenderCache(this.textureManager, this.skinManager, var10);
+      ClientMannequin.registerOverrides(this.playerSkinRenderCache);
       this.fontManager = new FontManager(this.textureManager, this.atlasManager, this.playerSkinRenderCache);
       this.font = this.fontManager.createFont();
       this.fontFilterFishy = this.fontManager.createFontFilterFishy();
@@ -713,7 +715,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private boolean addInitialScreens(List<Function<Runnable, Screen>> var1) {
       boolean var2 = false;
-      if (this.options.onboardAccessibility) {
+      if (this.options.onboardAccessibility || SharedConstants.DEBUG_FORCE_ONBOARDING_SCREEN) {
          var1.add((Function)(var1x) -> new AccessibilityOnboardingScreen(this.options, var1x));
          var2 = true;
       }
@@ -1224,8 +1226,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.packetProcessor.processQueuedPackets();
          var3.popPush("scheduledExecutables");
          this.runAllTasks();
-         var3.pop();
-         var3.push("tick");
+         var3.popPush("tick");
 
          for(int var4 = 0; var4 < Math.min(10, var14); ++var4) {
             var3.incrementCounter("clientTick");
@@ -1251,29 +1252,27 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       } else {
          var6 = this.currentFrameProfile == null || this.currentFrameProfile.isDone();
          if (var6) {
-            TimerQuery.getInstance().ifPresent(TimerQuery::beginProfile);
+            TimerQuery.getInstance().beginProfile();
          }
       }
 
       RenderTarget var7 = this.getMainRenderTarget();
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7.getColorTexture(), 0, var7.getDepthTexture(), 1.0);
-      var3.push("mouse");
+      var3.popPush("mouse");
       this.mouseHandler.handleAccumulatedMovement();
-      var3.pop();
       if (!this.noRender) {
          var3.popPush("gameRenderer");
          this.gameRenderer.render(this.deltaTracker, var1);
-         var3.pop();
       }
 
-      var3.push("blit");
+      var3.popPush("blit");
       if (!this.window.isMinimized()) {
          var7.blitToScreen();
       }
 
       this.frameTimeNs = Util.getNanos() - var15;
       if (var6) {
-         TimerQuery.getInstance().ifPresent((var1x) -> this.currentFrameProfile = var1x.endProfile());
+         this.currentFrameProfile = TimerQuery.getInstance().endProfile();
       }
 
       var3.popPush("updateDisplay");
@@ -1870,7 +1869,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       while(this.options.keySocialInteractions.consumeClick()) {
-         if (!this.isMultiplayerServer()) {
+         if (!this.isMultiplayerServer() && !SharedConstants.DEBUG_SOCIAL_INTERACTIONS) {
             this.player.displayClientMessage(SOCIAL_INTERACTIONS_NOT_AVAILABLE, true);
             this.narrator.saySystemNow(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
          } else {
@@ -2189,7 +2188,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean allowsTelemetry() {
-      return SharedConstants.IS_RUNNING_IN_IDE ? false : this.userProperties().flag(UserFlag.TELEMETRY_ENABLED);
+      return SharedConstants.IS_RUNNING_IN_IDE && !SharedConstants.DEBUG_FORCE_TELEMETRY ? false : this.userProperties().flag(UserFlag.TELEMETRY_ENABLED);
    }
 
    public boolean allowsMultiplayer() {

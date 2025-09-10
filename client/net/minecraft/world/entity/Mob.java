@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,6 +25,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.debug.DebugBrainDump;
+import net.minecraft.util.debug.DebugGoalInfo;
+import net.minecraft.util.debug.DebugPathInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
@@ -70,6 +75,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -90,6 +96,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private static final Vec3i ITEM_PICKUP_REACH;
    private static final List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
    public static final float MAX_WEARING_ARMOR_CHANCE = 0.15F;
+   public static final float WEARING_ARMOR_UPGRADE_MATERIAL_CHANCE = 0.1087F;
+   public static final float WEARING_ARMOR_UPGRADE_MATERIAL_ATTEMPTS = 3.0F;
    public static final float MAX_PICKUP_LOOT_CHANCE = 0.55F;
    public static final float MAX_ENCHANTED_ARMOR_CHANCE = 0.5F;
    public static final float MAX_ENCHANTED_WEAPON_CHANCE = 0.25F;
@@ -683,11 +691,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.jumpControl.tick();
       var1.pop();
       var1.pop();
-      this.sendDebugPackets();
-   }
-
-   protected void sendDebugPackets() {
-      DebugPackets.sendGoalSelector(this.level(), this, this.goalSelector);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -898,29 +901,20 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       if (var1.nextFloat() < 0.15F * var2.getSpecialMultiplier()) {
-         int var3 = var1.nextInt(2);
-         float var4 = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
+         int var3 = var1.nextInt(3);
+
+         for(int var4 = 1; (float)var4 <= 3.0F; ++var4) {
+            if (var1.nextFloat() < 0.1087F) {
+               ++var3;
+            }
          }
 
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
-         }
-
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
-         }
-
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
-         }
-
+         float var10 = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
          boolean var5 = true;
 
          for(EquipmentSlot var7 : EQUIPMENT_POPULATION_ORDER) {
             ItemStack var8 = this.getItemBySlot(var7);
-            if (!var5 && var1.nextFloat() < var4) {
+            if (!var5 && var1.nextFloat() < var10) {
                break;
             }
 
@@ -1388,6 +1382,23 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       super.onAttributeUpdated(var1);
       if (var1.is(Attributes.FOLLOW_RANGE) || var1.is(Attributes.TEMPT_RANGE)) {
          this.getNavigation().updatePathfinderMaxVisitedNodes();
+      }
+
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      var2.register(DebugSubscriptions.ENTITY_PATHS, () -> {
+         Path var1 = this.getNavigation().getPath();
+         return var1 != null && var1.debugData() != null ? new DebugPathInfo(var1.copy(), this.getNavigation().getMaxDistanceToWaypoint()) : null;
+      });
+      var2.register(DebugSubscriptions.GOAL_SELECTORS, () -> {
+         Set var1 = this.goalSelector.getAvailableGoals();
+         ArrayList var2 = new ArrayList(var1.size());
+         var1.forEach((var1x) -> var2.add(new DebugGoalInfo.DebugGoal(var1x.getPriority(), var1x.isRunning(), var1x.getGoal().getClass().getSimpleName())));
+         return new DebugGoalInfo(var2);
+      });
+      if (!this.brain.isBrainDead()) {
+         var2.register(DebugSubscriptions.BRAINS, () -> DebugBrainDump.takeBrainDump(var1, this));
       }
 
    }

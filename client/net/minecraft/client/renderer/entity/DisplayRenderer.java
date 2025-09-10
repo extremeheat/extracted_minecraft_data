@@ -10,6 +10,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -281,7 +282,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             var13 = var6.backgroundColor().get(var5);
          }
 
-         float var24 = 0.0F;
+         float var25 = 0.0F;
          Matrix4f var15 = var2.last().pose();
          var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
          var15.scale(-0.025F, -0.025F, -0.025F);
@@ -301,18 +302,20 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             });
          }
 
-         for(Display.TextDisplay.CachedLine var22 : var16.lines()) {
+         OrderedSubmitNodeCollector var21 = var3.order(var13 != 0 ? 1 : 0);
+
+         for(Display.TextDisplay.CachedLine var23 : var16.lines()) {
             float var10000;
             switch (var11) {
                case LEFT -> var10000 = 0.0F;
-               case RIGHT -> var10000 = (float)(var19 - var22.width());
-               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var22.width() / 2.0F;
+               case RIGHT -> var10000 = (float)(var19 - var23.width());
+               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var23.width() / 2.0F;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            float var23 = var10000;
-            var3.submitText(var2, var23, var24, var22.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0, 0);
-            var24 += (float)var18;
+            float var24 = var10000;
+            var21.submitText(var2, var24, var25, var23.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0, 0);
+            var25 += (float)var18;
          }
 
       }

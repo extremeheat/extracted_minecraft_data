@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -423,6 +424,10 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       }
 
       BlockPos var4 = this.getBlockPos().offset(this.structurePos);
+      if (SharedConstants.DEBUG_STRUCTURE_EDIT_MODE) {
+         BlockPos.betweenClosed(var4, var4.offset(this.structureSize)).forEach((var1x) -> var1.setBlock(var1x, Blocks.STRUCTURE_VOID.defaultBlockState(), 2));
+      }
+
       var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2 | (this.strict ? 816 : 0));
    }
 
@@ -542,11 +547,6 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    // $FF: synthetic method
    public Packet getUpdatePacket() {
       return this.getUpdatePacket();
-   }
-
-   // $FF: synthetic method
-   private static void lambda$placeStructure$5(ServerLevel var0, BlockPos var1) {
-      var0.setBlock(var1, Blocks.STRUCTURE_VOID.defaultBlockState(), 2);
    }
 
    static {

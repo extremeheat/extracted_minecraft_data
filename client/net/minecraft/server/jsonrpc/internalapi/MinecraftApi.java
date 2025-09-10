@@ -3,35 +3,39 @@ package net.minecraft.server.jsonrpc.internalapi;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.jsonrpc.JsonRpcLogger;
+import net.minecraft.server.notifications.NotificationManager;
 
 public class MinecraftApi {
+   private final NotificationManager notificationManager;
    private final MinecraftAllowListService allowListService;
    private final MinecraftBanListService banListService;
-   private final MinecraftPlayerListService playerListService;
+   private final MinecraftPlayerListService minecraftPlayerListService;
    private final MinecraftGameRuleService gameRuleService;
-   private final MinecraftOperatorListService operatorListService;
-   private final MinecraftServerSettingsService serverSettingsService;
-   private final MinecraftServerStateService serverStateService;
-   private final DedicatedServer server;
+   private final MinecraftOperatorListService minecraftOperatorListService;
+   private final MinecraftServerSettingsService minecraftServerSettingsService;
+   private final MinecraftServerStateService minecraftServerStateService;
+   private final MinecraftExecutorService executorService;
 
-   public MinecraftApi(MinecraftAllowListService var1, MinecraftBanListService var2, MinecraftPlayerListService var3, MinecraftGameRuleService var4, MinecraftOperatorListService var5, MinecraftServerSettingsService var6, MinecraftServerStateService var7, DedicatedServer var8) {
+   public MinecraftApi(NotificationManager var1, MinecraftAllowListService var2, MinecraftBanListService var3, MinecraftPlayerListService var4, MinecraftGameRuleService var5, MinecraftOperatorListService var6, MinecraftServerSettingsService var7, MinecraftServerStateService var8, MinecraftExecutorService var9) {
       super();
-      this.allowListService = var1;
-      this.banListService = var2;
-      this.playerListService = var3;
-      this.gameRuleService = var4;
-      this.operatorListService = var5;
-      this.serverSettingsService = var6;
-      this.serverStateService = var7;
-      this.server = var8;
+      this.notificationManager = var1;
+      this.allowListService = var2;
+      this.banListService = var3;
+      this.minecraftPlayerListService = var4;
+      this.gameRuleService = var5;
+      this.minecraftOperatorListService = var6;
+      this.minecraftServerSettingsService = var7;
+      this.minecraftServerStateService = var8;
+      this.executorService = var9;
    }
 
    public <V> CompletableFuture<V> submit(Supplier<V> var1) {
-      return this.server.submit(var1);
+      return this.executorService.submit(var1);
    }
 
    public CompletableFuture<Void> submit(Runnable var1) {
-      return this.server.submit(var1);
+      return this.executorService.submit(var1);
    }
 
    public MinecraftAllowListService allowListService() {
@@ -43,7 +47,7 @@ public class MinecraftApi {
    }
 
    public MinecraftPlayerListService playerListService() {
-      return this.playerListService;
+      return this.minecraftPlayerListService;
    }
 
    public MinecraftGameRuleService gameRuleService() {
@@ -51,14 +55,100 @@ public class MinecraftApi {
    }
 
    public MinecraftOperatorListService operatorListService() {
-      return this.operatorListService;
+      return this.minecraftOperatorListService;
    }
 
    public MinecraftServerSettingsService serverSettingsService() {
-      return this.serverSettingsService;
+      return this.minecraftServerSettingsService;
    }
 
    public MinecraftServerStateService serverStateService() {
-      return this.serverStateService;
+      return this.minecraftServerStateService;
+   }
+
+   public NotificationManager notificationManager() {
+      return this.notificationManager;
+   }
+
+   public static MinecraftApi of(DedicatedServer var0) {
+      JsonRpcLogger var1 = new JsonRpcLogger();
+      MinecraftAllowListServiceImpl var2 = new MinecraftAllowListServiceImpl(var0, var1);
+      MinecraftBanListServiceImpl var3 = new MinecraftBanListServiceImpl(var0, var1);
+      MinecraftPlayerListServiceImpl var4 = new MinecraftPlayerListServiceImpl(var0, var1);
+      MinecraftGameRuleServiceImpl var5 = new MinecraftGameRuleServiceImpl(var0, var1);
+      MinecraftOperatorListServiceImpl var6 = new MinecraftOperatorListServiceImpl(var0, var1);
+      MinecraftServerSettingsServiceImpl var7 = new MinecraftServerSettingsServiceImpl(var0, var1);
+      MinecraftServerStateServiceImpl var8 = new MinecraftServerStateServiceImpl(var0, var1);
+      MinecraftExecutorServiceImpl var9 = new MinecraftExecutorServiceImpl(var0);
+      return new MinecraftApi(var0.notificationManager(), var2, var3, var4, var5, var6, var7, var8, var9);
+   }
+
+   public static MinecraftApiBuilder builder() {
+      return new MinecraftApiBuilder();
+   }
+
+   public static class MinecraftApiBuilder {
+      private NotificationManager notificationManager;
+      private MinecraftAllowListService allowListService;
+      private MinecraftBanListService banListService;
+      private MinecraftPlayerListService minecraftPlayerListService;
+      private MinecraftGameRuleService gameRuleService;
+      private MinecraftOperatorListService minecraftOperatorListService;
+      private MinecraftServerSettingsService minecraftServerSettingsService;
+      private MinecraftServerStateService minecraftServerStateService;
+      private MinecraftExecutorService executorService;
+
+      MinecraftApiBuilder() {
+         super();
+      }
+
+      public MinecraftApiBuilder withExecutorService(MinecraftExecutorService var1) {
+         this.executorService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withNotificationManager(NotificationManager var1) {
+         this.notificationManager = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withAllowListService(MinecraftAllowListService var1) {
+         this.allowListService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withBanListService(MinecraftBanListService var1) {
+         this.banListService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withPlayerListService(MinecraftPlayerListService var1) {
+         this.minecraftPlayerListService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withGameRuleService(MinecraftGameRuleService var1) {
+         this.gameRuleService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withOperatorListService(MinecraftOperatorListService var1) {
+         this.minecraftOperatorListService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withServerSettingsService(MinecraftServerSettingsService var1) {
+         this.minecraftServerSettingsService = var1;
+         return this;
+      }
+
+      public MinecraftApiBuilder withServerStateService(MinecraftServerStateService var1) {
+         this.minecraftServerStateService = var1;
+         return this;
+      }
+
+      public MinecraftApi build() {
+         return new MinecraftApi(this.notificationManager, this.allowListService, this.banListService, this.minecraftPlayerListService, this.gameRuleService, this.minecraftOperatorListService, this.minecraftServerSettingsService, this.minecraftServerStateService, this.executorService);
+      }
    }
 }

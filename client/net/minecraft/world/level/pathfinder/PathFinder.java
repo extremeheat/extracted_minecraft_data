@@ -1,6 +1,5 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
@@ -9,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -24,13 +24,17 @@ public class PathFinder {
    private final Node[] neighbors = new Node[32];
    private int maxVisitedNodes;
    private final NodeEvaluator nodeEvaluator;
-   private static final boolean DEBUG = false;
    private final BinaryHeap openSet = new BinaryHeap();
+   private BooleanSupplier captureDebug = () -> false;
 
    public PathFinder(NodeEvaluator var1, int var2) {
       super();
       this.nodeEvaluator = var1;
       this.maxVisitedNodes = var2;
+   }
+
+   public void setCaptureDebug(BooleanSupplier var1) {
+      this.captureDebug = var1;
    }
 
    public void setMaxVisitedNodes(int var1) {
@@ -63,61 +67,70 @@ public class PathFinder {
       var1.f = var1.h;
       this.openSet.clear();
       this.openSet.insert(var1);
-      ImmutableSet var8 = ImmutableSet.of();
-      int var9 = 0;
-      HashSet var10 = Sets.newHashSetWithExpectedSize(var7.size());
-      int var11 = (int)((float)this.maxVisitedNodes * var5);
+      boolean var8 = this.captureDebug.getAsBoolean();
+      Object var9 = var8 ? new HashSet() : Set.of();
+      int var10 = 0;
+      HashSet var11 = Sets.newHashSetWithExpectedSize(var7.size());
+      int var12 = (int)((float)this.maxVisitedNodes * var5);
 
       while(!this.openSet.isEmpty()) {
-         ++var9;
-         if (var9 >= var11) {
+         ++var10;
+         if (var10 >= var12) {
             break;
          }
 
-         Node var12 = this.openSet.pop();
-         var12.closed = true;
+         Node var13 = this.openSet.pop();
+         var13.closed = true;
 
-         for(Target var14 : var7) {
-            if (var12.distanceManhattan((Node)var14) <= (float)var4) {
-               var14.setReached();
-               var10.add(var14);
+         for(Target var15 : var7) {
+            if (var13.distanceManhattan((Node)var15) <= (float)var4) {
+               var15.setReached();
+               var11.add(var15);
             }
          }
 
-         if (!var10.isEmpty()) {
+         if (!var11.isEmpty()) {
             break;
          }
 
-         if (!(var12.distanceTo(var1) >= var3)) {
-            int var19 = this.nodeEvaluator.getNeighbors(this.neighbors, var12);
+         if (var8) {
+            ((Set)var9).add(var13);
+         }
 
-            for(int var21 = 0; var21 < var19; ++var21) {
-               Node var15 = this.neighbors[var21];
-               float var16 = this.distance(var12, var15);
-               var15.walkedDistance = var12.walkedDistance + var16;
-               float var17 = var12.g + var16 + var15.costMalus;
-               if (var15.walkedDistance < var3 && (!var15.inOpenSet() || var17 < var15.g)) {
-                  var15.cameFrom = var12;
-                  var15.g = var17;
-                  var15.h = this.getBestH(var15, var7) * 1.5F;
-                  if (var15.inOpenSet()) {
-                     this.openSet.changeCost(var15, var15.g + var15.h);
+         if (!(var13.distanceTo(var1) >= var3)) {
+            int var20 = this.nodeEvaluator.getNeighbors(this.neighbors, var13);
+
+            for(int var22 = 0; var22 < var20; ++var22) {
+               Node var16 = this.neighbors[var22];
+               float var17 = this.distance(var13, var16);
+               var16.walkedDistance = var13.walkedDistance + var17;
+               float var18 = var13.g + var17 + var16.costMalus;
+               if (var16.walkedDistance < var3 && (!var16.inOpenSet() || var18 < var16.g)) {
+                  var16.cameFrom = var13;
+                  var16.g = var18;
+                  var16.h = this.getBestH(var16, var7) * 1.5F;
+                  if (var16.inOpenSet()) {
+                     this.openSet.changeCost(var16, var16.g + var16.h);
                   } else {
-                     var15.f = var15.g + var15.h;
-                     this.openSet.insert(var15);
+                     var16.f = var16.g + var16.h;
+                     this.openSet.insert(var16);
                   }
                }
             }
          }
       }
 
-      Optional var18 = !var10.isEmpty() ? var10.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true)).min(Comparator.comparingInt(Path::getNodeCount)) : var7.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false)).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
+      Optional var19 = !var11.isEmpty() ? var11.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true)).min(Comparator.comparingInt(Path::getNodeCount)) : var7.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false)).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
       var6.pop();
-      if (var18.isEmpty()) {
+      if (var19.isEmpty()) {
          return null;
       } else {
-         Path var20 = (Path)var18.get();
-         return var20;
+         Path var21 = (Path)var19.get();
+         if (var8) {
+            var21.setDebug(this.openSet.getHeap(), (Node[])((Set)var9).toArray((var0) -> new Node[var0]), var7);
+         }
+
+         return var21;
       }
    }
 
@@ -148,10 +161,5 @@ public class PathFinder {
       }
 
       return new Path(var4, var2, var3);
-   }
-
-   // $FF: synthetic method
-   private static Node[] lambda$findPath$3(int var0) {
-      return new Node[var0];
    }
 }

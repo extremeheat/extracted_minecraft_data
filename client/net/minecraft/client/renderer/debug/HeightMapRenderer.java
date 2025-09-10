@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -25,26 +26,26 @@ public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      ClientLevel var9 = this.minecraft.level;
-      VertexConsumer var10 = var2.getBuffer(RenderType.debugFilledBox());
-      BlockPos var11 = BlockPos.containing(var3, 0.0, var7);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+      ClientLevel var10 = this.minecraft.level;
+      VertexConsumer var11 = var2.getBuffer(RenderType.debugFilledBox());
+      BlockPos var12 = BlockPos.containing(var3, 0.0, var7);
 
-      for(int var12 = -2; var12 <= 2; ++var12) {
-         for(int var13 = -2; var13 <= 2; ++var13) {
-            ChunkAccess var14 = var9.getChunk(var11.offset(var12 * 16, 0, var13 * 16));
+      for(int var13 = -2; var13 <= 2; ++var13) {
+         for(int var14 = -2; var14 <= 2; ++var14) {
+            ChunkAccess var15 = var10.getChunk(var12.offset(var13 * 16, 0, var14 * 16));
 
-            for(Map.Entry var16 : var14.getHeightmaps()) {
-               Heightmap.Types var17 = (Heightmap.Types)var16.getKey();
-               ChunkPos var18 = var14.getPos();
-               Vector3f var19 = this.getColor(var17);
+            for(Map.Entry var17 : var15.getHeightmaps()) {
+               Heightmap.Types var18 = (Heightmap.Types)var17.getKey();
+               ChunkPos var19 = var15.getPos();
+               Vector3f var20 = this.getColor(var18);
 
-               for(int var20 = 0; var20 < 16; ++var20) {
-                  for(int var21 = 0; var21 < 16; ++var21) {
-                     int var22 = SectionPos.sectionToBlockCoord(var18.x, var20);
-                     int var23 = SectionPos.sectionToBlockCoord(var18.z, var21);
-                     float var24 = (float)((double)((float)var9.getHeight(var17, var22, var23) + (float)var17.ordinal() * 0.09375F) - var5);
-                     ShapeRenderer.addChainedFilledBoxVertices(var1, var10, (double)((float)var22 + 0.25F) - var3, (double)var24, (double)((float)var23 + 0.25F) - var7, (double)((float)var22 + 0.75F) - var3, (double)(var24 + 0.09375F), (double)((float)var23 + 0.75F) - var7, var19.x(), var19.y(), var19.z(), 1.0F);
+               for(int var21 = 0; var21 < 16; ++var21) {
+                  for(int var22 = 0; var22 < 16; ++var22) {
+                     int var23 = SectionPos.sectionToBlockCoord(var19.x, var21);
+                     int var24 = SectionPos.sectionToBlockCoord(var19.z, var22);
+                     float var25 = (float)((double)((float)var10.getHeight(var18, var23, var24) + (float)var18.ordinal() * 0.09375F) - var5);
+                     ShapeRenderer.addChainedFilledBoxVertices(var1, var11, (double)((float)var23 + 0.25F) - var3, (double)var25, (double)((float)var24 + 0.25F) - var7, (double)((float)var23 + 0.75F) - var3, (double)(var25 + 0.09375F), (double)((float)var24 + 0.75F) - var7, var20.x(), var20.y(), var20.z(), 1.0F);
                   }
                }
             }

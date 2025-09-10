@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -16,6 +17,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -38,15 +40,16 @@ public class DebugRenderer {
    public final RedstoneWireOrientationsRenderer redstoneWireOrientationsRenderer;
    public final StructureRenderer structureRenderer;
    public final SimpleDebugRenderer lightDebugRenderer;
-   public final SimpleDebugRenderer worldGenAttemptRenderer;
    public final SimpleDebugRenderer solidFaceRenderer;
    public final SimpleDebugRenderer chunkRenderer;
    public final BrainDebugRenderer brainDebugRenderer;
+   public final PoiDebugRenderer poiDebugRenderer;
    public final VillageSectionsDebugRenderer villageSectionsDebugRenderer;
    public final BeeDebugRenderer beeDebugRenderer;
    public final RaidDebugRenderer raidDebugRenderer;
    public final GoalSelectorDebugRenderer goalSelectorRenderer;
    public final GameTestDebugRenderer gameTestDebugRenderer;
+   public final EntityBlockIntersectionDebugRenderer entityBlockIntersectionRenderer;
    public final GameEventListenerRenderer gameEventListenerRenderer;
    public final LightSectionDebugRenderer skyLightSectionDebugRenderer;
    public final BreezeDebugRenderer breezeDebugRenderer;
@@ -60,20 +63,21 @@ public class DebugRenderer {
       this.heightMapRenderer = new HeightMapRenderer(var1);
       this.collisionBoxRenderer = new CollisionBoxRenderer(var1);
       this.supportBlockRenderer = new SupportBlockRenderer(var1);
-      this.neighborsUpdateRenderer = new NeighborsUpdateRenderer(var1);
-      this.redstoneWireOrientationsRenderer = new RedstoneWireOrientationsRenderer(var1);
-      this.structureRenderer = new StructureRenderer(var1);
+      this.neighborsUpdateRenderer = new NeighborsUpdateRenderer();
+      this.redstoneWireOrientationsRenderer = new RedstoneWireOrientationsRenderer();
+      this.structureRenderer = new StructureRenderer();
       this.lightDebugRenderer = new LightDebugRenderer(var1);
-      this.worldGenAttemptRenderer = new WorldGenAttemptRenderer();
       this.solidFaceRenderer = new SolidFaceRenderer(var1);
       this.chunkRenderer = new ChunkDebugRenderer(var1);
       this.brainDebugRenderer = new BrainDebugRenderer(var1);
+      this.poiDebugRenderer = new PoiDebugRenderer(this.brainDebugRenderer);
       this.villageSectionsDebugRenderer = new VillageSectionsDebugRenderer();
       this.beeDebugRenderer = new BeeDebugRenderer(var1);
       this.raidDebugRenderer = new RaidDebugRenderer(var1);
       this.goalSelectorRenderer = new GoalSelectorDebugRenderer(var1);
       this.gameTestDebugRenderer = new GameTestDebugRenderer();
-      this.gameEventListenerRenderer = new GameEventListenerRenderer(var1);
+      this.entityBlockIntersectionRenderer = new EntityBlockIntersectionDebugRenderer();
+      this.gameEventListenerRenderer = new GameEventListenerRenderer();
       this.skyLightSectionDebugRenderer = new LightSectionDebugRenderer(var1, LightLayer.SKY);
       this.breezeDebugRenderer = new BreezeDebugRenderer(var1);
       this.chunkCullingDebugRenderer = new ChunkCullingDebugRenderer(var1);
@@ -90,10 +94,10 @@ public class DebugRenderer {
       this.neighborsUpdateRenderer.clear();
       this.structureRenderer.clear();
       this.lightDebugRenderer.clear();
-      this.worldGenAttemptRenderer.clear();
       this.solidFaceRenderer.clear();
       this.chunkRenderer.clear();
       this.brainDebugRenderer.clear();
+      this.poiDebugRenderer.clear();
       this.villageSectionsDebugRenderer.clear();
       this.beeDebugRenderer.clear();
       this.raidDebugRenderer.clear();
@@ -101,24 +105,111 @@ public class DebugRenderer {
       this.gameTestDebugRenderer.clear();
       this.gameEventListenerRenderer.clear();
       this.skyLightSectionDebugRenderer.clear();
-      this.breezeDebugRenderer.clear();
       this.chunkCullingDebugRenderer.clear();
    }
 
    public void render(PoseStack var1, Frustum var2, MultiBufferSource.BufferSource var3, double var4, double var6, double var8) {
-      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_BORDERS) && !Minecraft.getInstance().showOnlyReducedInfo()) {
-         this.chunkBorderRenderer.render(var1, var3, var4, var6, var8);
+      Minecraft var10 = Minecraft.getInstance();
+      DebugValueAccess var11 = var10.getConnection().createDebugValueAccess();
+      if (SharedConstants.DEBUG_PATHFINDING) {
+         this.pathfindingRenderer.render(var1, var3, var4, var6, var8, var11);
       }
 
-      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE)) {
+      if (var10.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_BORDERS) && !var10.showOnlyReducedInfo()) {
+         this.chunkBorderRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (var10.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE)) {
          this.octreeDebugRenderer.render(var1, var2, var3, var4, var6, var8);
       }
 
-      this.gameTestDebugRenderer.render(var1, var3, var4, var6, var8);
+      if (SharedConstants.DEBUG_WATER) {
+         this.waterDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_HEIGHTMAP) {
+         this.heightMapRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_COLLISION) {
+         this.collisionBoxRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_SUPPORT_BLOCKS) {
+         this.supportBlockRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_NEIGHBORSUPDATE) {
+         this.neighborsUpdateRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER) {
+         this.redstoneWireOrientationsRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_STRUCTURES) {
+         this.structureRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_LIGHT) {
+         this.lightDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_SOLID_FACE) {
+         this.solidFaceRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_VILLAGE_SECTIONS) {
+         this.villageSectionsDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_BRAIN) {
+         this.brainDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_POI) {
+         this.poiDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_BEES) {
+         this.beeDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_RAIDS) {
+         this.raidDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_GOAL_SELECTOR) {
+         this.goalSelectorRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_CHUNKS) {
+         this.chunkRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_GAME_EVENT_LISTENERS) {
+         this.gameEventListenerRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_SKY_LIGHT_SECTIONS) {
+         this.skyLightSectionDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_BREEZE_MOB) {
+         this.breezeDebugRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      if (SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION) {
+         this.entityBlockIntersectionRenderer.render(var1, var3, var4, var6, var8, var11);
+      }
+
+      this.gameTestDebugRenderer.render(var1, var3, var4, var6, var8, var11);
    }
 
    public void renderAfterTranslucents(PoseStack var1, MultiBufferSource.BufferSource var2, double var3, double var5, double var7) {
-      this.chunkCullingDebugRenderer.render(var1, var2, var3, var5, var7);
+      Minecraft var9 = Minecraft.getInstance();
+      DebugValueAccess var10 = var9.getConnection().createDebugValueAccess();
+      this.chunkCullingDebugRenderer.render(var1, var2, var3, var5, var7, var10);
    }
 
    public static Optional<Entity> getTargetedEntity(@Nullable Entity var0, int var1) {
@@ -168,6 +259,25 @@ public class DebugRenderer {
    public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17) {
       VertexConsumer var18 = var1.getBuffer(RenderType.debugFilledBox());
       ShapeRenderer.addChainedFilledBoxVertices(var0, var18, var2, var4, var6, var8, var10, var12, var14, var15, var16, var17);
+   }
+
+   public static void renderTextOverBlock(PoseStack var0, MultiBufferSource var1, String var2, BlockPos var3, int var4, int var5, float var6) {
+      double var7 = 1.3;
+      double var9 = 0.2;
+      double var11 = (double)var3.getX() + 0.5;
+      double var13 = (double)var3.getY() + 1.3 + (double)var4 * 0.2;
+      double var15 = (double)var3.getZ() + 0.5;
+      renderFloatingText(var0, var1, var2, var11, var13, var15, var5, var6, true, 0.0F, true);
+   }
+
+   public static void renderTextOverMob(PoseStack var0, MultiBufferSource var1, Entity var2, int var3, String var4, int var5, float var6) {
+      double var7 = 2.4;
+      double var9 = 0.25;
+      double var11 = (double)var2.getBlockX() + 0.5;
+      double var13 = var2.getY() + 2.4 + (double)var3 * 0.25;
+      double var15 = (double)var2.getBlockZ() + 0.5;
+      float var17 = 0.5F;
+      renderFloatingText(var0, var1, var4, var11, var13, var15, var5, var6, false, 0.5F, true);
    }
 
    public static void renderFloatingText(PoseStack var0, MultiBufferSource var1, String var2, int var3, int var4, int var5, int var6) {
@@ -245,7 +355,7 @@ public class DebugRenderer {
    }
 
    public interface SimpleDebugRenderer {
-      void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7);
+      void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9);
 
       default void clear() {
       }

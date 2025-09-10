@@ -4,7 +4,6 @@ import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -79,6 +78,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    public CopperGolem(EntityType<? extends AbstractGolem> var1, Level var2) {
       super(var1, var2);
       this.getNavigation().setRequiredPathLength(48.0F);
+      this.getNavigation().setCanOpenDoors(true);
       this.setPersistenceRequired();
       this.setState(CopperGolemState.IDLE);
       this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
@@ -144,11 +144,6 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    public Brain<CopperGolem> getBrain() {
       return super.getBrain();
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

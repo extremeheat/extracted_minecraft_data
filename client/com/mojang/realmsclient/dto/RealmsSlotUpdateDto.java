@@ -6,14 +6,8 @@ import javax.annotation.Nullable;
 public final class RealmsSlotUpdateDto implements ReflectionBasedSerialization {
    @SerializedName("slotId")
    public final int slotId;
-   @SerializedName("pvp")
-   private final boolean pvp;
-   @SerializedName("spawnMonsters")
-   private final boolean spawnMonsters;
    @SerializedName("spawnProtection")
    private final int spawnProtection;
-   @SerializedName("commandBlocks")
-   private final boolean commandBlocks;
    @SerializedName("forceGameMode")
    private final boolean forceGameMode;
    @SerializedName("difficulty")
@@ -37,10 +31,7 @@ public final class RealmsSlotUpdateDto implements ReflectionBasedSerialization {
    public RealmsSlotUpdateDto(int var1, RealmsWorldOptions var2, boolean var3) {
       super();
       this.slotId = var1;
-      this.pvp = var2.pvp;
-      this.spawnMonsters = var2.spawnMonsters;
       this.spawnProtection = var2.spawnProtection;
-      this.commandBlocks = var2.commandBlocks;
       this.forceGameMode = var2.forceGameMode;
       this.difficulty = var2.difficulty;
       this.gameMode = var2.gameMode;

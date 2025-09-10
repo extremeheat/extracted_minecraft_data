@@ -186,27 +186,28 @@ public class FallingBlockEntity extends Entity {
                            }
 
                            if (this.level().setBlock(var20, this.blockState, 3)) {
-                              ((ServerLevel)this.level()).getChunkSource().chunkMap.broadcast(this, new ClientboundBlockUpdatePacket(var20, this.level().getBlockState(var20)));
+                              var2.getChunkSource().chunkMap.sendToTrackingPlayers(this, new ClientboundBlockUpdatePacket(var20, this.level().getBlockState(var20)));
                               this.discard();
                               if (var1 instanceof Fallable) {
-                                 ((Fallable)var1).onLand(this.level(), var20, this.blockState, var21, this);
+                                 Fallable var12 = (Fallable)var1;
+                                 var12.onLand(this.level(), var20, this.blockState, var21, this);
                               }
 
                               if (this.blockData != null && this.blockState.hasBlockEntity()) {
-                                 BlockEntity var12 = this.level().getBlockEntity(var20);
-                                 if (var12 != null) {
-                                    try (ProblemReporter.ScopedCollector var13 = new ProblemReporter.ScopedCollector(var12.problemPath(), LOGGER)) {
+                                 BlockEntity var22 = this.level().getBlockEntity(var20);
+                                 if (var22 != null) {
+                                    try (ProblemReporter.ScopedCollector var13 = new ProblemReporter.ScopedCollector(var22.problemPath(), LOGGER)) {
                                        RegistryAccess var14 = this.level().registryAccess();
                                        TagValueOutput var15 = TagValueOutput.createWithContext(var13, var14);
-                                       var12.saveWithoutMetadata((ValueOutput)var15);
+                                       var22.saveWithoutMetadata((ValueOutput)var15);
                                        CompoundTag var16 = var15.buildResult();
                                        this.blockData.forEach((var1x, var2x) -> var16.put(var1x, var2x.copy()));
-                                       var12.loadWithComponents(TagValueInput.create(var13, var14, var16));
+                                       var22.loadWithComponents(TagValueInput.create(var13, var14, var16));
                                     } catch (Exception var19) {
                                        LOGGER.error("Failed to load block entity from falling block", var19);
                                     }
 
-                                    var12.setChanged();
+                                    var22.setChanged();
                                  }
                               }
                            } else if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {

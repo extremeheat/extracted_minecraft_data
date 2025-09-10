@@ -21,6 +21,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
@@ -156,6 +157,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
    public void handleBlockChangedAck(int var1) {
+      if (SharedConstants.DEBUG_BLOCK_BREAK) {
+         LOGGER.debug("ACK {}", var1);
+      }
+
       this.blockStatePredictionHandler.endPredictionsUpTo(var1, this);
    }
 

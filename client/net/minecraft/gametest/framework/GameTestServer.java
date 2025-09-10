@@ -278,6 +278,10 @@ public class GameTestServer extends MinecraftServer {
       return true;
    }
 
+   public boolean isSpawnerBlockEnabled() {
+      return true;
+   }
+
    public boolean isPublished() {
       return false;
    }

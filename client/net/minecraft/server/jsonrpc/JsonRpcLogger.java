@@ -1,6 +1,8 @@
 package net.minecraft.server.jsonrpc;
 
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import org.slf4j.Logger;
 
@@ -16,7 +18,9 @@ public class JsonRpcLogger {
       if (var3.length == 0) {
          LOGGER.info("RPC Connection #{}: " + var2, var1.connectionId());
       } else {
-         LOGGER.info("RPC Connection #{}: " + var2, var1.connectionId(), var3);
+         ArrayList var4 = new ArrayList(Arrays.asList(var3));
+         var4.addFirst(var1.connectionId());
+         LOGGER.info("RPC Connection #{}: " + var2, var4.toArray());
       }
 
    }

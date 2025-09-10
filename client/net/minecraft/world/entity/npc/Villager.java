@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
@@ -23,7 +24,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -585,7 +585,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
                BiPredicate var7 = (BiPredicate)POI_MEMORIES.get(var1);
                if (var6.isPresent() && var7.test(this, (Holder)var6.get())) {
                   var5.release(var3.pos());
-                  DebugPackets.sendPoiTicketCountPacket(var4, var3.pos());
+                  var4.debugSynchronizers().updatePoi(var3.pos());
                }
 
             }
@@ -764,6 +764,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
             if (var6 != null) {
                MerchantOffers var5 = this.getOffers();
                this.addOffersFromItemListings(var5, var6, 2);
+               if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && var1.level() < var3.size()) {
+                  this.increaseMerchantCareer();
+               }
+
             }
          }
       }
@@ -842,11 +846,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public void setGossips(GossipContainer var1) {
       this.gossips.putAll(var1);
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    public void startSleeping(BlockPos var1) {

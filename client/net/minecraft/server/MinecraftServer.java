@@ -121,7 +121,7 @@ import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
-import net.minecraft.util.debugchart.RemoteDebugSampleType;
+import net.minecraft.util.debug.ServerDebugSubscribers;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.profiling.EmptyProfileResults;
@@ -130,6 +130,7 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.ResultField;
 import net.minecraft.util.profiling.SingleTickProfiler;
+import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.util.profiling.metrics.profiling.ActiveMetricsRecorder;
@@ -270,6 +271,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private ReloadableResources resources;
    private final StructureTemplateManager structureTemplateManager;
    private final ServerTickRateManager tickRateManager;
+   private final ServerDebugSubscribers debugSubscribers;
    protected final WorldData worldData;
    private final PotionBrewing potionBrewing;
    private FuelValues fuelValues;
@@ -313,6 +315,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.waitingForNextTick = false;
       this.scoreboard = new ServerScoreboard(this);
       this.customBossEvents = new CustomBossEvents();
+      this.debugSubscribers = new ServerDebugSubscribers(this);
       this.suppressedExceptions = new SuppressedExceptionCollector();
       this.registries = var4.registries();
       this.worldData = var4.worldData();
@@ -375,10 +378,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    protected void loadLevel() {
-      if (!JvmProfiler.INSTANCE.isRunning()) {
-      }
-
-      boolean var1 = false;
+      boolean var1 = !JvmProfiler.INSTANCE.isRunning() && SharedConstants.DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING && JvmProfiler.INSTANCE.start(Environment.from(this));
       ProfiledDuration var2 = JvmProfiler.INSTANCE.onWorldLoadedStarted();
       this.worldData.setModdedInfo(this.getServerModName(), this.getModdedStatus().shouldReportAsModified());
       this.createLevels();
@@ -481,7 +481,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private static void setInitialSpawn(ServerLevel var0, ServerLevelData var1, boolean var2, boolean var3, LevelLoadListener var4) {
-      if (var3) {
+      if (SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && SharedConstants.DEBUG_WORLD_RECREATE) {
+         var1.setSpawn(new BlockPos(0, 64, -100), 0.0F);
+      } else if (var3) {
          var1.setSpawn(BlockPos.ZERO.above(80), 0.0F);
       } else {
          ServerChunkCache var5 = var0.getChunkSource();
@@ -589,7 +591,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             LOGGER.info("Saving chunks for level '{}'/{}", var6, var6.dimension().location());
          }
 
-         var6.save((ProgressListener)null, var2, var6.noSave && !var3);
+         var6.save((ProgressListener)null, var2, SharedConstants.DEBUG_DONT_SAVE_WORLD || var6.noSave && !var3);
          var4 = true;
       }
 
@@ -1127,7 +1129,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.tickConnection();
       var2.popPush("players");
       this.playerList.tick();
+      var2.popPush("debugSubscribers");
+      this.debugSubscribers.tick();
       if (this.tickRateManager.runsNormally()) {
+         var2.popPush("gameTests");
          GameTestTicker.SINGLETON.tick();
       }
 
@@ -1301,7 +1306,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return var1;
    }
 
-   private void updateMobSpawningFlags() {
+   public void updateMobSpawningFlags() {
       for(ServerLevel var2 : this.getAllLevels()) {
          var2.setSpawnSettings(this.isSpawningMonsters());
       }
@@ -1373,7 +1378,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public boolean isCommandBlockEnabled() {
-      return this.getGameRules().getBoolean(GameRules.ENABLE_COMMAND_BLOCKS);
+      return this.getGameRules().getBoolean(GameRules.RULE_COMMAND_BLOCKS_ENABLED);
+   }
+
+   public boolean isSpawnerBlockEnabled() {
+      return this.getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED);
    }
 
    public String getMotd() {
@@ -2086,9 +2095,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return true;
    }
 
-   public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
-   }
-
    public void handleCustomClickAction(ResourceLocation var1, Optional<Tag> var2) {
       LOGGER.debug("Received custom click action {} with payload {}", var1, var2.orElse((Object)null));
    }
@@ -2193,6 +2199,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public PacketProcessor packetProcessor() {
       return this.packetProcessor;
+   }
+
+   public ServerDebugSubscribers debugSubscribers() {
+      return this.debugSubscribers;
    }
 
    // $FF: synthetic method

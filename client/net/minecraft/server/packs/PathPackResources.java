@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -47,7 +48,18 @@ public class PathPackResources extends AbstractPackResources {
    }
 
    public static boolean validatePath(Path var0) {
-      return true;
+      if (!SharedConstants.DEBUG_VALIDATE_RESOURCE_PATH_CASE) {
+         return true;
+      } else if (var0.getFileSystem() != FileSystems.getDefault()) {
+         return true;
+      } else {
+         try {
+            return var0.toRealPath().endsWith(var0);
+         } catch (IOException var2) {
+            LOGGER.warn("Failed to resolve real path for {}", var0, var2);
+            return false;
+         }
+      }
    }
 
    @Nullable

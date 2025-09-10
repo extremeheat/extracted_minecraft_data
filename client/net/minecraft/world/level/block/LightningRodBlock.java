@@ -100,7 +100,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if ((Boolean)var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, false), 18);
+            var2.scheduleTick(var3, this, 8);
          }
 
       }

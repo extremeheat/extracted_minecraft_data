@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -86,7 +87,9 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       PlayerSocialManager var10 = var1.getPlayerSocialManager();
       boolean var11 = var1.getChatStatus().isChatAllowed(var1.isLocalServer());
       boolean var12 = !var1.player.getUUID().equals(var3);
-      if (var12 && var11 && !var10.isBlocked(var3)) {
+      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && (!var12 || !var11 || var10.isBlocked(var3))) {
+         this.children = ImmutableList.of();
+      } else {
          this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> var7.draftReportHandled(var1, var2, () -> var1.setScreen(new ReportPlayerScreen(var2, var7, this)), false), Component.translatable("gui.socialInteractions.report")) {
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
@@ -119,8 +122,6 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          this.children.add(this.hideButton);
          this.children.add(this.reportButton);
          this.updateHideAndShowButton(var10.isHidden(this.id));
-      } else {
-         this.children = ImmutableList.of();
       }
 
    }

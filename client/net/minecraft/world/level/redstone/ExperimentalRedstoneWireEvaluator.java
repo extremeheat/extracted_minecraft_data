@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.common.custom.RedstoneWireOrientationsDebugPayload;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -52,13 +52,13 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    }
 
    private void causeNeighborUpdates(Level var1) {
-      this.updatedWires.forEach((var2, var3) -> {
+      this.updatedWires.forEach((var2x, var3) -> {
          Orientation var4 = unpackOrientation(var3);
-         BlockState var5 = var1.getBlockState(var2);
+         BlockState var5 = var1.getBlockState(var2x);
 
          for(Direction var7 : var4.getDirections()) {
             if (isConnected(var5, var7)) {
-               BlockPos var8 = var2.relative(var7);
+               BlockPos var8 = var2x.relative(var7);
                BlockState var9 = var1.getBlockState(var8);
                Orientation var10 = var4.withFrontPreserveUp(var7);
                var1.neighborChanged(var9, var8, this.wireBlock, var10, false);
@@ -73,6 +73,12 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
          }
 
       });
+      if (var1 instanceof ServerLevel var2) {
+         if (var2.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS)) {
+            this.updatedWires.forEach((var1x, var2x) -> var2.debugSynchronizers().sendBlockValue(var1x, DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS, unpackOrientation(var2x)));
+         }
+      }
+
    }
 
    private static boolean isConnected(BlockState var0, Direction var1) {
@@ -210,11 +216,5 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    protected int getWireSignal(BlockPos var1, BlockState var2) {
       int var3 = this.updatedWires.getOrDefault(var1, -1);
       return var3 != -1 ? unpackPower(var3) : super.getWireSignal(var1, var2);
-   }
-
-   // $FF: synthetic method
-   private static void lambda$causeNeighborUpdates$1(List var0, BlockPos var1, Integer var2) {
-      Orientation var3 = unpackOrientation(var2);
-      var0.add(new RedstoneWireOrientationsDebugPayload.Wire(var1, var3));
    }
 }

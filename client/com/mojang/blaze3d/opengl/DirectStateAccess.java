@@ -58,6 +58,7 @@ public abstract class DirectStateAccess {
       }
 
       int createBuffer() {
+         GlStateManager.incrementTrackedBuffers();
          return ARBDirectStateAccess.glCreateBuffers();
       }
 

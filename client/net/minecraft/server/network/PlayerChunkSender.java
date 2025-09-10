@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchFinishedPacket;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchStartPacket;
 import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -81,7 +81,11 @@ public class PlayerChunkSender {
    private static void sendChunk(ServerGamePacketListenerImpl var0, ServerLevel var1, LevelChunk var2) {
       var0.send(new ClientboundLevelChunkWithLightPacket(var2, var1.getLightEngine(), (BitSet)null, (BitSet)null));
       ChunkPos var3 = var2.getPos();
-      DebugPackets.sendPoiPacketsForChunk(var1, var3);
+      if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+         LOGGER.debug("SEN {}", var3);
+      }
+
+      var1.debugSynchronizers().startTrackingChunk(var0.player, var2.getPos());
    }
 
    private List<LevelChunk> collectChunksToSend(ChunkMap var1, ChunkPos var2) {

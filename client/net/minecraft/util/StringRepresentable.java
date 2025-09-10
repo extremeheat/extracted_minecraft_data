@@ -27,25 +27,29 @@ public interface StringRepresentable {
 
    static <E extends Enum<E> & StringRepresentable> EnumCodec<E> fromEnumWithMapping(Supplier<E[]> var0, Function<String, String> var1) {
       Enum[] var2 = (Enum[])var0.get();
-      Function var3 = createNameLookup(var2, var1);
+      Function var3 = createNameLookup(var2, (var1x) -> (String)var1.apply(((StringRepresentable)var1x).getSerializedName()));
       return new EnumCodec<E>(var2, var3);
    }
 
    static <T extends StringRepresentable> Codec<T> fromValues(Supplier<T[]> var0) {
       StringRepresentable[] var1 = (StringRepresentable[])var0.get();
-      Function var2 = createNameLookup(var1, (var0x) -> var0x);
+      Function var2 = createNameLookup(var1);
       ToIntFunction var3 = Util.createIndexLookup(Arrays.asList(var1));
       return new StringRepresentableCodec<T>(var1, var2, var3);
    }
 
-   static <T extends StringRepresentable> Function<String, T> createNameLookup(T[] var0, Function<String, String> var1) {
+   static <T extends StringRepresentable> Function<String, T> createNameLookup(T[] var0) {
+      return createNameLookup(var0, StringRepresentable::getSerializedName);
+   }
+
+   static <T> Function<String, T> createNameLookup(T[] var0, Function<T, String> var1) {
       if (var0.length > 16) {
-         Map var2 = (Map)Arrays.stream(var0).collect(Collectors.toMap((var1x) -> (String)var1.apply(var1x.getSerializedName()), (var0x) -> var0x));
-         return (var1x) -> var1x == null ? null : (StringRepresentable)var2.get(var1x);
+         Map var2 = (Map)Arrays.stream(var0).collect(Collectors.toMap(var1, (var0x) -> var0x));
+         return (var1x) -> var1x == null ? null : var2.get(var1x);
       } else {
          return (var2x) -> {
-            for(StringRepresentable var6 : var0) {
-               if (((String)var1.apply(var6.getSerializedName())).equals(var2x)) {
+            for(Object var6 : var0) {
+               if (((String)var1.apply(var6)).equals(var2x)) {
                   return var6;
                }
             }

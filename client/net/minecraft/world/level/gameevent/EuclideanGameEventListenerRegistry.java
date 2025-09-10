@@ -9,8 +9,10 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.debug.DebugGameEventListenerInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class EuclideanGameEventListenerRegistry implements GameEventListenerRegistry {
@@ -40,7 +42,25 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
          this.listeners.add(var1);
       }
 
-      DebugPackets.sendGameEventListenerInfo(this.level, var1);
+      sendDebugInfo(this.level, var1);
+   }
+
+   private static void sendDebugInfo(ServerLevel var0, GameEventListener var1) {
+      if (var0.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.GAME_EVENT_LISTENERS)) {
+         DebugGameEventListenerInfo var2 = new DebugGameEventListenerInfo(var1.getListenerRadius());
+         PositionSource var3 = var1.getListenerSource();
+         if (var3 instanceof BlockPositionSource) {
+            BlockPositionSource var4 = (BlockPositionSource)var3;
+            var0.debugSynchronizers().sendBlockValue(var4.pos(), DebugSubscriptions.GAME_EVENT_LISTENERS, var2);
+         } else if (var3 instanceof EntityPositionSource) {
+            EntityPositionSource var5 = (EntityPositionSource)var3;
+            Entity var6 = var0.getEntity(var5.getUuid());
+            if (var6 != null) {
+               var0.debugSynchronizers().sendEntityValue(var6, DebugSubscriptions.GAME_EVENT_LISTENERS, var2);
+            }
+         }
+
+      }
    }
 
    public void unregister(GameEventListener var1) {

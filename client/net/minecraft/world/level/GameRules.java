@@ -22,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
@@ -96,7 +97,8 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_PVP;
    public static final Key<BooleanValue> RULE_ALLOW_NETHER;
    public static final Key<BooleanValue> RULE_SPAWN_MONSTERS;
-   public static final Key<BooleanValue> ENABLE_COMMAND_BLOCKS;
+   public static final Key<BooleanValue> RULE_COMMAND_BLOCKS_ENABLED;
+   public static final Key<BooleanValue> RULE_SPAWNER_BLOCKS_ENABLED;
    private final Map<Key<?>, Value<?>> rules;
    private final FeatureFlagSet enabledFeatures;
 
@@ -205,7 +207,7 @@ public class GameRules {
       RULE_DOENTITYDROPS = register("doEntityDrops", GameRules.Category.DROPS, GameRules.BooleanValue.create(true));
       RULE_COMMANDBLOCKOUTPUT = register("commandBlockOutput", GameRules.Category.CHAT, GameRules.BooleanValue.create(true));
       RULE_NATURAL_REGENERATION = register("naturalRegeneration", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
-      RULE_DAYLIGHT = register("doDaylightCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
+      RULE_DAYLIGHT = register("doDaylightCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(!SharedConstants.DEBUG_WORLD_RECREATE));
       RULE_LOGADMINCOMMANDS = register("logAdminCommands", GameRules.Category.CHAT, GameRules.BooleanValue.create(true));
       RULE_SHOWDEATHMESSAGES = register("showDeathMessages", GameRules.Category.CHAT, GameRules.BooleanValue.create(true));
       RULE_RANDOMTICKING = register("randomTickSpeed", GameRules.Category.UPDATES, GameRules.IntegerValue.create(3));
@@ -223,7 +225,7 @@ public class GameRules {
       RULE_DISABLE_PLAYER_MOVEMENT_CHECK = register("disablePlayerMovementCheck", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_DISABLE_ELYTRA_MOVEMENT_CHECK = register("disableElytraMovementCheck", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_MAX_ENTITY_CRAMMING = register("maxEntityCramming", GameRules.Category.MOBS, GameRules.IntegerValue.create(24));
-      RULE_WEATHER_CYCLE = register("doWeatherCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
+      RULE_WEATHER_CYCLE = register("doWeatherCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(!SharedConstants.DEBUG_WORLD_RECREATE));
       RULE_LIMITED_CRAFTING = register("doLimitedCrafting", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
          for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LIMITED_CRAFTING, var1.get() ? 1.0F : 0.0F));
@@ -279,8 +281,9 @@ public class GameRules {
          })));
       RULE_PVP = register("pvp", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
       RULE_ALLOW_NETHER = register("allowEnteringNetherUsingPortals", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
-      RULE_SPAWN_MONSTERS = register("spawnMonsters", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));
-      ENABLE_COMMAND_BLOCKS = register("enableCommandBlocks", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
+      RULE_SPAWN_MONSTERS = register("spawnMonsters", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true, (var0, var1) -> var0.updateMobSpawningFlags()));
+      RULE_COMMAND_BLOCKS_ENABLED = register("commandBlocksEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
+      RULE_SPAWNER_BLOCKS_ENABLED = register("spawnerBlocksEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
    }
 
    public static enum Category {
@@ -443,7 +446,7 @@ public class GameRules {
          return new Type<IntegerValue>(() -> IntegerArgumentType.integer(var1, var2), (var1x) -> new IntegerValue(var1x, var0), var4, GameRuleTypeVisitor::visitInteger, IntegerValue.class, var3);
       }
 
-      static Type<IntegerValue> create(int var0) {
+      public static Type<IntegerValue> create(int var0) {
          return create(var0, (var0x, var1) -> {
          });
       }
@@ -535,7 +538,7 @@ public class GameRules {
          return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, BooleanValue.class, FeatureFlagSet.of());
       }
 
-      static Type<BooleanValue> create(boolean var0) {
+      public static Type<BooleanValue> create(boolean var0) {
          return create(var0, (var0x, var1) -> {
          });
       }

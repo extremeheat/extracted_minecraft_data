@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.resources.model.AtlasManager;
 
-public class FeatureRenderDispatcher {
+public class FeatureRenderDispatcher implements AutoCloseable {
    private final SubmitNodeStorage submitNodeStorage;
    private final BlockRenderDispatcher blockRenderDispatcher;
    private final MultiBufferSource.BufferSource bufferSource;
@@ -57,13 +57,21 @@ public class FeatureRenderDispatcher {
          this.itemFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.render(var2, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
          this.customFeatureRenderer.render(var2, this.bufferSource);
-         this.particleFeatureRenderer.render(var2, this.bufferSource);
+         this.particleFeatureRenderer.render(var2);
       }
 
       this.submitNodeStorage.clear();
    }
 
+   public void endFrame() {
+      this.particleFeatureRenderer.endFrame();
+   }
+
    public SubmitNodeStorage getSubmitNodeStorage() {
       return this.submitNodeStorage;
+   }
+
+   public void close() {
+      this.particleFeatureRenderer.close();
    }
 }

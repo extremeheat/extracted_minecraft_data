@@ -25,7 +25,7 @@ public class ARGB {
    }
 
    public static int color(int var0, int var1, int var2, int var3) {
-      return var0 << 24 | var1 << 16 | var2 << 8 | var3;
+      return (var0 & 255) << 24 | (var1 & 255) << 16 | (var2 & 255) << 8 | var3 & 255;
    }
 
    public static int color(int var0, int var1, int var2) {

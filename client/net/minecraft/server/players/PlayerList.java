@@ -303,7 +303,7 @@ public abstract class PlayerList {
    public Component canPlayerLogin(SocketAddress var1, NameAndId var2) {
       if (this.bans.isBanned(var2)) {
          UserBanListEntry var5 = (UserBanListEntry)this.bans.get(var2);
-         MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", this.getReasonMessage(var5));
+         MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", var5.getReasonMessage());
          if (var5.getExpires() != null) {
             var6.append((Component)Component.translatable("multiplayer.disconnect.banned.expiration", BAN_DATE_FORMAT.format(var5.getExpires())));
          }
@@ -313,7 +313,7 @@ public abstract class PlayerList {
          return Component.translatable("multiplayer.disconnect.not_whitelisted");
       } else if (this.ipBans.isBanned(var1)) {
          IpBanListEntry var3 = this.ipBans.get(var1);
-         MutableComponent var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", this.getReasonMessage(var3));
+         MutableComponent var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", var3.getReasonMessage());
          if (var3.getExpires() != null) {
             var4.append((Component)Component.translatable("multiplayer.disconnect.banned_ip.expiration", BAN_DATE_FORMAT.format(var3.getExpires())));
          }
@@ -322,11 +322,6 @@ public abstract class PlayerList {
       } else {
          return this.players.size() >= this.getMaxPlayers() && !this.canBypassPlayerLimit(var2) ? Component.translatable("multiplayer.disconnect.server_full") : null;
       }
-   }
-
-   private Component getReasonMessage(BanListEntry<?> var1) {
-      String var2 = var1.getReason();
-      return var2 == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(var2);
    }
 
    public boolean disconnectAllPlayersWithProfile(UUID var1) {

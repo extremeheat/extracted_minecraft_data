@@ -1,14 +1,19 @@
 package net.minecraft.client.gui.render.state;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.RenderPipelines;
+import org.joml.Matrix3x2f;
 
 public class GuiRenderState {
    private static final int DEBUG_RECTANGLE_COLOR = 2000962815;
@@ -75,6 +80,10 @@ public class GuiRenderState {
    }
 
    private void sumbitDebugRectangleIfEnabled(@Nullable ScreenRectangle var1) {
+      if (SharedConstants.DEBUG_RENDER_UI_LAYERING_RECTANGLES && var1 != null) {
+         this.up();
+         this.current.submitGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, var1));
+      }
    }
 
    private boolean findAppropriateNode(ScreenArea var1) {
@@ -209,6 +218,10 @@ public class GuiRenderState {
    public void sortElements(Comparator<GuiElementRenderState> var1) {
       this.traverse((Consumer)((var1x) -> {
          if (var1x.elementStates != null) {
+            if (SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER) {
+               Collections.shuffle(var1x.elementStates);
+            }
+
             var1x.elementStates.sort(var1);
          }
 

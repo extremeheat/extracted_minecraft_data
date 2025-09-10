@@ -57,9 +57,9 @@ public class IpBanlistService {
       return var0.playerListService().getPlayersWithAddress(var1.ip());
    }
 
-   public static boolean clear(MinecraftApi var0, ClientInfo var1) {
+   public static List<IpBanDto> clear(MinecraftApi var0, ClientInfo var1) {
       var0.banListService().clearIpBans(var1);
-      return true;
+      return get(var0);
    }
 
    public static List<IpBanDto> remove(MinecraftApi var0, List<String> var1, ClientInfo var2) {

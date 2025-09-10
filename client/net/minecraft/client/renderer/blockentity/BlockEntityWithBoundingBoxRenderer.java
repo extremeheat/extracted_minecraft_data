@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -36,35 +37,39 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
    }
 
    public static <T extends BlockEntity & BoundingBoxRenderable> void extract(T var0, BlockEntityWithBoundingBoxRenderState var1) {
-      var1.isVisible = Minecraft.getInstance().player.canUseGameMasterBlocks() && !Minecraft.getInstance().player.isSpectator();
+      LocalPlayer var2 = Minecraft.getInstance().player;
+      var1.isVisible = var2.canUseGameMasterBlocks() || var2.isSpectator();
       var1.box = ((BoundingBoxRenderable)var0).getRenderableBox();
       var1.mode = ((BoundingBoxRenderable)var0).renderMode();
-      BlockPos var2 = var1.box.localPos();
-      Vec3i var3 = var1.box.size();
-      BlockPos var4 = var1.blockPos;
-      BlockPos var5 = var4.offset(var2);
-      if (var0.getLevel() != null && var1.mode == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS) {
-         var1.invisibleBlocks = new BlockEntityWithBoundingBoxRenderState.InvisibleBlockType[var3.getX() * var3.getY() * var3.getZ()];
+      BlockPos var3 = var1.box.localPos();
+      Vec3i var4 = var1.box.size();
+      BlockPos var5 = var1.blockPos;
+      BlockPos var6 = var5.offset(var3);
+      if (var1.isVisible && var0.getLevel() != null && var1.mode == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS) {
+         var1.invisibleBlocks = new BlockEntityWithBoundingBoxRenderState.InvisibleBlockType[var4.getX() * var4.getY() * var4.getZ()];
 
-         for(int var6 = 0; var6 < var3.getX(); ++var6) {
-            for(int var7 = 0; var7 < var3.getY(); ++var7) {
-               for(int var8 = 0; var8 < var3.getZ(); ++var8) {
-                  int var9 = var8 * var3.getX() * var3.getY() + var7 * var3.getX() + var6;
-                  BlockState var10 = var0.getLevel().getBlockState(var5.offset(var6, var7, var8));
-                  if (var10.isAir()) {
-                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.AIR;
-                  } else if (var10.is(Blocks.STRUCTURE_VOID)) {
-                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.STRUCUTRE_VOID;
-                  } else if (var10.is(Blocks.BARRIER)) {
-                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.BARRIER;
-                  } else if (var10.is(Blocks.LIGHT)) {
-                     var1.invisibleBlocks[var9] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.LIGHT;
+         for(int var7 = 0; var7 < var4.getX(); ++var7) {
+            for(int var8 = 0; var8 < var4.getY(); ++var8) {
+               for(int var9 = 0; var9 < var4.getZ(); ++var9) {
+                  int var10 = var9 * var4.getX() * var4.getY() + var8 * var4.getX() + var7;
+                  BlockState var11 = var0.getLevel().getBlockState(var6.offset(var7, var8, var9));
+                  if (var11.isAir()) {
+                     var1.invisibleBlocks[var10] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.AIR;
+                  } else if (var11.is(Blocks.STRUCTURE_VOID)) {
+                     var1.invisibleBlocks[var10] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.STRUCUTRE_VOID;
+                  } else if (var11.is(Blocks.BARRIER)) {
+                     var1.invisibleBlocks[var10] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.BARRIER;
+                  } else if (var11.is(Blocks.LIGHT)) {
+                     var1.invisibleBlocks[var10] = BlockEntityWithBoundingBoxRenderState.InvisibleBlockType.LIGHT;
                   }
                }
             }
          }
       } else {
          var1.invisibleBlocks = null;
+      }
+
+      if (var1.isVisible) {
       }
 
       var1.structureVoids = null;

@@ -54,6 +54,7 @@ import net.minecraft.server.commands.BanIpCommands;
 import net.minecraft.server.commands.BanListCommands;
 import net.minecraft.server.commands.BanPlayerCommands;
 import net.minecraft.server.commands.BossBarCommands;
+import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.commands.CloneCommands;
 import net.minecraft.server.commands.DamageCommand;
@@ -255,6 +256,10 @@ public class Commands {
       WorldBorderCommand.register(this.dispatcher);
       if (JvmProfiler.INSTANCE.isAvailable()) {
          JfrCommand.register(this.dispatcher);
+      }
+
+      if (SharedConstants.DEBUG_CHASE_COMMAND) {
+         ChaseCommand.register(this.dispatcher);
       }
 
       if (SharedConstants.IS_RUNNING_IN_IDE) {

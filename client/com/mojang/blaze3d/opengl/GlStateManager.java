@@ -209,10 +209,14 @@ public class GlStateManager {
       GL20.glBindAttribLocation(var0, var1, var2);
    }
 
-   public static int _glGenBuffers() {
-      RenderSystem.assertOnRenderThread();
+   public static void incrementTrackedBuffers() {
       ++numBuffers;
       PLOT_BUFFERS.setValue((double)numBuffers);
+   }
+
+   public static int _glGenBuffers() {
+      RenderSystem.assertOnRenderThread();
+      incrementTrackedBuffers();
       return GL15.glGenBuffers();
    }
 

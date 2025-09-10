@@ -1,53 +1,25 @@
 package net.minecraft.server.jsonrpc.internalapi;
 
 import java.util.Collection;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanListEntry;
 
-public class MinecraftBanListService {
-   private final MinecraftServer server;
-   private final JsonRpcLogger jsonrpcLogger;
+public interface MinecraftBanListService {
+   void addUserBan(UserBanListEntry var1, ClientInfo var2);
 
-   public MinecraftBanListService(MinecraftServer var1, JsonRpcLogger var2) {
-      super();
-      this.server = var1;
-      this.jsonrpcLogger = var2;
-   }
+   void removeUserBan(NameAndId var1, ClientInfo var2);
 
-   public void addUserBan(UserBanListEntry var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Add player '{}' to banlist. Reason: '{}'", var1.getDisplayName(), var1.getReason());
-      this.server.getPlayerList().getBans().add(var1);
-   }
+   Collection<UserBanListEntry> getUserBanEntries();
 
-   public void removeUserBan(NameAndId var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Remove player '{}' from banlist", var1);
-      this.server.getPlayerList().getBans().remove(var1);
-   }
+   Collection<IpBanListEntry> getIpBanEntries();
 
-   public Collection<UserBanListEntry> getUserBanEntries() {
-      return this.server.getPlayerList().getBans().getEntries();
-   }
+   void addIpBan(IpBanListEntry var1, ClientInfo var2);
 
-   public Collection<IpBanListEntry> getIpBanEntries() {
-      return this.server.getPlayerList().getIpBans().getEntries();
-   }
+   void clearIpBans(ClientInfo var1);
 
-   public void addIpBan(IpBanListEntry var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Add ip '{}' to ban list", var1.getUser());
-      this.server.getPlayerList().getIpBans().add(var1);
-   }
+   void removeIpBan(String var1, ClientInfo var2);
 
-   public void clearIpBans(ClientInfo var1) {
-      this.jsonrpcLogger.log(var1, "Clear ip ban list");
-      this.server.getPlayerList().getIpBans().clear();
-   }
-
-   public void removeIpBan(String var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Remove ip '{}' from ban list", var1);
-      this.server.getPlayerList().getIpBans().remove(var1);
-   }
+   void clearUserBans(ClientInfo var1);
 }

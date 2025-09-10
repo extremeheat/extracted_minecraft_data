@@ -16,6 +16,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -52,6 +53,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -167,7 +169,20 @@ public class KeyboardHandler {
    private boolean handleDebugKeys(KeyEvent var1) {
       if (this.debugCrashKeyTime > 0L && this.debugCrashKeyTime < Util.getMillis() - 100L) {
          return true;
+      } else if (SharedConstants.DEBUG_HOTKEYS && this.handleChunkDebugKeys(var1)) {
+         return true;
       } else {
+         if (SharedConstants.DEBUG_FEATURE_COUNT) {
+            switch (var1.key()) {
+               case 76:
+                  FeatureCountTracker.logCounts();
+                  return true;
+               case 82:
+                  FeatureCountTracker.clearCounts();
+                  return true;
+            }
+         }
+
          switch (var1.key()) {
             case 49:
                this.minecraft.getDebugOverlay().toggleProfilerChart();
@@ -441,10 +456,12 @@ public class KeyboardHandler {
             }
 
             if (this.minecraft.options.keyScreenshot.matches(var4)) {
-               if (var4.hasControlDown()) {
+               if (var4.hasControlDown() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
+                  this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
+               } else {
+                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (var1x) -> this.minecraft.execute(() -> this.showDebugChat(var1x)));
                }
 
-               Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (var1x) -> this.minecraft.execute(() -> this.showDebugChat(var1x)));
                return;
             }
          }
@@ -496,22 +513,22 @@ public class KeyboardHandler {
          InputConstants.Key var15;
          boolean var19;
          boolean var10000;
-         label159: {
+         label165: {
             var15 = InputConstants.getKey(var4);
             var19 = this.minecraft.screen == null;
             if (!var19) {
-               label157: {
+               label163: {
                   Screen var12 = this.minecraft.screen;
                   if (var12 instanceof PauseScreen) {
                      PauseScreen var11 = (PauseScreen)var12;
                      if (!var11.showsPauseMenu()) {
-                        break label157;
+                        break label163;
                      }
                   }
 
                   if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label159;
+                     break label165;
                   }
                }
             }

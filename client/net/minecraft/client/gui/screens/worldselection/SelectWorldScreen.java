@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -57,6 +58,10 @@ public class SelectWorldScreen extends Screen {
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.title, this.font));
       LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(4));
+      if (SharedConstants.DEBUG_WORLD_RECREATE) {
+         var2.addChild(this.createDebugWorldRecreateButton());
+      }
+
       this.searchBox = (EditBox)var2.addChild(new EditBox(this.font, this.width / 2 - 100, 22, 200, 20, this.searchBox, Component.translatable("selectWorld.search")));
       this.searchBox.setResponder((var1x) -> {
          if (this.list != null) {

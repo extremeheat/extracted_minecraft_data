@@ -6,9 +6,9 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +29,7 @@ public class DebugEntryLookingAtBlock implements DebugScreenEntry {
 
    public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
       Entity var5 = Minecraft.getInstance().getCameraEntity();
-      ClientLevel var6 = Minecraft.getInstance().level;
+      Object var6 = SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES ? var2 : Minecraft.getInstance().level;
       if (var5 != null && var6 != null) {
          HitResult var7 = var5.pick(20.0, 0.0F, false);
          ArrayList var8 = new ArrayList();

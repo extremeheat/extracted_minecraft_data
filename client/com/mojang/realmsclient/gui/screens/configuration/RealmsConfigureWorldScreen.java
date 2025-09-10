@@ -228,13 +228,12 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build();
+         this.tabNavigationBar = (TabNavigationBar)this.addRenderableWidget(TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
          this.setFocused(this.tabNavigationBar);
          if (var3 != -1) {
             this.tabNavigationBar.selectTab(var3, false);
          }
 
-         this.addRenderableWidget(this.tabNavigationBar);
          this.tabNavigationBar.setTabActiveState(3, !this.serverData.expired);
          if (this.serverData.expired) {
             this.tabNavigationBar.setTabTooltip(3, Tooltip.create(Component.translatable("mco.configure.world.settings.expired")));

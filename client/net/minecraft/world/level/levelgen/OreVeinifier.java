@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
@@ -21,7 +22,7 @@ public final class OreVeinifier {
    }
 
    protected static NoiseChunk.BlockStateFiller create(DensityFunction var0, DensityFunction var1, DensityFunction var2, PositionalRandomFactory var3) {
-      Object var4 = null;
+      BlockState var4 = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
       return (var5) -> {
          double var6 = var0.compute(var5);
          int var8 = var5.blockY();
@@ -45,7 +46,7 @@ public final class OreVeinifier {
                   if ((double)var17.nextFloat() < var18 && var2.compute(var5) > -0.30000001192092896) {
                      return var17.nextFloat() < 0.02F ? var9.rawOreBlock : var9.ore;
                   } else {
-                     return var9.filler;
+                     return SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : var9.filler;
                   }
                }
             }

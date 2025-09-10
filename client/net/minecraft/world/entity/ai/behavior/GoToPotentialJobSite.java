@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -45,7 +44,7 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
                var4.release(var2);
             }
 
-            DebugPackets.sendPoiTicketCountPacket(var1, var2);
+            var1.debugSynchronizers().updatePoi(var2);
          }
       });
       var2.getBrain().eraseMemory(MemoryModuleType.POTENTIAL_JOB_SITE);

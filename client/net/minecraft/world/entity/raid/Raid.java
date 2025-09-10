@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
@@ -25,7 +26,9 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -319,6 +322,13 @@ public class Raid {
                } else {
                   this.raidEvent.setName(RAID_NAME_COMPONENT);
                }
+            }
+
+            if (SharedConstants.DEBUG_RAIDS) {
+               ServerBossEvent var10000 = this.raidEvent;
+               MutableComponent var10001 = RAID_NAME_COMPONENT.copy().append(" wave: ").append("" + this.groupsSpawned).append(CommonComponents.SPACE).append("Raiders alive: ").append("" + this.getTotalRaidersAlive()).append(CommonComponents.SPACE).append("" + this.getHealthOfLivingRaiders()).append(" / ").append("" + this.totalHealth).append(" Is bonus? ");
+               boolean var10002 = this.hasBonusWave() && this.hasSpawnedBonusWave();
+               var10000.setName(var10001.append("" + var10002).append(" Status: ").append(this.status.getSerializedName()));
             }
 
             boolean var11 = false;

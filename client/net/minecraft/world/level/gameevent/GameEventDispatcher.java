@@ -6,8 +6,9 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.debug.DebugGameEventInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
@@ -56,7 +57,7 @@ public class GameEventDispatcher {
       }
 
       if (var14) {
-         DebugPackets.sendGameEventInfo(this.level, var1, var2);
+         this.level.debugSynchronizers().broadcastEventToTracking(BlockPos.containing(var2), DebugSubscriptions.GAME_EVENTS, new DebugGameEventInfo(var1, var2));
       }
 
    }

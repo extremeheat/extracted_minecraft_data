@@ -47,7 +47,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
@@ -418,15 +417,6 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public static void writeChunkPos(ByteBuf var0, ChunkPos var1) {
       var0.writeLong(var1.toLong());
-   }
-
-   public SectionPos readSectionPos() {
-      return SectionPos.of(this.readLong());
-   }
-
-   public FriendlyByteBuf writeSectionPos(SectionPos var1) {
-      this.writeLong(var1.asLong());
-      return this;
    }
 
    public GlobalPos readGlobalPos() {

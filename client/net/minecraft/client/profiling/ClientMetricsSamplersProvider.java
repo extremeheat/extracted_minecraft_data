@@ -1,6 +1,5 @@
 package net.minecraft.client.profiling;
 
-import com.mojang.blaze3d.systems.TimerQuery;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Set;
 import java.util.function.LongSupplier;
@@ -39,10 +38,7 @@ public class ClientMetricsSamplersProvider implements MetricsSamplerProvider {
          this.samplers.add(MetricSampler.create("compileQueueSize", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getCompileQueueSize));
       }
 
-      if (TimerQuery.getInstance().isPresent()) {
-         this.samplers.add(MetricSampler.create("gpuUtilization", MetricCategory.GPU, Minecraft.getInstance(), Minecraft::getGpuUtilization));
-      }
-
+      this.samplers.add(MetricSampler.create("gpuUtilization", MetricCategory.GPU, Minecraft.getInstance(), Minecraft::getGpuUtilization));
    }
 
    public Set<MetricSampler> samplers(Supplier<ProfileCollector> var1) {

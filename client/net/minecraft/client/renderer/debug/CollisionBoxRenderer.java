@@ -9,6 +9,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -22,18 +23,18 @@ public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      double var9 = (double)Util.getNanos();
-      if (var9 - this.lastUpdateTime > 1.0E8) {
-         this.lastUpdateTime = var9;
-         Entity var11 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-         this.shapes = ImmutableList.copyOf(var11.level().getCollisions(var11, var11.getBoundingBox().inflate(6.0)));
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+      double var10 = (double)Util.getNanos();
+      if (var10 - this.lastUpdateTime > 1.0E8) {
+         this.lastUpdateTime = var10;
+         Entity var12 = this.minecraft.gameRenderer.getMainCamera().getEntity();
+         this.shapes = ImmutableList.copyOf(var12.level().getCollisions(var12, var12.getBoundingBox().inflate(6.0)));
       }
 
-      VertexConsumer var14 = var2.getBuffer(RenderType.lines());
+      VertexConsumer var15 = var2.getBuffer(RenderType.lines());
 
-      for(VoxelShape var13 : this.shapes) {
-         DebugRenderer.renderVoxelShape(var1, var14, var13, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
+      for(VoxelShape var14 : this.shapes) {
+         DebugRenderer.renderVoxelShape(var1, var15, var14, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
       }
 
    }

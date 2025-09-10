@@ -1,10 +1,13 @@
 package net.minecraft.client.gui.components.debug;
 
+import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -23,8 +26,15 @@ public class DebugEntryBiome implements DebugScreenEntry {
       if (var6 != null && var5.level != null) {
          BlockPos var7 = var6.blockPosition();
          if (var5.level.isInsideBuildHeight(var7.getY())) {
-            Holder var10001 = var5.level.getBiome(var7);
-            var1.addLine("Biome: " + printBiome(var10001));
+            if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES && var2 instanceof ServerLevel) {
+               ResourceLocation var8 = GROUP;
+               String var10002 = "Biome: " + printBiome(var5.level.getBiome(var7));
+               Holder var10003 = var2.getBiome(var7);
+               var1.addToGroup(var8, List.of(var10002, "Server Biome: " + printBiome(var10003)));
+            } else {
+               Holder var10001 = var5.level.getBiome(var7);
+               var1.addLine("Biome: " + printBiome(var10001));
+            }
          }
 
       }

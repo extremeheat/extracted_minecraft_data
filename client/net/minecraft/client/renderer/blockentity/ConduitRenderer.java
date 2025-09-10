@@ -92,7 +92,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
       var2.activeRotation = var1.getActiveRotation(var1.isActive() ? var3 : 0.0F);
       var2.animTime = (float)var1.tickCount + var3;
       var2.animationPhase = var1.tickCount / 66 % 3;
-      var2.isActive = var1.isHunting();
+      var2.isHunting = var1.isHunting();
    }
 
    public void submit(CondiutRenderState var1, PoseStack var2, SubmitNodeCollector var3) {

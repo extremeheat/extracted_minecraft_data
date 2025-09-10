@@ -37,7 +37,6 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.DebugQueryHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.toasts.RecipeToast;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -62,9 +61,6 @@ import net.minecraft.client.particle.ItemPickupParticle;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.debug.BrainDebugRenderer;
-import net.minecraft.client.renderer.debug.VillageSectionsDebugRenderer;
-import net.minecraft.client.renderer.debug.WorldGenAttemptRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.resources.sounds.BeeAggressiveSoundInstance;
 import net.minecraft.client.resources.sounds.BeeFlyingSoundInstance;
@@ -106,26 +102,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
-import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
-import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
-import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.common.custom.GameEventDebugPayload;
-import net.minecraft.network.protocol.common.custom.GameEventListenerDebugPayload;
-import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
-import net.minecraft.network.protocol.common.custom.GameTestClearMarkersDebugPayload;
-import net.minecraft.network.protocol.common.custom.GoalDebugPayload;
-import net.minecraft.network.protocol.common.custom.HiveDebugPayload;
-import net.minecraft.network.protocol.common.custom.NeighborUpdatesDebugPayload;
-import net.minecraft.network.protocol.common.custom.PathfindingDebugPayload;
-import net.minecraft.network.protocol.common.custom.PoiAddedDebugPayload;
-import net.minecraft.network.protocol.common.custom.PoiRemovedDebugPayload;
-import net.minecraft.network.protocol.common.custom.PoiTicketCountDebugPayload;
-import net.minecraft.network.protocol.common.custom.RaidsDebugPayload;
-import net.minecraft.network.protocol.common.custom.RedstoneWireOrientationsDebugPayload;
-import net.minecraft.network.protocol.common.custom.StructuresDebugPayload;
-import net.minecraft.network.protocol.common.custom.VillageSectionsDebugPayload;
-import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
 import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -152,6 +129,10 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundCooldownPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ClientboundDamageEventPacket;
+import net.minecraft.network.protocol.game.ClientboundDebugBlockValuePacket;
+import net.minecraft.network.protocol.game.ClientboundDebugChunkValuePacket;
+import net.minecraft.network.protocol.game.ClientboundDebugEntityValuePacket;
+import net.minecraft.network.protocol.game.ClientboundDebugEventPacket;
 import net.minecraft.network.protocol.game.ClientboundDebugSamplePacket;
 import net.minecraft.network.protocol.game.ClientboundDeleteChatPacket;
 import net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket;
@@ -160,6 +141,7 @@ import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
+import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
 import net.minecraft.network.protocol.game.ClientboundHorseScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
@@ -278,6 +260,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
@@ -418,7 +401,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private ClientInformation remoteClientInformation;
    private final ChunkBatchSizeCalculator chunkBatchSizeCalculator;
    private final PingDebugMonitor pingDebugMonitor;
-   private final DebugSampleSubscriber debugSampleSubscriber;
+   private final ClientDebugSubscriber debugSubscriber;
    @Nullable
    private LevelLoadTracker levelLoadTracker;
    private boolean serverEnforcesSecureChat;
@@ -450,7 +433,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.suggestionsProvider = new ClientSuggestionProvider(this, var1, true);
       this.restrictedSuggestionsProvider = new ClientSuggestionProvider(this, var1, false);
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
-      this.debugSampleSubscriber = new DebugSampleSubscriber(this, var1.getDebugOverlay());
+      this.debugSubscriber = new ClientDebugSubscriber(this, var1.getDebugOverlay());
       if (var3.chatState() != null) {
          var1.gui.getChat().restoreState(var3.chatState());
       }
@@ -517,6 +500,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
       }
 
+      this.debugSubscriber.clear();
       this.minecraft.debugRenderer.clear();
       this.minecraft.player.resetPos();
       this.minecraft.player.setId(var1.playerId());
@@ -589,7 +573,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             return new RemotePlayer(this.level, var3.getProfile());
          }
       } else {
-         return (Entity)(var2 == EntityType.MANNEQUIN ? new ClientMannequin(this.level, this.minecraft.playerSkinRenderCache()) : var2.create(this.level, EntitySpawnReason.LOAD));
+         return var2.create(this.level, EntitySpawnReason.LOAD);
       }
    }
 
@@ -762,6 +746,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             }
 
             this.level.removeEntity(var1x, Entity.RemovalReason.DISCARDED);
+            this.debugSubscriber.dropEntity(var2);
          }
       });
    }
@@ -800,7 +785,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleRotatePlayer(ClientboundPlayerRotationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       LocalPlayer var2 = this.minecraft.player;
-      Set var3 = Relative.union(Relative.DELTA, Relative.rotation(var1.relativeY(), var1.relativeX()));
+      Set var3 = Relative.rotation(var1.relativeY(), var1.relativeX());
       PositionMoveRotation var4 = PositionMoveRotation.of((Entity)var2);
       PositionMoveRotation var5 = PositionMoveRotation.calculateAbsolute(var4, var4.withRotation(var1.yRot(), var1.xRot()), var3);
       ((Player)var2).setYRot(var5.yRot());
@@ -875,6 +860,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleForgetLevelChunk(ClientboundForgetLevelChunkPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.level.getChunkSource().drop(var1.pos());
+      this.debugSubscriber.dropChunk(var1.pos());
       this.queueLightRemoval(var1);
    }
 
@@ -1170,6 +1156,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.level = new ClientLevel(this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12);
          this.level.addMapData(var9);
          this.minecraft.setLevel(this.level);
+         this.debugSubscriber.dropLevel();
       }
 
       this.minecraft.setCameraEntity((Entity)null);
@@ -1971,59 +1958,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void handleCustomPayload(CustomPacketPayload var1) {
-      if (var1 instanceof PathfindingDebugPayload var2) {
-         this.minecraft.debugRenderer.pathfindingRenderer.addPath(var2.entityId(), var2.path(), var2.maxNodeDistance());
-      } else if (var1 instanceof NeighborUpdatesDebugPayload var3) {
-         this.minecraft.debugRenderer.neighborsUpdateRenderer.addUpdate(var3.time(), var3.pos());
-      } else if (var1 instanceof RedstoneWireOrientationsDebugPayload var4) {
-         this.minecraft.debugRenderer.redstoneWireOrientationsRenderer.addWireOrientations(var4);
-      } else if (var1 instanceof StructuresDebugPayload var5) {
-         this.minecraft.debugRenderer.structureRenderer.addBoundingBox(var5.mainBB(), var5.pieces(), var5.dimension());
-      } else if (var1 instanceof WorldGenAttemptDebugPayload var6) {
-         ((WorldGenAttemptRenderer)this.minecraft.debugRenderer.worldGenAttemptRenderer).addPos(var6.pos(), var6.scale(), var6.red(), var6.green(), var6.blue(), var6.alpha());
-      } else if (var1 instanceof PoiTicketCountDebugPayload var7) {
-         this.minecraft.debugRenderer.brainDebugRenderer.setFreeTicketCount(var7.pos(), var7.freeTicketCount());
-      } else if (var1 instanceof PoiAddedDebugPayload var8) {
-         BrainDebugRenderer.PoiInfo var20 = new BrainDebugRenderer.PoiInfo(var8.pos(), var8.poiType(), var8.freeTicketCount());
-         this.minecraft.debugRenderer.brainDebugRenderer.addPoi(var20);
-      } else if (var1 instanceof PoiRemovedDebugPayload var9) {
-         this.minecraft.debugRenderer.brainDebugRenderer.removePoi(var9.pos());
-      } else if (var1 instanceof VillageSectionsDebugPayload var10) {
-         VillageSectionsDebugRenderer var21 = this.minecraft.debugRenderer.villageSectionsDebugRenderer;
-         Set var10000 = var10.villageChunks();
-         Objects.requireNonNull(var21);
-         var10000.forEach(var21::setVillageSection);
-         var10000 = var10.notVillageChunks();
-         Objects.requireNonNull(var21);
-         var10000.forEach(var21::setNotVillageSection);
-      } else if (var1 instanceof GoalDebugPayload var11) {
-         this.minecraft.debugRenderer.goalSelectorRenderer.addGoalSelector(var11.entityId(), var11.pos(), var11.goals());
-      } else if (var1 instanceof BrainDebugPayload var12) {
-         this.minecraft.debugRenderer.brainDebugRenderer.addOrUpdateBrainDump(var12.brainDump());
-      } else if (var1 instanceof BeeDebugPayload var13) {
-         this.minecraft.debugRenderer.beeDebugRenderer.addOrUpdateBeeInfo(var13.beeInfo());
-      } else if (var1 instanceof HiveDebugPayload var14) {
-         this.minecraft.debugRenderer.beeDebugRenderer.addOrUpdateHiveInfo(var14.hiveInfo(), this.level.getGameTime());
-      } else if (var1 instanceof GameTestAddMarkerDebugPayload var15) {
-         this.minecraft.debugRenderer.gameTestDebugRenderer.addMarker(var15.pos(), var15.color(), var15.text(), var15.durationMs());
-      } else if (var1 instanceof GameTestClearMarkersDebugPayload) {
-         this.minecraft.debugRenderer.gameTestDebugRenderer.clear();
-      } else if (var1 instanceof RaidsDebugPayload) {
-         RaidsDebugPayload var16 = (RaidsDebugPayload)var1;
-         this.minecraft.debugRenderer.raidDebugRenderer.setRaidCenters(var16.raidCenters());
-      } else if (var1 instanceof GameEventDebugPayload) {
-         GameEventDebugPayload var17 = (GameEventDebugPayload)var1;
-         this.minecraft.debugRenderer.gameEventListenerRenderer.trackGameEvent(var17.gameEventType(), var17.pos());
-      } else if (var1 instanceof GameEventListenerDebugPayload) {
-         GameEventListenerDebugPayload var18 = (GameEventListenerDebugPayload)var1;
-         this.minecraft.debugRenderer.gameEventListenerRenderer.trackListener(var18.listenerPos(), var18.listenerRange());
-      } else if (var1 instanceof BreezeDebugPayload) {
-         BreezeDebugPayload var19 = (BreezeDebugPayload)var1;
-         this.minecraft.debugRenderer.breezeDebugRenderer.add(var19.breezeInfo());
-      } else {
-         this.handleUnknownCustomPayload(var1);
-      }
-
+      this.handleUnknownCustomPayload(var1);
    }
 
    private void handleUnknownCustomPayload(CustomPacketPayload var1) {
@@ -2309,6 +2244,35 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var1.apply(this.waypointManager);
    }
 
+   public void handleDebugChunkValue(ClientboundDebugChunkValuePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.debugSubscriber.updateChunk(this.level.getGameTime(), var1.chunkPos(), var1.update());
+   }
+
+   public void handleDebugBlockValue(ClientboundDebugBlockValuePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.debugSubscriber.updateBlock(this.level.getGameTime(), var1.blockPos(), var1.update());
+   }
+
+   public void handleDebugEntityValue(ClientboundDebugEntityValuePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      Entity var2 = this.level.getEntity(var1.entityId());
+      if (var2 != null) {
+         this.debugSubscriber.updateEntity(this.level.getGameTime(), var2, var1.update());
+      }
+
+   }
+
+   public void handleDebugEvent(ClientboundDebugEventPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.debugSubscriber.pushEvent(this.level.getGameTime(), var1.event());
+   }
+
+   public void handleGameTestHighlightPos(ClientboundGameTestHighlightPosPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
+      this.minecraft.debugRenderer.gameTestDebugRenderer.highlightPos(var1.absolutePos(), var1.relativePos());
+   }
+
    private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, BitSet var5, BitSet var6, Iterator<byte[]> var7, boolean var8) {
       for(int var9 = 0; var9 < var3.getLightSectionCount(); ++var9) {
          int var10 = var3.getMinLightSection() + var9;
@@ -2540,7 +2504,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.pingDebugMonitor.tick();
       }
 
-      this.debugSampleSubscriber.tick();
+      if (this.level != null) {
+         this.debugSubscriber.tick(this.level.getGameTime());
+      }
+
       this.telemetryManager.tick();
       if (this.levelLoadTracker != null) {
          this.levelLoadTracker.tickClientLoad();
@@ -2625,6 +2592,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public ClientWaypointManager getWaypointManager() {
       return this.waypointManager;
+   }
+
+   public DebugValueAccess createDebugValueAccess() {
+      return this.debugSubscriber.createDebugValueAccess(this.level);
    }
 
    static enum CommandCheckResult {

@@ -1,10 +1,14 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -16,6 +20,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationFrame;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
@@ -26,7 +31,7 @@ import org.slf4j.Logger;
 
 public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final ResourceLocation name;
+   final ResourceLocation name;
    final int width;
    final int height;
    private final NativeImage originalImage;
@@ -237,6 +242,18 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
             }
 
             SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame, var4);
+            if (SharedConstants.DEBUG_DUMP_INTERPOLATED_TEXTURE_FRAMES) {
+               try {
+                  Path var19 = TextureUtil.getDebugTexturePath();
+                  Path var20 = var19.resolve(SpriteContents.this.name.toDebugFileName());
+                  Files.createDirectories(var20);
+
+                  for(int var21 = 0; var21 < this.activeFrame.length; ++var21) {
+                     this.activeFrame[var21].writeToFile(var20.resolve(SpriteContents.this.name.toDebugFileName() + "_" + var21 + "_" + var9 + "_" + var10 + ".png"));
+                  }
+               } catch (IOException var18) {
+               }
+            }
          }
 
       }

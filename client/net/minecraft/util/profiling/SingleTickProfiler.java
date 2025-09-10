@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.util.function.LongSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import org.slf4j.Logger;
 
@@ -44,7 +45,7 @@ public class SingleTickProfiler {
 
    @Nullable
    public static SingleTickProfiler createTickProfiler(String var0) {
-      return null;
+      return SharedConstants.DEBUG_MONITOR_TICK_TIMES ? new SingleTickProfiler(Util.timeSource, var0, SharedConstants.MAXIMUM_TICK_TIME_NANOS) : null;
    }
 
    public static ProfilerFiller decorateFiller(ProfilerFiller var0, @Nullable SingleTickProfiler var1) {

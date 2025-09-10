@@ -4,9 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -128,7 +126,7 @@ class ReportGameListener implements GameTestListener {
       say(var0.getLevel(), var0.isRequired() ? ChatFormatting.RED : ChatFormatting.YELLOW, var3);
       Throwable var4 = (Throwable)MoreObjects.firstNonNull(ExceptionUtils.getRootCause(var1), var1);
       if (var4 instanceof GameTestAssertPosException var5) {
-         showRedBox(var0.getLevel(), var5.getAbsolutePos(), var5.getMessageToShowAtBlock());
+         var0.getTestInstanceBlockEntity().markError(var5.getAbsolutePos(), var5.getMessageToShowAtBlock());
       }
 
       GlobalTestReporter.onTestFailed(var0);
@@ -143,9 +141,5 @@ class ReportGameListener implements GameTestListener {
 
    protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {
       var0.getPlayers((var0x) -> true).forEach((var2x) -> var2x.sendSystemMessage(Component.literal(var2).withStyle(var1)));
-   }
-
-   private static void showRedBox(ServerLevel var0, BlockPos var1, String var2) {
-      DebugPackets.sendGameTestAddMarker(var0, var1, var2, -2130771968, 2147483647);
    }
 }

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -178,10 +177,6 @@ public class GameTestRunner {
 
    private Optional<GameTestInfo> spawn(GameTestInfo var1) {
       return var1.getTestBlockPos() == null ? this.newStructureSpawner.spawnStructure(var1) : this.existingStructureSpawner.spawnStructure(var1);
-   }
-
-   public static void clearMarkers(ServerLevel var0) {
-      DebugPackets.sendGameTestClearPacket(var0);
    }
 
    public interface StructureSpawner {

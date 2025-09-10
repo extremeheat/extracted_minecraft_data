@@ -23,7 +23,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -1060,7 +1059,6 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public void handleNeighborChanged(Level var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
-         DebugPackets.sendNeighborsUpdatePacket(var1, var2);
          this.getBlock().neighborChanged(this.asState(), var1, var2, var3, var4, var5);
       }
 

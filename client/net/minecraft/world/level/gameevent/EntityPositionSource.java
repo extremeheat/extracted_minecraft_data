@@ -58,7 +58,7 @@ public class EntityPositionSource implements PositionSource {
       })).ifPresent((var1x) -> this.entityOrUuidOrId = Either.left(var1x));
    }
 
-   private UUID getUuid() {
+   public UUID getUuid() {
       return (UUID)this.entityOrUuidOrId.map(Entity::getUUID, (var0) -> (UUID)var0.map(Function.identity(), (var0x) -> {
             throw new RuntimeException("Unable to get entityId from uuid");
          }));

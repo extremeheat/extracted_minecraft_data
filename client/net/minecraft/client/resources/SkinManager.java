@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Optionull;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
 import net.minecraft.resources.ResourceLocation;
@@ -78,18 +79,27 @@ public class SkinManager {
    public Supplier<PlayerSkin> createLookup(GameProfile var1, boolean var2) {
       CompletableFuture var3 = this.get(var1);
       PlayerSkin var4 = DefaultPlayerSkin.get(var1);
-      Optional var5 = (Optional)var3.getNow((Object)null);
-      if (var5 != null) {
-         PlayerSkin var6 = (PlayerSkin)var5.filter((var1x) -> !var2 || var1x.secure()).orElse(var4);
-         return () -> var6;
+      if (SharedConstants.DEBUG_DEFAULT_SKIN_OVERRIDE) {
+         return () -> var4;
       } else {
-         return () -> (PlayerSkin)((Optional)var3.getNow(Optional.empty())).filter((var1) -> !var2 || var1.secure()).orElse(var4);
+         Optional var5 = (Optional)var3.getNow((Object)null);
+         if (var5 != null) {
+            PlayerSkin var6 = (PlayerSkin)var5.filter((var1x) -> !var2 || var1x.secure()).orElse(var4);
+            return () -> var6;
+         } else {
+            return () -> (PlayerSkin)((Optional)var3.getNow(Optional.empty())).filter((var1) -> !var2 || var1.secure()).orElse(var4);
+         }
       }
    }
 
    public CompletableFuture<Optional<PlayerSkin>> get(GameProfile var1) {
-      Property var2 = this.services.sessionService().getPackedTextures(var1);
-      return (CompletableFuture)this.skinCache.getUnchecked(new CacheKey(var1.id(), var2));
+      if (SharedConstants.DEBUG_DEFAULT_SKIN_OVERRIDE) {
+         PlayerSkin var3 = DefaultPlayerSkin.get(var1);
+         return CompletableFuture.completedFuture(Optional.of(var3));
+      } else {
+         Property var2 = this.services.sessionService().getPackedTextures(var1);
+         return (CompletableFuture)this.skinCache.getUnchecked(new CacheKey(var1.id(), var2));
+      }
    }
 
    CompletableFuture<PlayerSkin> registerTextures(UUID var1, MinecraftProfileTextures var2) {
@@ -98,7 +108,7 @@ public class SkinManager {
       PlayerModelType var5;
       if (var3 != null) {
          var4 = this.skinTextures.getOrLoad(var3);
-         var5 = PlayerModelType.byName(var3.getMetadata("model"));
+         var5 = PlayerModelType.byLegacyServicesName(var3.getMetadata("model"));
       } else {
          PlayerSkin var6 = DefaultPlayerSkin.get(var1);
          var4 = CompletableFuture.completedFuture(var6.texture());
@@ -111,11 +121,6 @@ public class SkinManager {
       MinecraftProfileTexture var9 = var2.elytra();
       CompletableFuture var10 = var9 != null ? this.elytraTextures.getOrLoad(var9) : CompletableFuture.completedFuture((Object)null);
       return CompletableFuture.allOf(var4, var8, var10).thenApply((var6x) -> new PlayerSkin((ResourceLocation)var4.join(), var11, (ResourceLocation)var8.join(), (ResourceLocation)var10.join(), var5, var2.signatureState() == SignatureState.SIGNED));
-   }
-
-   // $FF: synthetic method
-   private static PlayerSkin lambda$createLookup$0(PlayerSkin var0) {
-      return var0;
    }
 
    class TextureCache {

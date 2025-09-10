@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.structure;
 import com.google.common.base.MoreObjects;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,12 +15,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
 public class BoundingBox {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<BoundingBox> CODEC;
+   public static final StreamCodec<ByteBuf, BoundingBox> STREAM_CODEC;
    private int minX;
    private int minY;
    private int minZ;
@@ -257,5 +260,6 @@ public class BoundingBox {
 
    static {
       CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 6).map((var0x) -> new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5])), (var0) -> IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ})).stable();
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, (var0) -> new BlockPos(var0.minX, var0.minY, var0.minZ), BlockPos.STREAM_CODEC, (var0) -> new BlockPos(var0.maxX, var0.maxY, var0.maxZ), (var0, var1) -> new BoundingBox(var0.getX(), var0.getY(), var0.getZ(), var1.getX(), var1.getY(), var1.getZ()));
    }
 }

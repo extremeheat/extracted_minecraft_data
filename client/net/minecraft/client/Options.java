@@ -51,6 +51,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.client.sounds.SoundPreviewHandler;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -540,7 +541,15 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2));
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
+         Minecraft var2x = Minecraft.getInstance();
+         SoundManager var3 = var2x.getSoundManager();
+         var3.updateSourceVolume(var2);
+         if (var2x.level == null) {
+            SoundPreviewHandler.preview(var3, var2, var1x.floatValue());
+         }
+
+      });
    }
 
    public OptionInstance<Boolean> showSubtitles() {
@@ -865,11 +874,11 @@ public class Options {
       KeyMapping.Category var10005 = KeyMapping.Category.MOVEMENT;
       OptionInstance var10006 = this.toggleCrouch;
       Objects.requireNonNull(var10006);
-      this.keyShift = new ToggleKeyMapping("key.sneak", 340, var10005, var10006::get);
+      this.keyShift = new ToggleKeyMapping("key.sneak", 340, var10005, var10006::get, true);
       var10005 = KeyMapping.Category.MOVEMENT;
       var10006 = this.toggleSprint;
       Objects.requireNonNull(var10006);
-      this.keySprint = new ToggleKeyMapping("key.sprint", 341, var10005, var10006::get);
+      this.keySprint = new ToggleKeyMapping("key.sprint", 341, var10005, var10006::get, true);
       this.keyInventory = new KeyMapping("key.inventory", 69, KeyMapping.Category.INVENTORY);
       this.keySwapOffhand = new KeyMapping("key.swapOffhand", 70, KeyMapping.Category.INVENTORY);
       this.keyDrop = new KeyMapping("key.drop", 81, KeyMapping.Category.INVENTORY);
@@ -877,12 +886,12 @@ public class Options {
       KeyMapping.Category var7 = KeyMapping.Category.GAMEPLAY;
       OptionInstance var10007 = this.toggleUse;
       Objects.requireNonNull(var10007);
-      this.keyUse = new ToggleKeyMapping("key.use", var10004, 1, var7, var10007::get);
+      this.keyUse = new ToggleKeyMapping("key.use", var10004, 1, var7, var10007::get, false);
       var10004 = InputConstants.Type.MOUSE;
       var7 = KeyMapping.Category.GAMEPLAY;
       var10007 = this.toggleAttack;
       Objects.requireNonNull(var10007);
-      this.keyAttack = new ToggleKeyMapping("key.attack", var10004, 0, var7, var10007::get);
+      this.keyAttack = new ToggleKeyMapping("key.attack", var10004, 0, var7, var10007::get, true);
       this.keyPickItem = new KeyMapping("key.pickItem", InputConstants.Type.MOUSE, 2, KeyMapping.Category.GAMEPLAY);
       this.keyChat = new KeyMapping("key.chat", 84, KeyMapping.Category.MULTIPLAYER);
       this.keyPlayerList = new KeyMapping("key.playerlist", 258, KeyMapping.Category.MULTIPLAYER);
@@ -978,7 +987,7 @@ public class Options {
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
       this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var0) -> Minecraft.getInstance().levelRenderer.needsUpdate());
-      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(5, var3 ? 32 : 16, false), 12, (var0) -> {
+      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var0) -> {
       });
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();

@@ -23,6 +23,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
@@ -505,12 +506,12 @@ public class ServerChunkCache extends ChunkSource {
       this.chunkMap.addEntity(var1);
    }
 
-   public void broadcastAndSend(Entity var1, Packet<?> var2) {
-      this.chunkMap.broadcastAndSend(var1, var2);
+   public void sendToTrackingPlayersAndSelf(Entity var1, Packet<? super ClientGamePacketListener> var2) {
+      this.chunkMap.sendToTrackingPlayersAndSelf(var1, var2);
    }
 
-   public void broadcast(Entity var1, Packet<?> var2) {
-      this.chunkMap.broadcast(var1, var2);
+   public void sendToTrackingPlayers(Entity var1, Packet<? super ClientGamePacketListener> var2) {
+      this.chunkMap.sendToTrackingPlayers(var1, var2);
    }
 
    public void setViewDistance(int var1) {

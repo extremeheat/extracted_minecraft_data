@@ -3,8 +3,11 @@ package net.minecraft.client.sounds;
 import com.google.common.collect.Lists;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -15,7 +18,17 @@ public class WeighedSoundEvents implements Weighted<Sound> {
 
    public WeighedSoundEvents(ResourceLocation var1, @Nullable String var2) {
       super();
-      this.subtitle = var2 == null ? null : Component.translatable(var2);
+      if (SharedConstants.DEBUG_SUBTITLES) {
+         MutableComponent var3 = Component.literal(var1.getPath());
+         if ("FOR THE DEBUG!".equals(var2)) {
+            var3 = var3.append((Component)Component.literal(" missing").withStyle(ChatFormatting.RED));
+         }
+
+         this.subtitle = var3;
+      } else {
+         this.subtitle = var2 == null ? null : Component.translatable(var2);
+      }
+
    }
 
    public int getWeight() {

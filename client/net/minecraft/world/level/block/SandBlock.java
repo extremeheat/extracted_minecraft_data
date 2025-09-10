@@ -22,6 +22,7 @@ public class SandBlock extends ColoredFallingBlock {
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
+      super.animateTick(var1, var2, var3, var4);
       AmbientDesertBlockSoundsPlayer.playAmbientSandSounds(var2, var3, var4);
    }
 }

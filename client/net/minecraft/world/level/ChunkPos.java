@@ -159,6 +159,10 @@ public class ChunkPos {
       return new BlockPos(this.getMiddleBlockX(), var1, this.getMiddleBlockZ());
    }
 
+   public boolean contains(BlockPos var1) {
+      return var1.getX() >= this.getMinBlockX() && var1.getZ() >= this.getMinBlockZ() && var1.getX() <= this.getMaxBlockX() && var1.getZ() <= this.getMaxBlockZ();
+   }
+
    public String toString() {
       return "[" + this.x + ", " + this.z + "]";
    }

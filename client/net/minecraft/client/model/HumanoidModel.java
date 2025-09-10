@@ -74,7 +74,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
    protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(Function<CubeDeformation, MeshDefinition> var0, CubeDeformation var1, CubeDeformation var2) {
       MeshDefinition var3 = (MeshDefinition)var0.apply(var2);
-      var3.getRoot().retainExactParts(Set.of("head"));
+      var3.getRoot().retainPartsAndChildren(Set.of("head"));
       MeshDefinition var4 = (MeshDefinition)var0.apply(var2);
       var4.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
       MeshDefinition var5 = (MeshDefinition)var0.apply(var1);

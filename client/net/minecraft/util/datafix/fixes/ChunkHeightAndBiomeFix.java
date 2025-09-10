@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -214,31 +215,33 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                String var7 = var6.asString("");
                if (!"empty".equals(var7)) {
                   var0 = var0.set("blending_data", var0.createMap(ImmutableMap.of(var0.createString("old_noise"), var0.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(var7)))));
-                  ChunkProtoTickListFix.PoorMansPalettedContainer var8 = (ChunkProtoTickListFix.PoorMansPalettedContainer)var4.get();
-                  if (var8 != null) {
-                     BitSet var9 = new BitSet(256);
-                     boolean var10 = var7.equals("noise");
+                  if (!SharedConstants.DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION) {
+                     ChunkProtoTickListFix.PoorMansPalettedContainer var8 = (ChunkProtoTickListFix.PoorMansPalettedContainer)var4.get();
+                     if (var8 != null) {
+                        BitSet var9 = new BitSet(256);
+                        boolean var10 = var7.equals("noise");
 
-                     for(int var11 = 0; var11 < 16; ++var11) {
-                        for(int var12 = 0; var12 < 16; ++var12) {
-                           Dynamic var13 = var8.get(var12, 0, var11);
-                           boolean var14 = var13 != null && "minecraft:bedrock".equals(var13.get("Name").asString(""));
-                           boolean var15 = var13 != null && "minecraft:air".equals(var13.get("Name").asString(""));
-                           if (var15) {
-                              var9.set(var11 * 16 + var12);
+                        for(int var11 = 0; var11 < 16; ++var11) {
+                           for(int var12 = 0; var12 < 16; ++var12) {
+                              Dynamic var13 = var8.get(var12, 0, var11);
+                              boolean var14 = var13 != null && "minecraft:bedrock".equals(var13.get("Name").asString(""));
+                              boolean var15 = var13 != null && "minecraft:air".equals(var13.get("Name").asString(""));
+                              if (var15) {
+                                 var9.set(var11 * 16 + var12);
+                              }
+
+                              var10 |= var14;
                            }
-
-                           var10 |= var14;
                         }
-                     }
 
-                     if (var10 && var9.cardinality() != var9.size()) {
-                        Dynamic var24 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
-                        var0 = var0.set("below_zero_retrogen", var0.createMap(ImmutableMap.of(var0.createString("target_status"), var24, var0.createString("missing_bedrock"), var0.createLongList(LongStream.of(var9.toLongArray())))));
-                        var0 = var0.set("Status", var0.createString("empty"));
-                     }
+                        if (var10 && var9.cardinality() != var9.size()) {
+                           Dynamic var24 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
+                           var0 = var0.set("below_zero_retrogen", var0.createMap(ImmutableMap.of(var0.createString("target_status"), var24, var0.createString("missing_bedrock"), var0.createLongList(LongStream.of(var9.toLongArray())))));
+                           var0 = var0.set("Status", var0.createString("empty"));
+                        }
 
-                     var0 = var0.set("isLightOn", var0.createBoolean(false));
+                        var0 = var0.set("isLightOn", var0.createBoolean(false));
+                     }
                   }
                }
             }

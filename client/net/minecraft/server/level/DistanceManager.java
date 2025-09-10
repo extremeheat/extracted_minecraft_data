@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.TriState;
 import net.minecraft.util.thread.TaskScheduler;
@@ -68,7 +69,8 @@ public abstract class DistanceManager {
       this.playerTicketManager.runAllUpdates();
       int var2 = 2147483647 - this.loadingChunkTracker.runDistanceUpdates(2147483647);
       boolean var3 = var2 != 0;
-      if (var3) {
+      if (var3 && SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+         LOGGER.debug("DMU {}", var2);
       }
 
       if (!this.chunksToUpdateFutures.isEmpty()) {

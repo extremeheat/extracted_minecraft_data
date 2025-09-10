@@ -9,7 +9,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
@@ -36,7 +35,6 @@ public class DebugPathCommand {
       } else {
          GroundPathNavigation var4 = new GroundPathNavigation(var3, var0.getLevel());
          Path var5 = ((PathNavigation)var4).createPath(var1, 0);
-         DebugPackets.sendPathFindingPacket(var0.getLevel(), var3, var5, ((PathNavigation)var4).getMaxDistanceToWaypoint());
          if (var5 == null) {
             throw ERROR_NO_PATH.create();
          } else if (!var5.canReach()) {

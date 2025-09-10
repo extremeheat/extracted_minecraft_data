@@ -51,9 +51,9 @@ public class BanlistService {
       return get(var0);
    }
 
-   public static boolean clear(MinecraftApi var0, ClientInfo var1) {
-      var0.allowListService().clear(var1);
-      return true;
+   public static List<UserBanDto> clear(MinecraftApi var0, ClientInfo var1) {
+      var0.banListService().clearUserBans(var1);
+      return get(var0);
    }
 
    public static List<UserBanDto> remove(MinecraftApi var0, List<PlayerDto> var1, ClientInfo var2) {

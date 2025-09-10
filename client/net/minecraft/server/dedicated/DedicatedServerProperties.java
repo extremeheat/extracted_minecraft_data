@@ -30,6 +30,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.jsonrpc.security.SecurityConfig;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StrictJsonParser;
@@ -49,6 +50,9 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    static final Logger LOGGER = LogUtils.getLogger();
    private static final Pattern SHA1 = Pattern.compile("^[a-fA-F0-9]{40}$");
    private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults();
+   public static final String MANAGEMENT_SERVER_TLS_ENABLED_KEY = "management-server-tls-enabled";
+   public static final String MANAGEMENT_SERVER_TLS_KEYSTORE_KEY = "management-server-tls-keystore";
+   public static final String MANAGEMENT_SERVER_TLS_KEYSTORE_PASSWORD_KEY = "management-server-tls-keystore-password";
    public final boolean onlineMode = this.get("online-mode", true);
    public final boolean preventProxyConnections = this.get("prevent-proxy-connections", false);
    public final String serverIp = this.get("server-ip", "");
@@ -65,6 +69,10 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean managementServerEnabled;
    public final String managementServerHost;
    public final int managementServerPort;
+   public final String managementServerSecret;
+   public final boolean managementServerTlsEnabled;
+   public final String managementServerTlsKeystore;
+   public final String managementServerTlsKeystorePassword;
    @Nullable
    public final Boolean announcePlayerAchievements;
    public final boolean enableQuery;
@@ -115,7 +123,11 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.serverPort = this.get("server-port", 25565);
       this.managementServerEnabled = this.get("management-server-enabled", false);
       this.managementServerHost = this.get("management-server-host", "localhost");
-      this.managementServerPort = this.get("management-server-port", 25585);
+      this.managementServerPort = this.get("management-server-port", 0);
+      this.managementServerSecret = this.get("management-server-secret", SecurityConfig.generateSecretKey());
+      this.managementServerTlsEnabled = this.get("management-server-tls-enabled", true);
+      this.managementServerTlsKeystore = this.get("management-server-tls-keystore", "");
+      this.managementServerTlsKeystorePassword = this.get("management-server-tls-keystore-password", "");
       this.announcePlayerAchievements = this.getLegacyBoolean("announce-player-achievements");
       this.enableQuery = this.get("enable-query", false);
       this.queryPort = this.get("query.port", 25565);

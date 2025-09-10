@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,11 +21,17 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private final ArrayDeque<NeighborUpdates> stack = new ArrayDeque();
    private final List<NeighborUpdates> addedThisLayer = new ArrayList();
    private int count = 0;
+   @Nullable
+   private Consumer<BlockPos> debugListener;
 
    public CollectingNeighborUpdater(Level var1, int var2) {
       super();
       this.level = var1;
       this.maxChainedNeighborUpdates = var2;
+   }
+
+   public void setDebugListener(@Nullable Consumer<BlockPos> var1) {
+      this.debugListener = var1;
    }
 
    public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
@@ -72,6 +79,9 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
             this.addedThisLayer.clear();
             NeighborUpdates var5 = (NeighborUpdates)this.stack.peek();
+            if (this.debugListener != null) {
+               var5.forEachUpdatedPos(this.debugListener);
+            }
 
             while(this.addedThisLayer.isEmpty()) {
                if (!var5.runNext(this.level)) {
@@ -101,6 +111,10 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          NeighborUpdater.executeUpdate(var1, var2, this.pos, this.block, this.orientation, false);
          return false;
       }
+
+      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
+         var1.accept(this.pos);
+      }
    }
 
    static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) implements NeighborUpdates {
@@ -116,6 +130,10 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       public boolean runNext(Level var1) {
          NeighborUpdater.executeUpdate(var1, this.state, this.pos, this.block, this.orientation, this.movedByPiston);
          return false;
+      }
+
+      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
+         var1.accept(this.pos);
       }
    }
 
@@ -160,6 +178,16 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
          return this.idx < NeighborUpdater.UPDATE_ORDER.length;
       }
+
+      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
+         for(Direction var5 : NeighborUpdater.UPDATE_ORDER) {
+            if (var5 != this.skipDirection) {
+               BlockPos var6 = this.sourcePos.relative(var5);
+               var1.accept(var6);
+            }
+         }
+
+      }
    }
 
    static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) implements NeighborUpdates {
@@ -177,9 +205,15 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          NeighborUpdater.executeShapeUpdate(var1, this.direction, this.pos, this.neighborPos, this.neighborState, this.updateFlags, this.updateLimit);
          return false;
       }
+
+      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
+         var1.accept(this.pos);
+      }
    }
 
    interface NeighborUpdates {
       boolean runNext(Level var1);
+
+      void forEachUpdatedPos(Consumer<BlockPos> var1);
    }
 }

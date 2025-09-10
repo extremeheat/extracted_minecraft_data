@@ -138,7 +138,7 @@ public interface Leashable {
             }
 
             if (var1) {
-               var4.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
+               var4.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
             }
 
             var3.leashHolder.notifyLeasheeRemoved((Leashable)var0);
@@ -325,7 +325,7 @@ public interface Leashable {
          Level var5 = var0.level();
          if (var5 instanceof ServerLevel) {
             ServerLevel var7 = (ServerLevel)var5;
-            var7.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, var1));
+            var7.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, var1));
          }
       }
 

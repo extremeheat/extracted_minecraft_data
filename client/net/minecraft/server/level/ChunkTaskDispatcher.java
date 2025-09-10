@@ -6,6 +6,7 @@ import java.util.concurrent.Executor;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.Unit;
 import net.minecraft.util.thread.PriorityConsecutiveExecutor;
 import net.minecraft.util.thread.StrictQueue;
@@ -36,6 +37,10 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
    public void onLevelChange(ChunkPos var1, IntSupplier var2, int var3, IntConsumer var4) {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(0, () -> {
          int var5 = var2.getAsInt();
+         if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+            LOGGER.debug("RES {} {} -> {}", new Object[]{var1, var5, var3});
+         }
+
          this.queue.resortChunkTasks(var5, var1, var3);
          var4.accept(var3);
       }));
@@ -57,6 +62,10 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
    public void submit(Runnable var1, long var2, IntSupplier var4) {
       this.dispatcher.schedule(new StrictQueue.RunnableWithPriority(2, () -> {
          int var5 = var4.getAsInt();
+         if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+            LOGGER.debug("SUB {} {} {} {}", new Object[]{new ChunkPos(var2), var5, this.executor, this.queue});
+         }
+
          this.queue.submit(var1, var2, var5);
          if (this.sleeping) {
             this.sleeping = false;

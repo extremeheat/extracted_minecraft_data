@@ -132,17 +132,25 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       BlockEntity var9 = var3.getBlockEntity(var4);
       if (var9 instanceof ShelfBlockEntity var8) {
          if (!var6.equals(InteractionHand.OFF_HAND)) {
-            OptionalInt var12 = this.getHitSlot(var7, (Direction)var2.getValue(FACING));
-            if (var12.isEmpty()) {
+            OptionalInt var13 = this.getHitSlot(var7, (Direction)var2.getValue(FACING));
+            if (var13.isEmpty()) {
                return InteractionResult.PASS;
+            }
+
+            if (var3.isClientSide()) {
+               return InteractionResult.SUCCESS;
             }
 
             Inventory var10 = var5.getInventory();
             if (!(Boolean)var2.getValue(POWERED)) {
-               boolean var13 = swapSingleItem(var1, var5, var8, var12.getAsInt(), var10);
-               if (var13) {
+               boolean var14 = swapSingleItem(var1, var5, var8, var13.getAsInt(), var10);
+               if (var14) {
                   this.playSound(var3, var4, var1.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
-               } else if (!var1.isEmpty()) {
+               } else {
+                  if (var1.isEmpty()) {
+                     return InteractionResult.PASS;
+                  }
+
                   this.playSound(var3, var4, SoundEvents.SHELF_PLACE_ITEM);
                }
 
@@ -150,9 +158,17 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
             }
 
             ItemStack var11 = var10.getSelectedItem();
-            this.swapHotbar(var3, var4, var10);
+            boolean var12 = this.swapHotbar(var3, var4, var10);
+            if (!var12) {
+               return InteractionResult.CONSUME;
+            }
+
             this.playSound(var3, var4, SoundEvents.SHELF_MULTI_SWAP);
-            return var11 == var10.getSelectedItem() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS.heldItemTransformedTo(var10.getSelectedItem());
+            if (var11 == var10.getSelectedItem()) {
+               return InteractionResult.SUCCESS;
+            }
+
+            return InteractionResult.SUCCESS.heldItemTransformedTo(var10.getSelectedItem());
          }
       }
 
@@ -168,25 +184,34 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       return !var5.isEmpty();
    }
 
-   private void swapHotbar(Level var1, BlockPos var2, Inventory var3) {
+   private boolean swapHotbar(Level var1, BlockPos var2, Inventory var3) {
       List var4 = this.getAllBlocksConnectedTo(var1, var2);
-      if (!var4.isEmpty()) {
-         for(int var5 = 0; var5 < var4.size(); ++var5) {
-            ShelfBlockEntity var6 = (ShelfBlockEntity)var1.getBlockEntity((BlockPos)var4.get(var5));
-            if (var6 != null) {
-               for(int var7 = 0; var7 < var6.getContainerSize(); ++var7) {
-                  int var8 = 9 - (var4.size() - var5) * var6.getContainerSize() + var7;
-                  if (var8 >= 0 && var8 <= var3.getContainerSize()) {
-                     ItemStack var9 = var6.swapItemNoUpdate(var7, var3.removeItemNoUpdate(var8));
-                     var3.setItem(var8, var9);
+      if (var4.isEmpty()) {
+         return false;
+      } else {
+         boolean var5 = false;
+
+         for(int var6 = 0; var6 < var4.size(); ++var6) {
+            ShelfBlockEntity var7 = (ShelfBlockEntity)var1.getBlockEntity((BlockPos)var4.get(var6));
+            if (var7 != null) {
+               for(int var8 = 0; var8 < var7.getContainerSize(); ++var8) {
+                  int var9 = 9 - (var4.size() - var6) * var7.getContainerSize() + var8;
+                  if (var9 >= 0 && var9 <= var3.getContainerSize()) {
+                     ItemStack var10 = var3.removeItemNoUpdate(var9);
+                     ItemStack var11 = var7.swapItemNoUpdate(var8, var10);
+                     if (!var10.isEmpty() || !var11.isEmpty()) {
+                        var3.setItem(var9, var11);
+                        var5 = true;
+                     }
                   }
                }
 
                var3.setChanged();
-               var6.setChanged(GameEvent.ENTITY_INTERACT);
+               var7.setChanged(GameEvent.ENTITY_INTERACT);
             }
          }
 
+         return var5;
       }
    }
 

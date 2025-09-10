@@ -7,7 +7,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -268,11 +267,6 @@ public class Zoglin extends Monster implements HoglinBase {
    @Nullable
    public LivingEntity getTarget() {
       return this.getTargetFromBrain();
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {

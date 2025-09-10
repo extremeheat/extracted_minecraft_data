@@ -6,19 +6,22 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.PoiTypeTags;
+import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -95,7 +98,6 @@ public class Raids extends SavedData {
          this.setDirty();
       }
 
-      DebugPackets.sendRaids(var1, this.raidMap.values());
    }
 
    public static boolean canJoinRaid(Raider var0) {
@@ -178,6 +180,13 @@ public class Raids extends SavedData {
       }
 
       return var3;
+   }
+
+   @VisibleForDebug
+   public List<BlockPos> getRaidCentersInChunk(ChunkPos var1) {
+      Stream var10000 = this.raidMap.values().stream().map(Raid::getCenter);
+      Objects.requireNonNull(var1);
+      return var10000.filter(var1::contains).toList();
    }
 
    static {

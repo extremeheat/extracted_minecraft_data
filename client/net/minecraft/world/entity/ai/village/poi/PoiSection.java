@@ -17,11 +17,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.debug.DebugPoiInfo;
 import org.slf4j.Logger;
 
 public class PoiSection {
@@ -52,12 +54,16 @@ public class PoiSection {
       return this.byType.entrySet().stream().filter((var1x) -> var1.test((Holder)var1x.getKey())).flatMap((var0) -> ((Set)var0.getValue()).stream()).filter(var2.getTest());
    }
 
-   public void add(BlockPos var1, Holder<PoiType> var2) {
-      if (this.add(new PoiRecord(var1, var2, this.setDirty))) {
+   @Nullable
+   public PoiRecord add(BlockPos var1, Holder<PoiType> var2) {
+      PoiRecord var3 = new PoiRecord(var1, var2, this.setDirty);
+      if (this.add(var3)) {
          LOGGER.debug("Added POI of type {} @ {}", var2.getRegisteredName(), var1);
          this.setDirty.run();
+         return var3;
+      } else {
+         return null;
       }
-
    }
 
    private boolean add(PoiRecord var1) {
@@ -121,6 +127,10 @@ public class PoiSection {
 
    private Optional<PoiRecord> getPoiRecord(BlockPos var1) {
       return Optional.ofNullable((PoiRecord)this.records.get(SectionPos.sectionRelativePos(var1)));
+   }
+
+   public Optional<DebugPoiInfo> getDebugPoiInfo(BlockPos var1) {
+      return this.getPoiRecord(var1).map(DebugPoiInfo::new);
    }
 
    public void refresh(Consumer<BiConsumer<BlockPos, Holder<PoiType>>> var1) {

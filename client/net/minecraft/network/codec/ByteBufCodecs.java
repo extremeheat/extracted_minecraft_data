@@ -612,7 +612,7 @@ public interface ByteBufCodecs {
       };
    }
 
-   static <B extends ByteBuf, V> StreamCodec<B, Optional<V>> optional(final StreamCodec<B, V> var0) {
+   static <B extends ByteBuf, V> StreamCodec<B, Optional<V>> optional(final StreamCodec<? super B, V> var0) {
       return new StreamCodec<B, Optional<V>>() {
          public Optional<V> decode(B var1) {
             return var1.readBoolean() ? Optional.of(var0.decode(var1)) : Optional.empty();

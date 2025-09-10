@@ -26,6 +26,7 @@ import net.minecraft.client.gui.render.state.ColoredRectangleRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.GuiTextRenderState;
+import net.minecraft.client.gui.render.state.TiledBlitRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBannerResultRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBookModelRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiEntityRenderState;
@@ -37,10 +38,10 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -393,17 +394,10 @@ public class GuiGraphics {
    private void blitTiledSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
       if (var5 > 0 && var6 > 0) {
          if (var9 > 0 && var10 > 0) {
-            for(int var14 = 0; var14 < var5; var14 += var9) {
-               int var15 = Math.min(var9, var5 - var14);
-
-               for(int var16 = 0; var16 < var6; var16 += var10) {
-                  int var17 = Math.min(var10, var6 - var16);
-                  this.blitSprite(var1, var2, var11, var12, var7, var8, var3 + var14, var4 + var16, var15, var17, var13);
-               }
-            }
-
+            GpuTextureView var14 = this.minecraft.getTextureManager().getTexture(var2.atlasLocation()).getTextureView();
+            this.submitTiledBlit(var1, var14, var9, var10, var3, var4, var3 + var5, var4 + var6, var2.getU((float)var7 / (float)var11), var2.getU((float)(var7 + var9) / (float)var11), var2.getV((float)var8 / (float)var12), var2.getV((float)(var8 + var10) / (float)var12), var13);
          } else {
-            throw new IllegalArgumentException("Tiled sprite texture size must be positive, got " + var9 + "x" + var10);
+            throw new IllegalArgumentException("Tile size must be positive, got " + var9 + "x" + var10);
          }
       }
    }
@@ -435,6 +429,10 @@ public class GuiGraphics {
 
    private void submitBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
       this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, this.scissorStack.peek()));
+   }
+
+   private void submitTiledBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13) {
+      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, this.scissorStack.peek()));
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {
@@ -746,7 +744,7 @@ public class GuiGraphics {
       this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var3, this.scissorStack.peek()));
    }
 
-   public void submitBannerPatternRenderState(ModelPart var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
+   public void submitBannerPatternRenderState(BannerFlagModel var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
       this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.scissorStack.peek()));
    }
 

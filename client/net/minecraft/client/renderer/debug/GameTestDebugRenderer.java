@@ -6,8 +6,11 @@ import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.debug.DebugValueAccess;
 
 public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
+   private static final int SHOW_POS_DURATION_MS = 10000;
    private static final float PADDING = 0.02F;
    private final Map<BlockPos, Marker> markers = Maps.newHashMap();
 
@@ -15,17 +18,18 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
       super();
    }
 
-   public void addMarker(BlockPos var1, int var2, String var3, int var4) {
-      this.markers.put(var1, new Marker(var2, var3, Util.getMillis() + (long)var4));
+   public void highlightPos(BlockPos var1, BlockPos var2) {
+      String var3 = var2.toShortString();
+      this.markers.put(var1, new Marker(-2147418368, var3, Util.getMillis() + 10000L));
    }
 
    public void clear() {
       this.markers.clear();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      long var9 = Util.getMillis();
-      this.markers.entrySet().removeIf((var2x) -> var9 > ((Marker)var2x.getValue()).removeAtTime);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+      long var10 = Util.getMillis();
+      this.markers.entrySet().removeIf((var2x) -> var10 > ((Marker)var2x.getValue()).removeAtTime);
       this.markers.forEach((var3x, var4) -> this.renderMarker(var1, var2, var3x, var4));
    }
 
@@ -53,19 +57,19 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
       }
 
       public float getR() {
-         return (float)(this.color >> 16 & 255) / 255.0F;
+         return ARGB.redFloat(this.color);
       }
 
       public float getG() {
-         return (float)(this.color >> 8 & 255) / 255.0F;
+         return ARGB.greenFloat(this.color);
       }
 
       public float getB() {
-         return (float)(this.color & 255) / 255.0F;
+         return ARGB.blueFloat(this.color);
       }
 
       public float getA() {
-         return (float)(this.color >> 24 & 255) / 255.0F;
+         return ARGB.alphaFloat(this.color);
       }
    }
 }
