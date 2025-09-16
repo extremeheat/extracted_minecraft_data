@@ -1,31 +1,17 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.level.storage.LevelData;
 
-public class ClientboundSetDefaultSpawnPositionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket>codec(ClientboundSetDefaultSpawnPositionPacket::write, ClientboundSetDefaultSpawnPositionPacket::new);
-   private final BlockPos pos;
-   private final float angle;
+public record ClientboundSetDefaultSpawnPositionPacket(LevelData.RespawnData respawnData) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket> STREAM_CODEC;
 
-   public ClientboundSetDefaultSpawnPositionPacket(BlockPos var1, float var2) {
+   public ClientboundSetDefaultSpawnPositionPacket(LevelData.RespawnData var1) {
       super();
-      this.pos = var1;
-      this.angle = var2;
-   }
-
-   private ClientboundSetDefaultSpawnPositionPacket(FriendlyByteBuf var1) {
-      super();
-      this.pos = var1.readBlockPos();
-      this.angle = var1.readFloat();
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeFloat(this.angle);
+      this.respawnData = var1;
    }
 
    public PacketType<ClientboundSetDefaultSpawnPositionPacket> type() {
@@ -36,11 +22,7 @@ public class ClientboundSetDefaultSpawnPositionPacket implements Packet<ClientGa
       var1.handleSetSpawn(this);
    }
 
-   public BlockPos getPos() {
-      return this.pos;
-   }
-
-   public float getAngle() {
-      return this.angle;
+   static {
+      STREAM_CODEC = StreamCodec.composite(LevelData.RespawnData.STREAM_CODEC, ClientboundSetDefaultSpawnPositionPacket::respawnData, ClientboundSetDefaultSpawnPositionPacket::new);
    }
 }

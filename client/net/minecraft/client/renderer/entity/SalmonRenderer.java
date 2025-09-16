@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SalmonRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Salmon;
@@ -57,7 +58,7 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
 
    }
 
-   public void submit(SalmonRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(SalmonRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       SalmonModel var10001;
       switch (var1.variant) {
          case SMALL -> var10001 = this.smallSalmonModel;
@@ -67,7 +68,7 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, Salmo
       }
 
       this.model = var10001;
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method

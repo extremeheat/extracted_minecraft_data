@@ -8,8 +8,8 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.ParticleGroupRenderState;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 
 public abstract class ParticleGroup<P extends Particle> {
    private static final int MAX_PARTICLES = 16384;

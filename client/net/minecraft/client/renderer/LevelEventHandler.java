@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
@@ -49,15 +50,13 @@ import net.minecraft.world.phys.Vec3;
 
 public class LevelEventHandler {
    private final Minecraft minecraft;
-   private final Level level;
-   private final LevelRenderer levelRenderer;
+   private final ClientLevel level;
    private final Map<BlockPos, SoundInstance> playingJukeboxSongs = new HashMap();
 
-   public LevelEventHandler(Minecraft var1, Level var2, LevelRenderer var3) {
+   public LevelEventHandler(Minecraft var1, ClientLevel var2) {
       super();
       this.minecraft = var1;
       this.level = var2;
-      this.levelRenderer = var3;
    }
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
@@ -259,7 +258,7 @@ public class LevelEventHandler {
             Vec3 var23 = Vec3.atBottomCenterOf(var2);
 
             for(int var25 = 0; var25 < 8; ++var25) {
-               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)), var23.x, var23.y, var23.z, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)), var23.x, var23.y, var23.z, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
             }
 
             float var26 = (float)(var3 >> 16 & 255) / 255.0F;
@@ -275,7 +274,7 @@ public class LevelEventHandler {
                double var19 = Math.sin(var72) * var61;
                float var21 = 0.75F + var4.nextFloat() * 0.25F;
                SpellParticleOption var22 = SpellParticleOption.create(var47, var26 * var21, var33 * var21, var42 * var21, (float)var61);
-               this.levelRenderer.addParticle(var22, var47.getOverrideLimiter(), var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var19 * 0.1, var80, var84, var19);
+               this.level.addParticle(var22, var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var19 * 0.1, var80, var84, var19);
             }
 
             this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
@@ -286,12 +285,12 @@ public class LevelEventHandler {
             double var46 = (double)var2.getZ() + 0.5;
 
             for(int var59 = 0; var59 < 8; ++var59) {
-               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
             }
 
             for(double var60 = 0.0; var60 < 6.283185307179586; var60 += 0.15707963267948966) {
-               this.levelRenderer.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -5.0, 0.0, Math.sin(var60) * -5.0);
-               this.levelRenderer.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -7.0, 0.0, Math.sin(var60) * -7.0);
+               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -5.0, 0.0, Math.sin(var60) * -5.0);
+               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -7.0, 0.0, Math.sin(var60) * -7.0);
             }
             break;
          case 2004:
@@ -310,7 +309,7 @@ public class LevelEventHandler {
                double var71 = (double)(Mth.cos(var67) * var58);
                double var79 = 0.01 + var4.nextDouble() * 0.5;
                double var83 = (double)(Mth.sin(var67) * var58);
-               this.levelRenderer.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), false, (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
+               this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
             }
 
             if (var3 == 1) {
@@ -338,7 +337,7 @@ public class LevelEventHandler {
             ParticleUtils.spawnSmashAttackParticles(this.level, var2, var3);
             break;
          case 3000:
-            this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, true, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+            this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             this.level.playLocalSound(var2, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
             break;
          case 3001:
@@ -494,7 +493,7 @@ public class LevelEventHandler {
          double var18 = (double)var6 * var10 + var3.nextGaussian() * 0.01;
          double var20 = (double)var7 * var10 + var3.nextGaussian() * 0.01;
          double var22 = (double)var8 * var10 + var3.nextGaussian() * 0.01;
-         this.levelRenderer.addParticle(var4, var12, var14, var16, var18, var20, var22);
+         this.level.addParticle(var4, var12, var14, var16, var18, var20, var22);
       }
 
    }

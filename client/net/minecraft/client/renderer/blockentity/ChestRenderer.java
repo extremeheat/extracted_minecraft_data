@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -86,25 +87,25 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
 
    }
 
-   public void submit(ChestRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ChestRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.5F, 0.5F, 0.5F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.angle));
       var2.translate(-0.5F, -0.5F, -0.5F);
-      float var4 = var1.open;
-      var4 = 1.0F - var4;
-      var4 = 1.0F - var4 * var4 * var4;
-      Material var5 = Sheets.chooseMaterial(var1.material, var1.type);
-      RenderType var6 = var5.renderType(RenderType::entityCutout);
-      TextureAtlasSprite var7 = this.materials.get(var5);
+      float var5 = var1.open;
+      var5 = 1.0F - var5;
+      var5 = 1.0F - var5 * var5 * var5;
+      Material var6 = Sheets.chooseMaterial(var1.material, var1.type);
+      RenderType var7 = var6.renderType(RenderType::entityCutout);
+      TextureAtlasSprite var8 = this.materials.get(var6);
       if (var1.type != ChestType.SINGLE) {
          if (var1.type == ChestType.LEFT) {
-            var3.submitModel(this.doubleLeftModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+            var3.submitModel(this.doubleLeftModel, var5, var2, var7, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var8, 0, var1.breakProgress);
          } else {
-            var3.submitModel(this.doubleRightModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+            var3.submitModel(this.doubleRightModel, var5, var2, var7, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var8, 0, var1.breakProgress);
          }
       } else {
-         var3.submitModel(this.singleModel, var4, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var7, 0, var1.breakProgress);
+         var3.submitModel(this.singleModel, var5, var2, var7, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, var8, 0, var1.breakProgress);
       }
 
       var2.popPose();

@@ -134,11 +134,11 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
       }
 
       public Builder display(ItemStack var1, Component var2, Component var3, @Nullable ResourceLocation var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
-         return this.display(new DisplayInfo(var1, var2, var3, Optional.ofNullable(var4).map(ClientAsset::new), var5, var6, var7, var8));
+         return this.display(new DisplayInfo(var1, var2, var3, Optional.ofNullable(var4).map(ClientAsset.ResourceTexture::new), var5, var6, var7, var8));
       }
 
       public Builder display(ItemLike var1, Component var2, Component var3, @Nullable ResourceLocation var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
-         return this.display(new DisplayInfo(new ItemStack(var1.asItem()), var2, var3, Optional.ofNullable(var4).map(ClientAsset::new), var5, var6, var7, var8));
+         return this.display(new DisplayInfo(new ItemStack(var1.asItem()), var2, var3, Optional.ofNullable(var4).map(ClientAsset.ResourceTexture::new), var5, var6, var7, var8));
       }
 
       public Builder display(DisplayInfo var1) {

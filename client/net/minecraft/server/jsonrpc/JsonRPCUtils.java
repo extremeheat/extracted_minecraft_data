@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
 public class JsonRPCUtils {
@@ -15,28 +16,22 @@ public class JsonRPCUtils {
       super();
    }
 
-   public static JsonObject createResult(@Nullable JsonElement var0, @Nullable JsonElement var1) {
+   public static JsonObject createSuccessResult(JsonElement var0, JsonElement var1) {
       JsonObject var2 = new JsonObject();
       var2.addProperty("jsonrpc", "2.0");
-      if (var0 != null) {
-         var2.add("id", var0);
-      }
-
-      if (var1 != null) {
-         var2.add("result", var1);
-      }
-
+      var2.add("id", var0);
+      var2.add("result", var1);
       return var2;
    }
 
-   public static JsonObject createRequest(@Nullable Integer var0, String var1, List<JsonElement> var2) {
+   public static JsonObject createRequest(@Nullable Integer var0, ResourceLocation var1, List<JsonElement> var2) {
       JsonObject var3 = new JsonObject();
       var3.addProperty("jsonrpc", "2.0");
       if (var0 != null) {
          var3.addProperty("id", var0);
       }
 
-      var3.addProperty("method", var1);
+      var3.addProperty("method", var1.toString());
       if (!var2.isEmpty()) {
          JsonArray var4 = new JsonArray(var2.size());
 
@@ -50,13 +45,10 @@ public class JsonRPCUtils {
       return var3;
    }
 
-   public static JsonObject createError(@Nullable JsonElement var0, String var1, int var2, @Nullable String var3) {
+   public static JsonObject createError(JsonElement var0, String var1, int var2, @Nullable String var3) {
       JsonObject var4 = new JsonObject();
       var4.addProperty("jsonrpc", "2.0");
-      if (var0 != null) {
-         var4.add("id", var0);
-      }
-
+      var4.add("id", var0);
       JsonObject var5 = new JsonObject();
       var5.addProperty("code", var2);
       var5.addProperty("message", var1);
@@ -70,8 +62,7 @@ public class JsonRPCUtils {
 
    @Nullable
    public static JsonElement getRequestId(JsonObject var0) {
-      JsonElement var1 = var0.get("id");
-      return var1 == null || !GsonHelper.isNumberValue(var1) && !GsonHelper.isStringValue(var1) && !var1.isJsonNull() ? null : var1;
+      return var0.get("id");
    }
 
    @Nullable

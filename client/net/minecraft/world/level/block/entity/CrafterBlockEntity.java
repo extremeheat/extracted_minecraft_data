@@ -32,6 +32,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    public static final int NUM_DATA = 10;
    private static final int DEFAULT_CRAFTING_TICKS_REMAINING = 0;
    private static final int DEFAULT_TRIGGERED = 0;
+   private static final Component DEFAULT_NAME = Component.translatable("container.crafter");
    private NonNullList<ItemStack> items;
    private int craftingTicksRemaining;
    protected final ContainerData containerData;
@@ -64,7 +65,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.crafter");
+      return DEFAULT_NAME;
    }
 
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {

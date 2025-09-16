@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +36,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -122,7 +125,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    }
 
    public ResourceLocation getTextureLocation(AvatarRenderState var1) {
-      return var1.skin.texture();
+      return var1.skin.body().texturePath();
    }
 
    protected void scale(AvatarRenderState var1, PoseStack var2) {
@@ -130,16 +133,16 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var2.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
-   protected void submitNameTag(AvatarRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   protected void submitNameTag(AvatarRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       if (var1.scoreText != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
          Objects.requireNonNull(this.getFont());
          var2.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
       }
 
       if (var1.nameTag != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
       }
 
       var2.popPose();
@@ -185,6 +188,10 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
          }
       }
 
+   }
+
+   protected boolean shouldShowName(AvatarlikeEntity var1, double var2) {
+      return super.shouldShowName(var1, var2) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
    }
 
    private void extractFlightData(AvatarlikeEntity var1, AvatarRenderState var2, float var3) {
@@ -269,6 +276,28 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
 
    }
 
+   public boolean isEntityUpsideDown(AvatarlikeEntity var1) {
+      if (var1.isModelPartShown(PlayerModelPart.CAPE)) {
+         if (var1 instanceof Player) {
+            Player var2 = (Player)var1;
+            return isPlayerUpsideDown(var2);
+         } else {
+            return super.isEntityUpsideDown(var1);
+         }
+      } else {
+         return false;
+      }
+   }
+
+   public static boolean isPlayerUpsideDown(Player var0) {
+      return isUpsideDownName(var0.getGameProfile().name());
+   }
+
+   // $FF: synthetic method
+   public boolean isEntityUpsideDown(final LivingEntity var1) {
+      return this.isEntityUpsideDown((Avatar)var1);
+   }
+
    // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((AvatarRenderState)var1);
@@ -285,8 +314,8 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    }
 
    // $FF: synthetic method
-   protected void submitNameTag(final EntityRenderState var1, final PoseStack var2, final SubmitNodeCollector var3) {
-      this.submitNameTag((AvatarRenderState)var1, var2, var3);
+   protected void submitNameTag(final EntityRenderState var1, final PoseStack var2, final SubmitNodeCollector var3, final CameraRenderState var4) {
+      this.submitNameTag((AvatarRenderState)var1, var2, var3, var4);
    }
 
    // $FF: synthetic method

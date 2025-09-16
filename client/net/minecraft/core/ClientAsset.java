@@ -7,24 +7,44 @@ import java.util.function.UnaryOperator;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record ClientAsset(ResourceLocation id, ResourceLocation texturePath) {
-   public static final Codec<ClientAsset> CODEC;
-   public static final MapCodec<ClientAsset> DEFAULT_FIELD_CODEC;
-   public static final StreamCodec<ByteBuf, ClientAsset> STREAM_CODEC;
+public interface ClientAsset {
+   ResourceLocation id();
 
-   public ClientAsset(ResourceLocation var1) {
-      this(var1, var1.withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")));
+   public static record ResourceTexture(ResourceLocation id, ResourceLocation texturePath) implements Texture {
+      public static final Codec<ResourceTexture> CODEC;
+      public static final MapCodec<ResourceTexture> DEFAULT_FIELD_CODEC;
+      public static final StreamCodec<ByteBuf, ResourceTexture> STREAM_CODEC;
+
+      public ResourceTexture(ResourceLocation var1) {
+         this(var1, var1.withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")));
+      }
+
+      public ResourceTexture(ResourceLocation var1, ResourceLocation var2) {
+         super();
+         this.id = var1;
+         this.texturePath = var2;
+      }
+
+      static {
+         CODEC = ResourceLocation.CODEC.xmap(ResourceTexture::new, ResourceTexture::id);
+         DEFAULT_FIELD_CODEC = CODEC.fieldOf("asset_id");
+         STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(ResourceTexture::new, ResourceTexture::id);
+      }
    }
 
-   public ClientAsset(ResourceLocation var1, ResourceLocation var2) {
-      super();
-      this.id = var1;
-      this.texturePath = var2;
+   public static record DownloadedTexture(ResourceLocation texturePath, String url) implements Texture {
+      public DownloadedTexture(ResourceLocation var1, String var2) {
+         super();
+         this.texturePath = var1;
+         this.url = var2;
+      }
+
+      public ResourceLocation id() {
+         return this.texturePath;
+      }
    }
 
-   static {
-      CODEC = ResourceLocation.CODEC.xmap(ClientAsset::new, ClientAsset::id);
-      DEFAULT_FIELD_CODEC = CODEC.fieldOf("asset_id");
-      STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, ClientAsset::id, ClientAsset::new);
+   public interface Texture extends ClientAsset {
+      ResourceLocation texturePath();
    }
 }

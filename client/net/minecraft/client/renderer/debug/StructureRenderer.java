@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.debug.DebugStructureInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
@@ -15,17 +16,17 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       super();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      VertexConsumer var10 = var2.getBuffer(RenderType.lines());
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      VertexConsumer var11 = var2.getBuffer(RenderType.lines());
       var9.forEachChunk(DebugSubscriptions.STRUCTURES, (var8, var9x) -> {
-         for(DebugStructureInfo var11 : var9x) {
-            renderBox(var1, var3, var5, var7, var10, var11.boundingBox(), 1.0F, 1.0F, 1.0F, 1.0F);
+         for(DebugStructureInfo var11x : var9x) {
+            renderBox(var1, var3, var5, var7, var11, var11x.boundingBox(), 1.0F, 1.0F, 1.0F, 1.0F);
 
-            for(DebugStructureInfo.Piece var13 : var11.pieces()) {
+            for(DebugStructureInfo.Piece var13 : var11x.pieces()) {
                if (var13.isStart()) {
-                  renderBox(var1, var3, var5, var7, var10, var13.boundingBox(), 0.0F, 1.0F, 0.0F, 1.0F);
+                  renderBox(var1, var3, var5, var7, var11, var13.boundingBox(), 0.0F, 1.0F, 0.0F, 1.0F);
                } else {
-                  renderBox(var1, var3, var5, var7, var10, var13.boundingBox(), 0.0F, 0.0F, 1.0F, 1.0F);
+                  renderBox(var1, var3, var5, var7, var11, var13.boundingBox(), 0.0F, 0.0F, 1.0F, 1.0F);
                }
             }
          }

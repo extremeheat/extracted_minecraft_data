@@ -1,10 +1,13 @@
 package net.minecraft.server.jsonrpc.api;
 
-public record SchemaComponent(String ref, Schema schema) {
-   public SchemaComponent(String var1, Schema var2) {
+import java.net.URI;
+
+public record SchemaComponent(String name, URI ref, Schema schema) {
+   public SchemaComponent(String var1, URI var2, Schema var3) {
       super();
-      this.ref = var1;
-      this.schema = var2;
+      this.name = var1;
+      this.ref = var2;
+      this.schema = var3;
    }
 
    public Schema asRef() {

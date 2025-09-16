@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuOutOfMemoryException;
+import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -62,11 +63,12 @@ public class GlDevice implements GpuDevice {
       GLCapabilities var7 = GL.createCapabilities();
       int var8 = getMaxSupportedTextureSize();
       GLFW.glfwSetWindowSizeLimits(var1, -1, -1, var8, var8);
+      GraphicsWorkarounds var9 = GraphicsWorkarounds.get(this);
       this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
       this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
       this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
       this.bufferStorage = BufferStorage.create(var7, this.enabledExtensions);
-      this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions);
+      this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions, var9);
       this.maxSupportedTextureSize = var8;
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);

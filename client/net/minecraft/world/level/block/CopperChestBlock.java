@@ -38,7 +38,7 @@ public class CopperChestBlock extends ChestBlock {
    }
 
    public boolean chestCanConnectTo(BlockState var1) {
-      return var1.is(BlockTags.COPPER_CHESTS);
+      return var1.is(BlockTags.COPPER_CHESTS) && var1.hasProperty(ChestBlock.TYPE);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

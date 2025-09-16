@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.CopperGolemStatueRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
@@ -43,15 +44,15 @@ public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<Coppe
       var2.pose = (CopperGolemStatueBlock.Pose)var1.getBlockState().getValue(BlockStateProperties.COPPER_GOLEM_POSE);
    }
 
-   public void submit(CopperGolemStatueRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      Block var5 = var1.blockState.getBlock();
-      if (var5 instanceof CopperGolemStatueBlock var4) {
+   public void submit(CopperGolemStatueRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Block var6 = var1.blockState.getBlock();
+      if (var6 instanceof CopperGolemStatueBlock var5) {
          var2.pushPose();
          var2.translate(0.5F, 0.0F, 0.5F);
-         CopperGolemStatueModel var8 = (CopperGolemStatueModel)this.models.get(var1.pose);
-         Direction var6 = var1.direction;
-         RenderType var7 = RenderType.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var4.getWeatheringState()).texture());
-         var3.submitModel(var8, var6, var2, var7, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0, var1.breakProgress);
+         CopperGolemStatueModel var9 = (CopperGolemStatueModel)this.models.get(var1.pose);
+         Direction var7 = var1.direction;
+         RenderType var8 = RenderType.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var5.getWeatheringState()).texture());
+         var3.submitModel(var9, var7, var2, var8, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0, var1.breakProgress);
          var2.popPose();
       }
 

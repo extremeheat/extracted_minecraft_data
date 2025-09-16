@@ -21,6 +21,7 @@ import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -47,13 +48,17 @@ public class PrepareSpawnTask implements ConfigurationTask {
       try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(LOGGER)) {
          Optional var3 = this.server.getPlayerList().loadPlayerData(this.nameAndId).map((var2x) -> TagValueInput.create(var2, this.server.registryAccess(), var2x));
          ServerPlayer.SavedPosition var4 = (ServerPlayer.SavedPosition)var3.flatMap((var0) -> var0.read(ServerPlayer.SavedPosition.MAP_CODEC)).orElse(ServerPlayer.SavedPosition.EMPTY);
+         LevelData.RespawnData var5 = this.server.getWorldData().overworldData().getRespawnData();
          Optional var10000 = var4.dimension();
          MinecraftServer var10001 = this.server;
          Objects.requireNonNull(var10001);
-         ServerLevel var5 = (ServerLevel)var10000.map(var10001::getLevel).orElse(this.server.overworld());
-         CompletableFuture var6 = (CompletableFuture)var4.position().map(CompletableFuture::completedFuture).orElseGet(() -> PlayerSpawnFinder.findSpawn(var5, var5.getSharedSpawnPos()));
-         Vec2 var7 = (Vec2)var4.rotation().orElse(new Vec2(var5.getSharedSpawnAngle(), 0.0F));
-         this.state = new Preparing(var5, var6, var7);
+         ServerLevel var6 = (ServerLevel)var10000.map(var10001::getLevel).orElseGet(() -> {
+            ServerLevel var2 = this.server.getLevel(var5.dimension());
+            return var2 != null ? var2 : this.server.overworld();
+         });
+         CompletableFuture var7 = (CompletableFuture)var4.position().map(CompletableFuture::completedFuture).orElseGet(() -> PlayerSpawnFinder.findSpawn(var6, var5.pos()));
+         Vec2 var8 = (Vec2)var4.rotation().orElse(new Vec2(var5.yaw(), var5.pitch()));
+         this.state = new Preparing(var6, var7, var8);
       }
 
    }

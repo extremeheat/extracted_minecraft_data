@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.PistonHeadRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -59,7 +60,7 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
 
    }
 
-   public void submit(PistonHeadRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(PistonHeadRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.block != null) {
          var2.pushPose();
          var2.translate(var1.xOffset, var1.yOffset, var1.zOffset);

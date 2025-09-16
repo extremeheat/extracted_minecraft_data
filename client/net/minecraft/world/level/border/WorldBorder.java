@@ -3,12 +3,9 @@ package net.minecraft.world.level.border;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.Entity;
@@ -104,11 +101,6 @@ public class WorldBorder extends SavedData {
       double var13 = Math.min(var9, var11);
       var13 = Math.min(var13, var5);
       return Math.min(var13, var7);
-   }
-
-   public List<DistancePerDirection> closestBorder(double var1, double var3) {
-      DistancePerDirection[] var5 = new DistancePerDirection[]{new DistancePerDirection(Direction.NORTH, var3 - this.getMinZ()), new DistancePerDirection(Direction.SOUTH, this.getMaxZ() - var3), new DistancePerDirection(Direction.WEST, var1 - this.getMinX()), new DistancePerDirection(Direction.EAST, this.getMaxX() - var1)};
-      return Arrays.stream(var5).sorted(Comparator.comparingDouble((var0) -> var0.distance)).toList();
    }
 
    public boolean isInsideCloseToBorder(Entity var1, AABB var2) {
@@ -437,16 +429,6 @@ public class WorldBorder extends SavedData {
 
       public VoxelShape getCollisionShape() {
          return this.shape;
-      }
-   }
-
-   public static record DistancePerDirection(Direction direction, double distance) {
-      final double distance;
-
-      public DistancePerDirection(Direction var1, double var2) {
-         super();
-         this.direction = var1;
-         this.distance = var2;
       }
    }
 

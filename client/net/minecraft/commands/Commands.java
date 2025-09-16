@@ -262,7 +262,7 @@ public class Commands {
          ChaseCommand.register(this.dispatcher);
       }
 
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (SharedConstants.DEBUG_DEV_COMMANDS || SharedConstants.IS_RUNNING_IN_IDE) {
          RaidCommand.register(this.dispatcher, var2);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
@@ -335,7 +335,7 @@ public class Commands {
          }
 
          var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(var6)))));
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
+         if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || SharedConstants.IS_RUNNING_IN_IDE) {
             var3.sendFailure(Component.literal(Util.describeError(var12)));
             LOGGER.error("'/{}' threw an exception", var2, var12);
          }

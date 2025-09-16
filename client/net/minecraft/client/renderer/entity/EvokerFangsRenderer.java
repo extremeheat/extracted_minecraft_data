@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.EvokerFangsRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.EvokerFangs;
@@ -22,16 +23,16 @@ public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs, EvokerFangs
       this.model = new EvokerFangsModel(var1.bakeLayer(ModelLayers.EVOKER_FANGS));
    }
 
-   public void submit(EvokerFangsRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      float var4 = var1.biteProgress;
-      if (var4 != 0.0F) {
+   public void submit(EvokerFangsRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      float var5 = var1.biteProgress;
+      if (var5 != 0.0F) {
          var2.pushPose();
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F - var1.yRot));
          var2.scale(-1.0F, -1.0F, 1.0F);
          var2.translate(0.0F, -1.501F, 0.0F);
          var3.submitModel(this.model, var1, var2, this.model.renderType(TEXTURE_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          var2.popPose();
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

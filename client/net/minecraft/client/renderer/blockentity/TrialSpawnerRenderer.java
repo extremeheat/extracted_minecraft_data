@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SpawnerRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
@@ -50,9 +51,9 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
       }
    }
 
-   public void submit(SpawnerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(SpawnerRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.displayEntity != null) {
-         SpawnerRenderer.submitEntityInSpawner(var2, var3, var1.displayEntity, this.entityRenderer, var1.spin, var1.scale);
+         SpawnerRenderer.submitEntityInSpawner(var2, var3, var1.displayEntity, this.entityRenderer, var1.spin, var1.scale, var4);
       }
 
    }

@@ -82,6 +82,7 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
+import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.obfuscate.DontObfuscate;
@@ -273,6 +274,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final ServerTickRateManager tickRateManager;
    private final ServerDebugSubscribers debugSubscribers;
    protected final WorldData worldData;
+   private LevelData.RespawnData effectiveRespawnData;
    private final PotionBrewing potionBrewing;
    private FuelValues fuelValues;
    private int emptyTicks;
@@ -316,6 +318,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.scoreboard = new ServerScoreboard(this);
       this.customBossEvents = new CustomBossEvents();
       this.debugSubscribers = new ServerDebugSubscribers(this);
+      this.effectiveRespawnData = LevelData.RespawnData.DEFAULT;
       this.suppressedExceptions = new SuppressedExceptionCollector();
       this.registries = var4.registries();
       this.worldData = var4.worldData();
@@ -482,9 +485,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    private static void setInitialSpawn(ServerLevel var0, ServerLevelData var1, boolean var2, boolean var3, LevelLoadListener var4) {
       if (SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && SharedConstants.DEBUG_WORLD_RECREATE) {
-         var1.setSpawn(new BlockPos(0, 64, -100), 0.0F);
+         var1.setSpawn(LevelData.RespawnData.of(var0.dimension(), new BlockPos(0, 64, -100), 0.0F, 0.0F));
       } else if (var3) {
-         var1.setSpawn(BlockPos.ZERO.above(80), 0.0F);
+         var1.setSpawn(LevelData.RespawnData.of(var0.dimension(), BlockPos.ZERO.above(80), 0.0F, 0.0F));
       } else {
          ServerChunkCache var5 = var0.getChunkSource();
          ChunkPos var6 = new ChunkPos(var5.randomState().sampler().findSpawnPosition());
@@ -496,7 +499,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             var7 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var8.getX() + 8, var8.getZ() + 8);
          }
 
-         var1.setSpawn(var6.getWorldPosition().offset(8, var7, 8), 0.0F);
+         var1.setSpawn(LevelData.RespawnData.of(var0.dimension(), var6.getWorldPosition().offset(8, var7, 8), 0.0F, 0.0F));
          int var14 = 0;
          int var9 = 0;
          int var10 = 0;
@@ -506,7 +509,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             if (var14 >= -5 && var14 <= 5 && var9 >= -5 && var9 <= 5) {
                BlockPos var13 = PlayerSpawnFinder.getSpawnPosInChunk(var0, new ChunkPos(var6.x + var14, var6.z + var9));
                if (var13 != null) {
-                  var1.setSpawn(var13, 0.0F);
+                  var1.setSpawn(LevelData.RespawnData.of(var0.dimension(), var13, 0.0F, 0.0F));
                   break;
                }
             }
@@ -522,7 +525,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          if (var2) {
-            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> var0x.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var0, var5.getGenerator(), var0.random, var1.getSpawnPos()));
+            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> var0x.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var0, var5.getGenerator(), var0.random, var1.getRespawnData().pos()));
          }
 
          var4.finish(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN);
@@ -566,7 +569,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public GlobalPos selectLevelLoadFocusPos() {
-      return new GlobalPos(Level.OVERWORLD, this.overworld().getSharedSpawnPos());
+      return this.worldData.overworldData().getRespawnData().globalPos();
    }
 
    public GameType getDefaultGameType() {
@@ -1099,6 +1102,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var2.push("commandFunctions");
       this.getFunctions().tick();
       var2.popPush("levels");
+      this.updateEffectiveRespawnData();
 
       for(ServerLevel var4 : this.getAllLevels()) {
          var2.push((Supplier)(() -> {
@@ -1150,6 +1154,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       var2.pop();
+   }
+
+   private void updateEffectiveRespawnData() {
+      LevelData.RespawnData var1 = this.worldData.overworldData().getRespawnData();
+      ServerLevel var2 = this.findRespawnDimension();
+      this.effectiveRespawnData = var2.getWorldBorderAdjustedRespawnData(var1);
    }
 
    public void tickConnection() {
@@ -1680,8 +1690,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      ServerLevel var1 = this.overworld();
-      return new CommandSourceStack(this, var1 == null ? Vec3.ZERO : Vec3.atLowerCornerOf(var1.getSharedSpawnPos()), Vec2.ZERO, var1, 4, "Server", Component.literal("Server"), this, (Entity)null);
+      ServerLevel var1 = this.findRespawnDimension();
+      return new CommandSourceStack(this, var1 == null ? Vec3.ZERO : Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, var1, 4, "Server", Component.literal("Server"), this, (Entity)null);
+   }
+
+   public ServerLevel findRespawnDimension() {
+      LevelData.RespawnData var1 = this.getWorldData().overworldData().getRespawnData();
+      ResourceKey var2 = var1.dimension();
+      ServerLevel var3 = this.getLevel(var2);
+      return var3 != null ? var3 : this.overworld();
+   }
+
+   public void setRespawnData(LevelData.RespawnData var1) {
+      ServerLevelData var2 = this.worldData.overworldData();
+      LevelData.RespawnData var3 = var2.getRespawnData();
+      if (!var3.equals(var1)) {
+         var2.setSpawn(var1);
+         this.getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(var1));
+         this.updateEffectiveRespawnData();
+      }
+
+   }
+
+   public LevelData.RespawnData getRespawnData() {
+      return this.effectiveRespawnData;
    }
 
    public boolean acceptsSuccess() {

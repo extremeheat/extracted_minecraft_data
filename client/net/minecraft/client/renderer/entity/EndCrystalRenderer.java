@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -27,23 +28,23 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       this.model = new EndCrystalModel(var1.bakeLayer(ModelLayers.END_CRYSTAL));
    }
 
-   public void submit(EndCrystalRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(EndCrystalRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.scale(2.0F, 2.0F, 2.0F);
       var2.translate(0.0F, -0.5F, 0.0F);
       var3.submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      Vec3 var4 = var1.beamOffset;
-      if (var4 != null) {
-         float var5 = getY(var1.ageInTicks);
-         float var6 = (float)var4.x;
-         float var7 = (float)var4.y;
-         float var8 = (float)var4.z;
-         var2.translate(var4);
-         EnderDragonRenderer.submitCrystalBeams(-var6, -var7 + var5, -var8, var1.ageInTicks, var2, var3, var1.lightCoords);
+      Vec3 var5 = var1.beamOffset;
+      if (var5 != null) {
+         float var6 = getY(var1.ageInTicks);
+         float var7 = (float)var5.x;
+         float var8 = (float)var5.y;
+         float var9 = (float)var5.z;
+         var2.translate(var5);
+         EnderDragonRenderer.submitCrystalBeams(-var7, -var8 + var6, -var9, var1.ageInTicks, var2, var3, var1.lightCoords);
       }
 
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public static float getY(float var0) {

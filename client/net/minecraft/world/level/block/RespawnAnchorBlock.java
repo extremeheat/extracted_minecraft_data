@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -81,7 +82,7 @@ public class RespawnAnchorBlock extends Block {
          if (var4 instanceof ServerPlayer) {
             ServerPlayer var6 = (ServerPlayer)var4;
             ServerPlayer.RespawnConfig var7 = var6.getRespawnConfig();
-            ServerPlayer.RespawnConfig var8 = new ServerPlayer.RespawnConfig(var2.dimension(), var3, 0.0F, false);
+            ServerPlayer.RespawnConfig var8 = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var2.dimension(), var3, 0.0F, 0.0F), false);
             if (var7 == null || !var7.isSamePosition(var8)) {
                var6.setRespawnPosition(var8, true);
                var2.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);

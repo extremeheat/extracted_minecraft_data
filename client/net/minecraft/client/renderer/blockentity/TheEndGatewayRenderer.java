@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EndGatewayRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
@@ -41,12 +42,12 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
 
    }
 
-   public void submit(EndGatewayRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(EndGatewayRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.height > 0) {
          BeaconRenderer.submitBeaconBeam(var2, var3, BEAM_LOCATION, var1.scale, var1.animationTime, -var1.height, var1.height * 2, var1.color, 0.15F, 0.175F);
       }
 
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected float getOffsetUp() {

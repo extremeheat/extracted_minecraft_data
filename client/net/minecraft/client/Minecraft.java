@@ -143,7 +143,6 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -290,7 +289,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public final Font font;
    public final Font fontFilterFishy;
    public final GameRenderer gameRenderer;
-   public final DebugRenderer debugRenderer;
    public final Gui gui;
    public final Options options;
    public final DebugScreenEntryList debugEntries;
@@ -580,7 +578,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.gpuWarnlistManager);
       this.resourceManager.registerReloadListener(this.regionalCompliancies);
       this.gui = new Gui(this);
-      this.debugRenderer = new DebugRenderer(this);
       RealmsClient var19 = RealmsClient.getOrCreate(this);
       this.realmsDataFetcher = new RealmsDataFetcher(var19);
       RenderSystem.setErrorCallback(this::onFullscreenError);
@@ -1243,6 +1240,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.soundManager.updateSource(this.gameRenderer.getMainCamera());
       var3.popPush("toasts");
       this.toastManager.update();
+      var3.popPush("mouse");
+      this.mouseHandler.handleAccumulatedMovement();
       var3.popPush("render");
       long var15 = Util.getNanos();
       boolean var6;
@@ -1258,10 +1257,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       RenderTarget var7 = this.getMainRenderTarget();
       RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var7.getColorTexture(), 0, var7.getDepthTexture(), 1.0);
-      var3.popPush("mouse");
-      this.mouseHandler.handleAccumulatedMovement();
+      var3.push("gameRenderer");
       if (!this.noRender) {
-         var3.popPush("gameRenderer");
          this.gameRenderer.render(this.deltaTracker, var1);
       }
 
@@ -1287,6 +1284,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          RenderSystem.limitDisplayFPS(var8);
       }
 
+      var3.pop();
       var3.popPush("yield");
       Thread.yield();
       var3.pop();
@@ -1761,19 +1759,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       if (this.level != null) {
-         var1.popPush("gameRenderer");
          if (!this.pause) {
+            var1.popPush("gameRenderer");
             this.gameRenderer.tick();
-         }
-
-         var1.popPush("levelRenderer");
-         if (!this.pause) {
-            this.levelRenderer.tick();
-         }
-
-         var1.popPush("level");
-         if (!this.pause) {
+            var1.popPush("entities");
             this.level.tickEntities();
+            var1.popPush("blockEntities");
+            this.level.tickBlockEntities();
          }
       } else if (this.gameRenderer.currentPostEffect() != null) {
          this.gameRenderer.clearPostEffect();
@@ -1783,6 +1775,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.soundManager.tick(this.pause);
       if (this.level != null) {
          if (!this.pause) {
+            var1.popPush("level");
             if (!this.options.joinedFirstServer && this.isMultiplayerServer()) {
                MutableComponent var7 = Component.translatable("tutorial.socialInteractions.title");
                MutableComponent var10 = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
@@ -2098,23 +2091,24 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.clientLevelTeardownInProgress = true;
 
       try {
-         this.setScreenAndShow(var1);
          if (this.level != null) {
-            if (var4 != null) {
-               ProfilerFiller var5 = Profiler.get();
-               var5.push("waitForServer");
-
-               while(!var4.isShutdown()) {
-                  this.runTick(false);
-               }
-
-               var5.pop();
-            }
-
             this.gui.onDisconnected();
-            this.isLocalServer = false;
          }
 
+         if (var4 != null) {
+            this.setScreen(new GenericMessageScreen(SAVING_LEVEL));
+            ProfilerFiller var5 = Profiler.get();
+            var5.push("waitForServer");
+
+            while(!var4.isShutdown()) {
+               this.runTick(false);
+            }
+
+            var5.pop();
+         }
+
+         this.setScreenAndShow(var1);
+         this.isLocalServer = false;
          this.level = null;
          this.updateLevelInEngines((ClientLevel)null);
          this.player = null;
@@ -2170,7 +2164,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.pendingConnection = null;
       this.levelRenderer.setLevel(var1);
       this.particleEngine.setLevel(var1);
-      this.blockEntityRenderDispatcher.setLevel(var1);
       this.gameRenderer.setLevel(var1);
       this.updateTitle();
    }

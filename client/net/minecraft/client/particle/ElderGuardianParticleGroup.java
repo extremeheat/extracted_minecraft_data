@@ -5,11 +5,12 @@ import com.mojang.math.Axis;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.ParticleGroupRenderState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ARGB;
@@ -32,9 +33,9 @@ public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParti
          this.states = var1;
       }
 
-      public void submit(SubmitNodeCollector var1) {
-         for(ElderGuardianParticleRenderState var3 : this.states) {
-            var1.submitModel(var3.model, Unit.INSTANCE, var3.poseStack, var3.renderType, 15728880, OverlayTexture.NO_OVERLAY, var3.color, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      public void submit(SubmitNodeCollector var1, CameraRenderState var2) {
+         for(ElderGuardianParticleRenderState var4 : this.states) {
+            var1.submitModel(var4.model, Unit.INSTANCE, var4.poseStack, var4.renderType, 15728880, OverlayTexture.NO_OVERLAY, var4.color, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
 
       }

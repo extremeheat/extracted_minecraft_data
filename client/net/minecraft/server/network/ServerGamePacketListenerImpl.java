@@ -305,7 +305,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.knownMovePacketCount = this.receivedMovePacketCount;
       if (this.clientIsFloating && !this.player.isSleeping() && !this.player.isPassenger() && !this.player.isDeadOrDying()) {
          if (++this.aboveGroundTickCount > this.getMaximumFlyingTicks(this.player)) {
-            LOGGER.warn("{} was kicked for floating too long!", this.player.getName().getString());
+            LOGGER.warn("{} was kicked for floating too long!", this.player.getPlainTextName());
             this.disconnect(Component.translatable("multiplayer.disconnect.flying"));
             return true;
          }
@@ -324,7 +324,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.vehicleLastGoodZ = this.lastVehicle.getZ();
          if (this.clientVehicleIsFloating && this.lastVehicle.getControllingPassenger() == this.player) {
             if (++this.aboveGroundVehicleTickCount > this.getMaximumFlyingTicks(this.lastVehicle)) {
-               LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName().getString());
+               LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getPlainTextName());
                this.disconnect(Component.translatable("multiplayer.disconnect.flying"));
                return true;
             }
@@ -439,7 +439,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             double var24 = var2.getDeltaMovement().lengthSqr();
             double var26 = var18 * var18 + var20 * var20 + var22 * var22;
             if (var26 - var24 > 100.0 && !this.isSingleplayerOwner()) {
-               LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", new Object[]{var2.getName().getString(), this.player.getName().getString(), var18, var20, var22});
+               LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", new Object[]{var2.getPlainTextName(), this.player.getPlainTextName(), var18, var20, var22});
                this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
                return;
             }
@@ -469,7 +469,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             boolean var32 = false;
             if (var26 > 0.0625) {
                var32 = true;
-               LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", new Object[]{var2.getName().getString(), this.player.getName().getString(), Math.sqrt(var26)});
+               LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", new Object[]{var2.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(var26)});
             }
 
             if (var32 && var3.noCollision(var2, var28) || this.isEntityCollidingWithAnythingNew(var3, var2, var28, var10, var12, var14)) {
@@ -947,7 +947,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK);
          var5.remove(DataComponents.WRITABLE_BOOK_CONTENT);
          List var6 = var2.stream().map((var1x) -> this.filterableFromOutgoing(var1x).map(Component::literal)).toList();
-         var5.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(this.filterableFromOutgoing(var1), this.player.getName().getString(), 0, var6, true));
+         var5.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(this.filterableFromOutgoing(var1), this.player.getPlainTextName(), 0, var6, true));
          this.player.getInventory().setItem(var3, var5);
       }
    }
@@ -1040,14 +1040,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                            ++this.receivedMovePacketCount;
                            int var28 = this.receivedMovePacketCount - this.knownMovePacketCount;
                            if (var28 > 5) {
-                              LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), var28);
+                              LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getPlainTextName(), var28);
                               var28 = 1;
                            }
 
                            if (this.shouldCheckPlayerMovement(var27)) {
                               float var29 = var27 ? 300.0F : 100.0F;
                               if (var25 - var23 > (double)(var29 * (float)var28)) {
-                                 LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
+                                 LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getPlainTextName(), var17, var19, var21});
                                  this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
                                  return;
                               }
@@ -1077,7 +1077,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         boolean var33 = false;
                         if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator()) {
                            var33 = true;
-                           LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
+                           LOGGER.warn("{} moved wrongly!", this.player.getPlainTextName());
                         }
 
                         if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isEntityCollidingWithAnythingNew(var2, this.player, var43, var5, var7, var9)) {
@@ -1345,7 +1345,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void onDisconnect(DisconnectionDetails var1) {
-      LOGGER.info("{} lost connection: {}", this.player.getName().getString(), var1.reason().getString());
+      LOGGER.info("{} lost connection: {}", this.player.getPlainTextName(), var1.reason().getString());
       this.removePlayerFromWorld();
       super.onDisconnect(var1);
    }
@@ -1377,7 +1377,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.player.getInventory().setSelectedSlot(var1.getSlot());
          this.player.resetLastActionTime();
       } else {
-         LOGGER.warn("{} tried to set an invalid carried item", this.player.getName().getString());
+         LOGGER.warn("{} tried to set an invalid carried item", this.player.getPlainTextName());
       }
    }
 
@@ -1521,7 +1521,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             LastSeenMessages var3 = this.lastSeenMessages.applyUpdate(var1);
             var10000 = Optional.of(var3);
          } catch (LastSeenMessagesValidator.ValidationException var5) {
-            LOGGER.error("Failed to validate message acknowledgements from {}: {}", this.player.getName().getString(), var5.getMessage());
+            LOGGER.error("Failed to validate message acknowledgements from {}: {}", this.player.getPlainTextName(), var5.getMessage());
             this.disconnect(CHAT_VALIDATION_FAILED);
             return Optional.empty();
          }
@@ -1563,7 +1563,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          try {
             this.lastSeenMessages.applyOffset(var1.offset());
          } catch (LastSeenMessagesValidator.ValidationException var5) {
-            LOGGER.error("Failed to validate message acknowledgement offset from {}: {}", this.player.getName().getString(), var5.getMessage());
+            LOGGER.error("Failed to validate message acknowledgement offset from {}: {}", this.player.getPlainTextName(), var5.getMessage());
             this.disconnect(CHAT_VALIDATION_FAILED);
          }
 
@@ -1727,7 +1727,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                      }
 
                      ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-                     ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
+                     ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getPlainTextName());
                   }
                });
             }
@@ -1782,7 +1782,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          } else {
             short var2 = var1.slotNum();
             if (!this.player.containerMenu.isValidSlotIndex(var2)) {
-               LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getName(), Integer.valueOf(var2), this.player.containerMenu.slots.size()});
+               LOGGER.debug("Player {} clicked invalid slot index: {}, available slots: {}", new Object[]{this.player.getPlainTextName(), Integer.valueOf(var2), this.player.containerMenu.slots.size()});
             } else {
                boolean var3 = var1.stateId() != this.player.containerMenu.getStateId();
                this.player.containerMenu.suppressRemoteUpdates();
@@ -1874,7 +1874,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.dropSpamThrottler.increment();
                this.player.drop(var3, true);
             } else {
-               LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getName().getString());
+               LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getPlainTextName());
             }
          }
       }

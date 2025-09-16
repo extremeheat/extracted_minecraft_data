@@ -103,7 +103,7 @@ public class ExtraCodecs {
    public static final Codec<PropertyMap> PROPERTY_MAP;
    public static final Codec<String> PLAYER_NAME;
    public static final Codec<GameProfile> AUTHLIB_GAME_PROFILE;
-   public static final Codec<GameProfile> STORED_GAME_PROFILE;
+   public static final MapCodec<GameProfile> STORED_GAME_PROFILE;
    public static final Codec<String> NON_EMPTY_STRING;
    public static final Codec<Integer> CODEPOINT;
    public static final Codec<String> RESOURCE_PATH_CODEC;
@@ -353,8 +353,8 @@ public class ExtraCodecs {
       return var0.xmap(toOptionalLong, fromOptionalLong);
    }
 
-   private static Codec<GameProfile> gameProfileCodec(Codec<UUID> var0) {
-      return RecordCodecBuilder.create((var1) -> var1.group(var0.fieldOf("id").forGetter(GameProfile::id), PLAYER_NAME.fieldOf("name").forGetter(GameProfile::name), PROPERTY_MAP.optionalFieldOf("properties", PropertyMap.EMPTY).forGetter(GameProfile::properties)).apply(var1, GameProfile::new));
+   private static MapCodec<GameProfile> gameProfileCodec(Codec<UUID> var0) {
+      return RecordCodecBuilder.mapCodec((var1) -> var1.group(var0.fieldOf("id").forGetter(GameProfile::id), PLAYER_NAME.fieldOf("name").forGetter(GameProfile::name), PROPERTY_MAP.optionalFieldOf("properties", PropertyMap.EMPTY).forGetter(GameProfile::properties)).apply(var1, GameProfile::new));
    }
 
    public static <K, V> Codec<Map<K, V>> sizeLimitedMap(Codec<Map<K, V>> var0, int var1) {
@@ -509,7 +509,7 @@ public class ExtraCodecs {
          return new PropertyMap(var1.build());
       }, (var0) -> Either.right(var0.values().stream().toList()));
       PLAYER_NAME = Codec.string(0, 16).validate((var0) -> StringUtil.isValidPlayerName(var0) ? DataResult.success(var0) : DataResult.error(() -> "Player name contained disallowed characters: '" + var0 + "'"));
-      AUTHLIB_GAME_PROFILE = gameProfileCodec(UUIDUtil.AUTHLIB_CODEC);
+      AUTHLIB_GAME_PROFILE = gameProfileCodec(UUIDUtil.AUTHLIB_CODEC).codec();
       STORED_GAME_PROFILE = gameProfileCodec(UUIDUtil.CODEC);
       NON_EMPTY_STRING = Codec.STRING.validate((var0) -> var0.isEmpty() ? DataResult.error(() -> "Expected non-empty string") : DataResult.success(var0));
       CODEPOINT = Codec.STRING.comapFlatMap((var0) -> {

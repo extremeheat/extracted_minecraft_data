@@ -7,6 +7,7 @@ import net.minecraft.client.gui.render.state.pip.GuiEntityRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
@@ -29,12 +30,13 @@ public class GuiEntityRenderer extends PictureInPictureRenderer<GuiEntityRenderS
       var2.translate(var3.x, var3.y, var3.z);
       var2.mulPose((Quaternionfc)var1.rotation());
       Quaternionf var4 = var1.overrideCameraAngle();
+      FeatureRenderDispatcher var5 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
+      CameraRenderState var6 = new CameraRenderState();
       if (var4 != null) {
-         this.entityRenderDispatcher.overrideCameraOrientation(var4.conjugate(new Quaternionf()).rotateY(3.1415927F));
+         var6.orientation = var4.conjugate(new Quaternionf()).rotateY(3.1415927F);
       }
 
-      FeatureRenderDispatcher var5 = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
-      this.entityRenderDispatcher.submit(var1.renderState(), 0.0, 0.0, 0.0, var2, var5.getSubmitNodeStorage());
+      this.entityRenderDispatcher.submit(var1.renderState(), var6, 0.0, 0.0, 0.0, var2, var5.getSubmitNodeStorage());
       var5.renderAllFeatures();
    }
 

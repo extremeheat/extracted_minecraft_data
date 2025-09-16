@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BlockStateDefinitions;
@@ -46,32 +47,32 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
       return var1.getType() == EntityType.GLOW_ITEM_FRAME ? Math.max(5, super.getBlockLightLevel(var1, var2)) : super.getBlockLightLevel(var1, var2);
    }
 
-   public void submit(ItemFrameRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      super.submit(var1, var2, var3);
+   public void submit(ItemFrameRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      super.submit(var1, var2, var3, var4);
       var2.pushPose();
-      Direction var4 = var1.direction;
-      Vec3 var5 = this.getRenderOffset(var1);
-      var2.translate(-var5.x(), -var5.y(), -var5.z());
-      double var6 = 0.46875;
-      var2.translate((double)var4.getStepX() * 0.46875, (double)var4.getStepY() * 0.46875, (double)var4.getStepZ() * 0.46875);
-      float var8;
+      Direction var5 = var1.direction;
+      Vec3 var6 = this.getRenderOffset(var1);
+      var2.translate(-var6.x(), -var6.y(), -var6.z());
+      double var7 = 0.46875;
+      var2.translate((double)var5.getStepX() * 0.46875, (double)var5.getStepY() * 0.46875, (double)var5.getStepZ() * 0.46875);
       float var9;
-      if (var4.getAxis().isHorizontal()) {
-         var8 = 0.0F;
-         var9 = 180.0F - var4.toYRot();
+      float var10;
+      if (var5.getAxis().isHorizontal()) {
+         var9 = 0.0F;
+         var10 = 180.0F - var5.toYRot();
       } else {
-         var8 = (float)(-90 * var4.getAxisDirection().getStep());
-         var9 = 180.0F;
+         var9 = (float)(-90 * var5.getAxisDirection().getStep());
+         var10 = 180.0F;
       }
 
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var8));
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var9));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var10));
       if (!var1.isInvisible) {
-         BlockState var10 = BlockStateDefinitions.getItemFrameFakeState(var1.isGlowFrame, var1.mapId != null);
-         BlockStateModel var11 = this.blockRenderer.getBlockModel(var10);
+         BlockState var11 = BlockStateDefinitions.getItemFrameFakeState(var1.isGlowFrame, var1.mapId != null);
+         BlockStateModel var12 = this.blockRenderer.getBlockModel(var11);
          var2.pushPose();
          var2.translate(-0.5F, -0.5F, -0.5F);
-         var3.submitBlockModel(var2, RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var11, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+         var3.submitBlockModel(var2, RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var12, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          var2.popPose();
       }
 
@@ -82,20 +83,20 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
       }
 
       if (var1.mapId != null) {
-         int var13 = var1.rotation % 4 * 2;
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var13 * 360.0F / 8.0F));
+         int var14 = var1.rotation % 4 * 2;
+         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var14 * 360.0F / 8.0F));
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
-         float var15 = 0.0078125F;
+         float var16 = 0.0078125F;
          var2.scale(0.0078125F, 0.0078125F, 0.0078125F);
          var2.translate(-64.0F, -64.0F, 0.0F);
          var2.translate(0.0F, 0.0F, -1.0F);
-         int var12 = this.getLightCoords(var1.isGlowFrame, 15728850, var1.lightCoords);
-         this.mapRenderer.render(var1.mapRenderState, var2, var3, true, var12);
+         int var13 = this.getLightCoords(var1.isGlowFrame, 15728850, var1.lightCoords);
+         this.mapRenderer.render(var1.mapRenderState, var2, var3, true, var13);
       } else if (!var1.item.isEmpty()) {
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var1.rotation * 360.0F / 8.0F));
-         int var14 = this.getLightCoords(var1.isGlowFrame, 15728880, var1.lightCoords);
+         int var15 = this.getLightCoords(var1.isGlowFrame, 15728880, var1.lightCoords);
          var2.scale(0.5F, 0.5F, 0.5F);
-         var1.item.submit(var2, var3, var14, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+         var1.item.submit(var2, var3, var15, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       }
 
       var2.popPose();

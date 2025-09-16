@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -31,19 +32,19 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       return 15;
    }
 
-   public void submit(ShulkerBulletRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ShulkerBulletRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
-      float var4 = var1.ageInTicks;
+      float var5 = var1.ageInTicks;
       var2.translate(0.0F, 0.15F, 0.0F);
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var4 * 0.1F) * 180.0F));
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos(var4 * 0.1F) * 180.0F));
-      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var4 * 0.15F) * 360.0F));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin(var5 * 0.1F) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos(var5 * 0.1F) * 180.0F));
+      var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 0.15F) * 360.0F));
       var2.scale(-0.5F, -0.5F, 0.5F);
       var3.submitModel(this.model, var1, var2, this.model.renderType(TEXTURE_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.scale(1.5F, 1.5F, 1.5F);
       var3.order(1).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public ShulkerBulletRenderState createRenderState() {

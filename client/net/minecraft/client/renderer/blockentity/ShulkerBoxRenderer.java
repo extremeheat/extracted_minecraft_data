@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ShulkerBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -55,16 +56,16 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       var2.progress = var1.getProgress(var3);
    }
 
-   public void submit(ShulkerBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      DyeColor var4 = var1.color;
-      Material var5;
-      if (var4 == null) {
-         var5 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public void submit(ShulkerBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      DyeColor var5 = var1.color;
+      Material var6;
+      if (var5 == null) {
+         var6 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var5 = Sheets.getShulkerBoxMaterial(var4);
+         var6 = Sheets.getShulkerBoxMaterial(var5);
       }
 
-      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var5);
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6);
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8) {

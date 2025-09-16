@@ -1,4 +1,4 @@
-package net.minecraft.client.renderer;
+package net.minecraft.client.renderer.state;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderPass;
@@ -14,13 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class QuadParticleRenderState implements ParticleGroupRenderState, SubmitNodeCollector.ParticleGroupRenderer {
+public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGroupRenderer, ParticleGroupRenderState {
    private static final int INITIAL_PARTICLE_CAPACITY = 1024;
    private static final int FLOATS_PER_PARTICLE = 12;
    private static final int INTS_PER_PARTICLE = 2;
@@ -100,7 +101,7 @@ public class QuadParticleRenderState implements ParticleGroupRenderState, Submit
       var1.addVertex(var13.x(), var13.y(), var13.z()).setUv(var9, var10).setColor(var11).setLight(var12);
    }
 
-   public void submit(SubmitNodeCollector var1) {
+   public void submit(SubmitNodeCollector var1, CameraRenderState var2) {
       if (this.particleCount > 0) {
          var1.submitParticleGroup(this);
       }

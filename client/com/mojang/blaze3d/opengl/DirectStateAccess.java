@@ -1,9 +1,9 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.GraphicsWorkarounds;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBDirectStateAccess;
 import org.lwjgl.opengl.GL30;
@@ -15,9 +15,8 @@ public abstract class DirectStateAccess {
       super();
    }
 
-   public static DirectStateAccess create(GLCapabilities var0, Set<String> var1) {
-      boolean var2 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
-      if (var0.GL_ARB_direct_state_access && GlDevice.USE_GL_ARB_direct_state_access && !var2) {
+   public static DirectStateAccess create(GLCapabilities var0, Set<String> var1, GraphicsWorkarounds var2) {
+      if (var0.GL_ARB_direct_state_access && GlDevice.USE_GL_ARB_direct_state_access && !var2.isGlOnDx12()) {
          var1.add("GL_ARB_direct_state_access");
          return new Core();
       } else {

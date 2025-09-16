@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -26,18 +27,18 @@ public class ThrownTridentRenderer extends EntityRenderer<ThrownTrident, ThrownT
       this.model = new TridentModel(var1.bakeLayer(ModelLayers.TRIDENT));
    }
 
-   public void submit(ThrownTridentRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ThrownTridentRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot + 90.0F));
-      List var4 = ItemRenderer.getFoilRenderTypes(this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
+      List var5 = ItemRenderer.getFoilRenderTypes(this.model.renderType(TRIDENT_LOCATION), false, var1.isFoil);
 
-      for(int var5 = 0; var5 < var4.size(); ++var5) {
-         var3.order(var5).submitModel(this.model, Unit.INSTANCE, var2, (RenderType)var4.get(var5), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      for(int var6 = 0; var6 < var5.size(); ++var6) {
+         var3.order(var6).submitModel(this.model, Unit.INSTANCE, var2, (RenderType)var5.get(var6), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public ThrownTridentRenderState createRenderState() {

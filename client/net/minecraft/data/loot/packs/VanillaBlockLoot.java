@@ -50,6 +50,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.LimitCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
@@ -945,7 +946,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.RED_BANNER, (var1x) -> this.createBannerDrop(var1x));
       this.add(Blocks.WHITE_BANNER, (var1x) -> this.createBannerDrop(var1x));
       this.add(Blocks.YELLOW_BANNER, (var1x) -> this.createBannerDrop(var1x));
-      this.add(Blocks.PLAYER_HEAD, (var1x) -> LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1x, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1x).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.PROFILE).include(DataComponents.NOTE_BLOCK_SOUND).include(DataComponents.CUSTOM_NAME))))));
+      this.add(Blocks.PLAYER_HEAD, (var1x) -> LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1x, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1x).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.PROFILE).include(DataComponents.NOTE_BLOCK_SOUND).include(DataComponents.CUSTOM_NAME))))));
       this.add(Blocks.SKELETON_SKULL, this::createMobSkullDrop);
       this.add(Blocks.WITHER_SKELETON_SKULL, this::createMobSkullDrop);
       this.add(Blocks.ZOMBIE_HEAD, this::createMobSkullDrop);
@@ -1140,7 +1141,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
    }
 
    private LootTable.Builder createDecoratedPotTable(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true)))).otherwise(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.POT_DECORATIONS)))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true)))).otherwise(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.POT_DECORATIONS)))));
    }
 
    private LootTable.Builder createPitcherCropLoot() {
@@ -1152,7 +1153,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
    }
 
    private LootTable.Builder createMobSkullDrop(Block var1) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)))));
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)))));
    }
 
    static {

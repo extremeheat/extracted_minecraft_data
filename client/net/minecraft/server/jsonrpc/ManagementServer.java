@@ -92,9 +92,7 @@ public class ManagementServer {
       }).group(this.nioEventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
       this.serverChannel = var4.channel();
       var4.syncUninterruptibly();
-      Logger var10000 = LOGGER;
-      String var10001 = this.hostAndPort.getHost();
-      var10000.info("Json-RPC Management connection listening on " + var10001 + ":" + this.getPort());
+      LOGGER.info("Json-RPC Management connection listening on {}:{}", this.hostAndPort.getHost(), this.getPort());
    }
 
    public void stop(boolean var1) throws InterruptedException {

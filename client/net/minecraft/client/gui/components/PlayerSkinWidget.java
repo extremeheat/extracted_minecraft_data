@@ -10,11 +10,11 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class PlayerSkinWidget extends AbstractWidget {
    private static final float MODEL_HEIGHT = 2.125F;
@@ -41,7 +41,7 @@ public class PlayerSkinWidget extends AbstractWidget {
       float var6 = -1.0625F;
       PlayerSkin var7 = (PlayerSkin)this.skin.get();
       PlayerModel var8 = var7.model() == PlayerModelType.SLIM ? this.slimModel : this.wideModel;
-      var1.submitSkinRenderState(var8, var7.texture(), var5, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
+      var1.submitSkinRenderState(var8, var7.body().texturePath(), var5, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
    }
 
    protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
@@ -53,10 +53,6 @@ public class PlayerSkinWidget extends AbstractWidget {
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {
-   }
-
-   public boolean isActive() {
-      return false;
    }
 
    @Nullable

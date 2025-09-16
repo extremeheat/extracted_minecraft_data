@@ -14,12 +14,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LightningRodBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,8 +68,9 @@ public class LightningBolt extends Entity {
    private void powerLightningRod() {
       BlockPos var1 = this.getStrikePosition();
       BlockState var2 = this.level().getBlockState(var1);
-      if (var2.is(BlockTags.LIGHTNING_RODS)) {
-         ((LightningRodBlock)var2.getBlock()).onLightningStrike(var2, this.level(), var1);
+      Block var4 = var2.getBlock();
+      if (var4 instanceof LightningRodBlock var3) {
+         var3.onLightningStrike(var2, this.level(), var1);
       }
 
    }

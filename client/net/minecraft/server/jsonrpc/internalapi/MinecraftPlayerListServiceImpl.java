@@ -3,6 +3,7 @@ package net.minecraft.server.jsonrpc.internalapi;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
@@ -23,6 +24,7 @@ public class MinecraftPlayerListServiceImpl implements MinecraftPlayerListServic
       return this.server.getPlayerList().getPlayers();
    }
 
+   @Nullable
    public ServerPlayer getPlayer(UUID var1) {
       return this.server.getPlayerList().getPlayer(var1);
    }
@@ -53,9 +55,10 @@ public class MinecraftPlayerListServiceImpl implements MinecraftPlayerListServic
 
    public void remove(ServerPlayer var1, ClientInfo var2) {
       this.server.getPlayerList().remove(var1);
-      this.jsonRpcLogger.log(var2, "Remove player '{}'", var1.getName().getString());
+      this.jsonRpcLogger.log(var2, "Remove player '{}'", var1.getPlainTextName());
    }
 
+   @Nullable
    public ServerPlayer getPlayerByName(String var1) {
       return this.server.getPlayerList().getPlayerByName(var1);
    }

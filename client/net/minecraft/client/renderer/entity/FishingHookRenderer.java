@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -32,11 +33,11 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       return super.shouldRender(var1, var2, var3, var5, var7) && var1.getPlayerOwner() != null;
    }
 
-   public void submit(FishingHookRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(FishingHookRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.pushPose();
       var2.scale(0.5F, 0.5F, 0.5F);
-      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)var4.orientation);
       var3.submitCustomGeometry(var2, RENDER_TYPE, (var1x, var2x) -> {
          vertex(var2x, var1x, var1.lightCoords, 0.0F, 0, 0, 1);
          vertex(var2x, var1x, var1.lightCoords, 1.0F, 0, 1, 1);
@@ -44,22 +45,22 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
          vertex(var2x, var1x, var1.lightCoords, 0.0F, 1, 0, 0);
       });
       var2.popPose();
-      float var4 = (float)var1.lineOriginOffset.x;
-      float var5 = (float)var1.lineOriginOffset.y;
-      float var6 = (float)var1.lineOriginOffset.z;
+      float var5 = (float)var1.lineOriginOffset.x;
+      float var6 = (float)var1.lineOriginOffset.y;
+      float var7 = (float)var1.lineOriginOffset.z;
       var3.submitCustomGeometry(var2, RenderType.lines(), (var3x, var4x) -> {
          boolean var5x = true;
 
          for(int var6x = 0; var6x < 16; ++var6x) {
-            float var7 = fraction(var6x, 16);
+            float var7x = fraction(var6x, 16);
             float var8 = fraction(var6x + 1, 16);
-            stringVertex(var4, var5, var6, var4x, var3x, var7, var8);
-            stringVertex(var4, var5, var6, var4x, var3x, var8, var7);
+            stringVertex(var5, var6, var7, var4x, var3x, var7x, var8);
+            stringVertex(var5, var6, var7, var4x, var3x, var8, var7x);
          }
 
       });
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public static HumanoidArm getHoldingArm(Player var0) {

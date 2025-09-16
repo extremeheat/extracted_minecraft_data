@@ -24,7 +24,7 @@ public class SheepWoolUndercoatLayer extends RenderLayer<SheepRenderState, Sheep
    }
 
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, SheepRenderState var4, float var5, float var6) {
-      if (!var4.isInvisible && (var4.isJebSheep() || var4.woolColor != DyeColor.WHITE)) {
+      if (!var4.isInvisible && (var4.isJebSheep || var4.woolColor != DyeColor.WHITE)) {
          EntityModel var7 = var4.isBaby ? this.babyModel : this.adultModel;
          coloredCutoutModelCopyLayerRender(var7, SHEEP_WOOL_UNDERCOAT_LOCATION, var1, var2, var3, var4, var4.getWoolColor(), 1);
       }

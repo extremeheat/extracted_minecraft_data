@@ -46,7 +46,7 @@ public class PlayerDataStorage {
          Path var8 = var4.resolve(var1.getStringUUID() + ".dat_old");
          Util.safeReplaceFile(var7, var5, var8);
       } catch (Exception var11) {
-         LOGGER.warn("Failed to save player data for {}", var1.getName().getString());
+         LOGGER.warn("Failed to save player data for {}", var1.getPlainTextName());
       }
 
    }

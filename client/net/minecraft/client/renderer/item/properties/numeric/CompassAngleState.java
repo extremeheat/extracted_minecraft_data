@@ -102,9 +102,8 @@ public class CompassAngleState extends NeedleDirectionHelper {
          }
       },
       SPAWN("spawn") {
-         @Nullable
          public GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
-            return GlobalPos.of(var1.dimension(), var1.getSharedSpawnPos());
+            return var1.getRespawnData().globalPos();
          }
       },
       RECOVERY("recovery") {

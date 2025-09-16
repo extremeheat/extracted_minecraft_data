@@ -28,6 +28,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class ChestBlockEntity extends RandomizableContainerBlockEntity implements LidBlockEntity {
    private static final int EVENT_SET_OPEN_COUNT = 1;
+   private static final Component DEFAULT_NAME = Component.translatable("container.chest");
    private NonNullList<ItemStack> items;
    private final ContainerOpenersCounter openersCounter;
    private final ChestLidController chestLidController;
@@ -77,7 +78,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.chest");
+      return DEFAULT_NAME;
    }
 
    protected void loadAdditional(ValueInput var1) {

@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.AttributeKey;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 @Sharable
 public class AuthenticationHandler extends ChannelInboundHandlerAdapter {
    private final Logger LOGGER = LogUtils.getLogger();
+   private static final AttributeKey<Boolean> AUTHENTICATED_KEY = AttributeKey.valueOf("authenticated");
    public static final String AUTH_HEADER = "Authorization";
    public static final String BEARER_PREFIX = "Bearer ";
    private final SecurityConfig securityConfig;
@@ -28,19 +30,27 @@ public class AuthenticationHandler extends ChannelInboundHandlerAdapter {
    }
 
    public void channelRead(ChannelHandlerContext var1, Object var2) throws Exception {
-      if (var2 instanceof HttpRequest var3) {
-         String var4 = this.getClientIp(var1);
-         if (this.isWebSocketUpgrade(var3)) {
-            SecurityCheckResult var5 = this.performSecurityChecks(var3);
-            if (!var5.isAllowed()) {
-               this.LOGGER.debug("Authentication rejected for connection with ip " + var4 + ": {}", var5.getReason());
-               this.sendUnauthorizedResponse(var1, var5.getReason());
-               return;
-            }
+      String var3 = this.getClientIp(var1);
+      if (var2 instanceof HttpRequest var4) {
+         SecurityCheckResult var5 = this.performSecurityChecks(var4);
+         if (!var5.isAllowed()) {
+            this.LOGGER.debug("Authentication rejected for connection with ip {}: {}", var3, var5.getReason());
+            var1.channel().attr(AUTHENTICATED_KEY).set(false);
+            this.sendUnauthorizedResponse(var1, var5.getReason());
+            return;
          }
+
+         var1.channel().attr(AUTHENTICATED_KEY).set(true);
       }
 
-      super.channelRead(var1, var2);
+      Boolean var6 = (Boolean)var1.channel().attr(AUTHENTICATED_KEY).get();
+      if (Boolean.TRUE.equals(var6)) {
+         super.channelRead(var1, var2);
+      } else {
+         this.LOGGER.debug("Dropping unauthenticated connection with ip {}", var3);
+         var1.close();
+      }
+
    }
 
    private SecurityCheckResult performSecurityChecks(HttpRequest var1) {
@@ -69,12 +79,6 @@ public class AuthenticationHandler extends ChannelInboundHandlerAdapter {
       } else {
          return false;
       }
-   }
-
-   private boolean isWebSocketUpgrade(HttpRequest var1) {
-      String var2 = var1.headers().get(HttpHeaderNames.UPGRADE);
-      String var3 = var1.headers().get(HttpHeaderNames.CONNECTION);
-      return "websocket".equalsIgnoreCase(var2) && var3 != null && var3.toLowerCase().contains("upgrade");
    }
 
    private String getClientIp(ChannelHandlerContext var1) {

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity.state;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
@@ -26,8 +25,6 @@ public class LivingEntityRenderState extends EntityRenderState {
    public boolean isInvisibleToPlayer;
    @Nullable
    public Direction bedOrientation;
-   @Nullable
-   public Component customName;
    public Pose pose;
    public final ItemStackRenderState headItem;
    public float wornHeadAnimationPos;

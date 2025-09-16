@@ -1,5 +1,6 @@
 package net.minecraft.server.jsonrpc;
 
+import net.minecraft.core.Holder;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.jsonrpc.methods.BanlistService;
@@ -89,11 +90,11 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.STATUS_HEARTBEAT, ServerStateService.status(this.minecraftApi));
    }
 
-   private void broadcastNotification(OutgoingRpcMethod<Void, ?> var1) {
+   private void broadcastNotification(Holder.Reference<? extends OutgoingRpcMethod<Void, ?>> var1) {
       this.managementServer.forEachConnection((var1x) -> var1x.sendNotification(var1));
    }
 
-   private <Params> void broadcastNotification(OutgoingRpcMethod<Params, ?> var1, Params var2) {
+   private <Params> void broadcastNotification(Holder.Reference<? extends OutgoingRpcMethod<Params, ?>> var1, Params var2) {
       this.managementServer.forEachConnection((var2x) -> var2x.sendNotification(var1, var2));
    }
 }

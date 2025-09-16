@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BellRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -37,11 +38,11 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
       var2.shakeDirection = var1.shaking ? var1.clickDirection : null;
    }
 
-   public void submit(BellRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      BellModel.State var4 = new BellModel.State(var1.ticks, var1.shakeDirection);
-      this.model.setupAnim(var4);
-      RenderType var5 = BELL_RESOURCE_LOCATION.renderType(RenderType::entitySolid);
-      var3.submitModel(this.model, var4, var2, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BELL_RESOURCE_LOCATION), 0, var1.breakProgress);
+   public void submit(BellRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      BellModel.State var5 = new BellModel.State(var1.ticks, var1.shakeDirection);
+      this.model.setupAnim(var5);
+      RenderType var6 = BELL_RESOURCE_LOCATION.renderType(RenderType::entitySolid);
+      var3.submitModel(this.model, var5, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BELL_RESOURCE_LOCATION), 0, var1.breakProgress);
    }
 
    // $FF: synthetic method

@@ -11,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.debug.DebugValueAccess;
@@ -27,22 +28,22 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      double var10 = (double)Util.getNanos();
-      if (var10 - this.lastUpdateTime > 1.0E8) {
-         this.lastUpdateTime = var10;
-         Entity var12 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-         this.surroundEntities = ImmutableList.copyOf(var12.level().getEntities(var12, var12.getBoundingBox().inflate(16.0)));
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      double var11 = (double)Util.getNanos();
+      if (var11 - this.lastUpdateTime > 1.0E8) {
+         this.lastUpdateTime = var11;
+         Entity var13 = this.minecraft.gameRenderer.getMainCamera().getEntity();
+         this.surroundEntities = ImmutableList.copyOf(var13.level().getEntities(var13, var13.getBoundingBox().inflate(16.0)));
       }
 
-      LocalPlayer var15 = this.minecraft.player;
-      if (var15 != null && var15.mainSupportingBlockPos.isPresent()) {
-         this.drawHighlights(var1, var2, var3, var5, var7, var15, () -> 0.0, 1.0F, 0.0F, 0.0F);
+      LocalPlayer var16 = this.minecraft.player;
+      if (var16 != null && var16.mainSupportingBlockPos.isPresent()) {
+         this.drawHighlights(var1, var2, var3, var5, var7, var16, () -> 0.0, 1.0F, 0.0F, 0.0F);
       }
 
-      for(Entity var14 : this.surroundEntities) {
-         if (var14 != var15) {
-            this.drawHighlights(var1, var2, var3, var5, var7, var14, () -> this.getBias(var14), 0.0F, 1.0F, 0.0F);
+      for(Entity var15 : this.surroundEntities) {
+         if (var15 != var16) {
+            this.drawHighlights(var1, var2, var3, var5, var7, var15, () -> this.getBias(var15), 0.0F, 1.0F, 0.0F);
          }
       }
 

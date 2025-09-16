@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
@@ -47,7 +48,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    public final TextureManager textureManager;
    @Nullable
    public Camera camera;
-   private Quaternionf cameraOrientation;
    public Entity crosshairPickEntity;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
@@ -124,12 +124,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
    public void prepare(Camera var1, Entity var2) {
       this.camera = var1;
-      this.cameraOrientation = var1.rotation();
       this.crosshairPickEntity = var2;
-   }
-
-   public void overrideCameraOrientation(Quaternionf var1) {
-      this.cameraOrientation = var1;
    }
 
    public <E extends Entity> boolean shouldRender(E var1, Frustum var2, double var3, double var5, double var7) {
@@ -152,44 +147,44 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       }
    }
 
-   public <S extends EntityRenderState> void submit(S var1, double var2, double var4, double var6, PoseStack var8, SubmitNodeCollector var9) {
-      EntityRenderer var10 = this.getRenderer(var1);
+   public <S extends EntityRenderState> void submit(S var1, CameraRenderState var2, double var3, double var5, double var7, PoseStack var9, SubmitNodeCollector var10) {
+      EntityRenderer var11 = this.getRenderer(var1);
 
       try {
-         Vec3 var11 = var10.getRenderOffset(var1);
-         double var19 = var2 + var11.x();
-         double var14 = var4 + var11.y();
-         double var16 = var6 + var11.z();
-         var8.pushPose();
-         var8.translate(var19, var14, var16);
-         var10.submit(var1, var8, var9);
+         Vec3 var12 = var11.getRenderOffset(var1);
+         double var20 = var3 + var12.x();
+         double var15 = var5 + var12.y();
+         double var17 = var7 + var12.z();
+         var9.pushPose();
+         var9.translate(var20, var15, var17);
+         var11.submit(var1, var9, var10, var2);
          if (var1.displayFireAnimation) {
-            var9.submitFlame(var8, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
+            var10.submitFlame(var9, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, var2.orientation, new Quaternionf()));
          }
 
          if (var1 instanceof AvatarRenderState) {
-            var8.translate(-var11.x(), -var11.y(), -var11.z());
+            var9.translate(-var12.x(), -var12.y(), -var12.z());
          }
 
-         if ((Boolean)this.options.entityShadows().get() && !var1.isInvisible && !var1.shadowPieces.isEmpty()) {
-            var9.submitShadow(var8, var1.shadowRadius, var1.shadowPieces);
+         if (!var1.shadowPieces.isEmpty()) {
+            var10.submitShadow(var9, var1.shadowRadius, var1.shadowPieces);
          }
 
          if (!(var1 instanceof AvatarRenderState)) {
-            var8.translate(-var11.x(), -var11.y(), -var11.z());
+            var9.translate(-var12.x(), -var12.y(), -var12.z());
          }
 
          if (var1.hitboxesRenderState != null) {
-            var9.submitHitbox(var8, var1, var1.hitboxesRenderState);
+            var10.submitHitbox(var9, var1, var1.hitboxesRenderState);
          }
 
-         var8.popPose();
-      } catch (Throwable var18) {
-         CrashReport var12 = CrashReport.forThrowable(var18, "Rendering entity in world");
-         CrashReportCategory var13 = var12.addCategory("EntityRenderState being rendered");
-         var1.fillCrashReportCategory(var13);
-         this.fillRendererDetails(var10, var12);
-         throw new ReportedException(var12);
+         var9.popPose();
+      } catch (Throwable var19) {
+         CrashReport var13 = CrashReport.forThrowable(var19, "Rendering entity in world");
+         CrashReportCategory var14 = var13.addCategory("EntityRenderState being rendered");
+         var1.fillCrashReportCategory(var14);
+         this.fillRendererDetails(var11, var13);
+         throw new ReportedException(var13);
       }
    }
 
@@ -205,14 +200,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
    public double distanceToSqr(Entity var1) {
       return this.camera.getPosition().distanceToSqr(var1.position());
-   }
-
-   public double distanceToSqr(double var1, double var3, double var5) {
-      return this.camera.getPosition().distanceToSqr(var1, var3, var5);
-   }
-
-   public Quaternionf cameraOrientation() {
-      return this.cameraOrientation;
    }
 
    public ItemInHandRenderer getItemInHandRenderer() {

@@ -7,6 +7,7 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 public class MinecraftServerStateServiceImpl implements MinecraftServerStateService {
    private final DedicatedServer server;
@@ -38,7 +39,7 @@ public class MinecraftServerStateServiceImpl implements MinecraftServerStateServ
    }
 
    public void sendSystemMessage(Component var1, boolean var2, Collection<ServerPlayer> var3, ClientInfo var4) {
-      List var5 = var3.stream().map((var0) -> var0.getName().getString()).toList();
+      List var5 = var3.stream().map(Player::getPlainTextName).toList();
       this.jsonrpcLogger.log(var4, "Send system message to '{}' players (overlay: {}): '{}'", var5.size(), var2, var1.getString());
 
       for(ServerPlayer var7 : var3) {

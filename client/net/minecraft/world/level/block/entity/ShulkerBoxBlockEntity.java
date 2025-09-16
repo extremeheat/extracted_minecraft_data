@@ -41,6 +41,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    public static final float MAX_LID_HEIGHT = 0.5F;
    public static final float MAX_LID_ROTATION = 270.0F;
    private static final int[] SLOTS = IntStream.range(0, 27).toArray();
+   private static final Component DEFAULT_NAME = Component.translatable("container.shulkerBox");
    private NonNullList<ItemStack> itemStacks;
    private int openCount;
    private AnimationStatus animationStatus;
@@ -196,7 +197,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.shulkerBox");
+      return DEFAULT_NAME;
    }
 
    protected void loadAdditional(ValueInput var1) {

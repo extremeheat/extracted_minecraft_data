@@ -23,6 +23,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.gui.screens.WinScreen;
@@ -50,9 +51,11 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -62,7 +65,6 @@ import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
@@ -221,10 +223,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.clientLevelData = var2;
       this.levelRenderer = var7;
       this.seaLevel = var11;
-      this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
+      this.levelEventHandler = new LevelEventHandler(this.minecraft, this);
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
       this.endFlashState = this.effects.hasEndFlashes() ? new EndFlashState() : null;
-      this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
+      this.setRespawnData(LevelData.RespawnData.of(var3, new BlockPos(8, 64, 8), 0.0F, 0.0F));
       this.serverSimulationDistance = var6;
       this.updateSkyBrightness();
       this.prepareWeather();
@@ -303,15 +305,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void tickEntities() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("entities");
-      this.tickingEntities.forEach((var1x) -> {
-         if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
-            this.guardEntityTick(this::tickNonPassenger, var1x);
+      this.tickingEntities.forEach((var1) -> {
+         if (!var1.isRemoved() && !var1.isPassenger() && !this.tickRateManager.isEntityFrozen(var1)) {
+            this.guardEntityTick(this::tickNonPassenger, var1);
          }
       });
-      var1.pop();
-      this.tickBlockEntities();
    }
 
    public boolean isTickingEntity(Entity var1) {
@@ -641,19 +639,53 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter(), var2, var4, var6, var8, var10, var12);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter(), false, var2, var4, var6, var8, var10, var12);
    }
 
    public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.levelRenderer.addParticle(var1, false, true, var2, var4, var6, var8, var10, var12);
+      this.doAddParticle(var1, false, true, var2, var4, var6, var8, var10, var12);
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, true, var3, var5, var7, var9, var11, var13);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, true, var3, var5, var7, var9, var11, var13);
+   }
+
+   private void doAddParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
+      try {
+         Camera var16 = this.minecraft.gameRenderer.getMainCamera();
+         ParticleStatus var20 = this.calculateParticleLevel(var3);
+         if (var2) {
+            this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+         } else if (!(var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0)) {
+            if (var20 != ParticleStatus.MINIMAL) {
+               this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+            }
+         }
+      } catch (Throwable var19) {
+         CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
+         CrashReportCategory var18 = var17.addCategory("Particle being added");
+         var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
+         var18.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).toString()));
+         var18.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var4, var6, var8)));
+         throw new ReportedException(var17);
+      }
+   }
+
+   private ParticleStatus calculateParticleLevel(boolean var1) {
+      ParticleStatus var2 = (ParticleStatus)this.minecraft.options.particles().get();
+      if (var1 && var2 == ParticleStatus.MINIMAL && this.random.nextInt(10) == 0) {
+         var2 = ParticleStatus.DECREASED;
+      }
+
+      if (var2 == ParticleStatus.DECREASED && this.random.nextInt(3) == 0) {
+         var2 = ParticleStatus.MINIMAL;
+      }
+
+      return var2;
    }
 
    public List<AbstractClientPlayer> players() {
@@ -798,8 +830,12 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   public void setDefaultSpawnPos(BlockPos var1, float var2) {
-      this.levelData.setSpawn(var1, var2);
+   public void setRespawnData(LevelData.RespawnData var1) {
+      this.levelData.setSpawn(this.getWorldBorderAdjustedRespawnData(var1));
+   }
+
+   public LevelData.RespawnData getRespawnData() {
+      return this.levelData.getRespawnData();
    }
 
    public String toString() {
@@ -960,8 +996,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
       private final boolean isFlat;
-      private BlockPos spawnPos;
-      private float spawnAngle;
+      private LevelData.RespawnData respawnData;
       private long gameTime;
       private long dayTime;
       private boolean raining;
@@ -975,12 +1010,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          this.isFlat = var3;
       }
 
-      public BlockPos getSpawnPos() {
-         return this.spawnPos;
-      }
-
-      public float getSpawnAngle() {
-         return this.spawnAngle;
+      public LevelData.RespawnData getRespawnData() {
+         return this.respawnData;
       }
 
       public long getGameTime() {
@@ -999,9 +1030,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          this.dayTime = var1;
       }
 
-      public void setSpawn(BlockPos var1, float var2) {
-         this.spawnPos = var1.immutable();
-         this.spawnAngle = var2;
+      public void setSpawn(LevelData.RespawnData var1) {
+         this.respawnData = var1;
       }
 
       public boolean isThundering() {

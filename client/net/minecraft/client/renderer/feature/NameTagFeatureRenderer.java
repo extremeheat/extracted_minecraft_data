@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.phys.Vec3;
@@ -44,22 +45,22 @@ public class NameTagFeatureRenderer {
          super();
       }
 
-      public void add(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6) {
+      public void add(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6, CameraRenderState var8) {
          if (var2 != null) {
-            int var8 = "deadmau5".equals(var3.getString()) ? -10 : 0;
-            Minecraft var9 = Minecraft.getInstance();
+            int var9 = "deadmau5".equals(var3.getString()) ? -10 : 0;
+            Minecraft var10 = Minecraft.getInstance();
             var1.pushPose();
             var1.translate(var2.x, var2.y + 0.5, var2.z);
-            var1.mulPose((Quaternionfc)var9.getEntityRenderDispatcher().cameraOrientation());
+            var1.mulPose((Quaternionfc)var8.orientation);
             var1.scale(0.025F, -0.025F, 0.025F);
-            Matrix4f var10 = new Matrix4f(var1.last().pose());
-            float var11 = (float)(-var9.font.width((FormattedText)var3)) / 2.0F;
-            int var12 = (int)(var9.options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
+            Matrix4f var11 = new Matrix4f(var1.last().pose());
+            float var12 = (float)(-var10.font.width((FormattedText)var3)) / 2.0F;
+            int var13 = (int)(var10.options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
             if (var4) {
-               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, LightTexture.lightCoordsWithEmission(var5, 2), -1, 0, var6));
-               this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, var5, -2130706433, var12, var6));
+               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, LightTexture.lightCoordsWithEmission(var5, 2), -1, 0, var6));
+               this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, var5, -2130706433, var13, var6));
             } else {
-               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var10, var11, (float)var8, var3, var5, -2130706433, var12, var6));
+               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, var5, -2130706433, var13, var6));
             }
 
             var1.popPose();

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.util.debug.DebugPoiInfo;
@@ -22,10 +23,10 @@ public class PoiDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.brainRenderer = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      BlockPos var10 = BlockPos.containing(var3, var5, var7);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      BlockPos var11 = BlockPos.containing(var3, var5, var7);
       var9.forEachBlock(DebugSubscriptions.POIS, (var5x, var6) -> {
-         if (var10.closerThan(var5x, 30.0)) {
+         if (var11.closerThan(var5x, 30.0)) {
             highlightPoi(var1, var2, var5x);
             this.renderPoiInfo(var1, var2, var6, var9);
          }
@@ -33,7 +34,7 @@ public class PoiDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       });
       this.brainRenderer.getGhostPois(var9).forEach((var5x, var6) -> {
          if (var9.getBlockValue(DebugSubscriptions.POIS, var5x) == null) {
-            if (var10.closerThan(var5x, 30.0)) {
+            if (var11.closerThan(var5x, 30.0)) {
                this.renderGhostPoi(var1, var2, var5x, var6);
             }
 

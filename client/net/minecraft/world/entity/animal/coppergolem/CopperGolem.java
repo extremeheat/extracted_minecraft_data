@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.coppergolem;
 
 import com.mojang.serialization.Dynamic;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -37,6 +39,7 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -66,6 +69,8 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private static final EntityDataAccessor<CopperGolemState> COPPER_GOLEM_STATE;
    @Nullable
    private BlockPos openedChestPos;
+   @Nullable
+   private UUID lastLightningBoltUUID;
    private long nextWeatheringTick = -1L;
    private int idleAnimationStartTick = 0;
    private final AnimationState idleAnimationState = new AnimationState();
@@ -273,6 +278,13 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          this.dropPreservedEquipment(var1);
          this.discard();
          this.playSound(SoundEvents.COPPER_GOLEM_BECOME_STATUE);
+         if (this.isLeashed()) {
+            if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+               this.dropLeash();
+            } else {
+               this.removeLeash();
+            }
+         }
       }
 
    }
@@ -405,6 +417,20 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
       super.actuallyHurt(var1, var2, var3);
       this.setState(CopperGolemState.IDLE);
+   }
+
+   public void thunderHit(ServerLevel var1, LightningBolt var2) {
+      super.thunderHit(var1, var2);
+      UUID var3 = var2.getUUID();
+      if (!var3.equals(this.lastLightningBoltUUID)) {
+         this.lastLightningBoltUUID = var3;
+         WeatheringCopper.WeatherState var4 = this.getWeatherState();
+         if (var4 != WeatheringCopper.WeatherState.UNAFFECTED) {
+            this.nextWeatheringTick = -1L;
+            this.entityData.set(DATA_WEATHER_STATE, var4.previous(), true);
+         }
+      }
+
    }
 
    static {

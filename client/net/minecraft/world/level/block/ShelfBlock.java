@@ -228,7 +228,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
    }
 
    public boolean isConnectable(BlockState var1) {
-      return var1.is(BlockTags.WOODEN_SHELVES) && (Boolean)var1.getValue(POWERED);
+      return var1.is(BlockTags.WOODEN_SHELVES) && var1.hasProperty(POWERED) && (Boolean)var1.getValue(POWERED);
    }
 
    public int getMaxChainLength() {

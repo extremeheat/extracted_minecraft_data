@@ -1,7 +1,8 @@
-package net.minecraft.client.renderer;
+package net.minecraft.client.renderer.state;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 
 public class ParticlesRenderState {
    public final List<ParticleGroupRenderState> particles = new ArrayList();
@@ -19,9 +20,9 @@ public class ParticlesRenderState {
       this.particles.add(var1);
    }
 
-   public void submit(SubmitNodeStorage var1) {
-      for(ParticleGroupRenderState var3 : this.particles) {
-         var3.submit(var1);
+   public void submit(SubmitNodeStorage var1, CameraRenderState var2) {
+      for(ParticleGroupRenderState var4 : this.particles) {
+         var4.submit(var1, var2);
       }
 
    }

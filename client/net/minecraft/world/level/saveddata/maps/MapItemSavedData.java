@@ -151,13 +151,13 @@ public class MapItemSavedData extends SavedData {
 
       Predicate var9 = mapMatcher(var2);
       if (!var1.getInventory().contains(var9)) {
-         this.removeDecoration(var1.getName().getString());
+         this.removeDecoration(var1.getPlainTextName());
       }
 
       for(int var4 = 0; var4 < this.carriedBy.size(); ++var4) {
          HoldingPlayer var5 = (HoldingPlayer)this.carriedBy.get(var4);
          Player var6 = var5.player;
-         String var7 = var6.getName().getString();
+         String var7 = var6.getPlainTextName();
          if (!var6.isRemoved() && (var6.getInventory().contains(var9) || var2.isFramed())) {
             if (!var2.isFramed() && var6.level().dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(MapDecorationTypes.PLAYER, var6.level(), var7, var6.getX(), var6.getZ(), (double)var6.getYRot(), (Component)null);

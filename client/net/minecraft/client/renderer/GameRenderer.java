@@ -50,6 +50,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.server.IntegratedServer;
@@ -311,7 +313,6 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       }
 
       if (this.minecraft.level.tickRateManager().runsNormally()) {
-         this.minecraft.levelRenderer.tickParticles(this.mainCamera);
          this.darkenWorldAmountO = this.darkenWorldAmount;
          if (this.minecraft.gui.getBossOverlay().shouldDarkenScreen()) {
             this.darkenWorldAmount += 0.05F;
@@ -323,6 +324,10 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          }
 
          this.screenEffectRenderer.tick();
+         ProfilerFiller var4 = Profiler.get();
+         var4.push("levelRenderer");
+         this.minecraft.levelRenderer.tick(this.mainCamera);
+         var4.pop();
       }
    }
 
@@ -717,59 +722,68 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       var4.push("center");
       boolean var5 = this.shouldRenderBlockOutline();
       var4.popPush("camera");
-      Camera var6 = this.mainCamera;
-      Object var7 = this.minecraft.getCameraEntity() == null ? var3 : this.minecraft.getCameraEntity();
-      float var8 = this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var7) ? 1.0F : var2;
-      var6.setup(this.minecraft.level, (Entity)var7, !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), var8);
+      Object var6 = this.minecraft.getCameraEntity() == null ? var3 : this.minecraft.getCameraEntity();
+      float var7 = this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var6) ? 1.0F : var2;
+      this.mainCamera.setup(this.minecraft.level, (Entity)var6, !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), var7);
+      this.extractCamera(var2);
       this.renderDistance = (float)(this.minecraft.options.getEffectiveRenderDistance() * 16);
-      float var9 = this.getFov(var6, var2, true);
-      Matrix4f var10 = this.getProjectionMatrix(var9);
-      PoseStack var11 = new PoseStack();
-      this.bobHurt(var11, var6.getPartialTickTime());
+      float var8 = this.getFov(this.mainCamera, var2, true);
+      Matrix4f var9 = this.getProjectionMatrix(var8);
+      PoseStack var10 = new PoseStack();
+      this.bobHurt(var10, this.mainCamera.getPartialTickTime());
       if ((Boolean)this.minecraft.options.bobView().get()) {
-         this.bobView(var11, var6.getPartialTickTime());
+         this.bobView(var10, this.mainCamera.getPartialTickTime());
       }
 
-      var10.mul(var11.last().pose());
-      float var12 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
-      float var13 = Mth.lerp(var2, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
-      float var14 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var2);
-      float var15 = Math.max(var13, var14) * var12 * var12;
-      if (var15 > 0.0F) {
-         float var16 = 5.0F / (var15 * var15 + 5.0F) - var15 * 0.04F;
-         var16 *= var16;
-         Vector3f var17 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
-         float var18 = (this.spinningEffectTime + var2 * this.spinningEffectSpeed) * 0.017453292F;
-         var10.rotate(var18, var17);
-         var10.scale(1.0F / var16, 1.0F, 1.0F);
-         var10.rotate(-var18, var17);
+      var9.mul(var10.last().pose());
+      float var11 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
+      float var12 = Mth.lerp(var2, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
+      float var13 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var2);
+      float var14 = Math.max(var12, var13) * var11 * var11;
+      if (var14 > 0.0F) {
+         float var15 = 5.0F / (var14 * var14 + 5.0F) - var14 * 0.04F;
+         var15 *= var15;
+         Vector3f var16 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
+         float var17 = (this.spinningEffectTime + var2 * this.spinningEffectSpeed) * 0.017453292F;
+         var9.rotate(var17, var16);
+         var9.scale(1.0F / var15, 1.0F, 1.0F);
+         var9.rotate(-var17, var16);
       }
 
-      RenderSystem.setProjectionMatrix(this.levelProjectionMatrixBuffer.getBuffer(var10), ProjectionType.PERSPECTIVE);
-      Quaternionf var24 = var6.rotation().conjugate(new Quaternionf());
-      Matrix4f var25 = (new Matrix4f()).rotation(var24);
+      RenderSystem.setProjectionMatrix(this.levelProjectionMatrixBuffer.getBuffer(var9), ProjectionType.PERSPECTIVE);
+      Quaternionf var23 = this.mainCamera.rotation().conjugate(new Quaternionf());
+      Matrix4f var24 = (new Matrix4f()).rotation(var23);
       var4.popPush("fog");
-      boolean var26 = this.minecraft.level.effects().isFoggyAt(var6.getBlockPosition().getX(), var6.getBlockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
-      Vector4f var19 = this.fogRenderer.setupFog(var6, this.minecraft.options.getEffectiveRenderDistance(), var26, var1, this.getDarkenWorldAmount(var2), this.minecraft.level);
-      GpuBufferSlice var20 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
+      boolean var25 = this.minecraft.level.effects().isFoggyAt(this.mainCamera.getBlockPosition().getX(), this.mainCamera.getBlockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+      Vector4f var18 = this.fogRenderer.setupFog(this.mainCamera, this.minecraft.options.getEffectiveRenderDistance(), var25, var1, this.getDarkenWorldAmount(var2), this.minecraft.level);
+      GpuBufferSlice var19 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
       var4.popPush("level");
-      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, var25, var10, this.getProjectionMatrixForCulling(var9), var20, var19, !var26);
+      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, this.mainCamera, var24, var9, this.getProjectionMatrixForCulling(var8), var19, var18, !var25);
       var4.popPush("hand");
-      boolean var21 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
-      RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(var6, var2, false)), ProjectionType.PERSPECTIVE);
+      boolean var20 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
+      RenderSystem.setProjectionMatrix(this.hud3dProjectionMatrixBuffer.getBuffer(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.getFov(this.mainCamera, var2, false)), ProjectionType.PERSPECTIVE);
       RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(this.minecraft.getMainRenderTarget().getDepthTexture(), 1.0);
-      this.renderItemInHand(var2, var21, var25);
+      this.renderItemInHand(var2, var20, var24);
       var4.popPush("screenEffects");
-      MultiBufferSource.BufferSource var22 = this.renderBuffers.bufferSource();
-      this.screenEffectRenderer.renderScreenEffect(var21, var2, this.submitNodeStorage);
+      MultiBufferSource.BufferSource var21 = this.renderBuffers.bufferSource();
+      this.screenEffectRenderer.renderScreenEffect(var20, var2, this.submitNodeStorage);
       this.featureRenderDispatcher.renderAllFeatures();
-      var22.endBatch();
+      var21.endBatch();
       var4.pop();
       RenderSystem.setShaderFog(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
       if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR) && this.minecraft.options.getCameraType().isFirstPerson() && !this.minecraft.options.hideGui) {
-         this.minecraft.getDebugOverlay().render3dCrosshair(var6);
+         this.minecraft.getDebugOverlay().render3dCrosshair(this.mainCamera);
       }
 
+   }
+
+   private void extractCamera(float var1) {
+      CameraRenderState var2 = this.levelRenderState.cameraRenderState;
+      var2.initialized = this.mainCamera.isInitialized();
+      var2.pos = this.mainCamera.getPosition();
+      var2.blockPos = this.mainCamera.getBlockPosition();
+      var2.entityPos = this.mainCamera.getEntity().getPosition(var1);
+      var2.orientation = new Quaternionf(this.mainCamera.rotation());
    }
 
    private Matrix4f getProjectionMatrixForCulling(float var1) {

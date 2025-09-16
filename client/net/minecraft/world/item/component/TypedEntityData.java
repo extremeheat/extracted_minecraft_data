@@ -105,17 +105,17 @@ public final class TypedEntityData<IdType> implements TooltipProvider {
          return false;
       } else {
          TypedEntityData var2 = (TypedEntityData)var1;
-         return this.type == var2.type && this.getUnsafe().equals(var2.getUnsafe());
+         return this.type == var2.type && this.tag.equals(var2.tag);
       }
    }
 
    public int hashCode() {
-      return 31 * this.type.hashCode() + super.hashCode();
+      return 31 * this.type.hashCode() + this.tag.hashCode();
    }
 
    public String toString() {
       String var10000 = String.valueOf(this.type);
-      return var10000 + " " + super.toString();
+      return var10000 + " " + String.valueOf(this.tag);
    }
 
    public void loadInto(Entity var1) {

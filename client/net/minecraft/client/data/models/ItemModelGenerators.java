@@ -117,7 +117,7 @@ public class ItemModelGenerators {
 
    private void generateStandardCompassItem(Item var1) {
       List var2 = this.createCompassModels(var1);
-      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.LODESTONE_TRACKER), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.LODESTONE), 32.0F, var2), ItemModelUtils.inOverworld(ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.SPAWN), 32.0F, var2), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.NONE), 32.0F, var2))));
+      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.LODESTONE_TRACKER), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.LODESTONE), 32.0F, var2), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.SPAWN), 32.0F, var2)));
    }
 
    private void generateRecoveryCompassItem(Item var1) {

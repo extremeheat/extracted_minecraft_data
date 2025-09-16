@@ -13,6 +13,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.debug.DebugBrainDump;
 import net.minecraft.util.debug.DebugSubscriptions;
@@ -55,11 +56,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void clear() {
-      this.lastLookedAtUuid = null;
-   }
-
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
       this.doRender(var1, var2, var3, var5, var7, var9);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();

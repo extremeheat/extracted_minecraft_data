@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.debug.DebugValueAccess;
@@ -37,18 +38,18 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.lightLayer = var2;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      Instant var10 = Instant.now();
-      if (this.data == null || Duration.between(this.lastUpdateTime, var10).compareTo(REFRESH_INTERVAL) > 0) {
-         this.lastUpdateTime = var10;
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      Instant var11 = Instant.now();
+      if (this.data == null || Duration.between(this.lastUpdateTime, var11).compareTo(REFRESH_INTERVAL) > 0) {
+         this.lastUpdateTime = var11;
          this.data = new SectionData(this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer);
       }
 
       renderEdges(var1, this.data.lightAndBlocksShape, this.data.minPos, var2, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
       renderEdges(var1, this.data.lightShape, this.data.minPos, var2, var3, var5, var7, LIGHT_ONLY_COLOR);
-      VertexConsumer var11 = var2.getBuffer(RenderType.debugSectionQuads());
-      renderFaces(var1, this.data.lightAndBlocksShape, this.data.minPos, var11, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
-      renderFaces(var1, this.data.lightShape, this.data.minPos, var11, var3, var5, var7, LIGHT_ONLY_COLOR);
+      VertexConsumer var12 = var2.getBuffer(RenderType.debugSectionQuads());
+      renderFaces(var1, this.data.lightAndBlocksShape, this.data.minPos, var12, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
+      renderFaces(var1, this.data.lightShape, this.data.minPos, var12, var3, var5, var7, LIGHT_ONLY_COLOR);
    }
 
    private static void renderFaces(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, VertexConsumer var3, double var4, double var6, double var8, Vector4f var10) {

@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SignRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -56,11 +57,11 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
 
    protected abstract void translateSign(PoseStack var1, float var2, BlockState var3);
 
-   public void submit(SignRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      BlockState var4 = var1.blockState;
-      SignBlock var5 = (SignBlock)var4.getBlock();
-      Model.Simple var6 = this.getSignModel(var4, var5.type());
-      this.submitSignWithText(var1, var2, var4, var5, var5.type(), var6, var1.breakProgress, var3);
+   public void submit(SignRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      BlockState var5 = var1.blockState;
+      SignBlock var6 = (SignBlock)var5.getBlock();
+      Model.Simple var7 = this.getSignModel(var5, var6.type());
+      this.submitSignWithText(var1, var2, var5, var6, var6.type(), var7, var1.breakProgress, var3);
    }
 
    private void submitSignWithText(SignRenderState var1, PoseStack var2, BlockState var3, SignBlock var4, WoodType var5, Model.Simple var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {

@@ -40,7 +40,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
@@ -64,6 +63,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -411,29 +411,26 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       (this.tickingBlockEntities ? this.pendingBlockEntityTickers : this.blockEntityTickers).add(var1);
    }
 
-   protected void tickBlockEntities() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("blockEntities");
+   public void tickBlockEntities() {
       this.tickingBlockEntities = true;
       if (!this.pendingBlockEntityTickers.isEmpty()) {
          this.blockEntityTickers.addAll(this.pendingBlockEntityTickers);
          this.pendingBlockEntityTickers.clear();
       }
 
-      Iterator var2 = this.blockEntityTickers.iterator();
-      boolean var3 = this.tickRateManager().runsNormally();
+      Iterator var1 = this.blockEntityTickers.iterator();
+      boolean var2 = this.tickRateManager().runsNormally();
 
-      while(var2.hasNext()) {
-         TickingBlockEntity var4 = (TickingBlockEntity)var2.next();
-         if (var4.isRemoved()) {
-            var2.remove();
-         } else if (var3 && this.shouldTickBlocksAt(var4.getPos())) {
-            var4.tick();
+      while(var1.hasNext()) {
+         TickingBlockEntity var3 = (TickingBlockEntity)var1.next();
+         if (var3.isRemoved()) {
+            var1.remove();
+         } else if (var2 && this.shouldTickBlocksAt(var3.getPos())) {
+            var3.tick();
          }
       }
 
       this.tickingBlockEntities = false;
-      var1.pop();
    }
 
    public <T extends Entity> void guardEntityTick(Consumer<T> var1, T var2) {
@@ -529,17 +526,18 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.getChunkSource().setSpawnSettings(var1);
    }
 
-   public BlockPos getSharedSpawnPos() {
-      BlockPos var1 = this.levelData.getSpawnPos();
-      if (!this.getWorldBorder().isWithinBounds(var1)) {
-         var1 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(this.getWorldBorder().getCenterX(), 0.0, this.getWorldBorder().getCenterZ()));
+   public abstract void setRespawnData(LevelData.RespawnData var1);
+
+   public abstract LevelData.RespawnData getRespawnData();
+
+   public LevelData.RespawnData getWorldBorderAdjustedRespawnData(LevelData.RespawnData var1) {
+      WorldBorder var2 = this.getWorldBorder();
+      if (!var2.isWithinBounds(var1.pos())) {
+         BlockPos var3 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(var2.getCenterX(), 0.0, var2.getCenterZ()));
+         return LevelData.RespawnData.of(var1.dimension(), var3, var1.yaw(), var1.pitch());
+      } else {
+         return var1;
       }
-
-      return var1;
-   }
-
-   public float getSharedSpawnAngle() {
-      return this.levelData.getSpawnAngle();
    }
 
    protected void prepareWeather() {

@@ -19,7 +19,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.Nameable;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -79,7 +78,7 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
    }
 
    public static DebugBrainDump takeBrainDump(ServerLevel var0, LivingEntity var1) {
-      String var2 = getShortDescription(var0, var1);
+      String var2 = DebugEntityNameGenerator.getEntityName((Entity)var1);
       String var3;
       int var4;
       if (var1 instanceof Villager var5) {
@@ -142,6 +141,8 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
    private static Set<BlockPos> getKnownBlockPositions(Brain<?> var0, MemoryModuleType<GlobalPos>... var1) {
       Stream var10000 = Stream.of(var1);
       Objects.requireNonNull(var0);
+      var10000 = var10000.filter(var0::hasMemoryValue);
+      Objects.requireNonNull(var0);
       return (Set)var10000.map(var0::getMemory).flatMap(Optional::stream).map(GlobalPos::pos).collect(Collectors.toSet());
    }
 
@@ -189,14 +190,13 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
       String var10000;
       //$FF: var3->value
       //0->java/util/UUID
-      //1->net/minecraft/world/entity/LivingEntity
-      //2->net/minecraft/world/Nameable
-      //3->net/minecraft/world/entity/ai/memory/WalkTarget
-      //4->net/minecraft/world/entity/ai/behavior/EntityTracker
-      //5->net/minecraft/core/GlobalPos
-      //6->net/minecraft/world/entity/ai/behavior/BlockPosTracker
-      //7->net/minecraft/world/damagesource/DamageSource
-      //8->java/util/Collection
+      //1->net/minecraft/world/entity/Entity
+      //2->net/minecraft/world/entity/ai/memory/WalkTarget
+      //3->net/minecraft/world/entity/ai/behavior/EntityTracker
+      //4->net/minecraft/core/GlobalPos
+      //5->net/minecraft/world/entity/ai/behavior/BlockPosTracker
+      //6->net/minecraft/world/damagesource/DamageSource
+      //7->java/util/Collection
       switch (((Class)var1).typeSwitch<invokedynamic>(var1, var3)) {
          case -1:
             var10000 = "-";
@@ -206,37 +206,33 @@ public record DebugBrainDump(String name, String profession, int xp, float healt
             var10000 = getShortDescription(var0, var0.getEntity(var4));
             break;
          case 1:
-            LivingEntity var5 = (LivingEntity)var1;
-            var10000 = DebugEntityNameGenerator.getEntityName((Entity)var5);
+            Entity var5 = (Entity)var1;
+            var10000 = DebugEntityNameGenerator.getEntityName(var5);
             break;
          case 2:
-            Nameable var6 = (Nameable)var1;
-            var10000 = var6.getName().getString();
+            WalkTarget var6 = (WalkTarget)var1;
+            var10000 = getShortDescription(var0, var6.getTarget());
             break;
          case 3:
-            WalkTarget var7 = (WalkTarget)var1;
-            var10000 = getShortDescription(var0, var7.getTarget());
+            EntityTracker var7 = (EntityTracker)var1;
+            var10000 = getShortDescription(var0, var7.getEntity());
             break;
          case 4:
-            EntityTracker var8 = (EntityTracker)var1;
-            var10000 = getShortDescription(var0, var8.getEntity());
+            GlobalPos var8 = (GlobalPos)var1;
+            var10000 = getShortDescription(var0, var8.pos());
             break;
          case 5:
-            GlobalPos var9 = (GlobalPos)var1;
-            var10000 = getShortDescription(var0, var9.pos());
+            BlockPosTracker var9 = (BlockPosTracker)var1;
+            var10000 = getShortDescription(var0, var9.currentBlockPosition());
             break;
          case 6:
-            BlockPosTracker var10 = (BlockPosTracker)var1;
-            var10000 = getShortDescription(var0, var10.currentBlockPosition());
+            DamageSource var10 = (DamageSource)var1;
+            Entity var12 = var10.getEntity();
+            var10000 = var12 == null ? var1.toString() : getShortDescription(var0, var12);
             break;
          case 7:
-            DamageSource var11 = (DamageSource)var1;
-            Entity var13 = var11.getEntity();
-            var10000 = var13 == null ? var1.toString() : getShortDescription(var0, var13);
-            break;
-         case 8:
-            Collection var12 = (Collection)var1;
-            var10000 = "[" + (String)var12.stream().map((var1x) -> getShortDescription(var0, var1x)).collect(Collectors.joining(", ")) + "]";
+            Collection var11 = (Collection)var1;
+            var10000 = "[" + (String)var11.stream().map((var1x) -> getShortDescription(var0, var1x)).collect(Collectors.joining(", ")) + "]";
             break;
          default:
             var10000 = var1.toString();

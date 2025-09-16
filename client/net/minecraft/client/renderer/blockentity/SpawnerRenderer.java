@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.blockentity.state.SpawnerRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
@@ -36,21 +37,21 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity, 
       }
    }
 
-   public void submit(SpawnerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(SpawnerRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.displayEntity != null) {
-         submitEntityInSpawner(var2, var3, var1.displayEntity, this.entityRenderer, var1.spin, var1.scale);
+         submitEntityInSpawner(var2, var3, var1.displayEntity, this.entityRenderer, var1.spin, var1.scale, var4);
       }
 
    }
 
-   public static void submitEntityInSpawner(PoseStack var0, SubmitNodeCollector var1, EntityRenderState var2, EntityRenderDispatcher var3, float var4, float var5) {
+   public static void submitEntityInSpawner(PoseStack var0, SubmitNodeCollector var1, EntityRenderState var2, EntityRenderDispatcher var3, float var4, float var5, CameraRenderState var6) {
       var0.pushPose();
       var0.translate(0.5F, 0.4F, 0.5F);
       var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var4));
       var0.translate(0.0F, -0.2F, 0.0F);
       var0.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-30.0F));
       var0.scale(var5, var5, var5);
-      var3.submit(var2, 0.0, 0.0, 0.0, var0, var1);
+      var3.submit(var2, var6, 0.0, 0.0, 0.0, var0, var1);
       var0.popPose();
    }
 

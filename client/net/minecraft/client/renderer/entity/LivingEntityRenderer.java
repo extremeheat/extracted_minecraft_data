@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
@@ -19,10 +18,12 @@ import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -30,8 +31,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -76,42 +75,42 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var4 = var1.bedOrientation;
-         if (var4 != null) {
-            float var5 = var1.eyeHeight - 0.1F;
-            var2.translate((float)(-var4.getStepX()) * var5, 0.0F, (float)(-var4.getStepZ()) * var5);
+         Direction var5 = var1.bedOrientation;
+         if (var5 != null) {
+            float var6 = var1.eyeHeight - 0.1F;
+            var2.translate((float)(-var5.getStepX()) * var6, 0.0F, (float)(-var5.getStepZ()) * var6);
          }
       }
 
-      float var11 = var1.scale;
-      var2.scale(var11, var11, var11);
-      this.setupRotations(var1, var2, var1.bodyRot, var11);
+      float var12 = var1.scale;
+      var2.scale(var12, var12, var12);
+      this.setupRotations(var1, var2, var1.bodyRot, var12);
       var2.scale(-1.0F, -1.0F, 1.0F);
       this.scale(var1, var2);
       var2.translate(0.0F, -1.501F, 0.0F);
-      boolean var12 = this.isBodyVisible(var1);
-      boolean var6 = !var12 && !var1.isInvisibleToPlayer;
-      RenderType var7 = this.getRenderType(var1, var12, var6, var1.appearsGlowing());
-      if (var7 != null) {
-         int var8 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
-         int var9 = var6 ? 654311423 : -1;
-         int var10 = ARGB.multiply(var9, this.getModelTint(var1));
-         var3.submitModel(this.model, var1, var2, var7, var1.lightCoords, var8, var10, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      boolean var13 = this.isBodyVisible(var1);
+      boolean var7 = !var13 && !var1.isInvisibleToPlayer;
+      RenderType var8 = this.getRenderType(var1, var13, var7, var1.appearsGlowing());
+      if (var8 != null) {
+         int var9 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1));
+         int var10 = var7 ? 654311423 : -1;
+         int var11 = ARGB.multiply(var10, this.getModelTint(var1));
+         var3.submitModel(this.model, var1, var2, var8, var1.lightCoords, var9, var11, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       if (this.shouldRenderLayers(var1) && !this.layers.isEmpty()) {
          this.model.setupAnim(var1);
 
-         for(RenderLayer var14 : this.layers) {
-            var14.submit(var2, var3, var1.lightCoords, var1, var1.yRot, var1.xRot);
+         for(RenderLayer var15 : this.layers) {
+            var15.submit(var2, var3, var1.lightCoords, var1, var1.yRot, var1.xRot);
          }
       }
 
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected boolean shouldRenderLayers(S var1) {
@@ -251,25 +250,13 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return Minecraft.renderNames() && var1 != var10.getCameraEntity() && var6 && !var1.isVehicle();
    }
 
-   public static boolean isEntityUpsideDown(LivingEntity var0) {
-      if (var0 instanceof Player || var0.hasCustomName()) {
-         String var1 = ChatFormatting.stripFormatting(var0.getName().getString());
-         if ("Dinnerbone".equals(var1) || "Grumm".equals(var1)) {
-            boolean var10000;
-            if (var0 instanceof Player) {
-               Player var2 = (Player)var0;
-               if (!var2.isModelPartShown(PlayerModelPart.CAPE)) {
-                  var10000 = false;
-                  return var10000;
-               }
-            }
+   public boolean isEntityUpsideDown(T var1) {
+      Component var2 = var1.getCustomName();
+      return var2 != null && isUpsideDownName(var2.getString());
+   }
 
-            var10000 = true;
-            return var10000;
-         }
-      }
-
-      return false;
+   protected static boolean isUpsideDownName(String var0) {
+      return "Dinnerbone".equals(var0) || "Grumm".equals(var0);
    }
 
    protected float getShadowRadius(S var1) {
@@ -282,8 +269,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       var2.bodyRot = solveBodyRot(var1, var4, var3);
       var2.yRot = Mth.wrapDegrees(var4 - var2.bodyRot);
       var2.xRot = var1.getXRot(var3);
-      var2.customName = var1.getCustomName();
-      var2.isUpsideDown = isEntityUpsideDown(var1);
+      var2.isUpsideDown = this.isEntityUpsideDown(var1);
       if (var2.isUpsideDown) {
          var2.xRot *= -1.0F;
          var2.yRot *= -1.0F;

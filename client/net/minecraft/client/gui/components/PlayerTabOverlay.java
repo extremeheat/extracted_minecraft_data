@@ -18,7 +18,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
@@ -205,8 +205,8 @@ public class PlayerTabOverlay {
             GameProfile var29 = var27.getProfile();
             if (var36) {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.id());
-               boolean var31 = var30 != null && LivingEntityRenderer.isEntityUpsideDown(var30);
-               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var27.showHat(), var31, -1);
+               boolean var31 = var30 != null && AvatarRenderer.isPlayerUpsideDown(var30);
+               PlayerFaceRenderer.draw(var1, var27.getSkin().body().texturePath(), var25, var26, 8, var27.showHat(), var31, -1);
                var25 += 9;
             }
 

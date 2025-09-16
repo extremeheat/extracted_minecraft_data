@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.DecoratedPotRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -127,24 +128,24 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    }
 
-   public void submit(DecoratedPotRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(DecoratedPotRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
-      Direction var4 = var1.direction;
+      Direction var5 = var1.direction;
       var2.translate(0.5, 0.0, 0.5);
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var4.toYRot()));
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var5.toYRot()));
       var2.translate(-0.5, 0.0, -0.5);
       if (var1.wobbleProgress >= 0.0F && var1.wobbleProgress <= 1.0F) {
          if (var1.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-            float var5 = 0.015625F;
-            float var6 = var1.wobbleProgress * 6.2831855F;
-            float var7 = -1.5F * (Mth.cos(var6) + 0.5F) * Mth.sin(var6 / 2.0F);
-            var2.rotateAround(Axis.XP.rotation(var7 * 0.015625F), 0.5F, 0.0F, 0.5F);
-            float var8 = Mth.sin(var6);
-            var2.rotateAround(Axis.ZP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
+            float var6 = 0.015625F;
+            float var7 = var1.wobbleProgress * 6.2831855F;
+            float var8 = -1.5F * (Mth.cos(var7) + 0.5F) * Mth.sin(var7 / 2.0F);
+            var2.rotateAround(Axis.XP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
+            float var9 = Mth.sin(var7);
+            var2.rotateAround(Axis.ZP.rotation(var9 * 0.015625F), 0.5F, 0.0F, 0.5F);
          } else {
-            float var9 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
-            float var10 = 1.0F - var1.wobbleProgress;
-            var2.rotateAround(Axis.YP.rotation(var9 * var10), 0.5F, 0.0F, 0.5F);
+            float var10 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
+            float var11 = 1.0F - var1.wobbleProgress;
+            var2.rotateAround(Axis.YP.rotation(var10 * var11), 0.5F, 0.0F, 0.5F);
          }
       }
 

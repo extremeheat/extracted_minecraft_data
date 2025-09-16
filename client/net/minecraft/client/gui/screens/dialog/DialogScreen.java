@@ -119,7 +119,7 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    }
 
    private Button createWarningButton() {
-      ImageButton var1 = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (var1x) -> this.minecraft.setScreen(DialogScreen.WarningScreen.create(this.minecraft, this)), Component.translatable("menu.custom_screen_info.button_narration"));
+      ImageButton var1 = new ImageButton(0, 0, 20, 20, WARNING_BUTTON_SPRITES, (var1x) -> this.minecraft.setScreen(DialogScreen.WarningScreen.create(this.minecraft, this.connectionAccess, this)), Component.translatable("menu.custom_screen_info.button_narration"));
       var1.setTooltip(Tooltip.create(Component.translatable("menu.custom_screen_info.tooltip")));
       return var1;
    }
@@ -228,20 +228,20 @@ public abstract class DialogScreen<T extends Dialog> extends Screen {
    public static class WarningScreen extends ConfirmScreen {
       private final MutableObject<Screen> returnScreen;
 
-      public static Screen create(Minecraft var0, Screen var1) {
-         return new WarningScreen(var0, new MutableObject(var1));
+      public static Screen create(Minecraft var0, DialogConnectionAccess var1, Screen var2) {
+         return new WarningScreen(var0, var1, new MutableObject(var2));
       }
 
-      private WarningScreen(Minecraft var1, MutableObject<Screen> var2) {
-         super((var2x) -> {
-            if (var2x) {
-               var1.disconnectFromWorld(DialogScreen.DISCONNECT);
+      private WarningScreen(Minecraft var1, DialogConnectionAccess var2, MutableObject<Screen> var3) {
+         super((var3x) -> {
+            if (var3x) {
+               var2.disconnect(DialogScreen.DISCONNECT);
             } else {
-               var1.setScreen((Screen)var2.getValue());
+               var1.setScreen((Screen)var3.getValue());
             }
 
          }, Component.translatable("menu.custom_screen_info.title"), Component.translatable("menu.custom_screen_info.contents"), CommonComponents.disconnectButtonLabel(var1.isLocalServer()), CommonComponents.GUI_BACK);
-         this.returnScreen = var2;
+         this.returnScreen = var3;
       }
 
       @Nullable

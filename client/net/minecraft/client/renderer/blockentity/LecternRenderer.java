@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.LecternRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
@@ -39,7 +40,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
       var2.yRot = ((Direction)var1.getBlockState().getValue(LecternBlock.FACING)).getClockWise().toYRot();
    }
 
-   public void submit(LecternRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(LecternRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.hasBook) {
          var2.pushPose();
          var2.translate(0.5F, 1.0625F, 0.5F);

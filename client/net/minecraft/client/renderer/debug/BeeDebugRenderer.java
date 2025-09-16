@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.util.debug.DebugBeeInfo;
@@ -53,11 +54,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void clear() {
-      this.lastLookedAtUuid = null;
-   }
-
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
       this.doRender(var1, var2, var9);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();

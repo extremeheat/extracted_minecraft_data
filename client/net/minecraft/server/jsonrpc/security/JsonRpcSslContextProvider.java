@@ -21,7 +21,9 @@ public class JsonRpcSslContextProvider {
    }
 
    public static SslContext createFrom(String var0, String var1) throws Exception {
-      if (var0 != null && !var0.isEmpty()) {
+      if (var0.isEmpty()) {
+         throw new IllegalArgumentException("TLS is enabled but keystore is not configured");
+      } else {
          File var2 = new File(var0);
          if (var2.exists() && var2.isFile()) {
             String var3 = getKeystorePassword(var1);
@@ -29,8 +31,6 @@ public class JsonRpcSslContextProvider {
          } else {
             throw new IllegalArgumentException("Supplied keystore is not a file or does not exist: '" + var0 + "'");
          }
-      } else {
-         throw new IllegalArgumentException("TLS is enabled but keystore is not configured");
       }
    }
 
@@ -40,13 +40,7 @@ public class JsonRpcSslContextProvider {
          return var1;
       } else {
          String var2 = System.getProperty("management.tls.keystore.password", (String)null);
-         if (var2 != null) {
-            return var2;
-         } else if (var0 != null) {
-            return var0;
-         } else {
-            throw new IllegalArgumentException("Keystore password not set");
-         }
+         return var2 != null ? var2 : var0;
       }
    }
 

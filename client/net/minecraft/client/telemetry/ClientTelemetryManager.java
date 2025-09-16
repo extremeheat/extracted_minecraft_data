@@ -80,7 +80,7 @@ public class ClientTelemetryManager implements AutoCloseable {
                   var2.thenAccept((var2x) -> {
                      if (!var2x.isEmpty()) {
                         ((TelemetryEventLogger)var2x.get()).log(var6);
-                        if (!SharedConstants.DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND) {
+                        if (!SharedConstants.IS_RUNNING_IN_IDE || !SharedConstants.DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND) {
                            var6.export(var1).send();
                         }
 

@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.blockentity.state.BannerRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -82,18 +83,18 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       var2.phase = ((float)Math.floorMod((long)(var9.getX() * 7 + var9.getY() * 9 + var9.getZ() * 13) + var7, 100L) + var3) / 100.0F;
    }
 
-   public void submit(BannerRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      BannerModel var4;
-      BannerFlagModel var5;
+   public void submit(BannerRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      BannerModel var5;
+      BannerFlagModel var6;
       if (var1.standing) {
-         var4 = this.standingModel;
-         var5 = this.standingFlagModel;
+         var5 = this.standingModel;
+         var6 = this.standingFlagModel;
       } else {
-         var4 = this.wallModel;
-         var5 = this.wallFlagModel;
+         var5 = this.wallModel;
+         var6 = this.wallFlagModel;
       }
 
-      submitBanner(this.materials, var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.angle, var4, var5, var1.phase, var1.baseColor, var1.patterns, var1.breakProgress);
+      submitBanner(this.materials, var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.angle, var5, var6, var1.phase, var1.baseColor, var1.patterns, var1.breakProgress);
    }
 
    public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {

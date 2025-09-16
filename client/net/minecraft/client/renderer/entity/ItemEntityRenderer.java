@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -39,18 +40,18 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       var2.extractItemGroupRenderState(var1, var1.getItem(), this.itemModelResolver);
    }
 
-   public void submit(ItemEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ItemEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (!var1.item.isEmpty()) {
          var2.pushPose();
-         AABB var4 = var1.item.getModelBoundingBox();
-         float var5 = -((float)var4.minY) + 0.0625F;
-         float var6 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
-         var2.translate(0.0F, var6 + var5, 0.0F);
-         float var7 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
-         var2.mulPose((Quaternionfc)Axis.YP.rotation(var7));
-         submitMultipleFromCount(var2, var3, var1.lightCoords, var1, this.random, var4);
+         AABB var5 = var1.item.getModelBoundingBox();
+         float var6 = -((float)var5.minY) + 0.0625F;
+         float var7 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
+         var2.translate(0.0F, var7 + var6, 0.0F);
+         float var8 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
+         var2.mulPose((Quaternionfc)Axis.YP.rotation(var8));
+         submitMultipleFromCount(var2, var3, var1.lightCoords, var1, this.random, var5);
          var2.popPose();
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

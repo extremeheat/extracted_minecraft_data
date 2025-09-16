@@ -10,11 +10,11 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 
@@ -47,12 +47,12 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
    private static ResourceLocation getPlayerElytraTexture(HumanoidRenderState var0) {
       if (var0 instanceof AvatarRenderState var1) {
          PlayerSkin var2 = var1.skin;
-         if (var2.elytraTexture() != null) {
-            return var2.elytraTexture();
+         if (var2.elytra() != null) {
+            return var2.elytra().texturePath();
          }
 
-         if (var2.capeTexture() != null && var1.showCape) {
-            return var2.capeTexture();
+         if (var2.cape() != null && var1.showCape) {
+            return var2.cape().texturePath();
          }
       }
 

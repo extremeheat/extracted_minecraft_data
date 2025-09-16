@@ -25,6 +25,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
+   private static final Component DEFAULT_NAME = Component.translatable("container.barrel");
    private NonNullList<ItemStack> items;
    private final ContainerOpenersCounter openersCounter;
 
@@ -86,7 +87,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.barrel");
+      return DEFAULT_NAME;
    }
 
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {

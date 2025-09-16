@@ -3,10 +3,10 @@ package net.minecraft.client.renderer.entity.state;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class AvatarRenderState extends HumanoidRenderState {
    public PlayerSkin skin = DefaultPlayerSkin.getDefaultSkin();

@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -38,12 +39,12 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkull
       return 15;
    }
 
-   public void submit(WitherSkullRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(WitherSkullRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.scale(-1.0F, -1.0F, 1.0F);
       var3.submitModel(this.model, var1.modelState, var2, this.model.renderType(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    private ResourceLocation getTextureLocation(WitherSkullRenderState var1) {

@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityWithBoundingBo
 import net.minecraft.client.renderer.blockentity.state.TestInstanceRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -51,37 +52,37 @@ public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlo
 
    }
 
-   public void submit(TestInstanceRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      this.beacon.submit(var1.beaconRenderState, var2, var3);
-      this.box.submit(var1.blockEntityWithBoundingBoxRenderState, var2, var3);
+   public void submit(TestInstanceRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      this.beacon.submit(var1.beaconRenderState, var2, var3, var4);
+      this.box.submit(var1.blockEntityWithBoundingBoxRenderState, var2, var3, var4);
 
-      for(TestInstanceBlockEntity.ErrorMarker var5 : var1.errorMarkers) {
-         this.submitErrorMarker(var2, var3, var5);
+      for(TestInstanceBlockEntity.ErrorMarker var6 : var1.errorMarkers) {
+         this.submitErrorMarker(var2, var3, var6, var4);
       }
 
    }
 
-   private void submitErrorMarker(PoseStack var1, SubmitNodeCollector var2, TestInstanceBlockEntity.ErrorMarker var3) {
-      BlockPos var4 = var3.pos();
+   private void submitErrorMarker(PoseStack var1, SubmitNodeCollector var2, TestInstanceBlockEntity.ErrorMarker var3, CameraRenderState var4) {
+      BlockPos var5 = var3.pos();
       var2.order(1).submitCustomGeometry(var1, RenderType.debugFilledBox(), (var1x, var2x) -> {
-         float var3 = (float)var4.getX() - 0.02F;
-         float var4x = (float)var4.getY() - 0.02F;
-         float var5 = (float)var4.getZ() - 0.02F;
-         float var6 = (float)var4.getX() + 1.0F + 0.02F;
-         float var7 = (float)var4.getY() + 1.0F + 0.02F;
-         float var8 = (float)var4.getZ() + 1.0F + 0.02F;
+         float var3 = (float)var5.getX() - 0.02F;
+         float var4 = (float)var5.getY() - 0.02F;
+         float var5x = (float)var5.getZ() - 0.02F;
+         float var6 = (float)var5.getX() + 1.0F + 0.02F;
+         float var7 = (float)var5.getY() + 1.0F + 0.02F;
+         float var8 = (float)var5.getZ() + 1.0F + 0.02F;
          PoseStack var9 = new PoseStack();
          var9.last().set(var1x);
-         ShapeRenderer.addChainedFilledBoxVertices(var9, var2x, var3, var4x, var5, var6, var7, var8, 1.0F, 0.0F, 0.0F, 0.375F);
+         ShapeRenderer.addChainedFilledBoxVertices(var9, var2x, var3, var4, var5x, var6, var7, var8, 1.0F, 0.0F, 0.0F, 0.375F);
       });
-      FormattedCharSequence var5 = var3.text().getVisualOrderText();
-      int var6 = this.font.width(var5);
-      float var7 = 0.01F;
+      FormattedCharSequence var6 = var3.text().getVisualOrderText();
+      int var7 = this.font.width(var6);
+      float var8 = 0.01F;
       var1.pushPose();
-      var1.translate((float)var4.getX() + 0.5F, (float)var4.getY() + 1.2F, (float)var4.getZ() + 0.5F);
-      var1.mulPose((Quaternionfc)this.entityRenderer.cameraOrientation());
+      var1.translate((float)var5.getX() + 0.5F, (float)var5.getY() + 1.2F, (float)var5.getZ() + 0.5F);
+      var1.mulPose((Quaternionfc)var4.orientation);
       var1.scale(0.01F, -0.01F, 0.01F);
-      var2.order(2).submitText(var1, (float)(-var6) / 2.0F, 0.0F, var5, false, Font.DisplayMode.SEE_THROUGH, 15728880, -1, 0, 0);
+      var2.order(2).submitText(var1, (float)(-var7) / 2.0F, 0.0F, var6, false, Font.DisplayMode.SEE_THROUGH, 15728880, -1, 0, 0);
       var1.popPose();
    }
 

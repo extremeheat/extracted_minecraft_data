@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.block.RenderShape;
@@ -24,14 +25,14 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
       }
    }
 
-   public void submit(FallingBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      BlockState var4 = var1.movingBlockRenderState.blockState;
-      if (var4.getRenderShape() == RenderShape.MODEL) {
+   public void submit(FallingBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      BlockState var5 = var1.movingBlockRenderState.blockState;
+      if (var5.getRenderShape() == RenderShape.MODEL) {
          var2.pushPose();
          var2.translate(-0.5, 0.0, -0.5);
          var3.submitMovingBlock(var2, var1.movingBlockRenderState);
          var2.popPose();
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

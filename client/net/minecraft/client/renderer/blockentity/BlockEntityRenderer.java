@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -15,7 +16,7 @@ public interface BlockEntityRenderer<T extends BlockEntity, S extends BlockEntit
       BlockEntityRenderState.extractBase(var1, var2, var5);
    }
 
-   void submit(S var1, PoseStack var2, SubmitNodeCollector var3);
+   void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4);
 
    default boolean shouldRenderOffScreen() {
       return false;

@@ -10,12 +10,14 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlastFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
+   private static final Component DEFAULT_NAME = Component.translatable("container.blast_furnace");
+
    public BlastFurnaceBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BLAST_FURNACE, var1, var2, RecipeType.BLASTING);
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.blast_furnace");
+      return DEFAULT_NAME;
    }
 
    protected int getBurnDuration(FuelValues var1, ItemStack var2) {

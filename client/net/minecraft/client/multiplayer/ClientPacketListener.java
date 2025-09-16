@@ -501,7 +501,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       this.debugSubscriber.clear();
-      this.minecraft.debugRenderer.clear();
+      this.minecraft.levelRenderer.debugRenderer.refreshRendererList();
       this.minecraft.player.resetPos();
       this.minecraft.player.setId(var1.playerId());
       this.level.addEntity(this.minecraft.player);
@@ -1035,7 +1035,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSetSpawn(ClientboundSetDefaultSpawnPositionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.level.setDefaultSpawnPos(var1.getPos(), var1.getAngle());
+      this.minecraft.level.setRespawnData(var1.respawnData());
    }
 
    public void handleSetEntityPassengersPacket(ClientboundSetPassengersPacket var1) {
@@ -2270,7 +2270,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleGameTestHighlightPos(ClientboundGameTestHighlightPosPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.minecraft.debugRenderer.gameTestDebugRenderer.highlightPos(var1.absolutePos(), var1.relativePos());
+      this.minecraft.levelRenderer.gameTestBlockHighlightRenderer.highlightPos(var1.absolutePos(), var1.relativePos());
    }
 
    private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, BitSet var5, BitSet var6, Iterator<byte[]> var7, boolean var8) {

@@ -36,6 +36,7 @@ public class Inventory implements Container, Nameable {
    public static final int SLOT_SADDLE = 42;
    public static final int NOT_FOUND_INDEX = -1;
    public static final Int2ObjectMap<EquipmentSlot> EQUIPMENT_SLOT_MAPPING;
+   private static final Component DEFAULT_NAME;
    private final NonNullList<ItemStack> items;
    private int selected;
    public final Player player;
@@ -430,7 +431,7 @@ public class Inventory implements Container, Nameable {
    }
 
    public Component getName() {
-      return Component.translatable("container.inventory");
+      return DEFAULT_NAME;
    }
 
    public void dropAll() {
@@ -514,5 +515,6 @@ public class Inventory implements Container, Nameable {
 
    static {
       EQUIPMENT_SLOT_MAPPING = new Int2ObjectArrayMap(Map.of(EquipmentSlot.FEET.getIndex(36), EquipmentSlot.FEET, EquipmentSlot.LEGS.getIndex(36), EquipmentSlot.LEGS, EquipmentSlot.CHEST.getIndex(36), EquipmentSlot.CHEST, EquipmentSlot.HEAD.getIndex(36), EquipmentSlot.HEAD, 40, EquipmentSlot.OFFHAND, 41, EquipmentSlot.BODY, 42, EquipmentSlot.SADDLE));
+      DEFAULT_NAME = Component.translatable("container.inventory");
    }
 }

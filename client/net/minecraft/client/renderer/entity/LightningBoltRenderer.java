@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -16,24 +17,24 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       super(var1);
    }
 
-   public void submit(LightningBoltRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      float[] var4 = new float[8];
+   public void submit(LightningBoltRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       float[] var5 = new float[8];
-      float var6 = 0.0F;
+      float[] var6 = new float[8];
       float var7 = 0.0F;
-      RandomSource var8 = RandomSource.create(var1.seed);
+      float var8 = 0.0F;
+      RandomSource var9 = RandomSource.create(var1.seed);
 
-      for(int var9 = 7; var9 >= 0; --var9) {
-         var4[var9] = var6;
-         var5[var9] = var7;
-         var6 += (float)(var8.nextInt(11) - 5);
-         var7 += (float)(var8.nextInt(11) - 5);
+      for(int var10 = 7; var10 >= 0; --var10) {
+         var5[var10] = var7;
+         var6[var10] = var8;
+         var7 += (float)(var9.nextInt(11) - 5);
+         var8 += (float)(var9.nextInt(11) - 5);
       }
 
       var3.submitCustomGeometry(var2, RenderType.lightning(), (var5x, var6x) -> {
          Matrix4f var7x = var5x.pose();
 
-         for(int var8 = 0; var8 < 4; ++var8) {
+         for(int var8x = 0; var8x < 4; ++var8x) {
             RandomSource var9 = RandomSource.create(var1.seed);
 
             for(int var10 = 0; var10 < 3; ++var10) {
@@ -47,8 +48,8 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
                   var12 = var11 - 2;
                }
 
-               float var13 = var4[var11] - var6;
-               float var14 = var5[var11] - var7;
+               float var13 = var5[var11] - var7;
+               float var14 = var6[var11] - var8;
 
                for(int var15 = var11; var15 >= var12; --var15) {
                   float var16 = var13;
@@ -65,12 +66,12 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
                   float var19 = 0.45F;
                   float var20 = 0.45F;
                   float var21 = 0.5F;
-                  float var22 = 0.1F + (float)var8 * 0.2F;
+                  float var22 = 0.1F + (float)var8x * 0.2F;
                   if (var10 == 0) {
                      var22 *= (float)var15 * 0.1F + 1.0F;
                   }
 
-                  float var23 = 0.1F + (float)var8 * 0.2F;
+                  float var23 = 0.1F + (float)var8x * 0.2F;
                   if (var10 == 0) {
                      var23 *= ((float)var15 - 1.0F) * 0.1F + 1.0F;
                   }

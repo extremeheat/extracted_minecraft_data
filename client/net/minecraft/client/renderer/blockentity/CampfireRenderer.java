@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.blockentity.state.CampfireRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.ItemOwner;
@@ -48,22 +49,22 @@ public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity
 
    }
 
-   public void submit(CampfireRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      Direction var4 = var1.facing;
-      List var5 = var1.items;
+   public void submit(CampfireRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Direction var5 = var1.facing;
+      List var6 = var1.items;
 
-      for(int var6 = 0; var6 < var5.size(); ++var6) {
-         ItemStackRenderState var7 = (ItemStackRenderState)var5.get(var6);
-         if (!var7.isEmpty()) {
+      for(int var7 = 0; var7 < var6.size(); ++var7) {
+         ItemStackRenderState var8 = (ItemStackRenderState)var6.get(var7);
+         if (!var8.isEmpty()) {
             var2.pushPose();
             var2.translate(0.5F, 0.44921875F, 0.5F);
-            Direction var8 = Direction.from2DDataValue((var6 + var4.get2DDataValue()) % 4);
-            float var9 = -var8.toYRot();
-            var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9));
+            Direction var9 = Direction.from2DDataValue((var7 + var5.get2DDataValue()) % 4);
+            float var10 = -var9.toYRot();
+            var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var10));
             var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
             var2.translate(-0.3125F, -0.3125F, 0.0F);
             var2.scale(0.375F, 0.375F, 0.375F);
-            var7.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+            var8.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             var2.popPose();
          }
       }

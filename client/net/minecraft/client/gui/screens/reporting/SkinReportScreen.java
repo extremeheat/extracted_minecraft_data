@@ -14,8 +14,8 @@ import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.multiplayer.chat.report.SkinReport;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
    private static final int SKIN_WIDTH = 85;

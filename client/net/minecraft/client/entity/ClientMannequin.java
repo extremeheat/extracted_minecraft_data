@@ -3,23 +3,20 @@ package net.minecraft.client.entity;
 import com.mojang.logging.LogUtils;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.decoration.Mannequin;
-import net.minecraft.world.entity.decoration.MannequinProfile;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component BELOW_NAME_TAG = Component.translatable("entity.minecraft.mannequin.label");
    public static final PlayerSkin DEFAULT_SKIN;
    private final ClientAvatarState avatarState = new ClientAvatarState();
    @Nullable
@@ -66,15 +63,7 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
          var1.cancel(false);
       }
 
-      this.getProfile().ifRight((var1x) -> this.skinLookup = this.skinRenderCache.lookup(var1x).thenApply((var0) -> var0.map(PlayerSkinRenderCache.RenderInfo::playerSkin))).ifLeft((var1x) -> this.setSkin(mannequinProfileToPlayerSkin(var1x)));
-   }
-
-   private static PlayerSkin mannequinProfileToPlayerSkin(MannequinProfile var0) {
-      return new PlayerSkin(mapTexture(var0.texture()), (String)null, (ResourceLocation)var0.capeTexture().map(ClientMannequin::mapTexture).orElse((Object)null), (ResourceLocation)var0.elytraTexture().map(ClientMannequin::mapTexture).orElse((Object)null), var0.model(), false);
-   }
-
-   private static ResourceLocation mapTexture(ResourceLocation var0) {
-      return var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"));
+      this.skinLookup = this.skinRenderCache.lookup(this.getProfile()).thenApply((var0) -> var0.map(PlayerSkinRenderCache.RenderInfo::playerSkin));
    }
 
    public ClientAvatarState avatarState() {
@@ -91,7 +80,7 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
 
    @Nullable
    public Component belowNameDisplay() {
-      return BELOW_NAME_TAG;
+      return this.getDescription();
    }
 
    @Nullable
@@ -104,6 +93,6 @@ public class ClientMannequin extends Mannequin implements ClientAvatarEntity {
    }
 
    static {
-      DEFAULT_SKIN = mannequinProfileToPlayerSkin(Mannequin.DEFAULT_PROFILE);
+      DEFAULT_SKIN = DefaultPlayerSkin.get(Mannequin.DEFAULT_PROFILE.partialProfile());
    }
 }

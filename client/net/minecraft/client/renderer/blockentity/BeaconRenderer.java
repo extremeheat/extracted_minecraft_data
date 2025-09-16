@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -48,13 +49,13 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       var1.beamRadiusScale = var5 != null && var5.isScoping() ? 1.0F : Math.max(1.0F, var4 / 96.0F);
    }
 
-   public void submit(BeaconRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      int var4 = 0;
+   public void submit(BeaconRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      int var5 = 0;
 
-      for(int var5 = 0; var5 < var1.sections.size(); ++var5) {
-         BeaconRenderState.Section var6 = (BeaconRenderState.Section)var1.sections.get(var5);
-         submitBeaconBeam(var2, var3, var1.beamRadiusScale, var1.animationTime, var4, var5 == var1.sections.size() - 1 ? 2048 : var6.height(), var6.color());
-         var4 += var6.height();
+      for(int var6 = 0; var6 < var1.sections.size(); ++var6) {
+         BeaconRenderState.Section var7 = (BeaconRenderState.Section)var1.sections.get(var6);
+         submitBeaconBeam(var2, var3, var1.beamRadiusScale, var1.animationTime, var5, var6 == var1.sections.size() - 1 ? 2048 : var7.height(), var7.color());
+         var5 += var7.height();
       }
 
    }

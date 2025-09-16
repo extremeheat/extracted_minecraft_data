@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Locale;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -31,7 +32,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       super();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
       var9.forEachEntity(DebugSubscriptions.ENTITY_PATHS, (var8, var9x) -> renderPath(var1, var2, var3, var5, var7, var9x.path(), var9x.maxNodeDistance()));
    }
 

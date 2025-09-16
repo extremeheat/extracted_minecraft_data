@@ -186,7 +186,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    }
 
    public void createdBy(LivingEntity var1) {
-      this.author = var1.getName().getString();
+      this.author = var1.getPlainTextName();
    }
 
    public BlockPos getStructurePos() {

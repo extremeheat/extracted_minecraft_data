@@ -21,13 +21,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.Optionull;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Services;
 import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.slf4j.Logger;
 
 public class SkinManager {
@@ -111,22 +112,21 @@ public class SkinManager {
          var5 = PlayerModelType.byLegacyServicesName(var3.getMetadata("model"));
       } else {
          PlayerSkin var6 = DefaultPlayerSkin.get(var1);
-         var4 = CompletableFuture.completedFuture(var6.texture());
+         var4 = CompletableFuture.completedFuture(var6.body());
          var5 = var6.model();
       }
 
-      String var11 = (String)Optionull.map(var3, MinecraftProfileTexture::getUrl);
-      MinecraftProfileTexture var7 = var2.cape();
-      CompletableFuture var8 = var7 != null ? this.capeTextures.getOrLoad(var7) : CompletableFuture.completedFuture((Object)null);
-      MinecraftProfileTexture var9 = var2.elytra();
-      CompletableFuture var10 = var9 != null ? this.elytraTextures.getOrLoad(var9) : CompletableFuture.completedFuture((Object)null);
-      return CompletableFuture.allOf(var4, var8, var10).thenApply((var6x) -> new PlayerSkin((ResourceLocation)var4.join(), var11, (ResourceLocation)var8.join(), (ResourceLocation)var10.join(), var5, var2.signatureState() == SignatureState.SIGNED));
+      MinecraftProfileTexture var10 = var2.cape();
+      CompletableFuture var7 = var10 != null ? this.capeTextures.getOrLoad(var10) : CompletableFuture.completedFuture((Object)null);
+      MinecraftProfileTexture var8 = var2.elytra();
+      CompletableFuture var9 = var8 != null ? this.elytraTextures.getOrLoad(var8) : CompletableFuture.completedFuture((Object)null);
+      return CompletableFuture.allOf(var4, var7, var9).thenApply((var5x) -> new PlayerSkin((ClientAsset.Texture)var4.join(), (ClientAsset.Texture)var7.join(), (ClientAsset.Texture)var9.join(), var5, var2.signatureState() == SignatureState.SIGNED));
    }
 
    class TextureCache {
       private final Path root;
       private final MinecraftProfileTexture.Type type;
-      private final Map<String, CompletableFuture<ResourceLocation>> textures = new Object2ObjectOpenHashMap();
+      private final Map<String, CompletableFuture<ClientAsset.Texture>> textures = new Object2ObjectOpenHashMap();
 
       TextureCache(final Path var2, final MinecraftProfileTexture.Type var3) {
          super();
@@ -134,7 +134,7 @@ public class SkinManager {
          this.type = var3;
       }
 
-      public CompletableFuture<ResourceLocation> getOrLoad(MinecraftProfileTexture var1) {
+      public CompletableFuture<ClientAsset.Texture> getOrLoad(MinecraftProfileTexture var1) {
          String var2 = var1.getHash();
          CompletableFuture var3 = (CompletableFuture)this.textures.get(var2);
          if (var3 == null) {
@@ -145,7 +145,7 @@ public class SkinManager {
          return var3;
       }
 
-      private CompletableFuture<ResourceLocation> registerTexture(MinecraftProfileTexture var1) {
+      private CompletableFuture<ClientAsset.Texture> registerTexture(MinecraftProfileTexture var1) {
          String var2 = Hashing.sha1().hashUnencodedChars(var1.getHash()).toString();
          ResourceLocation var3 = this.getTextureLocation(var2);
          Path var4 = this.root.resolve(var2.length() > 2 ? var2.substring(0, 2) : "xx").resolve(var2);

@@ -13,13 +13,13 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -72,40 +72,39 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return var2 == null ? 0.0F : var2.shadowStrength().get(var1.interpolationProgress);
    }
 
-   public void submit(ST var1, PoseStack var2, SubmitNodeCollector var3) {
-      Display.RenderState var4 = var1.renderState;
-      if (var4 != null && var1.hasSubState()) {
-         float var5 = var1.interpolationProgress;
-         super.submit(var1, var2, var3);
+   public void submit(ST var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Display.RenderState var5 = var1.renderState;
+      if (var5 != null && var1.hasSubState()) {
+         float var6 = var1.interpolationProgress;
+         super.submit(var1, var2, var3, var4);
          var2.pushPose();
-         var2.mulPose((Quaternionfc)this.calculateOrientation(var4, var1, new Quaternionf()));
-         Transformation var6 = (Transformation)var4.transformation().get(var5);
-         var2.mulPose(var6.getMatrix());
-         this.submitInner(var1, var2, var3, var1.lightCoords, var5);
+         var2.mulPose((Quaternionfc)this.calculateOrientation(var5, var1, new Quaternionf()));
+         Transformation var7 = (Transformation)var5.transformation().get(var6);
+         var2.mulPose(var7.getMatrix());
+         this.submitInner(var1, var2, var3, var1.lightCoords, var6);
          var2.popPose();
       }
    }
 
    private Quaternionf calculateOrientation(Display.RenderState var1, ST var2, Quaternionf var3) {
-      Camera var4 = this.entityRenderDispatcher.camera;
       Quaternionf var10000;
       switch (var1.billboardConstraints()) {
          case FIXED -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * var2.entityXRot, 0.0F);
-         case HORIZONTAL -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * cameraXRot(var4), 0.0F);
-         case VERTICAL -> var10000 = var3.rotationYXZ(-0.017453292F * cameraYrot(var4), 0.017453292F * var2.entityXRot, 0.0F);
-         case CENTER -> var10000 = var3.rotationYXZ(-0.017453292F * cameraYrot(var4), 0.017453292F * cameraXRot(var4), 0.0F);
+         case HORIZONTAL -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
+         case VERTICAL -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * var2.entityXRot, 0.0F);
+         case CENTER -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private static float cameraYrot(Camera var0) {
-      return var0.getYRot() - 180.0F;
+   private static float transformYRot(float var0) {
+      return var0 - 180.0F;
    }
 
-   private static float cameraXRot(Camera var0) {
-      return -var0.getXRot();
+   private static float transformXRot(float var0) {
+      return -var0;
    }
 
    private static <T extends Display> float entityYRot(T var0, float var1) {
@@ -124,6 +123,9 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       var2.interpolationProgress = var1.calculateInterpolationProgress(var3);
       var2.entityYRot = entityYRot(var1, var3);
       var2.entityXRot = entityXRot(var1, var3);
+      Camera var4 = this.entityRenderDispatcher.camera;
+      var2.cameraXRot = var4.getXRot();
+      var2.cameraXRot = var4.getYRot();
    }
 
    // $FF: synthetic method
@@ -142,11 +144,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
    }
 
    public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState, BlockDisplayEntityRenderState> {
-      private final BlockRenderDispatcher blockRenderer;
-
       protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
          super(var1);
-         this.blockRenderer = var1.getBlockRenderDispatcher();
       }
 
       public BlockDisplayEntityRenderState createRenderState() {

@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PufferfishRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Pufferfish;
@@ -38,7 +39,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       return 0.1F + 0.1F * (float)var1.puffState;
    }
 
-   public void submit(PufferfishRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(PufferfishRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       EntityModel var10001;
       switch (var1.puffState) {
          case 0 -> var10001 = this.small;
@@ -47,7 +48,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       }
 
       this.model = var10001;
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public void extractRenderState(Pufferfish var1, PufferfishRenderState var2, float var3) {

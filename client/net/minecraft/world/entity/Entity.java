@@ -1304,7 +1304,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
-      BlockPos var3 = var1.getSharedSpawnPos();
+      BlockPos var3 = var1.getRespawnData().pos();
       Vec3 var4 = var3.getCenter();
       int var5 = var1.getChunkAt(var3).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3.getX(), var3.getZ()) + 1;
       return BlockPos.containing(var4.x, (double)var5, var4.z);
@@ -2934,7 +2934,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    public String toString() {
       String var1 = this.level() == null ? "~NULL~" : this.level().toString();
-      return this.removalReason != null ? String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f, removed=%s]", this.getClass().getSimpleName(), this.getName().getString(), this.id, var1, this.getX(), this.getY(), this.getZ(), this.removalReason) : String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getName().getString(), this.id, var1, this.getX(), this.getY(), this.getZ());
+      return this.removalReason != null ? String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f, removed=%s]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, var1, this.getX(), this.getY(), this.getZ(), this.removalReason) : String.format(Locale.ROOT, "%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getPlainTextName(), this.id, var1, this.getX(), this.getY(), this.getZ());
    }
 
    protected final boolean isInvulnerableToBase(DamageSource var1) {
@@ -3025,7 +3025,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       } else {
          var11.restoreFrom(this);
          this.removeAfterChangingDimensions();
-         var11.teleportSetPosition(PositionMoveRotation.of(var3), var3.relatives());
+         var11.teleportSetPosition(PositionMoveRotation.of(this), PositionMoveRotation.of(var3), var3.relatives());
          var2.addDuringTeleport(var11);
 
          for(Entity var9 : var5) {
@@ -3074,8 +3074,11 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public void teleportSetPosition(PositionMoveRotation var1, Set<Relative> var2) {
-      PositionMoveRotation var3 = PositionMoveRotation.of(this);
-      PositionMoveRotation var4 = PositionMoveRotation.calculateAbsolute(var3, var1, var2);
+      this.teleportSetPosition(PositionMoveRotation.of(this), var1, var2);
+   }
+
+   public void teleportSetPosition(PositionMoveRotation var1, PositionMoveRotation var2, Set<Relative> var3) {
+      PositionMoveRotation var4 = PositionMoveRotation.calculateAbsolute(var1, var2, var3);
       this.setPosRaw(var4.position().x, var4.position().y, var4.position().z);
       this.setYRot(var4.yRot());
       this.setYHeadRot(var4.yRot());
@@ -3165,7 +3168,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          return var10000 + " (" + this.getClass().getCanonicalName() + ")";
       }));
       var1.setDetail("Entity ID", this.id);
-      var1.setDetail("Entity Name", (CrashReportDetail)(() -> this.getName().getString()));
+      var1.setDetail("Entity Name", (CrashReportDetail)(() -> this.getPlainTextName()));
       var1.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.getX(), this.getY(), this.getZ()));
       var1.setDetail("Entity's Block location", CrashReportCategory.formatLocation(this.level(), Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ())));
       Vec3 var2 = this.getDeltaMovement();
@@ -3545,7 +3548,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getName().getString(), this.getDisplayName(), var1.getServer(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
    }
 
    public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {

@@ -63,7 +63,6 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
-import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceKey;
@@ -171,6 +170,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapIndex;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
@@ -383,8 +383,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                }
             }
          });
-         var2.pop();
+         var2.popPush("blockEntities");
          this.tickBlockEntities();
+         var2.pop();
       }
 
       var2.push("entityManagement");
@@ -1303,14 +1304,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return ((MapIndex)this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.TYPE)).getNextMapId();
    }
 
-   public void setDefaultSpawnPos(BlockPos var1, float var2) {
-      BlockPos var3 = this.levelData.getSpawnPos();
-      float var4 = this.levelData.getSpawnAngle();
-      if (!var3.equals(var1) || var4 != var2) {
-         this.levelData.setSpawn(var1, var2);
-         this.getServer().getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(var1, var2));
-      }
+   public void setRespawnData(LevelData.RespawnData var1) {
+      this.getServer().setRespawnData(var1);
+   }
 
+   public LevelData.RespawnData getRespawnData() {
+      return this.getServer().getRespawnData();
    }
 
    public LongSet getForceLoadedChunks() {

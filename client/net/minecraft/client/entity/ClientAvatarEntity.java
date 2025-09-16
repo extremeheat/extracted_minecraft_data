@@ -1,9 +1,9 @@
 package net.minecraft.client.entity;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public interface ClientAvatarEntity {
    ClientAvatarState avatarState();

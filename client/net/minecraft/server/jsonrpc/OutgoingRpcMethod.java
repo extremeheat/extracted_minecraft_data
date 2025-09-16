@@ -3,8 +3,8 @@ package net.minecraft.server.jsonrpc;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +13,11 @@ import net.minecraft.server.jsonrpc.api.ParamInfo;
 import net.minecraft.server.jsonrpc.api.ResultInfo;
 
 public interface OutgoingRpcMethod<Params, Result> {
-   MethodInfo methodInfo();
+   String NOTIFICATION_PREFIX = "notification/";
+
+   MethodInfo info();
+
+   Attributes attributes();
 
    @Nullable
    default JsonElement encodeParams(Params var1) {
@@ -30,29 +34,38 @@ public interface OutgoingRpcMethod<Params, Result> {
    }
 
    static <Params> OutgoingRpcMethodBuilder<Notification<Params>> notification(Codec<Params> var0) {
-      return new OutgoingRpcMethodBuilder<Notification<Params>>((var1) -> new Notification(var1, var0));
+      return new OutgoingRpcMethodBuilder<Notification<Params>>((var1, var2) -> new Notification(var1, var2, var0));
    }
 
    static <Result> OutgoingRpcMethodBuilder<ParameterlessMethod<Result>> request(Codec<Result> var0) {
-      return new OutgoingRpcMethodBuilder<ParameterlessMethod<Result>>((var1) -> new ParameterlessMethod(var1, var0));
+      return new OutgoingRpcMethodBuilder<ParameterlessMethod<Result>>((var1, var2) -> new ParameterlessMethod(var1, var2, var0));
    }
 
    static <Params, Result> OutgoingRpcMethodBuilder<Method<Params, Result>> request(Codec<Params> var0, Codec<Result> var1) {
-      return new OutgoingRpcMethodBuilder<Method<Params, Result>>((var2) -> new Method(var2, var0, var1));
+      return new OutgoingRpcMethodBuilder<Method<Params, Result>>((var2, var3) -> new Method(var2, var3, var0, var1));
    }
 
-   public static record ParmeterlessNotification(MethodInfo methodInfo) implements OutgoingRpcMethod<Void, Void> {
-      public ParmeterlessNotification(MethodInfo var1) {
+   public static record Attributes(boolean discoverable) {
+      public Attributes(boolean var1) {
          super();
-         this.methodInfo = var1;
+         this.discoverable = var1;
       }
    }
 
-   public static record Notification<Params>(MethodInfo methodInfo, Codec<Params> paramsCodec) implements OutgoingRpcMethod<Params, Void> {
-      public Notification(MethodInfo var1, Codec<Params> var2) {
+   public static record ParmeterlessNotification(MethodInfo info, Attributes attributes) implements OutgoingRpcMethod<Void, Void> {
+      public ParmeterlessNotification(MethodInfo var1, Attributes var2) {
          super();
-         this.methodInfo = var1;
-         this.paramsCodec = var2;
+         this.info = var1;
+         this.attributes = var2;
+      }
+   }
+
+   public static record Notification<Params>(MethodInfo info, Attributes attributes, Codec<Params> paramsCodec) implements OutgoingRpcMethod<Params, Void> {
+      public Notification(MethodInfo var1, Attributes var2, Codec<Params> var3) {
+         super();
+         this.info = var1;
+         this.attributes = var2;
+         this.paramsCodec = var3;
       }
 
       @Nullable
@@ -61,11 +74,12 @@ public interface OutgoingRpcMethod<Params, Result> {
       }
    }
 
-   public static record ParameterlessMethod<Result>(MethodInfo methodInfo, Codec<Result> resultCodec) implements OutgoingRpcMethod<Void, Result> {
-      public ParameterlessMethod(MethodInfo var1, Codec<Result> var2) {
+   public static record ParameterlessMethod<Result>(MethodInfo info, Attributes attributes, Codec<Result> resultCodec) implements OutgoingRpcMethod<Void, Result> {
+      public ParameterlessMethod(MethodInfo var1, Attributes var2, Codec<Result> var3) {
          super();
-         this.methodInfo = var1;
-         this.resultCodec = var2;
+         this.info = var1;
+         this.attributes = var2;
+         this.resultCodec = var3;
       }
 
       public Result decodeResult(JsonElement var1) {
@@ -73,12 +87,13 @@ public interface OutgoingRpcMethod<Params, Result> {
       }
    }
 
-   public static record Method<Params, Result>(MethodInfo methodInfo, Codec<Params> paramsCodec, Codec<Result> resultCodec) implements OutgoingRpcMethod<Params, Result> {
-      public Method(MethodInfo var1, Codec<Params> var2, Codec<Result> var3) {
+   public static record Method<Params, Result>(MethodInfo info, Attributes attributes, Codec<Params> paramsCodec, Codec<Result> resultCodec) implements OutgoingRpcMethod<Params, Result> {
+      public Method(MethodInfo var1, Attributes var2, Codec<Params> var3, Codec<Result> var4) {
          super();
-         this.methodInfo = var1;
-         this.paramsCodec = var2;
-         this.resultCodec = var3;
+         this.info = var1;
+         this.attributes = var2;
+         this.paramsCodec = var3;
+         this.resultCodec = var4;
       }
 
       @Nullable
@@ -92,14 +107,15 @@ public interface OutgoingRpcMethod<Params, Result> {
    }
 
    public static class OutgoingRpcMethodBuilder<T extends OutgoingRpcMethod<?, ?>> {
-      private final Function<MethodInfo, T> method;
+      public static final Attributes DEFAULT_ATTRIBUTES = new Attributes(true);
+      private final Factory<T> method;
       private String description = "";
       @Nullable
       private ParamInfo paramInfo;
       @Nullable
       private ResultInfo resultInfo;
 
-      public OutgoingRpcMethodBuilder(Function<MethodInfo, T> var1) {
+      public OutgoingRpcMethodBuilder(Factory<T> var1) {
          super();
          this.method = var1;
       }
@@ -119,22 +135,22 @@ public interface OutgoingRpcMethod<Params, Result> {
          return this;
       }
 
-      private T build(String var1, String var2) {
-         MethodInfo var3 = new MethodInfo(ResourceLocation.fromNamespaceAndPath(var1, var2), this.description, true, true);
-         if (this.paramInfo != null) {
-            var3 = var3.withParam(this.paramInfo);
-         }
-
-         if (this.resultInfo != null) {
-            var3 = var3.withResult(this.resultInfo);
-         }
-
-         return (T)(this.method.apply(var3));
+      private T build() {
+         MethodInfo var1 = new MethodInfo(this.description, this.paramInfo, this.resultInfo);
+         return this.method.create(var1, DEFAULT_ATTRIBUTES);
       }
 
-      public T register(String var1, String var2) {
-         ResourceLocation var3 = ResourceLocation.fromNamespaceAndPath(var1, var2);
-         return (T)(Registry.register(BuiltInRegistries.OUTGOING_RPC_METHOD, (ResourceLocation)var3, this.build(var1, var2)));
+      public Holder.Reference<T> register(String var1) {
+         return this.register(ResourceLocation.withDefaultNamespace("notification/" + var1));
       }
+
+      private Holder.Reference<T> register(ResourceLocation var1) {
+         return Registry.registerForHolder(BuiltInRegistries.OUTGOING_RPC_METHOD, var1, this.build());
+      }
+   }
+
+   @FunctionalInterface
+   public interface Factory<T extends OutgoingRpcMethod<?, ?>> {
+      T create(MethodInfo var1, Attributes var2);
    }
 }

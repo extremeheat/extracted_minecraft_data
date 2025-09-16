@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelPartFeatureRenderer;
 import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -61,9 +62,9 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.shadowSubmits.add(new SubmitNodeStorage.ShadowSubmit(new Matrix4f(var4.pose()), var2, var3));
    }
 
-   public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6) {
+   public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6, CameraRenderState var8) {
       this.wasUsed = true;
-      this.nameTagSubmits.add(var1, var2, var3, var4, var5, var6);
+      this.nameTagSubmits.add(var1, var2, var3, var4, var5, var6, var8);
    }
 
    public void submitText(PoseStack var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10) {

@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PigRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceLocation;
@@ -33,10 +34,10 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
       return Maps.newEnumMap(Map.of(PigVariant.ModelType.NORMAL, new AdultAndBabyModelPair(new PigModel(var0.bakeLayer(ModelLayers.PIG)), new PigModel(var0.bakeLayer(ModelLayers.PIG_BABY))), PigVariant.ModelType.COLD, new AdultAndBabyModelPair(new ColdPigModel(var0.bakeLayer(ModelLayers.COLD_PIG)), new ColdPigModel(var0.bakeLayer(ModelLayers.COLD_PIG_BABY)))));
    }
 
-   public void submit(PigRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(PigRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.variant != null) {
          this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.modelAndTexture().model())).getModel(var1.isBaby);
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

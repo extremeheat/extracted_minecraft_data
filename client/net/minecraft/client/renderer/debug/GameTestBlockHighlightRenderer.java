@@ -7,14 +7,13 @@ import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.debug.DebugValueAccess;
 
-public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
+public class GameTestBlockHighlightRenderer {
    private static final int SHOW_POS_DURATION_MS = 10000;
    private static final float PADDING = 0.02F;
    private final Map<BlockPos, Marker> markers = Maps.newHashMap();
 
-   public GameTestDebugRenderer() {
+   public GameTestBlockHighlightRenderer() {
       super();
    }
 
@@ -27,9 +26,9 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
       this.markers.clear();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      long var10 = Util.getMillis();
-      this.markers.entrySet().removeIf((var2x) -> var10 > ((Marker)var2x.getValue()).removeAtTime);
+   public void render(PoseStack var1, MultiBufferSource var2) {
+      long var3 = Util.getMillis();
+      this.markers.entrySet().removeIf((var2x) -> var3 > ((Marker)var2x.getValue()).removeAtTime);
       this.markers.forEach((var3x, var4) -> this.renderMarker(var1, var2, var3x, var4));
    }
 
@@ -44,12 +43,11 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
 
    }
 
-   static class Marker {
-      public int color;
-      public String text;
-      public long removeAtTime;
+   static record Marker(int color, String text, long removeAtTime) {
+      final String text;
+      final long removeAtTime;
 
-      public Marker(int var1, String var2, long var3) {
+      Marker(int var1, String var2, long var3) {
          super();
          this.color = var1;
          this.text = var2;

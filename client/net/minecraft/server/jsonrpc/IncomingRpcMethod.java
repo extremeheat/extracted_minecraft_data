@@ -17,28 +17,39 @@ import net.minecraft.server.jsonrpc.methods.EncodeJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.InvalidParameterJsonRpcException;
 
 public interface IncomingRpcMethod {
-   MethodInfo methodInfo();
+   MethodInfo info();
+
+   Attributes attributes();
 
    JsonElement apply(MinecraftApi var1, @Nullable JsonElement var2, ClientInfo var3);
 
    static <Result> IncomingRpcMethodBuilder<ParameterlessMethod<Result>> method(ParameterlessRpcMethodFunction<Result> var0, Codec<Result> var1) {
-      return new IncomingRpcMethodBuilder<ParameterlessMethod<Result>>((var2) -> new ParameterlessMethod(var2, var1, var0));
+      return new IncomingRpcMethodBuilder<ParameterlessMethod<Result>>((var2, var3) -> new ParameterlessMethod(var2, var3, var1, var0));
    }
 
    static <Params, Result> IncomingRpcMethodBuilder<Method<Params, Result>> method(RpcMethodFunction<Params, Result> var0, Codec<Params> var1, Codec<Result> var2) {
-      return new IncomingRpcMethodBuilder<Method<Params, Result>>((var3) -> new Method(var3, var1, var2, var0));
+      return new IncomingRpcMethodBuilder<Method<Params, Result>>((var3, var4) -> new Method(var3, var4, var1, var2, var0));
    }
 
    static <Result> IncomingRpcMethodBuilder<ParameterlessMethod<Result>> method(Function<MinecraftApi, Result> var0, Codec<Result> var1) {
-      return new IncomingRpcMethodBuilder<ParameterlessMethod<Result>>((var2) -> new ParameterlessMethod(var2, var1, (var1x, var2x) -> var0.apply(var1x)));
+      return new IncomingRpcMethodBuilder<ParameterlessMethod<Result>>((var2, var3) -> new ParameterlessMethod(var2, var3, var1, (var1x, var2x) -> var0.apply(var1x)));
    }
 
-   public static record ParameterlessMethod<Result>(MethodInfo methodInfo, Codec<Result> resultCodec, ParameterlessRpcMethodFunction<Result> supplier) implements IncomingRpcMethod {
-      public ParameterlessMethod(MethodInfo var1, Codec<Result> var2, ParameterlessRpcMethodFunction<Result> var3) {
+   public static record Attributes(boolean runOnMainThread, boolean discoverable) {
+      public Attributes(boolean var1, boolean var2) {
          super();
-         this.methodInfo = var1;
-         this.resultCodec = var2;
-         this.supplier = var3;
+         this.runOnMainThread = var1;
+         this.discoverable = var2;
+      }
+   }
+
+   public static record ParameterlessMethod<Result>(MethodInfo info, Attributes attributes, Codec<Result> resultCodec, ParameterlessRpcMethodFunction<Result> supplier) implements IncomingRpcMethod {
+      public ParameterlessMethod(MethodInfo var1, Attributes var2, Codec<Result> var3, ParameterlessRpcMethodFunction<Result> var4) {
+         super();
+         this.info = var1;
+         this.attributes = var2;
+         this.resultCodec = var3;
+         this.supplier = var4;
       }
 
       public JsonElement apply(MinecraftApi var1, @Nullable JsonElement var2, ClientInfo var3) {
@@ -51,13 +62,14 @@ public interface IncomingRpcMethod {
       }
    }
 
-   public static record Method<Params, Result>(MethodInfo methodInfo, Codec<Params> paramsCodec, Codec<Result> resultCodec, RpcMethodFunction<Params, Result> function) implements IncomingRpcMethod {
-      public Method(MethodInfo var1, Codec<Params> var2, Codec<Result> var3, RpcMethodFunction<Params, Result> var4) {
+   public static record Method<Params, Result>(MethodInfo info, Attributes attributes, Codec<Params> paramsCodec, Codec<Result> resultCodec, RpcMethodFunction<Params, Result> function) implements IncomingRpcMethod {
+      public Method(MethodInfo var1, Attributes var2, Codec<Params> var3, Codec<Result> var4, RpcMethodFunction<Params, Result> var5) {
          super();
-         this.methodInfo = var1;
-         this.paramsCodec = var2;
-         this.resultCodec = var3;
-         this.function = var4;
+         this.info = var1;
+         this.attributes = var2;
+         this.paramsCodec = var3;
+         this.resultCodec = var4;
+         this.function = var5;
       }
 
       public JsonElement apply(MinecraftApi var1, @Nullable JsonElement var2, ClientInfo var3) {
@@ -77,7 +89,7 @@ public interface IncomingRpcMethod {
    }
 
    public static class IncomingRpcMethodBuilder<T extends IncomingRpcMethod> {
-      private final Function<MethodInfo, T> method;
+      private final Factory<T> method;
       private String description = "";
       @Nullable
       private ParamInfo paramInfo;
@@ -86,7 +98,7 @@ public interface IncomingRpcMethod {
       private boolean discoverable = true;
       private boolean runOnMainThread = true;
 
-      public IncomingRpcMethodBuilder(Function<MethodInfo, T> var1) {
+      public IncomingRpcMethodBuilder(Factory<T> var1) {
          super();
          this.method = var1;
       }
@@ -116,23 +128,23 @@ public interface IncomingRpcMethod {
          return this;
       }
 
-      public T build(String var1, String var2) {
-         MethodInfo var3 = new MethodInfo(ResourceLocation.fromNamespaceAndPath(var1, var2), this.description, this.runOnMainThread, this.discoverable);
-         if (this.paramInfo != null) {
-            var3 = var3.withParam(this.paramInfo);
-         }
-
-         if (this.resultInfo != null) {
-            var3 = var3.withResult(this.resultInfo);
-         }
-
-         return (T)(this.method.apply(var3));
+      public T build() {
+         MethodInfo var1 = new MethodInfo(this.description, this.paramInfo, this.resultInfo);
+         return this.method.create(var1, new Attributes(this.runOnMainThread, this.discoverable));
       }
 
-      public IncomingRpcMethod register(Registry<IncomingRpcMethod> var1, String var2, String var3) {
-         ResourceLocation var4 = ResourceLocation.withDefaultNamespace(var3);
-         return (IncomingRpcMethod)Registry.register(var1, (ResourceLocation)var4, this.build(var2, var3));
+      public T register(Registry<IncomingRpcMethod> var1, String var2) {
+         return (T)this.register(var1, ResourceLocation.withDefaultNamespace(var2));
       }
+
+      private T register(Registry<IncomingRpcMethod> var1, ResourceLocation var2) {
+         return (T)(Registry.register(var1, (ResourceLocation)var2, this.build()));
+      }
+   }
+
+   @FunctionalInterface
+   public interface Factory<T extends IncomingRpcMethod> {
+      T create(MethodInfo var1, Attributes var2);
    }
 
    @FunctionalInterface

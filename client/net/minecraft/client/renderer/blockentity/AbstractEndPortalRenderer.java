@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EndPortalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
@@ -34,7 +35,7 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
 
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var3.submitCustomGeometry(var2, this.renderType(), (var2x, var3x) -> this.renderCube(var1.facesToShow, var2x.pose(), var3x));
    }
 

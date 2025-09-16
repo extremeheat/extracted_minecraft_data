@@ -209,6 +209,7 @@ import net.minecraft.util.datafix.fixes.OverreachingTickFix;
 import net.minecraft.util.datafix.fixes.ParticleUnflatteningFix;
 import net.minecraft.util.datafix.fixes.PlayerEquipmentFix;
 import net.minecraft.util.datafix.fixes.PlayerHeadBlockProfileFix;
+import net.minecraft.util.datafix.fixes.PlayerRespawnDataFix;
 import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
@@ -261,6 +262,7 @@ import net.minecraft.util.datafix.fixes.WeaponSmithChestLootTableFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsDisallowOldCustomWorldsFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsHeightAndBiomeFix;
+import net.minecraft.util.datafix.fixes.WorldSpawnDataFix;
 import net.minecraft.util.datafix.fixes.WriteAndReadFix;
 import net.minecraft.util.datafix.fixes.WrittenBookPagesStrictJsonFix;
 import net.minecraft.util.datafix.fixes.ZombieVillagerRebuildXpFix;
@@ -865,9 +867,9 @@ public class DataFixers {
       Map var175 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var174, "Rename british shorthair", References.ENTITY, "minecraft:cat", var175));
       var0.addFixer(new CriteriaRenameFix(var174, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var175.getOrDefault(var1x, var1x)));
-      Set var287 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var287);
-      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var287::contains));
+      Set var288 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var288);
+      var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", var288::contains));
       Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
       Schema var177 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1116,6 +1118,9 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var284, "Added Mannequin", References.ENTITY));
       Schema var285 = var0.addSchema(4544, SAME_NAMESPACED);
       var0.addFixer(new LegacyWorldBorderFix(var285));
+      Schema var286 = var0.addSchema(4548, SAME_NAMESPACED);
+      var0.addFixer(new WorldSpawnDataFix(var286));
+      var0.addFixer(new PlayerRespawnDataFix(var286));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

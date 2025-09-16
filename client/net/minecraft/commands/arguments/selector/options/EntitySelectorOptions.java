@@ -90,7 +90,7 @@ public class EntitySelectorOptions {
                   var0.setHasNameEquals(true);
                }
 
-               var0.addPredicate((var2x) -> var2x.getName().getString().equals(var3) != var2);
+               var0.addPredicate((var2x) -> var2x.getPlainTextName().equals(var3) != var2);
             }
          }, (var0) -> !var0.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
          register("distance", (var0) -> {

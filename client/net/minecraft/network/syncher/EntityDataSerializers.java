@@ -1,6 +1,5 @@
 package net.minecraft.network.syncher;
 
-import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +32,6 @@ import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
-import net.minecraft.world.entity.decoration.MannequinProfile;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.item.ItemStack;
@@ -84,7 +82,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<CopperGolemState> COPPER_GOLEM_STATE;
    public static final EntityDataSerializer<Vector3f> VECTOR3;
    public static final EntityDataSerializer<Quaternionf> QUATERNION;
-   public static final EntityDataSerializer<Either<MannequinProfile, ResolvableProfile>> MANNEQUIN_PROFILE;
+   public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
 
    public static void registerSerializer(EntityDataSerializer<?> var0) {
       SERIALIZERS.add(var0);
@@ -198,7 +196,7 @@ public class EntityDataSerializers {
       COPPER_GOLEM_STATE = EntityDataSerializer.<CopperGolemState>forValueType(CopperGolemState.STREAM_CODEC);
       VECTOR3 = EntityDataSerializer.<Vector3f>forValueType(ByteBufCodecs.VECTOR3F);
       QUATERNION = EntityDataSerializer.<Quaternionf>forValueType(ByteBufCodecs.QUATERNIONF);
-      MANNEQUIN_PROFILE = EntityDataSerializer.<Either<MannequinProfile, ResolvableProfile>>forValueType(MannequinProfile.PLAYER_OR_MANNEQUIN_STREAM_CODEC);
+      RESOLVABLE_PROFILE = EntityDataSerializer.<ResolvableProfile>forValueType(ResolvableProfile.STREAM_CODEC);
       registerSerializer(BYTE);
       registerSerializer(INT);
       registerSerializer(LONG);
@@ -235,6 +233,6 @@ public class EntityDataSerializers {
       registerSerializer(WEATHERING_COPPER_STATE);
       registerSerializer(VECTOR3);
       registerSerializer(QUATERNION);
-      registerSerializer(MANNEQUIN_PROFILE);
+      registerSerializer(RESOLVABLE_PROFILE);
    }
 }

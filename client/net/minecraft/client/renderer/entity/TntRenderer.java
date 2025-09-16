@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
 import org.joml.Quaternionfc;
@@ -15,28 +16,28 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
       this.shadowRadius = 0.5F;
    }
 
-   public void submit(TntRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(TntRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.0F, 0.5F, 0.0F);
-      float var4 = var1.fuseRemainingInTicks;
+      float var5 = var1.fuseRemainingInTicks;
       if (var1.fuseRemainingInTicks < 10.0F) {
-         float var5 = 1.0F - var1.fuseRemainingInTicks / 10.0F;
-         var5 = Mth.clamp(var5, 0.0F, 1.0F);
-         var5 *= var5;
-         var5 *= var5;
-         float var6 = 1.0F + var5 * 0.3F;
-         var2.scale(var6, var6, var6);
+         float var6 = 1.0F - var1.fuseRemainingInTicks / 10.0F;
+         var6 = Mth.clamp(var6, 0.0F, 1.0F);
+         var6 *= var6;
+         var6 *= var6;
+         float var7 = 1.0F + var6 * 0.3F;
+         var2.scale(var7, var7, var7);
       }
 
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
       var2.translate(-0.5F, -0.5F, 0.5F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
       if (var1.blockState != null) {
-         TntMinecartRenderer.submitWhiteSolidBlock(var1.blockState, var2, var3, var1.lightCoords, (int)var4 / 5 % 2 == 0, var1.outlineColor);
+         TntMinecartRenderer.submitWhiteSolidBlock(var1.blockState, var2, var3, var1.lightCoords, (int)var5 / 5 % 2 == 0, var1.outlineColor);
       }
 
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public TntRenderState createRenderState() {

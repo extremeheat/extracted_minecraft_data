@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.blockentity.state.BedRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -89,9 +90,9 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
 
    }
 
-   public void submit(BedRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      Material var4 = Sheets.getBedMaterial(var1.color);
-      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var4, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress);
+   public void submit(BedRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Material var5 = Sheets.getBedMaterial(var1.color);
+      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress);
    }
 
    public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Material var5) {

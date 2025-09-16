@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -23,10 +24,10 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
       return 15;
    }
 
-   public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.scale(2.0F, 2.0F, 2.0F);
-      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)var4.orientation);
       var3.submitCustomGeometry(var2, RENDER_TYPE, (var1x, var2x) -> {
          vertex(var2x, var1x, var1.lightCoords, 0.0F, 0, 0, 1);
          vertex(var2x, var1x, var1.lightCoords, 1.0F, 0, 1, 1);
@@ -34,7 +35,7 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
          vertex(var2x, var1x, var1.lightCoords, 0.0F, 1, 0, 0);
       });
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, int var2, float var3, int var4, int var5, int var6) {

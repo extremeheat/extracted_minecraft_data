@@ -24,7 +24,7 @@ public class Deadmau5EarsLayer extends RenderLayer<AvatarRenderState, PlayerMode
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
       if (var4.showDeadMouseEars && !var4.isInvisible) {
          int var7 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-         var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var4.skin.texture()), var3, var7, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var4.skin.body().texturePath()), var3, var7, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

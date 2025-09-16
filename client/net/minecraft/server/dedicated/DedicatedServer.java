@@ -72,7 +72,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
 
@@ -529,7 +529,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public boolean isUnderSpawnProtection(ServerLevel var1, BlockPos var2, Player var3) {
-      if (var1.dimension() != Level.OVERWORLD) {
+      LevelData.RespawnData var4 = var1.getRespawnData();
+      if (var1.dimension() != var4.dimension()) {
          return false;
       } else if (this.getPlayerList().getOps().isEmpty()) {
          return false;
@@ -538,11 +539,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       } else if (this.spawnProtectionRadius() <= 0) {
          return false;
       } else {
-         BlockPos var4 = var1.getSharedSpawnPos();
-         int var5 = Mth.abs(var2.getX() - var4.getX());
-         int var6 = Mth.abs(var2.getZ() - var4.getZ());
-         int var7 = Math.max(var5, var6);
-         return var7 <= this.spawnProtectionRadius();
+         BlockPos var5 = var4.pos();
+         int var6 = Mth.abs(var2.getX() - var5.getX());
+         int var7 = Mth.abs(var2.getZ() - var5.getZ());
+         int var8 = Math.max(var6, var7);
+         return var8 <= this.spawnProtectionRadius();
       }
    }
 

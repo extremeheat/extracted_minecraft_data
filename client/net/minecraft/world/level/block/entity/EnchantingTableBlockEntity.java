@@ -17,6 +17,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public class EnchantingTableBlockEntity extends BlockEntity implements Nameable {
+   private static final Component DEFAULT_NAME = Component.translatable("container.enchant");
    public int time;
    public float flip;
    public float oFlip;
@@ -102,7 +103,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    }
 
    public Component getName() {
-      return (Component)(this.name != null ? this.name : Component.translatable("container.enchant"));
+      return this.name != null ? this.name : DEFAULT_NAME;
    }
 
    public void setCustomName(@Nullable Component var1) {

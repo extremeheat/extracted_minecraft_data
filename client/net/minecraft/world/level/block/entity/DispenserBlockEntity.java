@@ -16,6 +16,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    public static final int CONTAINER_SIZE = 9;
+   private static final Component DEFAULT_NAME = Component.translatable("container.dispenser");
    private NonNullList<ItemStack> items;
 
    protected DispenserBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
@@ -71,7 +72,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.dispenser");
+      return DEFAULT_NAME;
    }
 
    protected void loadAdditional(ValueInput var1) {

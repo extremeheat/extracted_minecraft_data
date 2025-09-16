@@ -40,10 +40,10 @@ public record WolfVariant(AssetInfo assetInfo, SpawnPrioritySelectors spawnCondi
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.WOLF_VARIANT);
    }
 
-   public static record AssetInfo(ClientAsset wild, ClientAsset tame, ClientAsset angry) {
-      public static final Codec<AssetInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.CODEC.fieldOf("wild").forGetter(AssetInfo::wild), ClientAsset.CODEC.fieldOf("tame").forGetter(AssetInfo::tame), ClientAsset.CODEC.fieldOf("angry").forGetter(AssetInfo::angry)).apply(var0, AssetInfo::new));
+   public static record AssetInfo(ClientAsset.ResourceTexture wild, ClientAsset.ResourceTexture tame, ClientAsset.ResourceTexture angry) {
+      public static final Codec<AssetInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.CODEC.fieldOf("wild").forGetter(AssetInfo::wild), ClientAsset.ResourceTexture.CODEC.fieldOf("tame").forGetter(AssetInfo::tame), ClientAsset.ResourceTexture.CODEC.fieldOf("angry").forGetter(AssetInfo::angry)).apply(var0, AssetInfo::new));
 
-      public AssetInfo(ClientAsset var1, ClientAsset var2, ClientAsset var3) {
+      public AssetInfo(ClientAsset.ResourceTexture var1, ClientAsset.ResourceTexture var2, ClientAsset.ResourceTexture var3) {
          super();
          this.wild = var1;
          this.tame = var2;

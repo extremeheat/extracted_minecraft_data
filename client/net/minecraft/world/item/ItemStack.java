@@ -32,6 +32,7 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -713,6 +714,11 @@ public final class ItemStack implements DataComponentHolder {
    @Nullable
    public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
       return (T)this.components.set(var1, var2);
+   }
+
+   @Nullable
+   public <T> T set(TypedDataComponent<T> var1) {
+      return (T)this.components.set(var1);
    }
 
    public <T> void copyFrom(DataComponentType<T> var1, DataComponentGetter var2) {

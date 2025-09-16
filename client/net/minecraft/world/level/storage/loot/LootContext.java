@@ -15,6 +15,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -166,6 +167,56 @@ public class LootContext {
       // $FF: synthetic method
       private static EntityTarget[] $values() {
          return new EntityTarget[]{THIS, ATTACKER, DIRECT_ATTACKER, ATTACKING_PLAYER, TARGET_ENTITY, INTERACTING_ENTITY};
+      }
+   }
+
+   public static enum BlockEntityTarget implements StringRepresentable {
+      BLOCK_ENTITY("block_entity", LootContextParams.BLOCK_ENTITY);
+
+      private final String name;
+      private final ContextKey<? extends BlockEntity> param;
+
+      private BlockEntityTarget(final String var3, final ContextKey<? extends BlockEntity> var4) {
+         this.name = var3;
+         this.param = var4;
+      }
+
+      public ContextKey<? extends BlockEntity> getParam() {
+         return this.param;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static BlockEntityTarget[] $values() {
+         return new BlockEntityTarget[]{BLOCK_ENTITY};
+      }
+   }
+
+   public static enum ItemStackTarget implements StringRepresentable {
+      TOOL("tool", LootContextParams.TOOL);
+
+      private final String name;
+      private final ContextKey<? extends ItemStack> param;
+
+      private ItemStackTarget(final String var3, final ContextKey<? extends ItemStack> var4) {
+         this.name = var3;
+         this.param = var4;
+      }
+
+      public ContextKey<? extends ItemStack> getParam() {
+         return this.param;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static ItemStackTarget[] $values() {
+         return new ItemStackTarget[]{TOOL};
       }
    }
 

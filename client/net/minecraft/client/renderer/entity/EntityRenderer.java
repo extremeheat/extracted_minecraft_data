@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.entity.state.ServerHitboxesRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -104,14 +105,14 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return var1.passengerOffset != null ? var1.passengerOffset : Vec3.ZERO;
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.leashStates != null) {
-         for(EntityRenderState.LeashState var5 : var1.leashStates) {
-            var3.submitLeash(var2, var5);
+         for(EntityRenderState.LeashState var6 : var1.leashStates) {
+            var3.submitLeash(var2, var6);
          }
       }
 
-      this.submitNameTag(var1, var2, var3);
+      this.submitNameTag(var1, var2, var3, var4);
    }
 
    protected boolean shouldShowName(T var1, double var2) {
@@ -122,9 +123,9 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return this.font;
    }
 
-   protected void submitNameTag(S var1, PoseStack var2, SubmitNodeCollector var3) {
+   protected void submitNameTag(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.nameTag != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
       }
 
    }

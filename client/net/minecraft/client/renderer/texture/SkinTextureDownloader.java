@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
@@ -37,17 +38,18 @@ public class SkinTextureDownloader {
       this.mainThreadExecutor = var3;
    }
 
-   public CompletableFuture<ResourceLocation> downloadAndRegisterSkin(ResourceLocation var1, Path var2, String var3, boolean var4) {
+   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(ResourceLocation var1, Path var2, String var3, boolean var4) {
+      ClientAsset.DownloadedTexture var5 = new ClientAsset.DownloadedTexture(var1, var3);
       return CompletableFuture.supplyAsync(() -> {
          NativeImage var4x;
          try {
-            var4x = this.downloadSkin(var2, var3);
+            var4x = this.downloadSkin(var2, var5.url());
          } catch (IOException var6) {
             throw new UncheckedIOException(var6);
          }
 
-         return var4 ? processLegacySkin(var4x, var3) : var4x;
-      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((var2x) -> this.registerTextureInManager(var1, var2x));
+         return var4 ? processLegacySkin(var4x, var5.url()) : var4x;
+      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((var2x) -> this.registerTextureInManager(var5, var2x));
    }
 
    private NativeImage downloadSkin(Path var1, String var2) throws IOException {
@@ -113,11 +115,12 @@ public class SkinTextureDownloader {
       }
    }
 
-   private CompletableFuture<ResourceLocation> registerTextureInManager(ResourceLocation var1, NativeImage var2) {
+   private CompletableFuture<ClientAsset.Texture> registerTextureInManager(ClientAsset.Texture var1, NativeImage var2) {
       return CompletableFuture.supplyAsync(() -> {
-         Objects.requireNonNull(var1);
-         DynamicTexture var3 = new DynamicTexture(var1::toString, var2);
-         this.textureManager.register(var1, var3);
+         ResourceLocation var10002 = var1.texturePath();
+         Objects.requireNonNull(var10002);
+         DynamicTexture var3 = new DynamicTexture(var10002::toString, var2);
+         this.textureManager.register(var1.texturePath(), var3);
          return var1;
       }, this.mainThreadExecutor);
    }

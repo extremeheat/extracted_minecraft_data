@@ -156,12 +156,8 @@ public class ChatScreen extends Screen {
             }
          }
 
-         return this.input.mouseClicked(var1, var2) ? true : super.mouseClicked(var1, var2);
+         return super.mouseClicked(var1, var2);
       }
-   }
-
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
-      return this.input.mouseDragged(var1, var2, var4) ? true : super.mouseDragged(var1, var2, var4);
    }
 
    public void insertText(String var1, boolean var2) {

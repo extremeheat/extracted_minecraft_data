@@ -33,7 +33,7 @@ public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, S
       var2.headEatPositionScale = var1.getHeadEatPositionScale(var3);
       var2.isSheared = var1.isSheared();
       var2.woolColor = var1.getColor();
-      var2.id = var1.getId();
+      var2.isJebSheep = checkMagicName(var1, "jeb_");
    }
 
    // $FF: synthetic method

@@ -11,7 +11,7 @@ public record SecurityConfig(String secretKey) {
    }
 
    public static boolean isValid(String var0) {
-      return var0 != null && !var0.isEmpty() ? var0.matches("^[a-zA-Z0-9]{40}$") : false;
+      return var0.isEmpty() ? false : var0.matches("^[a-zA-Z0-9]{40}$");
    }
 
    public static String generateSecretKey() {

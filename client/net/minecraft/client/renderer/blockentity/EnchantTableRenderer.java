@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EnchantTableRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -51,17 +52,17 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       var2.yRot = var1.oRot + var6 * var3;
    }
 
-   public void submit(EnchantTableRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(EnchantTableRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.5F, 0.75F, 0.5F);
       var2.translate(0.0F, 0.1F + Mth.sin(var1.time * 0.1F) * 0.01F, 0.0F);
-      float var4 = var1.yRot;
-      var2.mulPose((Quaternionfc)Axis.YP.rotation(-var4));
+      float var5 = var1.yRot;
+      var2.mulPose((Quaternionfc)Axis.YP.rotation(-var5));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
-      float var5 = Mth.frac(var1.flip + 0.25F) * 1.6F - 0.3F;
-      float var6 = Mth.frac(var1.flip + 0.75F) * 1.6F - 0.3F;
-      BookModel.State var7 = new BookModel.State(var1.time, Mth.clamp(var5, 0.0F, 1.0F), Mth.clamp(var6, 0.0F, 1.0F), var1.open);
-      var3.submitModel(this.bookModel, var7, var2, BOOK_LOCATION.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
+      float var6 = Mth.frac(var1.flip + 0.25F) * 1.6F - 0.3F;
+      float var7 = Mth.frac(var1.flip + 0.75F) * 1.6F - 0.3F;
+      BookModel.State var8 = new BookModel.State(var1.time, Mth.clamp(var6, 0.0F, 1.0F), Mth.clamp(var7, 0.0F, 1.0F), var1.open);
+      var3.submitModel(this.bookModel, var8, var2, BOOK_LOCATION.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
       var2.popPose();
    }
 

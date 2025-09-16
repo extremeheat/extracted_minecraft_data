@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
@@ -13,7 +14,7 @@ public class EntityBlockIntersectionDebugRenderer implements DebugRenderer.Simpl
       super();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
       var9.forEachBlock(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, (var2x, var3x) -> {
          float var4 = ARGB.redFloat(var3x.color());
          float var5 = ARGB.greenFloat(var3x.color());

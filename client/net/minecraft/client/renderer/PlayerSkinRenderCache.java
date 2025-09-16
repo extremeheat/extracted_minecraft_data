@@ -14,9 +14,9 @@ import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.server.players.ProfileResolver;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.component.ResolvableProfile;
 
 public class PlayerSkinRenderCache {
@@ -32,7 +32,7 @@ public class PlayerSkinRenderCache {
       super();
       this.renderInfoCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_DURATION).build(new CacheLoader<ResolvableProfile, CompletableFuture<Optional<RenderInfo>>>() {
          public CompletableFuture<Optional<RenderInfo>> load(ResolvableProfile var1) {
-            return var1.resolveProfile(PlayerSkinRenderCache.this.profileResolver).thenCompose((var1x) -> PlayerSkinRenderCache.this.skinManager.get(var1x).thenApply((var2) -> var2.map((var2x) -> PlayerSkinRenderCache.this.new RenderInfo(var1x, var2x))));
+            return var1.resolveProfile(PlayerSkinRenderCache.this.profileResolver).thenCompose((var2) -> PlayerSkinRenderCache.this.skinManager.get(var2).thenApply((var3) -> var3.map((var3x) -> PlayerSkinRenderCache.this.new RenderInfo(var2, var3x, var1.skinPatch()))));
          }
 
          // $FF: synthetic method
@@ -43,7 +43,7 @@ public class PlayerSkinRenderCache {
       this.defaultSkinCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_DURATION).build(new CacheLoader<ResolvableProfile, RenderInfo>() {
          public RenderInfo load(ResolvableProfile var1) {
             GameProfile var2 = var1.partialProfile();
-            return PlayerSkinRenderCache.this.new RenderInfo(var2, DefaultPlayerSkin.get(var2));
+            return PlayerSkinRenderCache.this.new RenderInfo(var2, DefaultPlayerSkin.get(var2), var1.skinPatch());
          }
 
          // $FF: synthetic method
@@ -78,7 +78,7 @@ public class PlayerSkinRenderCache {
    }
 
    static RenderType playerSkinRenderType(PlayerSkin var0) {
-      return SkullBlockRenderer.getPlayerSkinRenderType(var0.texture());
+      return SkullBlockRenderer.getPlayerSkinRenderType(var0.body().texturePath());
    }
 
    public final class RenderInfo {
@@ -91,10 +91,10 @@ public class PlayerSkinRenderCache {
       @Nullable
       private GlyphRenderTypes glyphRenderTypes;
 
-      public RenderInfo(final GameProfile var2, final PlayerSkin var3) {
+      public RenderInfo(final GameProfile var2, final PlayerSkin var3, final PlayerSkin.Patch var4) {
          super();
          this.gameProfile = var2;
-         this.playerSkin = var3;
+         this.playerSkin = var3.with(var4);
       }
 
       public GameProfile gameProfile() {
@@ -115,7 +115,7 @@ public class PlayerSkinRenderCache {
 
       public GpuTextureView textureView() {
          if (this.textureView == null) {
-            this.textureView = PlayerSkinRenderCache.this.textureManager.getTexture(this.playerSkin.texture()).getTextureView();
+            this.textureView = PlayerSkinRenderCache.this.textureManager.getTexture(this.playerSkin.body().texturePath()).getTextureView();
          }
 
          return this.textureView;
@@ -123,7 +123,7 @@ public class PlayerSkinRenderCache {
 
       public GlyphRenderTypes glyphRenderTypes() {
          if (this.glyphRenderTypes == null) {
-            this.glyphRenderTypes = GlyphRenderTypes.createForColorTexture(this.playerSkin.texture());
+            this.glyphRenderTypes = GlyphRenderTypes.createForColorTexture(this.playerSkin.body().texturePath());
          }
 
          return this.glyphRenderTypes;

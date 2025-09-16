@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.blockentity.state.ShelfRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -52,14 +53,14 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity, Shel
 
    }
 
-   public void submit(ShelfRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      Direction var4 = (Direction)var1.blockState.getValue(ShelfBlock.FACING);
-      float var5 = var4.getAxis().isHorizontal() ? -var4.toYRot() : 180.0F;
+   public void submit(ShelfRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Direction var5 = (Direction)var1.blockState.getValue(ShelfBlock.FACING);
+      float var6 = var5.getAxis().isHorizontal() ? -var5.toYRot() : 180.0F;
 
-      for(int var6 = 0; var6 < var1.items.length; ++var6) {
-         ItemStackRenderState var7 = var1.items[var6];
-         if (var7 != null) {
-            this.submitItem(var1, var7, var2, var3, var6, var5);
+      for(int var7 = 0; var7 < var1.items.length; ++var7) {
+         ItemStackRenderState var8 = var1.items[var7];
+         if (var8 != null) {
+            this.submitItem(var1, var8, var2, var3, var7, var6);
          }
       }
 

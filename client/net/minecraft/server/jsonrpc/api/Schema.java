@@ -3,6 +3,8 @@ package net.minecraft.server.jsonrpc.api;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,17 +17,17 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 
-public record Schema(Optional<String> reference, Optional<String> type, Optional<FlatSchema> items, Optional<Map<String, FlatSchema>> properties, Optional<List<String>> enumValues) {
-   public static final MapCodec<Schema> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("$ref").forGetter(Schema::reference), Codec.STRING.optionalFieldOf("type").forGetter(Schema::type), FlatSchema.CODEC.codec().optionalFieldOf("items").forGetter(Schema::items), Codec.unboundedMap(Codec.STRING, FlatSchema.CODEC.codec()).optionalFieldOf("properties").forGetter(Schema::properties), Codec.STRING.listOf().optionalFieldOf("enum").forGetter(Schema::enumValues)).apply(var0, Schema::new));
-   private static final Map<String, Schema> SCHEMA_REGISTRY = new HashMap();
+public record Schema(Optional<URI> reference, Optional<String> type, Optional<FlatSchema> items, Optional<Map<String, FlatSchema>> properties, Optional<List<String>> enumValues) {
+   public static final MapCodec<Schema> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ReferenceUtil.REFERENCE_CODEC.optionalFieldOf("$ref").forGetter(Schema::reference), Codec.STRING.optionalFieldOf("type").forGetter(Schema::type), FlatSchema.CODEC.codec().optionalFieldOf("items").forGetter(Schema::items), Codec.unboundedMap(Codec.STRING, FlatSchema.CODEC.codec()).optionalFieldOf("properties").forGetter(Schema::properties), Codec.STRING.listOf().optionalFieldOf("enum").forGetter(Schema::enumValues)).apply(var0, Schema::new));
+   private static final List<SchemaComponent> SCHEMA_REGISTRY = new ArrayList();
    public static final Schema BOOL_SCHEMA = ofType("boolean");
    public static final Schema INT_SCHEMA = ofType("integer");
    public static final Schema NUMBER_SCHEMA = ofType("number");
    public static final Schema STRING_SCHEMA = ofType("string");
    public static final Schema UUID_SCHEMA;
    public static final Schema UUID_LIST_SCHEMA;
-   public static final Schema DIFFICULTY_SCHEMA;
-   public static final Schema GAME_TYPE_SCHEMA;
+   public static final SchemaComponent DIFFICULTY_SCHEMA;
+   public static final SchemaComponent GAME_TYPE_SCHEMA;
    public static final SchemaComponent PLAYER_SCHEMA;
    public static final SchemaComponent VERSION_SCHEMA;
    public static final SchemaComponent SERVER_STATE_SCHEMA;
@@ -40,7 +42,7 @@ public record Schema(Optional<String> reference, Optional<String> type, Optional
    public static final SchemaComponent IP_BAN_SCHEMA;
    public static final SchemaComponent PLAYER_BAN_SCHEMA;
 
-   public Schema(Optional<String> var1, Optional<String> var2, Optional<FlatSchema> var3, Optional<Map<String, FlatSchema>> var4, Optional<List<String>> var5) {
+   public Schema(Optional<URI> var1, Optional<String> var2, Optional<FlatSchema> var3, Optional<Map<String, FlatSchema>> var4, Optional<List<String>> var5) {
       super();
       this.reference = var1;
       this.type = var2;
@@ -50,15 +52,16 @@ public record Schema(Optional<String> reference, Optional<String> type, Optional
    }
 
    private static SchemaComponent registerSchema(String var0, Schema var1) {
-      SCHEMA_REGISTRY.put(var0, var1);
-      return new SchemaComponent(var0, var1);
+      SchemaComponent var2 = new SchemaComponent(var0, ReferenceUtil.createLocalReference(var0), var1);
+      SCHEMA_REGISTRY.add(var2);
+      return var2;
    }
 
-   public static Map<String, Schema> getSchemaRegistry() {
+   public static List<SchemaComponent> getSchemaRegistry() {
       return SCHEMA_REGISTRY;
    }
 
-   public static Schema ofRef(String var0) {
+   public static Schema ofRef(URI var0) {
       return new Schema(Optional.of(var0), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
    }
 
@@ -111,8 +114,8 @@ public record Schema(Optional<String> reference, Optional<String> type, Optional
    static {
       UUID_SCHEMA = STRING_SCHEMA;
       UUID_LIST_SCHEMA = UUID_SCHEMA.asArray();
-      DIFFICULTY_SCHEMA = ofEnum(Difficulty::values);
-      GAME_TYPE_SCHEMA = ofEnum(GameType::values);
+      DIFFICULTY_SCHEMA = registerSchema("difficulty", ofEnum(Difficulty::values));
+      GAME_TYPE_SCHEMA = registerSchema("game_type", ofEnum(GameType::values));
       PLAYER_SCHEMA = registerSchema("player", record().withField("id", UUID_SCHEMA.flatten()).withField("name", STRING_SCHEMA.flatten()));
       VERSION_SCHEMA = registerSchema("version", record().withField("name", STRING_SCHEMA.flatten()).withField("protocol", INT_SCHEMA.flatten()));
       SERVER_STATE_SCHEMA = registerSchema("server_state", record().withField("started", BOOL_SCHEMA.flatten()).withField("players", PLAYER_SCHEMA.asRef().asArray().flatten()).withField("version", VERSION_SCHEMA.asRef().flatten()));

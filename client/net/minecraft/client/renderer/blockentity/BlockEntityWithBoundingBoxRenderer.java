@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityWithBoundingBoxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
@@ -75,20 +76,20 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
       var1.structureVoids = null;
    }
 
-   public void submit(BlockEntityWithBoundingBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(BlockEntityWithBoundingBoxRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.isVisible) {
-         BoundingBoxRenderable.Mode var4 = var1.mode;
-         if (var4 != BoundingBoxRenderable.Mode.NONE) {
-            BoundingBoxRenderable.RenderableBox var5 = var1.box;
-            BlockPos var6 = var5.localPos();
-            Vec3i var7 = var5.size();
-            if (var7.getX() >= 1 && var7.getY() >= 1 && var7.getZ() >= 1) {
-               float var8 = 1.0F;
-               float var9 = 0.9F;
-               float var10 = 0.5F;
-               BlockPos var11 = var6.offset(var7);
-               var3.submitCustomGeometry(var2, RenderType.lines(), (var2x, var3x) -> ShapeRenderer.renderLineBox(var2x, var3x, (double)var6.getX(), (double)var6.getY(), (double)var6.getZ(), (double)var11.getX(), (double)var11.getY(), (double)var11.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F));
-               this.submitInvisibleBlocks(var1, var6, var7, var3, var2);
+         BoundingBoxRenderable.Mode var5 = var1.mode;
+         if (var5 != BoundingBoxRenderable.Mode.NONE) {
+            BoundingBoxRenderable.RenderableBox var6 = var1.box;
+            BlockPos var7 = var6.localPos();
+            Vec3i var8 = var6.size();
+            if (var8.getX() >= 1 && var8.getY() >= 1 && var8.getZ() >= 1) {
+               float var9 = 1.0F;
+               float var10 = 0.9F;
+               float var11 = 0.5F;
+               BlockPos var12 = var7.offset(var8);
+               var3.submitCustomGeometry(var2, RenderType.lines(), (var2x, var3x) -> ShapeRenderer.renderLineBox(var2x, var3x, (double)var7.getX(), (double)var7.getY(), (double)var7.getZ(), (double)var12.getX(), (double)var12.getY(), (double)var12.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F));
+               this.submitInvisibleBlocks(var1, var7, var8, var3, var2);
             }
          }
       }

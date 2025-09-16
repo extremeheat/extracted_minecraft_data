@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -32,13 +33,13 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       return this.fullBright ? 15 : super.getBlockLightLevel(var1, var2);
    }
 
-   public void submit(ThrownItemRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ThrownItemRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.scale(this.scale, this.scale, this.scale);
-      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)var4.orientation);
       var1.item.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       var2.popPose();
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    public ThrownItemRenderState createRenderState() {

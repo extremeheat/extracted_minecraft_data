@@ -150,7 +150,7 @@ public class ItemInHandRenderer {
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(45.0F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var6 * -41.0F));
       var1.translate(var6 * 0.3F, -1.1F, 0.45F);
-      ResourceLocation var7 = this.minecraft.player.getSkin().texture();
+      ResourceLocation var7 = this.minecraft.player.getSkin().body().texturePath();
       if (var4 == HumanoidArm.RIGHT) {
          var5.renderRightHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
@@ -249,7 +249,7 @@ public class ItemInHandRenderer {
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * -135.0F));
       var1.translate(var8 * 5.6F, 0.0F, 0.0F);
       AvatarRenderer var16 = this.entityRenderDispatcher.getPlayerRenderer(var15);
-      ResourceLocation var17 = ((AbstractClientPlayer)var15).getSkin().texture();
+      ResourceLocation var17 = ((AbstractClientPlayer)var15).getSkin().body().texturePath();
       if (var7) {
          var16.renderRightHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {

@@ -8,6 +8,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -32,32 +33,32 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       this.model = new MinecartModel(var1.bakeLayer(var2));
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
-      super.submit(var1, var2, var3);
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      super.submit(var1, var2, var3, var4);
       var2.pushPose();
-      long var4 = var1.offsetSeed;
-      float var6 = (((float)(var4 >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      float var7 = (((float)(var4 >> 20 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      float var8 = (((float)(var4 >> 24 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      var2.translate(var6, var7, var8);
+      long var5 = var1.offsetSeed;
+      float var7 = (((float)(var5 >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      float var8 = (((float)(var5 >> 20 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      float var9 = (((float)(var5 >> 24 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      var2.translate(var7, var8, var9);
       if (var1.isNewRender) {
          newRender(var1, var2);
       } else {
          oldRender(var1, var2);
       }
 
-      float var9 = var1.hurtTime;
-      if (var9 > 0.0F) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var9) * var9 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+      float var10 = var1.hurtTime;
+      if (var10 > 0.0F) {
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
-      BlockState var10 = var1.displayBlockState;
-      if (var10.getRenderShape() != RenderShape.INVISIBLE) {
+      BlockState var11 = var1.displayBlockState;
+      if (var11.getRenderShape() != RenderShape.INVISIBLE) {
          var2.pushPose();
          var2.scale(0.75F, 0.75F, 0.75F);
          var2.translate(-0.5F, (float)(var1.displayOffset - 8) / 16.0F, 0.5F);
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.submitMinecartContents(var1, var10, var2, var3, var1.lightCoords);
+         this.submitMinecartContents(var1, var11, var2, var3, var1.lightCoords);
          var2.popPose();
       }
 

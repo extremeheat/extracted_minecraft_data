@@ -136,7 +136,7 @@ public class SignBlockEntity extends BlockEntity {
          this.setAllowedPlayerEditor((UUID)null);
          this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
       } else {
-         LOGGER.warn("Player {} just tried to change non-editable sign", var1.getName().getString());
+         LOGGER.warn("Player {} just tried to change non-editable sign", var1.getPlainTextName());
       }
    }
 
@@ -223,7 +223,7 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, ServerLevel var1, BlockPos var2) {
-      String var3 = var0 == null ? "Sign" : var0.getName().getString();
+      String var3 = var0 == null ? "Sign" : var0.getPlainTextName();
       Object var4 = var0 == null ? Component.literal("Sign") : var0.getDisplayName();
       return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, 2, var3, (Component)var4, var1.getServer(), var0);
    }

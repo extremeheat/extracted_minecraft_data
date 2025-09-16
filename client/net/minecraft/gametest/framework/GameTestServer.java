@@ -59,6 +59,7 @@ import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import org.slf4j.Logger;
@@ -232,7 +233,7 @@ public class GameTestServer extends MinecraftServer {
 
    private void startTests(ServerLevel var1) {
       BlockPos var2 = new BlockPos(var1.random.nextIntBetweenInclusive(-14999992, 14999992), -59, var1.random.nextIntBetweenInclusive(-14999992, 14999992));
-      var1.setDefaultSpawnPos(var2, 0.0F);
+      var1.setRespawnData(LevelData.RespawnData.of(var1.dimension(), var2, 0.0F, 0.0F));
       GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8, false)).build();
       List var4 = var3.getTestInfos();
       this.testTracker = new MultipleTestTracker(var4);

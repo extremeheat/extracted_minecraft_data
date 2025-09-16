@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -50,31 +51,31 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       this.model = new EnderDragonModel(var1.bakeLayer(ModelLayers.ENDER_DRAGON));
    }
 
-   public void submit(EnderDragonRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(EnderDragonRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
-      float var4 = var1.getHistoricalPos(7).yRot();
-      float var5 = (float)(var1.getHistoricalPos(5).y() - var1.getHistoricalPos(10).y());
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var4));
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var5 * 10.0F));
+      float var5 = var1.getHistoricalPos(7).yRot();
+      float var6 = (float)(var1.getHistoricalPos(5).y() - var1.getHistoricalPos(10).y());
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var5));
+      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * 10.0F));
       var2.translate(0.0F, 0.0F, 1.0F);
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.translate(0.0F, -1.501F, 0.0F);
-      int var6 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
+      int var7 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
       if (var1.deathTime > 0.0F) {
-         int var7 = ARGB.white(var1.deathTime / 200.0F);
-         var3.order(0).submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var7, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-         var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         int var8 = ARGB.white(var1.deathTime / 200.0F);
+         var3.order(0).submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
-         var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var6, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
       var3.submitModel(this.model, var1, var2, EYES, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       if (var1.deathTime > 0.0F) {
-         float var8 = var1.deathTime / 200.0F;
+         float var9 = var1.deathTime / 200.0F;
          var2.pushPose();
          var2.translate(0.0F, -1.0F, -2.0F);
-         submitRays(var2, var8, var3, RenderType.dragonRays());
-         submitRays(var2, var8, var3, RenderType.dragonRaysDepth());
+         submitRays(var2, var9, var3, RenderType.dragonRays());
+         submitRays(var2, var9, var3, RenderType.dragonRaysDepth());
          var2.popPose();
       }
 
@@ -83,7 +84,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          submitCrystalBeams((float)var1.beamOffset.x, (float)var1.beamOffset.y, (float)var1.beamOffset.z, var1.ageInTicks, var2, var3, var1.lightCoords);
       }
 
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    private static void submitRays(PoseStack var0, float var1, SubmitNodeCollector var2, RenderType var3) {

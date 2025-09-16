@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.CowRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Cow;
@@ -41,10 +42,10 @@ public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
       var2.variant = (CowVariant)var1.getVariant().value();
    }
 
-   public void submit(CowRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(CowRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.variant != null) {
          this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.modelAndTexture().model())).getModel(var1.isBaby);
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

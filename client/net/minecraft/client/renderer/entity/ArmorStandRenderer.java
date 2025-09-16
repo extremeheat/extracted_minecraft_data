@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -59,9 +60,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       var2.wiggle = (float)(var1.level().getGameTime() - var1.lastHit) + var3;
    }
 
-   public void submit(ArmorStandRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(ArmorStandRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       this.model = var1.isSmall ? this.smallModel : this.bigModel;
-      super.submit(var1, var2, var3);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {

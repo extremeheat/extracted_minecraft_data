@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.RegistrySetBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.data.worldgen.NoiseData;
 import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.BoundedFloatFunction;
@@ -89,7 +92,7 @@ public final class OverworldBiomeBuilder {
    }
 
    private void addDebugBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      HolderLookup.Provider var2 = VanillaRegistries.createLookup();
+      HolderLookup.Provider var2 = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
       HolderLookup.RegistryLookup var3 = var2.lookupOrThrow(Registries.DENSITY_FUNCTION);
       DensityFunctions.Spline.Coordinate var4 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.CONTINENTS));
       DensityFunctions.Spline.Coordinate var5 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.EROSION));

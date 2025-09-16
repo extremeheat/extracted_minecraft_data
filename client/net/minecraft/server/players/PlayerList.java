@@ -3,6 +3,7 @@ package net.minecraft.server.players;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.net.SocketAddress;
@@ -145,7 +146,7 @@ public abstract class PlayerList {
       var5.add(var4);
       ServerLevel var8 = var2.level();
       String var9 = var1.getLoggableAddress(this.server.logIPs());
-      LOGGER.info("{}[{}] logged in with entity id {} at ({}, {}, {})", new Object[]{var2.getName().getString(), var9, var2.getId(), var2.getX(), var2.getY(), var2.getZ()});
+      LOGGER.info("{}[{}] logged in with entity id {} at ({}, {}, {})", new Object[]{var2.getPlainTextName(), var9, var2.getId(), var2.getX(), var2.getY(), var2.getZ()});
       LevelData var10 = var8.getLevelData();
       ServerGamePacketListenerImpl var11 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
       var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), var11), var11);
@@ -363,18 +364,18 @@ public abstract class PlayerList {
          var6.addTag(var8);
       }
 
-      Vec3 var15 = var4.position();
-      var6.snapTo(var15.x, var15.y, var15.z, var4.yRot(), var4.xRot());
+      Vec3 var16 = var4.position();
+      var6.snapTo(var16.x, var16.y, var16.z, var4.yRot(), var4.xRot());
       if (var4.missingRespawnBlock()) {
          var6.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      int var16 = var2 ? 1 : 0;
+      int var17 = var2 ? 1 : 0;
       ServerLevel var9 = var6.level();
       LevelData var10 = var9.getLevelData();
-      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var16));
+      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var17));
       var6.connection.teleport(var6.getX(), var6.getY(), var6.getZ(), var6.getYRot(), var6.getXRot());
-      var6.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var5.getSharedSpawnPos(), var5.getSharedSpawnAngle()));
+      var6.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var5.getRespawnData()));
       var6.connection.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
       var6.connection.send(new ClientboundSetExperiencePacket(var6.experienceProgress, var6.totalExperience, var6.experienceLevel));
       this.sendActivePlayerEffects(var6);
@@ -387,12 +388,13 @@ public abstract class PlayerList {
       var6.setHealth(var6.getHealth());
       ServerPlayer.RespawnConfig var11 = var6.getRespawnConfig();
       if (!var2 && var11 != null) {
-         ServerLevel var12 = this.server.getLevel(var11.dimension());
-         if (var12 != null) {
-            BlockPos var13 = var11.pos();
-            BlockState var14 = var12.getBlockState(var13);
-            if (var14.is(Blocks.RESPAWN_ANCHOR)) {
-               var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var13.getX(), (double)var13.getY(), (double)var13.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
+         LevelData.RespawnData var12 = var11.respawnData();
+         ServerLevel var13 = this.server.getLevel(var12.dimension());
+         if (var13 != null) {
+            BlockPos var14 = var12.pos();
+            BlockState var15 = var13.getBlockState(var14);
+            if (var15.is(Blocks.RESPAWN_ANCHOR)) {
+               var6.connection.send(new ClientboundSoundPacket(SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.BLOCKS, (double)var14.getX(), (double)var14.getY(), (double)var14.getZ(), 1.0F, 1.0F, var5.getRandom().nextLong()));
             }
          }
       }
@@ -593,7 +595,7 @@ public abstract class PlayerList {
       WorldBorder var3 = var2.getWorldBorder();
       var1.connection.send(new ClientboundInitializeBorderPacket(var3));
       var1.connection.send(new ClientboundSetTimePacket(var2.getGameTime(), var2.getDayTime(), var2.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
-      var1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle()));
+      var1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var2.getRespawnData()));
       if (var2.isRaining()) {
          var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0.0F));
          var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, var2.getRainLevel(1.0F)));
@@ -711,24 +713,25 @@ public abstract class PlayerList {
    }
 
    public ServerStatsCounter getPlayerStats(Player var1) {
-      UUID var2 = var1.getUUID();
-      ServerStatsCounter var3 = (ServerStatsCounter)this.stats.get(var2);
-      if (var3 == null) {
-         File var4 = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR).toFile();
-         File var5 = new File(var4, String.valueOf(var2) + ".json");
-         if (!var5.exists()) {
-            File var6 = new File(var4, var1.getName().getString() + ".json");
-            Path var7 = var6.toPath();
-            if (FileUtil.isPathNormalized(var7) && FileUtil.isPathPortable(var7) && var7.startsWith(var4.getPath()) && var6.isFile()) {
-               var6.renameTo(var5);
+      GameProfile var2 = var1.getGameProfile();
+      UUID var3 = var2.id();
+      ServerStatsCounter var4 = (ServerStatsCounter)this.stats.get(var3);
+      if (var4 == null) {
+         File var5 = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR).toFile();
+         File var6 = new File(var5, String.valueOf(var3) + ".json");
+         if (!var6.exists()) {
+            File var7 = new File(var5, var2.name() + ".json");
+            Path var8 = var7.toPath();
+            if (FileUtil.isPathNormalized(var8) && FileUtil.isPathPortable(var8) && var8.startsWith(var5.getPath()) && var7.isFile()) {
+               var7.renameTo(var6);
             }
          }
 
-         var3 = new ServerStatsCounter(this.server, var5);
-         this.stats.put(var2, var3);
+         var4 = new ServerStatsCounter(this.server, var6);
+         this.stats.put(var3, var4);
       }
 
-      return var3;
+      return var4;
    }
 
    public PlayerAdvancements getPlayerAdvancements(ServerPlayer var1) {

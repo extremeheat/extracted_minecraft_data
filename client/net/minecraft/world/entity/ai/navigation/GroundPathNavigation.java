@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class GroundPathNavigation extends PathNavigation {
    private boolean avoidSun;
+   private boolean canPathToTargetsBelowSurface;
 
    public GroundPathNavigation(Mob var1, Level var2) {
       super(var1, var2);
@@ -38,41 +39,49 @@ public class GroundPathNavigation extends PathNavigation {
    }
 
    public Path createPath(BlockPos var1, int var2) {
-      LevelChunk var3 = this.level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(((BlockPos)var1).getX()), SectionPos.blockToSectionCoord(((BlockPos)var1).getZ()));
+      LevelChunk var3 = this.level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
       if (var3 == null) {
          return null;
       } else {
-         if (var3.getBlockState((BlockPos)var1).isAir()) {
-            BlockPos.MutableBlockPos var4 = ((BlockPos)var1).mutable().move(Direction.DOWN);
-
-            while(var4.getY() >= this.level.getMinY() && var3.getBlockState(var4).isAir()) {
-               var4.move(Direction.DOWN);
-            }
-
-            if (var4.getY() >= this.level.getMinY()) {
-               return super.createPath(var4.above(), var2);
-            }
-
-            var4.setY(((BlockPos)var1).getY() + 1);
-
-            while(var4.getY() <= this.level.getMaxY() && var3.getBlockState(var4).isAir()) {
-               var4.move(Direction.UP);
-            }
-
-            var1 = var4;
+         if (!this.canPathToTargetsBelowSurface) {
+            var1 = this.findSurfacePosition(var3, var1, var2);
          }
 
-         if (!var3.getBlockState((BlockPos)var1).isSolid()) {
-            return super.createPath((BlockPos)var1, var2);
-         } else {
-            BlockPos.MutableBlockPos var5 = ((BlockPos)var1).mutable().move(Direction.UP);
+         return super.createPath(var1, var2);
+      }
+   }
 
-            while(var5.getY() <= this.level.getMaxY() && var3.getBlockState(var5).isSolid()) {
-               var5.move(Direction.UP);
-            }
+   final BlockPos findSurfacePosition(LevelChunk var1, BlockPos var2, int var3) {
+      if (var1.getBlockState((BlockPos)var2).isAir()) {
+         BlockPos.MutableBlockPos var4 = ((BlockPos)var2).mutable().move(Direction.DOWN);
 
-            return super.createPath(var5.immutable(), var2);
+         while(var4.getY() >= this.level.getMinY() && var1.getBlockState(var4).isAir()) {
+            var4.move(Direction.DOWN);
          }
+
+         if (var4.getY() >= this.level.getMinY()) {
+            return var4.above();
+         }
+
+         var4.setY(((BlockPos)var2).getY() + 1);
+
+         while(var4.getY() <= this.level.getMaxY() && var1.getBlockState(var4).isAir()) {
+            var4.move(Direction.UP);
+         }
+
+         var2 = var4;
+      }
+
+      if (!var1.getBlockState((BlockPos)var2).isSolid()) {
+         return (BlockPos)var2;
+      } else {
+         BlockPos.MutableBlockPos var5 = ((BlockPos)var2).mutable().move(Direction.UP);
+
+         while(var5.getY() <= this.level.getMaxY() && var1.getBlockState(var5).isSolid()) {
+            var5.move(Direction.UP);
+         }
+
+         return var5.immutable();
       }
    }
 
@@ -139,5 +148,9 @@ public class GroundPathNavigation extends PathNavigation {
 
    public void setCanWalkOverFences(boolean var1) {
       this.nodeEvaluator.setCanWalkOverFences(var1);
+   }
+
+   public void setCanPathToTargetsBelowSurface(boolean var1) {
+      this.canPathToTargetsBelowSurface = var1;
    }
 }

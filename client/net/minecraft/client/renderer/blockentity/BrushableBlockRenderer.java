@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.BrushableBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.ItemOwner;
@@ -41,15 +42,15 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
       this.itemModelResolver.updateForTopItem(var2.itemState, var1.getItem(), ItemDisplayContext.FIXED, var1.getLevel(), (ItemOwner)null, 0);
    }
 
-   public void submit(BrushableBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
+   public void submit(BrushableBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.dustProgress > 0 && var1.hitDirection != null && !var1.itemState.isEmpty()) {
          var2.pushPose();
          var2.translate(0.0F, 0.5F, 0.0F);
-         float[] var4 = this.translations(var1.hitDirection, var1.dustProgress);
-         var2.translate(var4[0], var4[1], var4[2]);
+         float[] var5 = this.translations(var1.hitDirection, var1.dustProgress);
+         var2.translate(var5[0], var5[1], var5[2]);
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(75.0F));
-         boolean var5 = var1.hitDirection == Direction.EAST || var1.hitDirection == Direction.WEST;
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((var5 ? 90 : 0) + 11)));
+         boolean var6 = var1.hitDirection == Direction.EAST || var1.hitDirection == Direction.WEST;
+         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)((var6 ? 90 : 0) + 11)));
          var2.scale(0.5F, 0.5F, 0.5F);
          var1.itemState.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0);
          var2.popPose();

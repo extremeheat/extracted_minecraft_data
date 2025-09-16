@@ -370,7 +370,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    protected Screen createDisconnectScreen(DisconnectionDetails var1) {
-      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
+      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> (Screen)(this.serverData != null ? new JoinMultiplayerScreen(new TitleScreen()) : new TitleScreen()));
       return this.serverData != null && this.serverData.isRealm() ? new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1, CommonComponents.GUI_BACK) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1);
    }
 
@@ -467,6 +467,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected abstract class CommonDialogAccess implements DialogConnectionAccess {
       protected CommonDialogAccess() {
          super();
+      }
+
+      public void disconnect(Component var1) {
+         ClientCommonPacketListenerImpl.this.connection.disconnect(var1);
+         ClientCommonPacketListenerImpl.this.connection.handleDisconnection();
       }
 
       public void openDialog(Holder<Dialog> var1, @Nullable Screen var2) {

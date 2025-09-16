@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 
 public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketListenerImpl implements ClientConfigurationPacketListener, TickablePacketListener {
    static final Logger LOGGER = LogUtils.getLogger();
+   public static final Component DISCONNECTED_MESSAGE = Component.translatable("multiplayer.disconnect.code_of_conduct");
    private final LevelLoadTracker levelLoadTracker;
    private final GameProfile localGameProfile;
    private FeatureFlagSet enabledFeatures;
@@ -125,7 +126,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
                   this.send(ServerboundAcceptCodeOfConductPacket.INSTANCE);
                   this.minecraft.setScreen(var3);
                } else {
-                  this.minecraft.disconnectFromWorld(Component.translatable("multiplayer.disconnect.code_of_conduct"));
+                  this.createDialogAccess().disconnect(DISCONNECTED_MESSAGE);
                }
 
             }));

@@ -1005,12 +1005,12 @@ public class ServerPlayer extends Player {
          Optional var5 = findRespawnAndUseSpawnBlock(var4, var3, var1);
          if (var5.isPresent()) {
             RespawnPosAngle var6 = (RespawnPosAngle)var5.get();
-            return new TeleportTransition(var4, var6.position(), Vec3.ZERO, var6.yaw(), 0.0F, var2);
+            return new TeleportTransition(var4, var6.position(), Vec3.ZERO, var6.yaw(), var6.pitch(), var2);
          } else {
-            return TeleportTransition.missingRespawnBlock(this.server.overworld(), this, var2);
+            return TeleportTransition.missingRespawnBlock(this, var2);
          }
       } else {
-         return new TeleportTransition(this.server.overworld(), this, var2);
+         return TeleportTransition.createDefault(this, var2);
       }
    }
 
@@ -1032,27 +1032,29 @@ public class ServerPlayer extends Player {
    }
 
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(ServerLevel var0, RespawnConfig var1, boolean var2) {
-      BlockPos var3 = var1.pos;
-      float var4 = var1.angle;
-      boolean var5 = var1.forced;
-      BlockState var6 = var0.getBlockState(var3);
-      Block var7 = var6.getBlock();
-      if (var7 instanceof RespawnAnchorBlock && (var5 || (Integer)var6.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
-         Optional var11 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var3);
-         if (!var5 && var2 && var11.isPresent()) {
-            var0.setBlock(var3, (BlockState)var6.setValue(RespawnAnchorBlock.CHARGE, (Integer)var6.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
+      LevelData.RespawnData var3 = var1.respawnData;
+      BlockPos var4 = var3.pos();
+      float var5 = var3.yaw();
+      float var6 = var3.pitch();
+      boolean var7 = var1.forced;
+      BlockState var8 = var0.getBlockState(var4);
+      Block var9 = var8.getBlock();
+      if (var9 instanceof RespawnAnchorBlock && (var7 || (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
+         Optional var13 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var4);
+         if (!var7 && var2 && var13.isPresent()) {
+            var0.setBlock(var4, (BlockState)var8.setValue(RespawnAnchorBlock.CHARGE, (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
          }
 
-         return var11.map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var3));
-      } else if (var7 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var3, (Direction)var6.getValue(BedBlock.FACING), var4).map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var3));
-      } else if (!var5) {
+         return var13.map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
+      } else if (var9 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
+         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var4, (Direction)var8.getValue(BedBlock.FACING), var5).map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
+      } else if (!var7) {
          return Optional.empty();
       } else {
-         boolean var8 = var7.isPossibleToRespawnInThis(var6);
-         BlockState var9 = var0.getBlockState(var3.above());
-         boolean var10 = var9.getBlock().isPossibleToRespawnInThis(var9);
-         return var8 && var10 ? Optional.of(new RespawnPosAngle(new Vec3((double)var3.getX() + 0.5, (double)var3.getY() + 0.1, (double)var3.getZ() + 0.5), var4)) : Optional.empty();
+         boolean var10 = var9.isPossibleToRespawnInThis(var8);
+         BlockState var11 = var0.getBlockState(var4.above());
+         boolean var12 = var11.getBlock().isPossibleToRespawnInThis(var11);
+         return var10 && var12 ? Optional.of(new RespawnPosAngle(new Vec3((double)var4.getX() + 0.5, (double)var4.getY() + 0.1, (double)var4.getZ() + 0.5), var5, var6)) : Optional.empty();
       }
    }
 
@@ -1168,7 +1170,7 @@ public class ServerPlayer extends Player {
          } else if (this.bedBlocked(var1, var2)) {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
          } else {
-            this.setRespawnPosition(new RespawnConfig(this.level().dimension(), var1, this.getYRot(), false), true);
+            this.setRespawnPosition(new RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), var1, this.getYRot(), this.getXRot()), false), true);
             if (this.level().isBrightOutside()) {
                return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
             } else {
@@ -1674,7 +1676,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
    }
 
    public void sendSystemMessage(Component var1) {
@@ -2152,15 +2154,16 @@ public class ServerPlayer extends Player {
       WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("waypoint_transmit_range_crouch"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
    }
 
-   static record RespawnPosAngle(Vec3 position, float yaw) {
-      RespawnPosAngle(Vec3 var1, float var2) {
+   static record RespawnPosAngle(Vec3 position, float yaw, float pitch) {
+      RespawnPosAngle(Vec3 var1, float var2, float var3) {
          super();
          this.position = var1;
          this.yaw = var2;
+         this.pitch = var3;
       }
 
-      public static RespawnPosAngle of(Vec3 var0, BlockPos var1) {
-         return new RespawnPosAngle(var0, calculateLookAtYaw(var0, var1));
+      public static RespawnPosAngle of(Vec3 var0, BlockPos var1, float var2) {
+         return new RespawnPosAngle(var0, calculateLookAtYaw(var0, var1), var2);
       }
 
       private static float calculateLookAtYaw(Vec3 var0, BlockPos var1) {
@@ -2169,26 +2172,23 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public static record RespawnConfig(ResourceKey<Level> dimension, BlockPos pos, float angle, boolean forced) {
-      final BlockPos pos;
-      final float angle;
+   public static record RespawnConfig(LevelData.RespawnData respawnData, boolean forced) {
+      final LevelData.RespawnData respawnData;
       final boolean forced;
-      public static final Codec<RespawnConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.optionalFieldOf("dimension", Level.OVERWORLD).forGetter(RespawnConfig::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(RespawnConfig::pos), Codec.FLOAT.optionalFieldOf("angle", 0.0F).forGetter(RespawnConfig::angle), Codec.BOOL.optionalFieldOf("forced", false).forGetter(RespawnConfig::forced)).apply(var0, RespawnConfig::new));
+      public static final Codec<RespawnConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LevelData.RespawnData.MAP_CODEC.forGetter(RespawnConfig::respawnData), Codec.BOOL.optionalFieldOf("forced", false).forGetter(RespawnConfig::forced)).apply(var0, RespawnConfig::new));
 
-      public RespawnConfig(ResourceKey<Level> var1, BlockPos var2, float var3, boolean var4) {
+      public RespawnConfig(LevelData.RespawnData var1, boolean var2) {
          super();
-         this.dimension = var1;
-         this.pos = var2;
-         this.angle = var3;
-         this.forced = var4;
+         this.respawnData = var1;
+         this.forced = var2;
       }
 
       static ResourceKey<Level> getDimensionOrDefault(@Nullable RespawnConfig var0) {
-         return var0 != null ? var0.dimension() : Level.OVERWORLD;
+         return var0 != null ? var0.respawnData().dimension() : Level.OVERWORLD;
       }
 
       public boolean isSamePosition(@Nullable RespawnConfig var1) {
-         return var1 != null && this.dimension == var1.dimension && this.pos.equals(var1.pos);
+         return var1 != null && this.respawnData.globalPos().equals(var1.respawnData.globalPos());
       }
    }
 

@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.core.Direction;
@@ -89,9 +90,9 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       var2.renderType = this.resolveSkullRenderType(var2.skullType, var1);
    }
 
-   public void submit(SkullBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      SkullModelBase var4 = (SkullModelBase)this.modelByType.apply(var1.skullType);
-      submitSkull(var1.direction, var1.rotationDegrees, var1.animationProgress, var2, var3, var1.lightCoords, var4, var1.renderType, 0, var1.breakProgress);
+   public void submit(SkullBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      SkullModelBase var5 = (SkullModelBase)this.modelByType.apply(var1.skullType);
+      submitSkull(var1.direction, var1.rotationDegrees, var1.animationProgress, var2, var3, var1.lightCoords, var5, var1.renderType, 0, var1.breakProgress);
    }
 
    public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {

@@ -81,7 +81,7 @@ public class TeleportCommand {
 
    private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1, boolean var2) {
       Set var3 = Relative.direction(var0.isXRelative(), var0.isYRelative(), var0.isZRelative());
-      Set var4 = !var2 ? Relative.position(var0.isXRelative(), var0.isYRelative(), var0.isZRelative()) : Set.of();
+      Set var4 = var2 ? Relative.position(var0.isXRelative(), var0.isYRelative(), var0.isZRelative()) : Set.of();
       Set var5 = var1 == null ? Relative.ROTATION : Relative.rotation(var1.isYRelative(), var1.isXRelative());
       return Relative.union(var3, var4, var5);
    }

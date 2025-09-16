@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -61,14 +62,14 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       return new Vec3(var5, var7, var9);
    }
 
-   public void submit(GuardianRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      super.submit(var1, var2, var3);
-      Vec3 var4 = var1.attackTargetPosition;
-      if (var4 != null) {
-         float var5 = var1.attackTime * 0.5F % 1.0F;
+   public void submit(GuardianRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      super.submit(var1, var2, var3, var4);
+      Vec3 var5 = var1.attackTargetPosition;
+      if (var5 != null) {
+         float var6 = var1.attackTime * 0.5F % 1.0F;
          var2.pushPose();
          var2.translate(0.0F, var1.eyeHeight, 0.0F);
-         renderBeam(var2, var3, var4.subtract(var1.eyePosition), var1.attackTime, var1.attackScale, var5);
+         renderBeam(var2, var3, var5.subtract(var1.eyePosition), var1.attackTime, var1.attackScale, var6);
          var2.popPose();
       }
 

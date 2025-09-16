@@ -4,11 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ParticleGroupRenderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,12 +28,12 @@ public class ItemPickupParticleGroup extends ParticleGroup<ItemPickupParticle> {
          this.instances = var1;
       }
 
-      public void submit(SubmitNodeCollector var1) {
-         PoseStack var2 = new PoseStack();
-         EntityRenderDispatcher var3 = Minecraft.getInstance().getEntityRenderDispatcher();
+      public void submit(SubmitNodeCollector var1, CameraRenderState var2) {
+         PoseStack var3 = new PoseStack();
+         EntityRenderDispatcher var4 = Minecraft.getInstance().getEntityRenderDispatcher();
 
-         for(ParticleInstance var5 : this.instances) {
-            var3.submit(var5.itemRenderState, var5.xOffset, var5.yOffset, var5.zOffset, var2, var1);
+         for(ParticleInstance var6 : this.instances) {
+            var4.submit(var6.itemRenderState, var2, var6.xOffset, var6.yOffset, var6.zOffset, var3, var1);
          }
 
       }

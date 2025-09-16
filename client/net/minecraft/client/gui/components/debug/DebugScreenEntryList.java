@@ -31,6 +31,7 @@ public class DebugScreenEntryList {
    @Nullable
    private DebugScreenProfile profile;
    private final File debugProfileFile;
+   private long currentlyEnabledVersion;
 
    public DebugScreenEntryList(File var1) {
       super();
@@ -165,6 +166,11 @@ public class DebugScreenEntryList {
       }
 
       this.currentlyEnabled.sort(ResourceLocation::compareTo);
+      ++this.currentlyEnabledVersion;
+   }
+
+   public long getCurrentlyEnabledVersion() {
+      return this.currentlyEnabledVersion;
    }
 
    public boolean isUsingProfile(DebugScreenProfile var1) {

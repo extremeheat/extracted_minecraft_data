@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.PaintingRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -30,16 +31,16 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
       this.paintingsAtlas = var1.getAtlas(AtlasIds.PAINTINGS);
    }
 
-   public void submit(PaintingRenderState var1, PoseStack var2, SubmitNodeCollector var3) {
-      PaintingVariant var4 = var1.variant;
-      if (var4 != null) {
+   public void submit(PaintingRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      PaintingVariant var5 = var1.variant;
+      if (var5 != null) {
          var2.pushPose();
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - var1.direction.get2DDataValue() * 90)));
-         TextureAtlasSprite var5 = this.paintingsAtlas.getSprite(var4.assetId());
-         TextureAtlasSprite var6 = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
-         this.renderPainting(var2, var3, RenderType.entitySolidZOffsetForward(var6.atlasLocation()), var1.lightCoordsPerBlock, var4.width(), var4.height(), var5, var6);
+         TextureAtlasSprite var6 = this.paintingsAtlas.getSprite(var5.assetId());
+         TextureAtlasSprite var7 = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
+         this.renderPainting(var2, var3, RenderType.entitySolidZOffsetForward(var7.atlasLocation()), var1.lightCoordsPerBlock, var5.width(), var5.height(), var6, var7);
          var2.popPose();
-         super.submit(var1, var2, var3);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

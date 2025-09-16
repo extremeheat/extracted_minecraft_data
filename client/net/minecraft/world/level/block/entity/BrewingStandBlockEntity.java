@@ -36,6 +36,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    public static final int NUM_DATA_VALUES = 2;
    private static final short DEFAULT_BREW_TIME = 0;
    private static final byte DEFAULT_FUEL = 0;
+   private static final Component DEFAULT_NAME = Component.translatable("container.brewing");
    private NonNullList<ItemStack> items;
    int brewTime;
    private boolean[] lastPotionCount;
@@ -73,7 +74,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.brewing");
+      return DEFAULT_NAME;
    }
 
    public int getContainerSize() {

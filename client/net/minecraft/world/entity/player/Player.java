@@ -2,7 +2,6 @@ package net.minecraft.world.entity.player;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
@@ -10,7 +9,6 @@ import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -65,8 +63,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityAttachment;
-import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityReference;
@@ -135,12 +131,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    public static final int CRAFTING_SLOT_OFFSET = 500;
    public static final float DEFAULT_BLOCK_INTERACTION_RANGE = 4.5F;
    public static final float DEFAULT_ENTITY_INTERACTION_RANGE = 3.0F;
-   public static final float CROUCH_BB_HEIGHT = 1.5F;
-   public static final float SWIMMING_BB_WIDTH = 0.6F;
-   public static final float SWIMMING_BB_HEIGHT = 0.6F;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
-   public static final EntityDimensions STANDING_DIMENSIONS;
-   private static final Map<Pose, EntityDimensions> POSES;
    private static final EntityDataAccessor<Float> DATA_PLAYER_ABSORPTION_ID;
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_LEFT;
@@ -1503,6 +1494,10 @@ public abstract class Player extends Avatar implements ContainerUser {
       return Component.literal(this.gameProfile.name());
    }
 
+   public String getPlainTextName() {
+      return this.gameProfile.name();
+   }
+
    public PlayerEnderChestContainer getEnderChestInventory() {
       return this.enderChestInventory;
    }
@@ -1870,12 +1865,10 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public String debugInfo() {
-      return MoreObjects.toStringHelper(this).add("name", this.getName().getString()).add("id", this.getId()).add("pos", this.position()).add("mode", this.gameMode()).add("permission", this.getPermissionLevel()).toString();
+      return MoreObjects.toStringHelper(this).add("name", this.getPlainTextName()).add("id", this.getId()).add("pos", this.position()).add("mode", this.gameMode()).add("permission", this.getPermissionLevel()).toString();
    }
 
    static {
-      STANDING_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.8F).withEyeHeight(1.62F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT));
-      POSES = ImmutableMap.builder().put(Pose.STANDING, STANDING_DIMENSIONS).put(Pose.SLEEPING, SLEEPING_DIMENSIONS).put(Pose.FALL_FLYING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SWIMMING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SPIN_ATTACK, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.CROUCHING, EntityDimensions.scalable(0.6F, 1.5F).withEyeHeight(1.27F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT))).put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F).withEyeHeight(1.62F)).build();
       DATA_PLAYER_ABSORPTION_ID = SynchedEntityData.<Float>defineId(Player.class, EntityDataSerializers.FLOAT);
       DATA_SCORE_ID = SynchedEntityData.<Integer>defineId(Player.class, EntityDataSerializers.INT);
       DATA_SHOULDER_PARROT_LEFT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);

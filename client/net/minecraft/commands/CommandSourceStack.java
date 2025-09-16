@@ -94,7 +94,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public CommandSourceStack withEntity(Entity var1) {
-      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, var1.getName().getString(), var1.getDisplayName(), this.server, var1, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
+      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, var1.getPlainTextName(), var1.getDisplayName(), this.server, var1, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withPosition(Vec3 var1) {

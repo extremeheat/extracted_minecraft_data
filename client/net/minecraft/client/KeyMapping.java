@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -222,14 +223,14 @@ public class KeyMapping implements Comparable<KeyMapping> {
          this.id = var1;
       }
 
-      public static Category register(String var0) {
+      private static Category register(String var0) {
          return register(ResourceLocation.withDefaultNamespace(var0));
       }
 
       public static Category register(ResourceLocation var0) {
          Category var1 = new Category(var0);
          if (SORT_ORDER.contains(var1)) {
-            throw new IllegalArgumentException(String.format("Category '%s' is already registered.", var0));
+            throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", var0));
          } else {
             SORT_ORDER.add(var1);
             return var1;

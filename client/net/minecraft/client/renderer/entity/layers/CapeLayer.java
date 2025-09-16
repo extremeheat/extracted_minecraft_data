@@ -12,11 +12,11 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 
@@ -43,14 +43,14 @@ public class CapeLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
    public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
       if (!var4.isInvisible && var4.showCape) {
          PlayerSkin var7 = var4.skin;
-         if (var7.capeTexture() != null) {
+         if (var7.cape() != null) {
             if (!this.hasLayer(var4.chestEquipment, EquipmentClientInfo.LayerType.WINGS)) {
                var1.pushPose();
                if (this.hasLayer(var4.chestEquipment, EquipmentClientInfo.LayerType.HUMANOID)) {
                   var1.translate(0.0F, -0.053125F, 0.06875F);
                }
 
-               var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var7.capeTexture()), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+               var2.submitModel(this.model, var4, var1, RenderType.entitySolid(var7.cape().texturePath()), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
                var1.popPose();
             }
          }

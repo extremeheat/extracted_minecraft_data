@@ -1,6 +1,7 @@
 package net.minecraft.server.jsonrpc;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 
@@ -19,16 +20,16 @@ public enum JsonRPCErrors {
       this.message = var4;
    }
 
-   public JsonObject create(@Nullable JsonElement var1) {
-      return this.create(var1, (String)null);
+   public JsonObject createWithUnknownId(@Nullable String var1) {
+      return JsonRPCUtils.createError(JsonNull.INSTANCE, this.message, this.errorCode, var1);
    }
 
-   public JsonObject create(@Nullable JsonElement var1, @Nullable String var2) {
+   public JsonObject createWithoutData(JsonElement var1) {
+      return JsonRPCUtils.createError(var1, this.message, this.errorCode, (String)null);
+   }
+
+   public JsonObject create(JsonElement var1, String var2) {
       return JsonRPCUtils.createError(var1, this.message, this.errorCode, var2);
-   }
-
-   public JsonObject createWithMessage(@Nullable String var1) {
-      return this.create((JsonElement)null, var1);
    }
 
    // $FF: synthetic method

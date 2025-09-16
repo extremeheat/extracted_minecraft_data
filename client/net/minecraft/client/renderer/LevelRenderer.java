@@ -35,10 +35,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
-import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
@@ -61,18 +57,21 @@ import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.chunk.TranslucencyPointOfView;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.debug.DebugRenderer;
+import net.minecraft.client.renderer.debug.GameTestBlockHighlightRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.BlockBreakingRenderState;
+import net.minecraft.client.renderer.state.BlockOutlineRenderState;
+import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.client.renderer.state.ParticlesRenderState;
+import net.minecraft.client.renderer.state.SkyRenderState;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.server.level.ParticleStatus;
@@ -99,6 +98,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
@@ -123,6 +123,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final WorldBorderRenderer worldBorderRenderer = new WorldBorderRenderer();
    private final WeatherEffectRenderer weatherEffectRenderer = new WeatherEffectRenderer();
    private final ParticlesRenderState particlesRenderState = new ParticlesRenderState();
+   public final DebugRenderer debugRenderer = new DebugRenderer();
+   public final GameTestBlockHighlightRenderer gameTestBlockHighlightRenderer = new GameTestBlockHighlightRenderer();
    @Nullable
    private ClientLevel level;
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
@@ -168,10 +170,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.featureRenderDispatcher = var6;
    }
 
-   public void tickParticles(Camera var1) {
-      this.weatherEffectRenderer.tickRainParticles(this.minecraft.level, var1, this.ticks, (ParticleStatus)this.minecraft.options.particles().get());
-   }
-
    public void close() {
       if (this.entityOutlineTarget != null) {
          this.entityOutlineTarget.destroyBuffers();
@@ -183,6 +181,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public void onResourceManagerReload(ResourceManager var1) {
       this.initOutline();
+      this.skyRenderer.initTextures();
    }
 
    public void initOutline() {
@@ -242,6 +241,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.clearVisibleSections();
       }
 
+      this.gameTestBlockHighlightRenderer.clear();
    }
 
    private void clearVisibleSections() {
@@ -420,7 +420,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    public void renderLevel(GraphicsResourceAllocator var1, DeltaTracker var2, boolean var3, Camera var4, Matrix4f var5, Matrix4f var6, Matrix4f var7, GpuBufferSlice var8, Vector4f var9, boolean var10) {
       float var11 = var2.getGameTimeDeltaPartialTick(false);
       this.levelRenderState.reset();
-      this.blockEntityRenderDispatcher.prepare(this.level, var4, this.minecraft.hitResult);
+      this.blockEntityRenderDispatcher.prepare(var4);
       this.entityRenderDispatcher.prepare(var4, this.minecraft.crosshairPickEntity);
       final ProfilerFiller var12 = Profiler.get();
       var12.push("populateLightUpdates");
@@ -434,10 +434,22 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.cullTerrain(var4, var14, this.minecraft.player.isSpectator());
       var12.popPush("compileSections");
       this.compileSections(var4);
-      var12.popPush("extractEntities");
+      var12.popPush("extract");
+      var12.push("entities");
       this.extractVisibleEntities(var4, var14, var2, this.levelRenderState);
-      var12.popPush("extractBlockEntities");
+      var12.popPush("blockEntities");
       this.extractVisibleBlockEntities(var4, var11, this.levelRenderState);
+      var12.popPush("blockOutline");
+      this.extractBlockOutline(var4, this.levelRenderState);
+      var12.popPush("blockBreaking");
+      this.extractBlockDestroyAnimation(var4, this.levelRenderState);
+      var12.popPush("weather");
+      this.weatherEffectRenderer.extractRenderState(this.level, this.ticks, var11, var13, this.levelRenderState.weatherRenderState);
+      var12.popPush("sky");
+      this.skyRenderer.extractRenderState(this.level, var11, var13, this.levelRenderState.skyRenderState);
+      var12.popPush("border");
+      this.worldBorderRenderer.extract(this.level.getWorldBorder(), var13, (double)(this.minecraft.options.getEffectiveRenderDistance() * 16), this.levelRenderState.worldBorderRenderState);
+      var12.pop();
       var12.popPush("setupFrameGraph");
       Matrix4fStack var15 = RenderSystem.getModelViewStack();
       var15.pushMatrix();
@@ -467,10 +479,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var2.getColorTexture(), ARGB.colorFromFloat(0.0F, var9.x, var9.y, var9.z), var2.getDepthTexture(), 1.0);
       });
       if (var10) {
-         this.addSkyPass(var16, var4, var11, var8);
+         this.addSkyPass(var16, var4, var8);
       }
 
-      this.addMainPass(var16, var14, var4, var5, var8, var3, this.levelRenderState, var2, var12);
+      this.addMainPass(var16, var14, var5, var8, var3, this.levelRenderState, var2, var12);
       PostChain var22 = this.minecraft.getShaderManager().getPostChain(ENTITY_OUTLINE_POST_CHAIN_ID, LevelTargetBundle.OUTLINE_TARGETS);
       if (this.levelRenderState.haveGlowingEntities && var22 != null) {
          var22.addToFrame(var16, var17, var18, this.targets);
@@ -484,16 +496,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          if (var24.isPresent()) {
             float var25 = (float)this.ticks + var11;
             int var26 = this.level.getCloudColor(var11);
-            this.addCloudsPass(var16, var23, var4.getPosition(), var25, var26, (float)(Integer)var24.get() + 0.33F);
+            this.addCloudsPass(var16, var23, this.levelRenderState.cameraRenderState.pos, var25, var26, (float)(Integer)var24.get() + 0.33F);
          }
       }
 
-      this.addWeatherPass(var16, var4.getPosition(), var11, var8);
+      this.addWeatherPass(var16, this.levelRenderState.cameraRenderState.pos, var8);
       if (var20 != null) {
          var20.addToFrame(var16, var17, var18, this.targets);
       }
 
-      this.addLateDebugPass(var16, var13, var8);
+      this.addLateDebugPass(var16, this.levelRenderState.cameraRenderState.pos, var8, var14);
       var12.popPush("executeFrameGraph");
       var16.execute(var1, new FrameGraphBuilder.Inspector() {
          public void beforeExecutePass(String var1) {
@@ -509,108 +521,109 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var12.pop();
    }
 
-   private void addMainPass(FrameGraphBuilder var1, Frustum var2, Camera var3, Matrix4f var4, GpuBufferSlice var5, boolean var6, LevelRenderState var7, DeltaTracker var8, ProfilerFiller var9) {
-      FramePass var10 = var1.addPass("main");
-      this.targets.main = var10.<RenderTarget>readsAndWrites(this.targets.main);
+   private void addMainPass(FrameGraphBuilder var1, Frustum var2, Matrix4f var3, GpuBufferSlice var4, boolean var5, LevelRenderState var6, DeltaTracker var7, ProfilerFiller var8) {
+      FramePass var9 = var1.addPass("main");
+      this.targets.main = var9.<RenderTarget>readsAndWrites(this.targets.main);
       if (this.targets.translucent != null) {
-         this.targets.translucent = var10.<RenderTarget>readsAndWrites(this.targets.translucent);
+         this.targets.translucent = var9.<RenderTarget>readsAndWrites(this.targets.translucent);
       }
 
       if (this.targets.itemEntity != null) {
-         this.targets.itemEntity = var10.<RenderTarget>readsAndWrites(this.targets.itemEntity);
+         this.targets.itemEntity = var9.<RenderTarget>readsAndWrites(this.targets.itemEntity);
       }
 
       if (this.targets.weather != null) {
-         this.targets.weather = var10.<RenderTarget>readsAndWrites(this.targets.weather);
+         this.targets.weather = var9.<RenderTarget>readsAndWrites(this.targets.weather);
       }
 
-      if (var7.haveGlowingEntities && this.targets.entityOutline != null) {
-         this.targets.entityOutline = var10.<RenderTarget>readsAndWrites(this.targets.entityOutline);
+      if (var6.haveGlowingEntities && this.targets.entityOutline != null) {
+         this.targets.entityOutline = var9.<RenderTarget>readsAndWrites(this.targets.entityOutline);
       }
 
-      ResourceHandle var11 = this.targets.main;
-      ResourceHandle var12 = this.targets.translucent;
-      ResourceHandle var13 = this.targets.itemEntity;
-      ResourceHandle var14 = this.targets.entityOutline;
-      var10.executes(() -> {
-         RenderSystem.setShaderFog(var5);
-         float var13x = var8.getGameTimeDeltaPartialTick(false);
-         Vec3 var14x = var3.getPosition();
-         double var15 = var14x.x();
-         double var17 = var14x.y();
-         double var19 = var14x.z();
-         var9.push("terrain");
-         ChunkSectionsToRender var21 = this.prepareChunkRenders(var4, var15, var17, var19);
-         var21.renderGroup(ChunkSectionLayerGroup.OPAQUE);
+      ResourceHandle var10 = this.targets.main;
+      ResourceHandle var11 = this.targets.translucent;
+      ResourceHandle var12 = this.targets.itemEntity;
+      ResourceHandle var13 = this.targets.entityOutline;
+      var9.executes(() -> {
+         RenderSystem.setShaderFog(var4);
+         Vec3 var11x = var6.cameraRenderState.pos;
+         double var12x = var11x.x();
+         double var14 = var11x.y();
+         double var16 = var11x.z();
+         var8.push("terrain");
+         ChunkSectionsToRender var18 = this.prepareChunkRenders(var3, var12x, var14, var16);
+         var18.renderGroup(ChunkSectionLayerGroup.OPAQUE);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
-         if (var13 != null) {
-            ((RenderTarget)var13.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
-         }
-
-         if (this.shouldShowEntityOutlines() && var14 != null) {
-            RenderTarget var22 = (RenderTarget)var14.get();
-            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var22.getColorTexture(), 0, var22.getDepthTexture(), 1.0);
-         }
-
-         PoseStack var25 = new PoseStack();
-         MultiBufferSource.BufferSource var23 = this.renderBuffers.bufferSource();
-         MultiBufferSource.BufferSource var24 = this.renderBuffers.crumblingBufferSource();
-         var9.popPush("submitEntities");
-         this.submitEntities(var25, var3, var7, this.submitNodeStorage);
-         var9.popPush("submitBlockEntities");
-         this.submitBlockEntities(var25, var3, var7, this.submitNodeStorage);
-         var9.popPush("renderFeatures");
-         this.featureRenderDispatcher.renderAllFeatures();
-         var23.endLastBatch();
-         this.checkPoseStack(var25);
-         var23.endBatch(RenderType.solid());
-         var23.endBatch(RenderType.endPortal());
-         var23.endBatch(RenderType.endGateway());
-         var23.endBatch(Sheets.solidBlockSheet());
-         var23.endBatch(Sheets.cutoutBlockSheet());
-         var23.endBatch(Sheets.bedSheet());
-         var23.endBatch(Sheets.shulkerBoxSheet());
-         var23.endBatch(Sheets.signSheet());
-         var23.endBatch(Sheets.hangingSignSheet());
-         var23.endBatch(Sheets.chestSheet());
-         this.renderBuffers.outlineBufferSource().endOutlineBatch();
-         if (var6) {
-            this.renderBlockOutline(var3, var23, var25, false);
-         }
-
-         var9.popPush("debug");
-         this.minecraft.debugRenderer.render(var25, var2, var23, var15, var17, var19);
-         var23.endLastBatch();
-         var9.pop();
-         this.checkPoseStack(var25);
-         var23.endBatch(Sheets.translucentItemSheet());
-         var23.endBatch(Sheets.bannerSheet());
-         var23.endBatch(Sheets.shieldSheet());
-         var23.endBatch(RenderType.armorEntityGlint());
-         var23.endBatch(RenderType.glint());
-         var23.endBatch(RenderType.glintTranslucent());
-         var23.endBatch(RenderType.entityGlint());
-         var9.push("destroyProgress");
-         this.renderBlockDestroyAnimation(var25, var3, var24);
-         var24.endBatch();
-         var9.pop();
-         this.checkPoseStack(var25);
-         var23.endBatch(RenderType.waterMask());
-         var23.endBatch();
          if (var12 != null) {
-            ((RenderTarget)var12.get()).copyDepthFrom((RenderTarget)var11.get());
+            ((RenderTarget)var12.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
          }
 
-         var9.push("translucent");
-         var21.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT);
-         var9.popPush("string");
-         var21.renderGroup(ChunkSectionLayerGroup.TRIPWIRE);
-         if (var6) {
-            this.renderBlockOutline(var3, var23, var25, true);
+         if (this.shouldShowEntityOutlines() && var13 != null) {
+            RenderTarget var19 = (RenderTarget)var13.get();
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var19.getColorTexture(), 0, var19.getDepthTexture(), 1.0);
          }
 
-         var23.endBatch();
-         var9.pop();
+         PoseStack var22 = new PoseStack();
+         MultiBufferSource.BufferSource var20 = this.renderBuffers.bufferSource();
+         MultiBufferSource.BufferSource var21 = this.renderBuffers.crumblingBufferSource();
+         var8.popPush("submitEntities");
+         this.submitEntities(var22, var6, this.submitNodeStorage);
+         var8.popPush("submitBlockEntities");
+         this.submitBlockEntities(var22, var6, this.submitNodeStorage);
+         var8.popPush("renderFeatures");
+         this.featureRenderDispatcher.renderAllFeatures();
+         var20.endLastBatch();
+         this.checkPoseStack(var22);
+         var20.endBatch(RenderType.solid());
+         var20.endBatch(RenderType.endPortal());
+         var20.endBatch(RenderType.endGateway());
+         var20.endBatch(Sheets.solidBlockSheet());
+         var20.endBatch(Sheets.cutoutBlockSheet());
+         var20.endBatch(Sheets.bedSheet());
+         var20.endBatch(Sheets.shulkerBoxSheet());
+         var20.endBatch(Sheets.signSheet());
+         var20.endBatch(Sheets.hangingSignSheet());
+         var20.endBatch(Sheets.chestSheet());
+         this.renderBuffers.outlineBufferSource().endOutlineBatch();
+         if (var5) {
+            this.renderBlockOutline(var20, var22, false, var6);
+         }
+
+         var8.popPush("debug");
+         this.debugRenderer.render(var22, var2, var20, var12x, var14, var16, false);
+         var20.endLastBatch();
+         var8.pop();
+         this.gameTestBlockHighlightRenderer.render(var22, var20);
+         var20.endLastBatch();
+         this.checkPoseStack(var22);
+         var20.endBatch(Sheets.translucentItemSheet());
+         var20.endBatch(Sheets.bannerSheet());
+         var20.endBatch(Sheets.shieldSheet());
+         var20.endBatch(RenderType.armorEntityGlint());
+         var20.endBatch(RenderType.glint());
+         var20.endBatch(RenderType.glintTranslucent());
+         var20.endBatch(RenderType.entityGlint());
+         var8.push("destroyProgress");
+         this.renderBlockDestroyAnimation(var22, var21, var6);
+         var21.endBatch();
+         var8.pop();
+         this.checkPoseStack(var22);
+         var20.endBatch(RenderType.waterMask());
+         var20.endBatch();
+         if (var11 != null) {
+            ((RenderTarget)var11.get()).copyDepthFrom((RenderTarget)var10.get());
+         }
+
+         var8.push("translucent");
+         var18.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT);
+         var8.popPush("string");
+         var18.renderGroup(ChunkSectionLayerGroup.TRIPWIRE);
+         if (var5) {
+            this.renderBlockOutline(var20, var22, true, var6);
+         }
+
+         var20.endBatch();
+         var8.pop();
       });
    }
 
@@ -631,7 +644,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             ((RenderTarget)var5.get()).copyDepthFrom((RenderTarget)var4.get());
          }
 
-         this.particlesRenderState.submit(this.submitNodeStorage);
+         this.particlesRenderState.submit(this.submitNodeStorage, this.levelRenderState.cameraRenderState);
          this.featureRenderDispatcher.renderAllFeatures();
          this.particlesRenderState.reset();
       });
@@ -648,44 +661,44 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var7.executes(() -> this.cloudRenderer.render(var5, var2, var6, var3, var4));
    }
 
-   private void addWeatherPass(FrameGraphBuilder var1, Vec3 var2, float var3, GpuBufferSlice var4) {
-      int var5 = this.minecraft.options.getEffectiveRenderDistance() * 16;
-      float var6 = this.minecraft.gameRenderer.getDepthFar();
-      FramePass var7 = var1.addPass("weather");
+   private void addWeatherPass(FrameGraphBuilder var1, Vec3 var2, GpuBufferSlice var3) {
+      int var4 = this.minecraft.options.getEffectiveRenderDistance() * 16;
+      float var5 = this.minecraft.gameRenderer.getDepthFar();
+      FramePass var6 = var1.addPass("weather");
       if (this.targets.weather != null) {
-         this.targets.weather = var7.<RenderTarget>readsAndWrites(this.targets.weather);
+         this.targets.weather = var6.<RenderTarget>readsAndWrites(this.targets.weather);
       } else {
-         this.targets.main = var7.<RenderTarget>readsAndWrites(this.targets.main);
+         this.targets.main = var6.<RenderTarget>readsAndWrites(this.targets.main);
       }
 
-      var7.executes(() -> {
-         RenderSystem.setShaderFog(var4);
-         MultiBufferSource.BufferSource var6x = this.renderBuffers.bufferSource();
-         this.weatherEffectRenderer.render(this.minecraft.level, var6x, this.ticks, var3, var2);
-         this.worldBorderRenderer.render(this.level.getWorldBorder(), var2, (double)var5, (double)var6);
-         var6x.endBatch();
+      var6.executes(() -> {
+         RenderSystem.setShaderFog(var3);
+         MultiBufferSource.BufferSource var5x = this.renderBuffers.bufferSource();
+         this.weatherEffectRenderer.render(var5x, var2, this.levelRenderState.weatherRenderState);
+         this.worldBorderRenderer.render(this.levelRenderState.worldBorderRenderState, var2, (double)var4, (double)var5);
+         var5x.endBatch();
       });
    }
 
-   private void addLateDebugPass(FrameGraphBuilder var1, Vec3 var2, GpuBufferSlice var3) {
-      FramePass var4 = var1.addPass("late_debug");
-      this.targets.main = var4.<RenderTarget>readsAndWrites(this.targets.main);
+   private void addLateDebugPass(FrameGraphBuilder var1, Vec3 var2, GpuBufferSlice var3, Frustum var4) {
+      FramePass var5 = var1.addPass("late_debug");
+      this.targets.main = var5.<RenderTarget>readsAndWrites(this.targets.main);
       if (this.targets.itemEntity != null) {
-         this.targets.itemEntity = var4.<RenderTarget>readsAndWrites(this.targets.itemEntity);
+         this.targets.itemEntity = var5.<RenderTarget>readsAndWrites(this.targets.itemEntity);
       }
 
-      ResourceHandle var5 = this.targets.main;
-      var4.executes(() -> {
+      ResourceHandle var6 = this.targets.main;
+      var5.executes(() -> {
          RenderSystem.setShaderFog(var3);
-         PoseStack var4 = new PoseStack();
-         MultiBufferSource.BufferSource var5x = this.renderBuffers.bufferSource();
-         RenderSystem.outputColorTextureOverride = ((RenderTarget)var5.get()).getColorTextureView();
-         RenderSystem.outputDepthTextureOverride = ((RenderTarget)var5.get()).getDepthTextureView();
-         this.minecraft.debugRenderer.renderAfterTranslucents(var4, var5x, var2.x, var2.y, var2.z);
-         var5x.endLastBatch();
+         PoseStack var5 = new PoseStack();
+         MultiBufferSource.BufferSource var6x = this.renderBuffers.bufferSource();
+         RenderSystem.outputColorTextureOverride = ((RenderTarget)var6.get()).getColorTextureView();
+         RenderSystem.outputDepthTextureOverride = ((RenderTarget)var6.get()).getDepthTextureView();
+         this.debugRenderer.render(var5, var4, var6x, var2.x, var2.y, var2.z, true);
+         var6x.endLastBatch();
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
-         this.checkPoseStack(var4);
+         this.checkPoseStack(var5);
       });
    }
 
@@ -720,18 +733,18 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void submitEntities(PoseStack var1, Camera var2, LevelRenderState var3, SubmitNodeCollector var4) {
-      Vec3 var5 = var2.getPosition();
-      double var6 = var5.x();
-      double var8 = var5.y();
-      double var10 = var5.z();
+   private void submitEntities(PoseStack var1, LevelRenderState var2, SubmitNodeCollector var3) {
+      Vec3 var4 = var2.cameraRenderState.pos;
+      double var5 = var4.x();
+      double var7 = var4.y();
+      double var9 = var4.z();
 
-      for(EntityRenderState var13 : var3.entityRenderStates) {
-         if (!var3.haveGlowingEntities) {
-            var13.outlineColor = 0;
+      for(EntityRenderState var12 : var2.entityRenderStates) {
+         if (!var2.haveGlowingEntities) {
+            var12.outlineColor = 0;
          }
 
-         this.entityRenderDispatcher.submit(var13, var13.x - var6, var13.y - var8, var13.z - var10, var1, var4);
+         this.entityRenderDispatcher.submit(var12, var2.cameraRenderState, var12.x - var5, var12.y - var7, var12.z - var9, var1, var3);
       }
 
    }
@@ -785,73 +798,102 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void submitBlockEntities(PoseStack var1, Camera var2, LevelRenderState var3, SubmitNodeStorage var4) {
-      Vec3 var5 = var2.getPosition();
-      double var6 = var5.x();
-      double var8 = var5.y();
-      double var10 = var5.z();
+   private void submitBlockEntities(PoseStack var1, LevelRenderState var2, SubmitNodeStorage var3) {
+      Vec3 var4 = var2.cameraRenderState.pos;
+      double var5 = var4.x();
+      double var7 = var4.y();
+      double var9 = var4.z();
 
-      for(BlockEntityRenderState var13 : var3.blockEntityRenderStates) {
-         BlockPos var14 = var13.blockPos;
+      for(BlockEntityRenderState var12 : var2.blockEntityRenderStates) {
+         BlockPos var13 = var12.blockPos;
          var1.pushPose();
-         var1.translate((double)var14.getX() - var6, (double)var14.getY() - var8, (double)var14.getZ() - var10);
-         this.blockEntityRenderDispatcher.submit(var13, var1, var4);
+         var1.translate((double)var13.getX() - var5, (double)var13.getY() - var7, (double)var13.getZ() - var9);
+         this.blockEntityRenderDispatcher.submit(var12, var1, var3, var2.cameraRenderState);
          var1.popPose();
       }
 
    }
 
-   private void renderBlockDestroyAnimation(PoseStack var1, Camera var2, MultiBufferSource.BufferSource var3) {
-      Vec3 var4 = var2.getPosition();
-      double var5 = var4.x();
-      double var7 = var4.y();
-      double var9 = var4.z();
-      ObjectIterator var11 = this.destructionProgress.long2ObjectEntrySet().iterator();
+   private void extractBlockDestroyAnimation(Camera var1, LevelRenderState var2) {
+      Vec3 var3 = var1.getPosition();
+      double var4 = var3.x();
+      double var6 = var3.y();
+      double var8 = var3.z();
+      var2.blockBreakingRenderStates.clear();
+      ObjectIterator var10 = this.destructionProgress.long2ObjectEntrySet().iterator();
 
-      while(var11.hasNext()) {
-         Long2ObjectMap.Entry var12 = (Long2ObjectMap.Entry)var11.next();
-         BlockPos var13 = BlockPos.of(var12.getLongKey());
-         if (!(var13.distToCenterSqr(var5, var7, var9) > 1024.0)) {
-            SortedSet var14 = (SortedSet)var12.getValue();
-            if (var14 != null && !var14.isEmpty()) {
-               int var15 = ((BlockDestructionProgress)var14.last()).getProgress();
-               var1.pushPose();
-               var1.translate((double)var13.getX() - var5, (double)var13.getY() - var7, (double)var13.getZ() - var9);
-               PoseStack.Pose var16 = var1.last();
-               SheetedDecalTextureGenerator var17 = new SheetedDecalTextureGenerator(var3.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var15)), var16, 1.0F);
-               this.minecraft.getBlockRenderer().renderBreakingTexture(this.level.getBlockState(var13), var13, this.level, var1, var17);
-               var1.popPose();
+      while(var10.hasNext()) {
+         Long2ObjectMap.Entry var11 = (Long2ObjectMap.Entry)var10.next();
+         BlockPos var12 = BlockPos.of(var11.getLongKey());
+         if (!(var12.distToCenterSqr(var4, var6, var8) > 1024.0)) {
+            SortedSet var13 = (SortedSet)var11.getValue();
+            if (var13 != null && !var13.isEmpty()) {
+               int var14 = ((BlockDestructionProgress)var13.last()).getProgress();
+               var2.blockBreakingRenderStates.add(new BlockBreakingRenderState(this.level, var12, var14));
             }
          }
       }
 
    }
 
-   private void renderBlockOutline(Camera var1, MultiBufferSource.BufferSource var2, PoseStack var3, boolean var4) {
-      HitResult var6 = this.minecraft.hitResult;
-      if (var6 instanceof BlockHitResult var5) {
-         if (var5.getType() != HitResult.Type.MISS) {
-            BlockPos var13 = var5.getBlockPos();
-            BlockState var7 = this.level.getBlockState(var13);
-            if (!var7.isAir() && this.level.getWorldBorder().isWithinBounds(var13)) {
-               boolean var8 = ItemBlockRenderTypes.getChunkRenderType(var7).sortOnUpload();
-               if (var8 != var4) {
-                  return;
-               }
+   private void renderBlockDestroyAnimation(PoseStack var1, MultiBufferSource.BufferSource var2, LevelRenderState var3) {
+      Vec3 var4 = var3.cameraRenderState.pos;
+      double var5 = var4.x();
+      double var7 = var4.y();
+      double var9 = var4.z();
 
-               Vec3 var9 = var1.getPosition();
-               Boolean var10 = (Boolean)this.minecraft.options.highContrastBlockOutline().get();
-               if (var10) {
-                  VertexConsumer var11 = var2.getBuffer(RenderType.secondaryBlockOutline());
-                  this.renderHitOutline(var3, var11, var1.getEntity(), var9.x, var9.y, var9.z, var13, var7, -16777216);
-               }
+      for(BlockBreakingRenderState var12 : var3.blockBreakingRenderStates) {
+         var1.pushPose();
+         BlockPos var13 = var12.blockPos;
+         var1.translate((double)var13.getX() - var5, (double)var13.getY() - var7, (double)var13.getZ() - var9);
+         PoseStack.Pose var14 = var1.last();
+         SheetedDecalTextureGenerator var15 = new SheetedDecalTextureGenerator(var2.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var12.progress)), var14, 1.0F);
+         this.minecraft.getBlockRenderer().renderBreakingTexture(var12.blockState, var13, var12, var1, var15);
+         var1.popPose();
+      }
 
-               VertexConsumer var14 = var2.getBuffer(RenderType.lines());
-               int var12 = var10 ? -11010079 : ARGB.color(102, -16777216);
-               this.renderHitOutline(var3, var14, var1.getEntity(), var9.x, var9.y, var9.z, var13, var7, var12);
-               var2.endLastBatch();
+   }
+
+   private void extractBlockOutline(Camera var1, LevelRenderState var2) {
+      var2.blockOutlineRenderState = null;
+      HitResult var4 = this.minecraft.hitResult;
+      if (var4 instanceof BlockHitResult var3) {
+         if (var3.getType() != HitResult.Type.MISS) {
+            BlockPos var13 = var3.getBlockPos();
+            BlockState var5 = this.level.getBlockState(var13);
+            if (!var5.isAir() && this.level.getWorldBorder().isWithinBounds(var13)) {
+               boolean var6 = ItemBlockRenderTypes.getChunkRenderType(var5).sortOnUpload();
+               boolean var7 = (Boolean)this.minecraft.options.highContrastBlockOutline().get();
+               CollisionContext var8 = CollisionContext.of(var1.getEntity());
+               VoxelShape var9 = var5.getShape(this.level, var13, var8);
+               if (SharedConstants.DEBUG_SHAPES) {
+                  VoxelShape var10 = var5.getCollisionShape(this.level, var13, var8);
+                  VoxelShape var11 = var5.getOcclusionShape();
+                  VoxelShape var12 = var5.getInteractionShape(this.level, var13);
+                  var2.blockOutlineRenderState = new BlockOutlineRenderState(var13, var6, var7, var9, var10, var11, var12);
+               } else {
+                  var2.blockOutlineRenderState = new BlockOutlineRenderState(var13, var6, var7, var9);
+               }
             }
 
+         }
+      }
+   }
+
+   private void renderBlockOutline(MultiBufferSource.BufferSource var1, PoseStack var2, boolean var3, LevelRenderState var4) {
+      BlockOutlineRenderState var5 = var4.blockOutlineRenderState;
+      if (var5 != null) {
+         if (var5.isTranslucent() == var3) {
+            Vec3 var6 = var4.cameraRenderState.pos;
+            if (var5.highContrast()) {
+               VertexConsumer var7 = var1.getBuffer(RenderType.secondaryBlockOutline());
+               this.renderHitOutline(var2, var7, var6.x, var6.y, var6.z, var5, -16777216);
+            }
+
+            VertexConsumer var9 = var1.getBuffer(RenderType.lines());
+            int var8 = var5.highContrast() ? -11010079 : ARGB.color(102, -16777216);
+            this.renderHitOutline(var2, var9, var6.x, var6.y, var6.z, var5, var8);
+            var1.endLastBatch();
          }
       }
    }
@@ -958,11 +1000,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.capturedFrustum = null;
    }
 
-   public void tick() {
+   public void tick(Camera var1) {
       if (this.level.tickRateManager().runsNormally()) {
          ++this.ticks;
       }
 
+      this.weatherEffectRenderer.tickRainParticles(this.level, var1, this.ticks, (ParticleStatus)this.minecraft.options.particles().get());
+      this.removeBlockBreakingProgress();
+   }
+
+   private void removeBlockBreakingProgress() {
       if (this.ticks % 20 == 0) {
          ObjectIterator var1 = this.destroyingBlocks.values().iterator();
 
@@ -988,46 +1035,34 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void addSkyPass(FrameGraphBuilder var1, Camera var2, float var3, GpuBufferSlice var4) {
-      FogType var5 = var2.getFluidInCamera();
-      if (var5 != FogType.POWDER_SNOW && var5 != FogType.LAVA && !this.doesMobEffectBlockSky(var2)) {
-         DimensionSpecialEffects var6 = this.level.effects();
-         DimensionSpecialEffects.SkyType var7 = var6.skyType();
-         if (var7 != DimensionSpecialEffects.SkyType.NONE) {
-            FramePass var8 = var1.addPass("sky");
-            this.targets.main = var8.<RenderTarget>readsAndWrites(this.targets.main);
-            var8.executes(() -> {
-               RenderSystem.setShaderFog(var4);
-               if (var7 == DimensionSpecialEffects.SkyType.END) {
+   private void addSkyPass(FrameGraphBuilder var1, Camera var2, GpuBufferSlice var3) {
+      FogType var4 = var2.getFluidInCamera();
+      if (var4 != FogType.POWDER_SNOW && var4 != FogType.LAVA && !this.doesMobEffectBlockSky(var2)) {
+         SkyRenderState var5 = this.levelRenderState.skyRenderState;
+         if (var5.skyType != DimensionSpecialEffects.SkyType.NONE) {
+            FramePass var6 = var1.addPass("sky");
+            this.targets.main = var6.<RenderTarget>readsAndWrites(this.targets.main);
+            var6.executes(() -> {
+               RenderSystem.setShaderFog(var3);
+               if (var5.skyType == DimensionSpecialEffects.SkyType.END) {
                   this.skyRenderer.renderEndSky();
-                  EndFlashState var16 = this.level.endFlashState();
-                  if (var16 != null) {
-                     float var17 = var16.getIntensity(var3);
-                     if (var17 > 1.0E-5F) {
-                        PoseStack var18 = new PoseStack();
-                        this.skyRenderer.renderEndFlash(var18, var17, var16.getXAngle(), var16.getYAngle());
-                     }
-
+                  if (var5.endFlashIntensity > 1.0E-5F) {
+                     PoseStack var7 = new PoseStack();
+                     this.skyRenderer.renderEndFlash(var7, var5.endFlashIntensity, var5.endFlashXAngle, var5.endFlashYAngle);
                   }
+
                } else {
-                  PoseStack var5 = new PoseStack();
-                  float var6x = this.level.getSunAngle(var3);
-                  float var7x = this.level.getTimeOfDay(var3);
-                  float var8 = 1.0F - this.level.getRainLevel(var3);
-                  float var9 = this.level.getStarBrightness(var3) * var8;
-                  int var10 = var6.getSunriseOrSunsetColor(var7x);
-                  int var11 = this.level.getMoonPhase();
-                  int var12 = this.level.getSkyColor(this.minecraft.gameRenderer.getMainCamera().getPosition(), var3);
-                  float var13 = ARGB.redFloat(var12);
-                  float var14 = ARGB.greenFloat(var12);
-                  float var15 = ARGB.blueFloat(var12);
-                  this.skyRenderer.renderSkyDisc(var13, var14, var15);
-                  if (var6.isSunriseOrSunset(var7x)) {
-                     this.skyRenderer.renderSunriseAndSunset(var5, var6x, var10);
+                  PoseStack var3x = new PoseStack();
+                  float var4 = ARGB.redFloat(var5.skyColor);
+                  float var5x = ARGB.greenFloat(var5.skyColor);
+                  float var6 = ARGB.blueFloat(var5.skyColor);
+                  this.skyRenderer.renderSkyDisc(var4, var5x, var6);
+                  if (var5.isSunriseOrSunset) {
+                     this.skyRenderer.renderSunriseAndSunset(var3x, var5.sunAngle, var5.sunriseAndSunsetColor);
                   }
 
-                  this.skyRenderer.renderSunMoonAndStars(var5, var7x, var11, var8, var9);
-                  if (this.shouldRenderDarkDisc(var3)) {
+                  this.skyRenderer.renderSunMoonAndStars(var3x, var5.timeOfDay, var5.moonPhase, var5.rainBrightness, var5.starBrightness);
+                  if (var5.shouldRenderDarkDisc) {
                      this.skyRenderer.renderDarkDisc();
                   }
 
@@ -1035,10 +1070,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             });
          }
       }
-   }
-
-   private boolean shouldRenderDarkDisc(float var1) {
-      return this.minecraft.player.getEyePosition(var1).y - this.level.getLevelData().getHorizonHeight(this.level) < 0.0;
    }
 
    private boolean doesMobEffectBlockSky(Camera var1) {
@@ -1094,14 +1125,23 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var2.pop();
    }
 
-   private void renderHitOutline(PoseStack var1, VertexConsumer var2, Entity var3, double var4, double var6, double var8, BlockPos var10, BlockState var11, int var12) {
+   private void renderHitOutline(PoseStack var1, VertexConsumer var2, double var3, double var5, double var7, BlockOutlineRenderState var9, int var10) {
+      BlockPos var11 = var9.pos();
       if (SharedConstants.DEBUG_SHAPES) {
-         ShapeRenderer.renderShape(var1, var2, var11.getShape(this.level, var10), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F));
-         ShapeRenderer.renderShape(var1, var2, var11.getCollisionShape(this.level, var10), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 0.0F));
-         ShapeRenderer.renderShape(var1, var2, var11.getOcclusionShape(), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, ARGB.colorFromFloat(0.4F, 0.0F, 1.0F, 0.0F));
-         ShapeRenderer.renderShape(var1, var2, var11.getInteractionShape(this.level, var10), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 1.0F));
+         ShapeRenderer.renderShape(var1, var2, var9.shape(), (double)var11.getX() - var3, (double)var11.getY() - var5, (double)var11.getZ() - var7, ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F));
+         if (var9.collisionShape() != null) {
+            ShapeRenderer.renderShape(var1, var2, var9.collisionShape(), (double)var11.getX() - var3, (double)var11.getY() - var5, (double)var11.getZ() - var7, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 0.0F));
+         }
+
+         if (var9.occlusionShape() != null) {
+            ShapeRenderer.renderShape(var1, var2, var9.occlusionShape(), (double)var11.getX() - var3, (double)var11.getY() - var5, (double)var11.getZ() - var7, ARGB.colorFromFloat(0.4F, 0.0F, 1.0F, 0.0F));
+         }
+
+         if (var9.interactionShape() != null) {
+            ShapeRenderer.renderShape(var1, var2, var9.interactionShape(), (double)var11.getX() - var3, (double)var11.getY() - var5, (double)var11.getZ() - var7, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 1.0F));
+         }
       } else {
-         ShapeRenderer.renderShape(var1, var2, var11.getShape(this.level, var10, CollisionContext.of(var3)), (double)var10.getX() - var4, (double)var10.getY() - var6, (double)var10.getZ() - var8, var12);
+         ShapeRenderer.renderShape(var1, var2, var9.shape(), (double)var11.getX() - var3, (double)var11.getY() - var5, (double)var11.getZ() - var7, var10);
       }
 
    }
@@ -1168,48 +1208,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.sectionOcclusionGraph.schedulePropagationFrom(var3);
       }
 
-   }
-
-   public void addParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      this.addParticle(var1, var2, false, var3, var5, var7, var9, var11, var13);
-   }
-
-   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
-      try {
-         Camera var16 = this.minecraft.gameRenderer.getMainCamera();
-         ParticleStatus var20 = this.calculateParticleLevel(var3);
-         if (var2) {
-            this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-         } else if (!(var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0)) {
-            if (var20 != ParticleStatus.MINIMAL) {
-               this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-            }
-         }
-      } catch (Throwable var19) {
-         CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
-         CrashReportCategory var18 = var17.addCategory("Particle being added");
-         var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
-         var18.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.level.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).toString()));
-         var18.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this.level, var4, var6, var8)));
-         throw new ReportedException(var17);
-      }
-   }
-
-   public <T extends ParticleOptions> void addParticle(T var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.addParticle(var1, var1.getType().getOverrideLimiter(), var2, var4, var6, var8, var10, var12);
-   }
-
-   private ParticleStatus calculateParticleLevel(boolean var1) {
-      ParticleStatus var2 = (ParticleStatus)this.minecraft.options.particles().get();
-      if (var1 && var2 == ParticleStatus.MINIMAL && this.level.random.nextInt(10) == 0) {
-         var2 = ParticleStatus.DECREASED;
-      }
-
-      if (var2 == ParticleStatus.DECREASED && this.level.random.nextInt(3) == 0) {
-         var2 = ParticleStatus.MINIMAL;
-      }
-
-      return var2;
    }
 
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {

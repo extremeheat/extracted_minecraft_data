@@ -17,7 +17,6 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -168,50 +167,39 @@ public class ServerExplosion implements Explosion {
       for(Entity var10 : this.level.getEntities(this.source, new AABB((double)var2, (double)var4, (double)var6, (double)var3, (double)var5, (double)var7))) {
          if (!var10.ignoreExplosion(this)) {
             double var11 = Math.sqrt(var10.distanceToSqr(this.center)) / (double)var1;
-            if (var11 <= 1.0) {
-               double var13 = var10.getX() - this.center.x;
-               double var15 = (var10 instanceof PrimedTnt ? var10.getY() : var10.getEyeY()) - this.center.y;
-               double var17 = var10.getZ() - this.center.z;
-               double var19 = Math.sqrt(var13 * var13 + var15 * var15 + var17 * var17);
-               if (var19 != 0.0) {
-                  var13 /= var19;
-                  var15 /= var19;
-                  var17 /= var19;
-                  boolean var21 = this.damageCalculator.shouldDamageEntity(this, var10);
-                  float var22 = this.damageCalculator.getKnockbackMultiplier(var10);
-                  float var23 = !var21 && var22 == 0.0F ? 0.0F : getSeenPercent(this.center, var10);
-                  if (var21) {
-                     var10.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var10, var23));
-                  }
-
-                  double var24 = (1.0 - var11) * (double)var23 * (double)var22;
-                  double var26;
-                  if (var10 instanceof LivingEntity) {
-                     LivingEntity var28 = (LivingEntity)var10;
-                     var26 = var24 * (1.0 - var28.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE));
-                  } else {
-                     var26 = var24;
-                  }
-
-                  var13 *= var26;
-                  var15 *= var26;
-                  var17 *= var26;
-                  Vec3 var37 = new Vec3(var13, var15, var17);
-                  if (var10.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var10 instanceof Projectile) {
-                     Projectile var29 = (Projectile)var10;
-                     var29.deflect((var1x, var2x, var3x) -> var1x.push(var37), this.damageSource.getDirectEntity(), EntityReference.of(this.damageSource.getEntity()), false);
-                  } else {
-                     var10.push(var37);
-                     if (var10 instanceof Player) {
-                        Player var30 = (Player)var10;
-                        if (!var30.isSpectator() && (!var30.isCreative() || !var30.getAbilities().flying)) {
-                           this.hitPlayers.put(var30, var37);
-                        }
-                     }
-                  }
-
-                  var10.onExplosionHit(this.source);
+            if (!(var11 > 1.0)) {
+               Vec3 var13 = var10 instanceof PrimedTnt ? var10.position() : var10.getEyePosition();
+               Vec3 var14 = var13.subtract(this.center).normalize();
+               boolean var15 = this.damageCalculator.shouldDamageEntity(this, var10);
+               float var16 = this.damageCalculator.getKnockbackMultiplier(var10);
+               float var17 = !var15 && var16 == 0.0F ? 0.0F : getSeenPercent(this.center, var10);
+               if (var15) {
+                  var10.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var10, var17));
                }
+
+               double var10000;
+               if (var10 instanceof LivingEntity) {
+                  LivingEntity var20 = (LivingEntity)var10;
+                  var10000 = var20.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE);
+               } else {
+                  var10000 = 0.0;
+               }
+
+               double var18 = var10000;
+               double var25 = (1.0 - var11) * (double)var17 * (double)var16 * (1.0 - var18);
+               Vec3 var22 = var14.scale(var25);
+               var10.push(var22);
+               if (var10.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var10 instanceof Projectile) {
+                  Projectile var23 = (Projectile)var10;
+                  var23.setOwner(this.damageSource.getEntity());
+               } else if (var10 instanceof Player) {
+                  Player var24 = (Player)var10;
+                  if (!var24.isSpectator() && (!var24.isCreative() || !var24.getAbilities().flying)) {
+                     this.hitPlayers.put(var24, var22);
+                  }
+               }
+
+               var10.onExplosionHit(this.source);
             }
          }
       }

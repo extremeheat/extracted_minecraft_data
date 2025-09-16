@@ -19,22 +19,19 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class BlockEntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers = ImmutableMap.of();
    private final Font font;
    private final Supplier<EntityModelSet> entityModelSet;
-   public Level level;
-   public Camera camera;
-   public HitResult cameraHitResult;
+   private Vec3 cameraPos;
    private final BlockRenderDispatcher blockRenderDispatcher;
    private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
@@ -64,13 +61,8 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       return (BlockEntityRenderer)this.renderers.get(var1.blockEntityType);
    }
 
-   public void prepare(Level var1, Camera var2, HitResult var3) {
-      if (this.level != var1) {
-         this.setLevel(var1);
-      }
-
-      this.camera = var2;
-      this.cameraHitResult = var3;
+   public void prepare(Camera var1) {
+      this.cameraPos = var1.getPosition();
    }
 
    @Nullable
@@ -79,10 +71,10 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       if (var4 == null) {
          return null;
       } else if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
-         if (!var4.shouldRender(var1, this.camera.getPosition())) {
+         if (!var4.shouldRender(var1, this.cameraPos)) {
             return null;
          } else {
-            Vec3 var5 = this.camera.getPosition();
+            Vec3 var5 = this.cameraPos;
             BlockEntityRenderState var6 = var4.createRenderState();
             var4.extractRenderState(var1, var6, var2, var5, var3);
             return (S)var6;
@@ -92,26 +84,18 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       }
    }
 
-   public <S extends BlockEntityRenderState> void submit(S var1, PoseStack var2, SubmitNodeCollector var3) {
-      BlockEntityRenderer var4 = this.getRenderer(var1);
-      if (var4 != null) {
+   public <S extends BlockEntityRenderState> void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      BlockEntityRenderer var5 = this.getRenderer(var1);
+      if (var5 != null) {
          try {
-            var4.submit(var1, var2, var3);
-         } catch (Throwable var8) {
-            CrashReport var6 = CrashReport.forThrowable(var8, "Rendering Block Entity");
-            CrashReportCategory var7 = var6.addCategory("Block Entity Details");
-            var1.fillCrashReportCategory(var7);
-            throw new ReportedException(var6);
+            var5.submit(var1, var2, var3, var4);
+         } catch (Throwable var9) {
+            CrashReport var7 = CrashReport.forThrowable(var9, "Rendering Block Entity");
+            CrashReportCategory var8 = var7.addCategory("Block Entity Details");
+            var1.fillCrashReportCategory(var8);
+            throw new ReportedException(var7);
          }
       }
-   }
-
-   public void setLevel(@Nullable Level var1) {
-      this.level = var1;
-      if (var1 == null) {
-         this.camera = null;
-      }
-
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
