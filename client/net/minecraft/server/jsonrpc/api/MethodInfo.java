@@ -8,14 +8,15 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
-public record MethodInfo(String description, List<ParamInfo> params, Optional<ResultInfo> result) {
-   public static final MapCodec<MethodInfo> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("description").forGetter(MethodInfo::description), Codec.list(ParamInfo.CODEC.codec()).fieldOf("params").forGetter(MethodInfo::params), ResultInfo.CODEC.codec().optionalFieldOf("result").forGetter(MethodInfo::result)).apply(var0, MethodInfo::new));
+public record MethodInfo(String description, Optional<ParamInfo> params, Optional<ResultInfo> result) {
+   public static final Codec<Optional<ParamInfo>> PARAMS_CODEC;
+   public static final MapCodec<MethodInfo> MAP_CODEC;
 
    public MethodInfo(String var1, @Nullable ParamInfo var2, @Nullable ResultInfo var3) {
-      this(var1, var2 != null ? List.of(var2) : List.of(), Optional.ofNullable(var3));
+      this(var1, Optional.ofNullable(var2), Optional.ofNullable(var3));
    }
 
-   public MethodInfo(String var1, List<ParamInfo> var2, Optional<ResultInfo> var3) {
+   public MethodInfo(String var1, Optional<ParamInfo> var2, Optional<ResultInfo> var3) {
       super();
       this.description = var1;
       this.params = var2;
@@ -24,6 +25,11 @@ public record MethodInfo(String description, List<ParamInfo> params, Optional<Re
 
    public Named named(ResourceLocation var1) {
       return new Named(var1, this);
+   }
+
+   static {
+      PARAMS_CODEC = ParamInfo.CODEC.codec().listOf().xmap((var0) -> var0.stream().findAny(), (var0) -> (List)var0.map(List::of).orElse(List.of()));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("description").forGetter(MethodInfo::description), PARAMS_CODEC.fieldOf("params").forGetter(MethodInfo::params), ResultInfo.CODEC.codec().optionalFieldOf("result").forGetter(MethodInfo::result)).apply(var0, MethodInfo::new));
    }
 
    public static record Named(ResourceLocation name, MethodInfo contents) {

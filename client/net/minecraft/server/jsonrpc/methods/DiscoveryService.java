@@ -56,7 +56,7 @@ public class DiscoveryService {
    }
 
    public static record DiscoverComponents(Map<String, Schema> schemas) {
-      public static final MapCodec<DiscoverComponents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(Codec.STRING, Schema.CODEC.codec()).fieldOf("schemas").forGetter(DiscoverComponents::schemas)).apply(var0, DiscoverComponents::new));
+      public static final MapCodec<DiscoverComponents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(Codec.STRING, Schema.CODEC).fieldOf("schemas").forGetter(DiscoverComponents::schemas)).apply(var0, DiscoverComponents::new));
 
       public DiscoverComponents(Map<String, Schema> var1) {
          super();

@@ -44,6 +44,10 @@ public class Avatar extends LivingEntity {
       return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & var1.getMask()) == var1.getMask();
    }
 
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return (EntityDimensions)POSES.getOrDefault(var1, STANDING_DIMENSIONS);
+   }
+
    static {
       DEFAULT_MAIN_HAND = HumanoidArm.RIGHT;
       DEFAULT_VEHICLE_ATTACHMENT = new Vec3(0.0, 0.6, 0.0);

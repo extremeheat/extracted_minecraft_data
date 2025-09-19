@@ -63,7 +63,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
@@ -1671,10 +1670,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public boolean hasPermissions(int var1) {
       return this.getPermissionLevel() >= var1;
-   }
-
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return (EntityDimensions)POSES.getOrDefault(var1, STANDING_DIMENSIONS);
    }
 
    public ImmutableList<Pose> getDismountPoses() {

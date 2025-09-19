@@ -566,6 +566,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       this.levelLoadListener.finish(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS);
       this.updateMobSpawningFlags();
+      this.updateEffectiveRespawnData();
    }
 
    public GlobalPos selectLevelLoadFocusPos() {

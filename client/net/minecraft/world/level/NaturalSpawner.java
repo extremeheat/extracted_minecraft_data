@@ -214,11 +214,11 @@ public final class NaturalSpawner {
          return false;
       } else {
          LevelData.RespawnData var5 = var0.getRespawnData();
-         if (var5.dimension() == var0.dimension() && !var5.pos().closerToCenterThan(new Vec3((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5), 24.0)) {
+         if (var5.dimension() == var0.dimension() && var5.pos().closerToCenterThan(new Vec3((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5), 24.0)) {
+            return false;
+         } else {
             ChunkPos var6 = new ChunkPos(var2);
             return Objects.equals(var6, var1.getPos()) || var0.canSpawnEntitiesInChunk(var6);
-         } else {
-            return false;
          }
       }
    }

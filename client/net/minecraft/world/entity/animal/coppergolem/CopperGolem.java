@@ -65,6 +65,9 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private static final int SPIN_ANIMATION_MIN_COOLDOWN = 200;
    private static final int SPIN_ANIMATION_MAX_COOLDOWN = 240;
    private static final float SPIN_SOUND_TIME_INTERVAL_OFFSET = 10.0F;
+   private static final float TURN_TO_STATUE_CHANCE = 0.0058F;
+   private static final int SPAWN_COOLDOWN_MIN = 60;
+   private static final int SPAWN_COOLDOWN_MAX = 100;
    private static final EntityDataAccessor<WeatheringCopper.WeatherState> DATA_WEATHER_STATE;
    private static final EntityDataAccessor<CopperGolemState> COPPER_GOLEM_STATE;
    @Nullable
@@ -89,6 +92,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
       this.setPathfindingMalus(PathType.DANGER_OTHER, 16.0F);
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, this.getRandom().nextInt(60, 100));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -187,7 +191,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
             this.setupAnimationStates();
          }
       } else {
-         this.updateWeathering((ServerLevel)this.level(), this.level().getRandom(), this.level().getDayTime());
+         this.updateWeathering((ServerLevel)this.level(), this.level().getRandom(), this.level().getGameTime());
       }
 
    }
@@ -248,16 +252,17 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          if (this.nextWeatheringTick == -1L) {
             this.nextWeatheringTick = var3 + (long)var2.nextIntBetweenInclusive(504000, 552000);
          } else {
-            if (var3 >= this.nextWeatheringTick) {
-               WeatheringCopper.WeatherState var5 = (WeatheringCopper.WeatherState)this.entityData.get(DATA_WEATHER_STATE);
-               if (var5.equals(WeatheringCopper.WeatherState.OXIDIZED)) {
-                  if (this.canTurnToStatue(var1)) {
-                     this.turnToStatue(var1);
-                  }
-               } else {
-                  this.setWeatherState(var5.next());
-                  this.nextWeatheringTick += (long)var2.nextIntBetweenInclusive(504000, 552000);
-               }
+            WeatheringCopper.WeatherState var5 = (WeatheringCopper.WeatherState)this.entityData.get(DATA_WEATHER_STATE);
+            boolean var6 = var5.equals(WeatheringCopper.WeatherState.OXIDIZED);
+            if (var3 >= this.nextWeatheringTick && !var6) {
+               WeatheringCopper.WeatherState var7 = var5.next();
+               boolean var8 = var7.equals(WeatheringCopper.WeatherState.OXIDIZED);
+               this.setWeatherState(var7);
+               this.nextWeatheringTick = var8 ? 0L : this.nextWeatheringTick + (long)var2.nextIntBetweenInclusive(504000, 552000);
+            }
+
+            if (var6 && this.canTurnToStatue(var1)) {
+               this.turnToStatue(var1);
             }
 
          }
@@ -265,8 +270,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    private boolean canTurnToStatue(Level var1) {
-      BlockPos var2 = this.blockPosition();
-      return var1.getBlockState(var2).is(Blocks.AIR) && var2.getCenter().closerThan(this.position().add(0.0, 0.5, 0.0), 0.15, 0.2);
+      return var1.getBlockState(this.blockPosition()).is(Blocks.AIR) && var1.random.nextFloat() <= 0.0058F;
    }
 
    private void turnToStatue(ServerLevel var1) {
@@ -345,7 +349,6 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    public void spawn(WeatheringCopper.WeatherState var1) {
       this.setWeatherState(var1);
       this.playSpawnSound();
-      this.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, 60);
    }
 
    @Nullable

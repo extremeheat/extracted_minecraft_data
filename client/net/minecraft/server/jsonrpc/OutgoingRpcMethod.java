@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.jsonrpc.api.MethodInfo;
 import net.minecraft.server.jsonrpc.api.ParamInfo;
 import net.minecraft.server.jsonrpc.api.ResultInfo;
+import net.minecraft.server.jsonrpc.methods.IllegalMethodDefinitionException;
 
 public interface OutgoingRpcMethod<Params, Result> {
    String NOTIFICATION_PREFIX = "notification/";
@@ -30,19 +31,51 @@ public interface OutgoingRpcMethod<Params, Result> {
    }
 
    static OutgoingRpcMethodBuilder<ParmeterlessNotification> notification() {
-      return new OutgoingRpcMethodBuilder<ParmeterlessNotification>(ParmeterlessNotification::new);
+      return new OutgoingRpcMethodBuilder<ParmeterlessNotification>((var0, var1) -> {
+         if (var0.params().isPresent()) {
+            throw new IllegalMethodDefinitionException("Method defined as not having parameters but is describing them");
+         } else if (var0.result().isPresent()) {
+            throw new IllegalMethodDefinitionException("Method defined as not having result but is describing it");
+         } else {
+            return new ParmeterlessNotification(var0, var1);
+         }
+      });
    }
 
    static <Params> OutgoingRpcMethodBuilder<Notification<Params>> notification(Codec<Params> var0) {
-      return new OutgoingRpcMethodBuilder<Notification<Params>>((var1, var2) -> new Notification(var1, var2, var0));
+      return new OutgoingRpcMethodBuilder<Notification<Params>>((var1, var2) -> {
+         if (var1.params().isEmpty()) {
+            throw new IllegalMethodDefinitionException("Method defined as having parameters without describing them");
+         } else if (var1.result().isPresent()) {
+            throw new IllegalMethodDefinitionException("Method defined as not having result but is describing it");
+         } else {
+            return new Notification(var1, var2, var0);
+         }
+      });
    }
 
    static <Result> OutgoingRpcMethodBuilder<ParameterlessMethod<Result>> request(Codec<Result> var0) {
-      return new OutgoingRpcMethodBuilder<ParameterlessMethod<Result>>((var1, var2) -> new ParameterlessMethod(var1, var2, var0));
+      return new OutgoingRpcMethodBuilder<ParameterlessMethod<Result>>((var1, var2) -> {
+         if (var1.params().isPresent()) {
+            throw new IllegalMethodDefinitionException("Method defined as not having parameters but is describing them");
+         } else if (var1.result().isEmpty()) {
+            throw new IllegalMethodDefinitionException("Method lacks result");
+         } else {
+            return new ParameterlessMethod(var1, var2, var0);
+         }
+      });
    }
 
    static <Params, Result> OutgoingRpcMethodBuilder<Method<Params, Result>> request(Codec<Params> var0, Codec<Result> var1) {
-      return new OutgoingRpcMethodBuilder<Method<Params, Result>>((var2, var3) -> new Method(var2, var3, var0, var1));
+      return new OutgoingRpcMethodBuilder<Method<Params, Result>>((var2, var3) -> {
+         if (var2.params().isEmpty()) {
+            throw new IllegalMethodDefinitionException("Method defined as having parameters without describing them");
+         } else if (var2.result().isEmpty()) {
+            throw new IllegalMethodDefinitionException("Method lacks result");
+         } else {
+            return new Method(var2, var3, var0, var1);
+         }
+      });
    }
 
    public static record Attributes(boolean discoverable) {

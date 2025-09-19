@@ -33,7 +33,7 @@ public class AvatarRenderState extends HumanoidRenderState {
    @Nullable
    public Parrot.Variant parrotOnRightShoulder;
    public int id;
-   public boolean showDeadMouseEars = false;
+   public boolean showExtraEars = false;
    public final ItemStackRenderState heldOnHead = new ItemStackRenderState();
 
    public AvatarRenderState() {

@@ -44,8 +44,8 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitShadow(var1, var2, var3);
    }
 
-   public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6, CameraRenderState var8) {
-      this.order(0).submitNameTag(var1, var2, var3, var4, var5, var6, var8);
+   public void submitNameTag(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9) {
+      this.order(0).submitNameTag(var1, var2, var3, var4, var5, var6, var7, var9);
    }
 
    public void submitText(PoseStack var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10) {

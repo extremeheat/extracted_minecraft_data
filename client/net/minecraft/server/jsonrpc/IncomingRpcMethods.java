@@ -33,7 +33,7 @@ public class IncomingRpcMethods {
       registerServerStateService(var0);
       registerServerSettingsService(var0);
       registerGameRuleService(var0);
-      return IncomingRpcMethod.method((Function)((var0x) -> DiscoveryService.discover(Schema.getSchemaRegistry())), DiscoveryService.DiscoverResponse.CODEC.codec()).undiscoverable().notOnMainThread().register(var0, "rpc.discover");
+      return IncomingRpcMethod.method((Function)((var0x) -> DiscoveryService.discover(Schema.getSchemaRegistry())), DiscoveryService.DiscoverResponse.CODEC.codec()).undiscoverable().notOnMainThread().response(new ResultInfo("result", Schema.STRING_SCHEMA)).register(var0, "rpc.discover");
    }
 
    private static void registerAllowListService(Registry<IncomingRpcMethod> var0) {

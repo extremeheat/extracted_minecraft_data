@@ -45,22 +45,21 @@ public class NameTagFeatureRenderer {
          super();
       }
 
-      public void add(PoseStack var1, @Nullable Vec3 var2, Component var3, boolean var4, int var5, double var6, CameraRenderState var8) {
+      public void add(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9) {
          if (var2 != null) {
-            int var9 = "deadmau5".equals(var3.getString()) ? -10 : 0;
             Minecraft var10 = Minecraft.getInstance();
             var1.pushPose();
             var1.translate(var2.x, var2.y + 0.5, var2.z);
-            var1.mulPose((Quaternionfc)var8.orientation);
+            var1.mulPose((Quaternionfc)var9.orientation);
             var1.scale(0.025F, -0.025F, 0.025F);
             Matrix4f var11 = new Matrix4f(var1.last().pose());
-            float var12 = (float)(-var10.font.width((FormattedText)var3)) / 2.0F;
+            float var12 = (float)(-var10.font.width((FormattedText)var4)) / 2.0F;
             int var13 = (int)(var10.options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
-            if (var4) {
-               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, LightTexture.lightCoordsWithEmission(var5, 2), -1, 0, var6));
-               this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, var5, -2130706433, var13, var6));
+            if (var5) {
+               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var3, var4, LightTexture.lightCoordsWithEmission(var6, 2), -1, 0, var7));
+               this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var3, var4, var6, -2130706433, var13, var7));
             } else {
-               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var9, var3, var5, -2130706433, var13, var6));
+               this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(var11, var12, (float)var3, var4, var6, -2130706433, var13, var7));
             }
 
             var1.popPose();

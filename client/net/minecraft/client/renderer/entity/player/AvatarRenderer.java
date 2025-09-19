@@ -135,14 +135,15 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
 
    protected void submitNameTag(AvatarRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
+      int var5 = var1.showExtraEars ? -10 : 0;
       if (var1.scoreText != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var5, var1.scoreText, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
          Objects.requireNonNull(this.getFont());
          var2.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
       }
 
       if (var1.nameTag != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
+         var3.submitNameTag(var2, var1.nameTagAttachment, var5, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
       }
 
       var2.popPose();
@@ -179,7 +180,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var2.parrotOnLeftShoulder = ((ClientAvatarEntity)var1).getParrotVariantOnShoulder(true);
       var2.parrotOnRightShoulder = ((ClientAvatarEntity)var1).getParrotVariantOnShoulder(false);
       var2.id = var1.getId();
-      var2.showDeadMouseEars = ((ClientAvatarEntity)var1).showExtraEars();
+      var2.showExtraEars = ((ClientAvatarEntity)var1).showExtraEars();
       var2.heldOnHead.clear();
       if (var2.isUsingItem) {
          ItemStack var4 = var1.getItemInHand(var2.useItemHand);

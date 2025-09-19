@@ -15,6 +15,6 @@ public record SchemaComponent(String name, URI ref, Schema schema) {
    }
 
    public Schema asArray() {
-      return Schema.arrayOf(FlatSchema.ofRef(this.ref));
+      return Schema.arrayOf(Schema.ofRef(this.ref));
    }
 }

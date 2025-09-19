@@ -125,7 +125,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
    protected void submitNameTag(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.nameTag != null) {
-         var3.submitNameTag(var2, var1.nameTagAttachment, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
+         var3.submitNameTag(var2, var1.nameTagAttachment, 0, var1.nameTag, !var1.isDiscrete, var1.lightCoords, var1.distanceToCameraSq, var4);
       }
 
    }

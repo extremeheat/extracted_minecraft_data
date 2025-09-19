@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.pathfinder.Path;
@@ -49,7 +49,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private static final int IDLE_COOLDOWN = 140;
    private static final double CLOSE_ENOUGH_TO_START_QUEUING_DISTANCE = 3.0;
    private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_DISTANCE = 0.5;
-   private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_PATH_END_DISTANCE = 0.75;
+   private static final double CLOSE_ENOUGH_TO_START_INTERACTING_WITH_TARGET_PATH_END_DISTANCE = 1.0;
    private static final double CLOSE_ENOUGH_TO_CONTINUE_INTERACTING_WITH_TARGET = 2.0;
    private final float speedModifier;
    private final int horizontalSearchDistance;
@@ -122,7 +122,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private boolean updateInvalidTarget(ServerLevel var1, PathfinderMob var2) {
       if (!this.hasValidTarget(var1, var2)) {
          this.stopTargetingCurrentTarget(var2);
-         Optional var3 = this.getTargetBlockPosition(var1, var2);
+         Optional var3 = this.getTransportTarget(var1, var2);
          if (var3.isPresent()) {
             this.target = (TransportItemTarget)var3.get();
             this.onStartTravelling(var2);
@@ -238,15 +238,41 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    }
 
-   private Optional<TransportItemTarget> getTargetBlockPosition(ServerLevel var1, PathfinderMob var2) {
+   private Optional<TransportItemTarget> getTransportTarget(ServerLevel var1, PathfinderMob var2) {
       AABB var3 = this.getTargetSearchArea(var2);
       Set var4 = getVisitedPositions(var2);
       Set var5 = getUnreachablePositions(var2);
-      return ChunkPos.rangeClosed(new ChunkPos(var2.blockPosition()), Math.floorDiv(this.getHorizontalSearchDistance(var2), 16) + 1).flatMap((var1x) -> var1.getChunk(var1x.x, var1x.z).getBlockEntities().entrySet().stream()).sorted(Comparator.comparing((var1x) -> ((BlockPos)var1x.getKey()).distToCenterSqr(var2.position()))).flatMap((var6) -> this.isTargetValidToPick(var2, var1, (BlockPos)var6.getKey(), (BlockEntity)var6.getValue(), var4, var5, var3).stream()).findFirst();
+      List var6 = ChunkPos.rangeClosed(new ChunkPos(var2.blockPosition()), Math.floorDiv(this.getHorizontalSearchDistance(var2), 16) + 1).toList();
+      TransportItemTarget var7 = null;
+      double var8 = -1.0;
+
+      for(ChunkPos var11 : var6) {
+         for(BlockEntity var13 : var1.getChunk(var11.x, var11.z).getBlockEntities().values()) {
+            if (var13 instanceof ChestBlockEntity var14) {
+               double var15 = var14.getBlockPos().distToCenterSqr(var2.position());
+               if (var8 == -1.0 || var15 < var8) {
+                  TransportItemTarget var17 = this.isTargetValidToPick(var2, var1, var14, var4, var5, var3);
+                  if (var17 != null) {
+                     var7 = var17;
+                     var8 = var15;
+                  }
+               }
+            }
+         }
+      }
+
+      return var7 == null ? Optional.empty() : Optional.of(var7);
    }
 
-   private Optional<TransportItemTarget> isTargetValidToPick(PathfinderMob var1, Level var2, BlockPos var3, BlockEntity var4, Set<GlobalPos> var5, Set<GlobalPos> var6, AABB var7) {
-      return TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var4, var2).filter((var6x) -> this.isWantedBlock(var1, var6x.state) && !this.isPositionAlreadyVisited(var5, var6, var6x, var2) && var7.contains((double)var6x.pos.getX(), (double)var6x.pos.getY(), (double)var6x.pos.getZ()) && !this.isContainerLocked(var6x));
+   @Nullable
+   private TransportItemTarget isTargetValidToPick(PathfinderMob var1, Level var2, BlockEntity var3, Set<GlobalPos> var4, Set<GlobalPos> var5, AABB var6) {
+      TransportItemTarget var7 = TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(var3, var2);
+      if (var7 == null) {
+         return null;
+      } else {
+         boolean var8 = this.isWantedBlock(var1, var7.state) && !this.isPositionAlreadyVisited(var4, var5, var7, var2) && var6.contains((double)var7.pos.getX(), (double)var7.pos.getY(), (double)var7.pos.getZ()) && !this.isContainerLocked(var7);
+         return var8 ? var7 : null;
+      }
    }
 
    private boolean isContainerLocked(TransportItemTarget var1) {
@@ -266,6 +292,10 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    private boolean hasValidTarget(Level var1, PathfinderMob var2) {
       boolean var3 = this.target != null && this.isWantedBlock(var2, this.target.state) && this.targetHasNotChanged(var1, this.target);
       if (var3 && !this.isTargetBlocked(var1, this.target)) {
+         if (this.state.equals(TransportItemsBetweenContainers.TransportItemState.QUEUING)) {
+            return true;
+         }
+
          Path var4 = var2.getNavigation().getPath() == null ? var2.getNavigation().createPath(this.target.pos, 0) : var2.getNavigation().getPath();
          Vec3 var5 = this.getPositionToReachTargetFrom(var4, var2);
          boolean var6 = this.isWithinTargetDistance(getInteractionRange(var2), this.target, var1, var2, var5);
@@ -300,8 +330,8 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
 
    private List<TransportItemTarget> getConnectedTargets(TransportItemTarget var1, Level var2) {
       if (var1.state.hasProperty(ChestBlock.TYPE) && var1.state.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-         Optional var3 = TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(ChestBlock.getConnectedBlockPos(var1.pos, var1.state), var2);
-         return (List)var3.map((var1x) -> List.of(var1, var1x)).orElseGet(() -> List.of(var1));
+         TransportItemTarget var3 = TransportItemsBetweenContainers.TransportItemTarget.tryCreatePossibleTarget(ChestBlock.getConnectedBlockPos(var1.pos, var1.state), var2);
+         return var3 != null ? List.of(var1, var3) : List.of(var1);
       } else {
          return List.of(var1);
       }
@@ -366,7 +396,7 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
    }
 
    private static double getInteractionRange(PathfinderMob var0) {
-      return hasFinishedPath(var0) ? 0.75 : 0.5;
+      return hasFinishedPath(var0) ? 1.0 : 0.5;
    }
 
    private boolean isWithinTargetDistance(double var1, TransportItemTarget var3, Level var4, PathfinderMob var5, Vec3 var6) {
@@ -568,15 +598,18 @@ public class TransportItemsBetweenContainers extends Behavior<PathfinderMob> {
          this.state = var4;
       }
 
-      public static Optional<TransportItemTarget> tryCreatePossibleTarget(BlockPos var0, BlockEntity var1, Level var2) {
-         BlockState var3 = var2.getBlockState(var0);
-         Container var4 = getBlockEntityContainer(var1, var3, var2, var0);
-         return var4 != null ? Optional.of(new TransportItemTarget(var0, var4, var1, var3)) : Optional.empty();
+      @Nullable
+      public static TransportItemTarget tryCreatePossibleTarget(BlockEntity var0, Level var1) {
+         BlockPos var2 = var0.getBlockPos();
+         BlockState var3 = var0.getBlockState();
+         Container var4 = getBlockEntityContainer(var0, var3, var1, var2);
+         return var4 != null ? new TransportItemTarget(var2, var4, var0, var3) : null;
       }
 
-      public static Optional<TransportItemTarget> tryCreatePossibleTarget(BlockPos var0, Level var1) {
+      @Nullable
+      public static TransportItemTarget tryCreatePossibleTarget(BlockPos var0, Level var1) {
          BlockEntity var2 = var1.getBlockEntity(var0);
-         return var2 == null ? Optional.empty() : tryCreatePossibleTarget(var0, var2, var1);
+         return var2 == null ? null : tryCreatePossibleTarget(var2, var1);
       }
 
       @Nullable
