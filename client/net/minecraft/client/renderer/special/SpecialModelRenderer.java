@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 public interface SpecialModelRenderer<T> {
-   void submit(@Nullable T var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7);
+   void submit(@Nullable T var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8);
 
    void getExtents(Set<Vector3f> var1);
 

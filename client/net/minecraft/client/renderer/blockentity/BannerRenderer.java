@@ -94,32 +94,36 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
          var6 = this.wallFlagModel;
       }
 
-      submitBanner(this.materials, var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.angle, var5, var6, var1.phase, var1.baseColor, var1.patterns, var1.breakProgress);
+      submitBanner(this.materials, var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.angle, var5, var6, var1.phase, var1.baseColor, var1.patterns, var1.breakProgress, 0);
    }
 
-   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6) {
-      submitBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, DyeColor var5, BannerPatternLayers var6, int var7) {
+      submitBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
    }
 
-   private static void submitBanner(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11) {
+   private static void submitBanner(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11, int var12) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
       var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      Material var12 = ModelBakery.BANNER_BASE;
-      var2.submitModel(var6, Unit.INSTANCE, var1, var12.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var12), 0, var11);
-      submitPatterns(var0, var1, var2, var3, var4, var7, var8, var12, true, var9, var10, var11);
+      Material var13 = ModelBakery.BANNER_BASE;
+      var2.submitModel(var6, Unit.INSTANCE, var1, var13.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var13), var12, var11);
+      submitPatterns(var0, var1, var2, var3, var4, var7, var8, var13, true, var9, var10, false, var11, var12);
       var1.popPose();
    }
 
-   public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11) {
-      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var7), 0, var11);
-      submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var8 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var9, var11);
+   public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, boolean var11, @Nullable ModelFeatureRenderer.CrumblingOverlay var12, int var13) {
+      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var7), var13, var12);
+      if (var11) {
+         var2.submitModel(var5, var6, var1, RenderType.entityGlint(), var3, var4, -1, var0.get(var7), 0, var12);
+      }
 
-      for(int var12 = 0; var12 < 16 && var12 < var10.layers().size(); ++var12) {
-         BannerPatternLayers.Layer var13 = (BannerPatternLayers.Layer)var10.layers().get(var12);
-         Material var14 = var8 ? Sheets.getBannerMaterial(var13.pattern()) : Sheets.getShieldMaterial(var13.pattern());
-         submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var14, var13.color(), (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var8 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var9, var12);
+
+      for(int var14 = 0; var14 < 16 && var14 < var10.layers().size(); ++var14) {
+         BannerPatternLayers.Layer var15 = (BannerPatternLayers.Layer)var10.layers().get(var14);
+         Material var16 = var8 ? Sheets.getBannerMaterial(var15.pattern()) : Sheets.getShieldMaterial(var15.pattern());
+         submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var16, var15.color(), (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
    }

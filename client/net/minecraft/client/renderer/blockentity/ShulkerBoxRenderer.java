@@ -65,17 +65,17 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
          var6 = Sheets.getShulkerBoxMaterial(var5);
       }
 
-      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6);
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6, 0);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8, int var9) {
       var1.pushPose();
       this.prepareModel(var1, var5, var6);
       ShulkerBoxModel var10001 = this.model;
       Float var10002 = var6;
       ShulkerBoxModel var10005 = this.model;
       Objects.requireNonNull(var10005);
-      var2.submitModel(var10001, var10002, var1, var8.renderType(var10005::renderType), var3, var4, -1, this.materials.get(var8), 0, var7);
+      var2.submitModel(var10001, var10002, var1, var8.renderType(var10005::renderType), var3, var4, -1, this.materials.get(var8), var9, var7);
       var1.popPose();
    }
 

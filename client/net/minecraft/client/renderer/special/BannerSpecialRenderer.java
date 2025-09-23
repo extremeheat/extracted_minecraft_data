@@ -30,8 +30,8 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
       return (BannerPatternLayers)var1.get(DataComponents.BANNER_PATTERNS);
    }
 
-   public void submit(@Nullable BannerPatternLayers var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7) {
-      this.bannerRenderer.submitSpecial(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY));
+   public void submit(@Nullable BannerPatternLayers var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
+      this.bannerRenderer.submitSpecial(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY), var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {

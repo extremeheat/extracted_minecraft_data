@@ -1249,7 +1249,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var6 = false;
          this.gpuUtilization = 0.0;
       } else {
-         var6 = this.currentFrameProfile == null || this.currentFrameProfile.isDone();
+         var6 = (this.currentFrameProfile == null || this.currentFrameProfile.isDone()) && !TimerQuery.getInstance().isRecording();
          if (var6) {
             TimerQuery.getInstance().beginProfile();
          }

@@ -230,6 +230,7 @@ public abstract class AbstractArrow extends Projectile {
          float var12 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
          this.setXRot(lerpRotation(this.getXRot(), var12));
          this.setYRot(lerpRotation(this.getYRot(), var11));
+         this.checkLeftOwner();
          if (var1) {
             BlockHitResult var13 = this.level().clipIncludingBorder(new ClipContext(var9, var9.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             this.stepMoveAndHit(var13);

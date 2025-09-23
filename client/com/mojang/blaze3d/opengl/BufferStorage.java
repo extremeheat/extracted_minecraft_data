@@ -34,14 +34,14 @@ public abstract class BufferStorage {
 
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4) {
          int var5 = var1.createBuffer();
-         var1.bufferData(var5, (long)var4, GlConst.bufferUsageToGlEnum(var3));
+         var1.bufferData(var5, (long)var4, var3);
          return new GlBuffer(var2, var1, var3, var4, var5, (ByteBuffer)null);
       }
 
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4) {
          int var5 = var1.createBuffer();
          int var6 = var4.remaining();
-         var1.bufferData(var5, var4, GlConst.bufferUsageToGlEnum(var3));
+         var1.bufferData(var5, var4, var3);
          return new GlBuffer(var2, var1, var3, var6, var5, (ByteBuffer)null);
       }
 

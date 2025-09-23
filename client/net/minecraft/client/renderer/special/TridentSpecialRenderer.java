@@ -19,10 +19,10 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
       this.model = var1;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
       var2.pushPose();
       var2.scale(1.0F, -1.0F, -1.0F);
-      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
       var2.popPose();
    }
 

@@ -42,6 +42,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Nullable
    protected EntityReference<Entity> owner;
    private boolean leftOwner = false;
+   private boolean leftOwnerChecked;
    private boolean hasBeenShot = false;
    @Nullable
    private Entity lastDeflectedBy;
@@ -100,14 +101,20 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          this.hasBeenShot = true;
       }
 
-      if (!this.leftOwner) {
-         this.leftOwner = this.checkLeftOwner();
-      }
-
+      this.checkLeftOwner();
       super.tick();
+      this.leftOwnerChecked = false;
    }
 
-   private boolean checkLeftOwner() {
+   protected void checkLeftOwner() {
+      if (!this.leftOwner && !this.leftOwnerChecked) {
+         this.leftOwner = this.isOutsideOwnerCollisionRange();
+         this.leftOwnerChecked = true;
+      }
+
+   }
+
+   private boolean isOutsideOwnerCollisionRange() {
       Entity var1 = this.getOwner();
       if (var1 != null) {
          AABB var2 = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);

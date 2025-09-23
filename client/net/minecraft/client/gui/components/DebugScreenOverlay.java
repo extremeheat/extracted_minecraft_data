@@ -229,9 +229,9 @@ public class DebugScreenOverlay {
                var17.add("Debug charts: [F3+1] Profiler " + var10001 + "; [F3+2] " + (var21 ? "FPS + TPS " : "FPS ") + (this.renderFpsCharts ? "visible" : "hidden") + "; [F3+3] " + (!this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping") + (this.renderNetworkCharts ? " visible" : " hidden"));
                boolean var27 = this.minecraft.screen == null || this.minecraft.gui.getChat().isChatFocused();
                if (this.minecraft.level != null && var27 && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
-                  var17.add("To edit: press F3 + F5. For help: press F3 + Q");
+                  var17.add("To edit: press F3 + F6. For help: press F3 + Q");
                } else {
-                  var17.add("To edit: press F3 + F5");
+                  var17.add("To edit: press F3 + F6");
                }
             }
 

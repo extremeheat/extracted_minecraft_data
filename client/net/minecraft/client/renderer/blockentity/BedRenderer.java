@@ -92,18 +92,18 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
 
    public void submit(BedRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       Material var5 = Sheets.getBedMaterial(var1.color);
-      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress);
+      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress, 0);
    }
 
-   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Material var5) {
-      this.submitPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false, (ModelFeatureRenderer.CrumblingOverlay)null);
-      this.submitPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Material var5, int var6) {
+      this.submitPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      this.submitPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
-   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
+   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, int var10) {
       var1.pushPose();
       preparePose(var1, var8, var4);
-      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderType::entitySolid), var6, var7, -1, this.materials.get(var5), 0, var9);
+      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderType::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);
       var1.popPose();
    }
 

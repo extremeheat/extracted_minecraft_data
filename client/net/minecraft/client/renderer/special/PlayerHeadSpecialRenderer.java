@@ -28,9 +28,9 @@ public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerSki
       this.modelBase = var2;
    }
 
-   public void submit(@Nullable PlayerSkinRenderCache.RenderInfo var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7) {
-      RenderType var8 = var1 != null ? var1.renderType() : PlayerSkinRenderCache.DEFAULT_PLAYER_SKIN_RENDER_TYPE;
-      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, 0.0F, var3, var4, var5, this.modelBase, var8, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(@Nullable PlayerSkinRenderCache.RenderInfo var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
+      RenderType var9 = var1 != null ? var1.renderType() : PlayerSkinRenderCache.DEFAULT_PLAYER_SKIN_RENDER_TYPE;
+      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, 0.0F, var3, var4, var5, this.modelBase, var9, var8, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

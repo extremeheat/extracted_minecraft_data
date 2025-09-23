@@ -62,11 +62,11 @@ public abstract class DirectStateAccess {
       }
 
       void bufferData(int var1, long var2, int var4) {
-         ARBDirectStateAccess.glNamedBufferData(var1, var2, var4);
+         ARBDirectStateAccess.glNamedBufferData(var1, var2, GlConst.bufferUsageToGlEnum(var4));
       }
 
       void bufferData(int var1, ByteBuffer var2, int var3) {
-         ARBDirectStateAccess.glNamedBufferData(var1, var2, var3);
+         ARBDirectStateAccess.glNamedBufferData(var1, var2, GlConst.bufferUsageToGlEnum(var3));
       }
 
       void bufferSubData(int var1, int var2, ByteBuffer var3, int var4) {

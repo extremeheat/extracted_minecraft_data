@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
@@ -23,33 +24,39 @@ public class ModelPartFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, MultiBufferSource.BufferSource var3) {
-      Storage var4 = var1.getModelPartSubmits();
+   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2, OutlineBufferSource var3, MultiBufferSource.BufferSource var4) {
+      Storage var5 = var1.getModelPartSubmits();
 
-      for(Map.Entry var6 : var4.modelPartSubmits.entrySet()) {
-         RenderType var7 = (RenderType)var6.getKey();
-         List var8 = (List)var6.getValue();
-         VertexConsumer var9 = var2.getBuffer(var7);
+      for(Map.Entry var7 : var5.modelPartSubmits.entrySet()) {
+         RenderType var8 = (RenderType)var7.getKey();
+         List var9 = (List)var7.getValue();
+         VertexConsumer var10 = var2.getBuffer(var8);
 
-         for(SubmitNodeStorage.ModelPartSubmit var11 : var8) {
-            VertexConsumer var12;
-            if (var11.sprite() != null) {
-               if (var11.hasFoil()) {
-                  var12 = var11.sprite().wrap(ItemRenderer.getFoilBuffer(var2, var7, var11.sheeted(), true));
+         for(SubmitNodeStorage.ModelPartSubmit var12 : var9) {
+            VertexConsumer var13;
+            if (var12.sprite() != null) {
+               if (var12.hasFoil()) {
+                  var13 = var12.sprite().wrap(ItemRenderer.getFoilBuffer(var2, var8, var12.sheeted(), true));
                } else {
-                  var12 = var11.sprite().wrap(var9);
+                  var13 = var12.sprite().wrap(var10);
                }
-            } else if (var11.hasFoil()) {
-               var12 = ItemRenderer.getFoilBuffer(var2, var7, var11.sheeted(), true);
+            } else if (var12.hasFoil()) {
+               var13 = ItemRenderer.getFoilBuffer(var2, var8, var12.sheeted(), true);
             } else {
-               var12 = var9;
+               var13 = var10;
             }
 
-            this.poseStack.last().set(var11.pose());
-            var11.modelPart().render(this.poseStack, var12, var11.lightCoords(), var11.overlayCoords(), var11.tintedColor());
-            if (var11.crumblingOverlay() != null) {
-               SheetedDecalTextureGenerator var13 = new SheetedDecalTextureGenerator(var3.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var11.crumblingOverlay().progress())), var11.crumblingOverlay().cameraPose(), 1.0F);
-               var11.modelPart().render(this.poseStack, var13, var11.lightCoords(), var11.overlayCoords(), var11.tintedColor());
+            this.poseStack.last().set(var12.pose());
+            var12.modelPart().render(this.poseStack, var13, var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
+            if (var12.outlineColor() != 0 && (var8.outline().isPresent() || var8.isOutline())) {
+               var3.setColor(var12.outlineColor());
+               VertexConsumer var14 = var3.getBuffer(var8);
+               var12.modelPart().render(this.poseStack, var12.sprite() == null ? var14 : var12.sprite().wrap(var14), var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
+            }
+
+            if (var12.crumblingOverlay() != null) {
+               SheetedDecalTextureGenerator var15 = new SheetedDecalTextureGenerator(var4.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(var12.crumblingOverlay().progress())), var12.crumblingOverlay().cameraPose(), 1.0F);
+               var12.modelPart().render(this.poseStack, var15, var12.lightCoords(), var12.overlayCoords(), var12.tintedColor());
             }
          }
       }

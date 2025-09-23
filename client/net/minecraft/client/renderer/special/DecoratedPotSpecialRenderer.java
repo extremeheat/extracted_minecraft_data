@@ -26,8 +26,8 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
       return (PotDecorations)var1.get(DataComponents.POT_DECORATIONS);
    }
 
-   public void submit(@Nullable PotDecorations var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7) {
-      this.decoratedPotRenderer.submit(var3, var4, var5, var6, (PotDecorations)Objects.requireNonNullElse(var1, PotDecorations.EMPTY));
+   public void submit(@Nullable PotDecorations var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
+      this.decoratedPotRenderer.submit(var3, var4, var5, var6, (PotDecorations)Objects.requireNonNullElse(var1, PotDecorations.EMPTY), var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {

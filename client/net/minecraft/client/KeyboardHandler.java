@@ -312,7 +312,7 @@ public class KeyboardHandler {
                }
 
                return true;
-            case 294:
+            case 295:
                if (this.minecraft.screen instanceof DebugOptionsScreen) {
                   this.minecraft.screen.onClose();
                } else if (this.minecraft.canInterruptScreen()) {

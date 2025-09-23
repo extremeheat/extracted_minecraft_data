@@ -245,7 +245,7 @@ public class ItemStackRenderState {
          var1.pushPose();
          this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), var1.last());
          if (this.specialRenderer != null) {
-            this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE);
+            this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE, var5);
          } else if (this.renderType != null) {
             var2.submitItem(var1, ItemStackRenderState.this.displayContext, var3, var4, var5, this.tintLayers, this.quads, this.renderType, this.foilType);
          }

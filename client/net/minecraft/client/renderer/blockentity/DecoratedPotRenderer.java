@@ -149,24 +149,24 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
          }
       }
 
-      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.decorations);
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.decorations, 0);
       var2.popPose();
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5) {
-      RenderType var6 = Sheets.DECORATED_POT_BASE.renderType(RenderType::entitySolid);
-      TextureAtlasSprite var7 = this.materials.get(Sheets.DECORATED_POT_BASE);
-      var2.submitModelPart(this.neck, var1, var6, var3, var4, var7);
-      var2.submitModelPart(this.top, var1, var6, var3, var4, var7);
-      var2.submitModelPart(this.bottom, var1, var6, var3, var4, var7);
-      Material var8 = getSideMaterial(var5.front());
-      var2.submitModelPart(this.frontSide, var1, var8.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var8));
-      Material var9 = getSideMaterial(var5.back());
-      var2.submitModelPart(this.backSide, var1, var9.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var9));
-      Material var10 = getSideMaterial(var5.left());
-      var2.submitModelPart(this.leftSide, var1, var10.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var10));
-      Material var11 = getSideMaterial(var5.right());
-      var2.submitModelPart(this.rightSide, var1, var11.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var11));
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5, int var6) {
+      RenderType var7 = Sheets.DECORATED_POT_BASE.renderType(RenderType::entitySolid);
+      TextureAtlasSprite var8 = this.materials.get(Sheets.DECORATED_POT_BASE);
+      var2.submitModelPart(this.neck, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.top, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.bottom, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var9 = getSideMaterial(var5.front());
+      var2.submitModelPart(this.frontSide, var1, var9.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var9), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var10 = getSideMaterial(var5.back());
+      var2.submitModelPart(this.backSide, var1, var10.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var10), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var11 = getSideMaterial(var5.left());
+      var2.submitModelPart(this.leftSide, var1, var11.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var11), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var12 = getSideMaterial(var5.right());
+      var2.submitModelPart(this.rightSide, var1, var12.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
    public void getExtents(Set<Vector3f> var1) {

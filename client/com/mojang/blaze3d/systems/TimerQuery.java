@@ -14,6 +14,10 @@ public class TimerQuery {
       return TimerQuery.TimerQueryLazyLoader.INSTANCE;
    }
 
+   public boolean isRecording() {
+      return this.nextQueryName != 0;
+   }
+
    public void beginProfile() {
       RenderSystem.assertOnRenderThread();
       if (this.nextQueryName != 0) {

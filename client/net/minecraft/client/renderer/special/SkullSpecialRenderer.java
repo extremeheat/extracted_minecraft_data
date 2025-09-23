@@ -31,8 +31,8 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       this.renderType = var3;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
-      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
+      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

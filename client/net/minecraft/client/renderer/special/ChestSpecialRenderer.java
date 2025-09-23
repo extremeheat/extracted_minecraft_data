@@ -39,8 +39,8 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
       this.openness = var4;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
-      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(this.material), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
+      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(this.material), var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

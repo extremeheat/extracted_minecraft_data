@@ -113,7 +113,7 @@ public record Schema(Optional<URI> reference, Optional<String> type, Optional<Sc
       UNTYPED_GAME_RULE_SCHEMA = registerSchema("untyped_game_rule", record().withField("key", STRING_SCHEMA).withField("value", STRING_SCHEMA));
       MESSAGE_SCHEMA = registerSchema("message", record().withField("literal", STRING_SCHEMA).withField("translatable", STRING_SCHEMA).withField("translatableParams", STRING_SCHEMA.asArray()));
       SYSTEM_MESSAGE_SCHEMA = registerSchema("system_message", record().withField("message", MESSAGE_SCHEMA.asRef()).withField("overlay", BOOL_SCHEMA).withField("receivingPlayers", PLAYER_SCHEMA.asRef().asArray()));
-      KICK_PLAYER_SCHEMA = registerSchema("kick_player", record().withField("message", MESSAGE_SCHEMA.asRef()).withField("players", PLAYER_SCHEMA.asRef().asArray()));
+      KICK_PLAYER_SCHEMA = registerSchema("kick_player", record().withField("message", MESSAGE_SCHEMA.asRef()).withField("player", PLAYER_SCHEMA.asRef()));
       OPERATOR_SCHEMA = registerSchema("operator", record().withField("player", PLAYER_SCHEMA.asRef()).withField("bypassesPlayerLimit", BOOL_SCHEMA).withField("permissionLevel", INT_SCHEMA));
       INCOMING_IP_BAN_SCHEMA = registerSchema("incoming_ip_ban", record().withField("player", PLAYER_SCHEMA.asRef()).withField("ip", STRING_SCHEMA).withField("reason", STRING_SCHEMA).withField("source", STRING_SCHEMA).withField("expires", STRING_SCHEMA));
       IP_BAN_SCHEMA = registerSchema("ip_ban", record().withField("ip", STRING_SCHEMA).withField("reason", STRING_SCHEMA).withField("source", STRING_SCHEMA).withField("expires", STRING_SCHEMA));

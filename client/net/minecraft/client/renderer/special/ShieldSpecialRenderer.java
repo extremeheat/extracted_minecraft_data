@@ -37,18 +37,18 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       return var1.immutableComponents();
    }
 
-   public void submit(@Nullable DataComponentMap var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7) {
-      BannerPatternLayers var8 = var1 != null ? (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
-      DyeColor var9 = var1 != null ? (DyeColor)var1.get(DataComponents.BASE_COLOR) : null;
-      boolean var10 = !var8.layers().isEmpty() || var9 != null;
+   public void submit(@Nullable DataComponentMap var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
+      BannerPatternLayers var9 = var1 != null ? (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY) : BannerPatternLayers.EMPTY;
+      DyeColor var10 = var1 != null ? (DyeColor)var1.get(DataComponents.BASE_COLOR) : null;
+      boolean var11 = !var9.layers().isEmpty() || var10 != null;
       var3.pushPose();
       var3.scale(1.0F, -1.0F, -1.0F);
-      Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
-      var4.submitModelPart(this.model.handle(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11));
-      if (var10) {
-         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model, Unit.INSTANCE, var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, (ModelFeatureRenderer.CrumblingOverlay)null);
+      Material var12 = var11 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
+      var4.submitModelPart(this.model.handle(), var3, this.model.renderType(var12.atlasLocation()), var5, var6, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
+      if (var11) {
+         BannerRenderer.submitPatterns(this.materials, var3, var4, var5, var6, this.model, Unit.INSTANCE, var12, false, (DyeColor)Objects.requireNonNullElse(var10, DyeColor.WHITE), var9, var7, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
       } else {
-         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var11.atlasLocation()), var5, var6, this.materials.get(var11), false, var7, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var4.submitModelPart(this.model.plate(), var3, this.model.renderType(var12.atlasLocation()), var5, var6, this.materials.get(var12), false, var7, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var8);
       }
 
       var3.popPose();

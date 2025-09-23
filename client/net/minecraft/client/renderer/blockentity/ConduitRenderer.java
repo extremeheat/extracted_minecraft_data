@@ -98,7 +98,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.pushPose();
          var2.translate(0.5F, 0.5F, 0.5F);
          var2.mulPose((Quaternionfc)(new Quaternionf()).rotationY(var1.activeRotation * 0.017453292F));
-         var3.submitModelPart(this.shell, var2, SHELL_TEXTURE.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(SHELL_TEXTURE));
+         var3.submitModelPart(this.shell, var2, SHELL_TEXTURE.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(SHELL_TEXTURE), -1, var1.breakProgress);
          var2.popPose();
       } else {
          float var5 = var1.activeRotation * 57.295776F;
@@ -108,7 +108,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.translate(0.5F, 0.3F + var6 * 0.2F, 0.5F);
          Vector3f var7 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
          var2.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(var5 * 0.017453292F, var7));
-         var3.submitModelPart(this.cage, var2, ACTIVE_SHELL_TEXTURE.renderType(RenderType::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE));
+         var3.submitModelPart(this.cage, var2, ACTIVE_SHELL_TEXTURE.renderType(RenderType::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE), -1, var1.breakProgress);
          var2.popPose();
          var2.pushPose();
          var2.translate(0.5F, 0.5F, 0.5F);

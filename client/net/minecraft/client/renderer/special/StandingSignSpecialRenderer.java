@@ -30,7 +30,7 @@ public class StandingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       this.material = var3;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
       SignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
    }
 

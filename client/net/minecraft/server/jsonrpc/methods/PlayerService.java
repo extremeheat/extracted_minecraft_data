@@ -1,6 +1,6 @@
 package net.minecraft.server.jsonrpc.methods;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,15 +23,15 @@ public class PlayerService {
       return var0.playerListService().getPlayers().stream().map(PlayerDto::from).toList();
    }
 
-   public static List<PlayerDto> kick(MinecraftApi var0, KickDto var1, ClientInfo var2) {
+   public static List<PlayerDto> kick(MinecraftApi var0, List<KickDto> var1, ClientInfo var2) {
       ArrayList var3 = new ArrayList();
 
-      for(PlayerDto var5 : var1.players()) {
-         ServerPlayer var6 = getServerPlayer(var0, var5);
+      for(KickDto var5 : var1) {
+         ServerPlayer var6 = getServerPlayer(var0, var5.player());
          if (var6 != null) {
             var0.playerListService().remove(var6, var2);
-            var6.connection.disconnect((Component)var1.message.flatMap(Message::asComponent).orElse(DEFAULT_KICK_MESSAGE));
-            var3.add(var5);
+            var6.connection.disconnect((Component)var5.message.flatMap(Message::asComponent).orElse(DEFAULT_KICK_MESSAGE));
+            var3.add(var5.player());
          }
       }
 
@@ -47,13 +47,13 @@ public class PlayerService {
       }
    }
 
-   public static record KickDto(List<PlayerDto> players, Optional<Message> message) {
+   public static record KickDto(PlayerDto player, Optional<Message> message) {
       final Optional<Message> message;
-      public static final Codec<KickDto> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlayerDto.CODEC.codec().listOf().fieldOf("players").forGetter(KickDto::players), Message.CODEC.optionalFieldOf("message").forGetter(KickDto::message)).apply(var0, KickDto::new));
+      public static final MapCodec<KickDto> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(KickDto::player), Message.CODEC.optionalFieldOf("message").forGetter(KickDto::message)).apply(var0, KickDto::new));
 
-      public KickDto(List<PlayerDto> var1, Optional<Message> var2) {
+      public KickDto(PlayerDto var1, Optional<Message> var2) {
          super();
-         this.players = var1;
+         this.player = var1;
          this.message = var2;
       }
    }

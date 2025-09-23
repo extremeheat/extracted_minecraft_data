@@ -30,8 +30,8 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
       this.material = var4;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6) {
-      this.shulkerBoxRenderer.submit(var2, var3, var4, var5, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
+      this.shulkerBoxRenderer.submit(var2, var3, var4, var5, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material, var7);
    }
 
    public void getExtents(Set<Vector3f> var1) {

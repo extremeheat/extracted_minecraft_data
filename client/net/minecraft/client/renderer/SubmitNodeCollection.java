@@ -88,15 +88,15 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.modelSubmits.add(var4, var11);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10, int var11) {
       this.wasUsed = true;
-      this.modelPartSubmits.add(var3, new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10));
+      this.modelPartSubmits.add(var3, new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10, var11));
    }
 
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
       this.wasUsed = true;
       this.blockSubmits.add(new SubmitNodeStorage.BlockSubmit(var1.last().copy(), var2, var3, var4, var5));
-      ((SpecialBlockModelRenderer)Minecraft.getInstance().getModelManager().specialBlockModelRenderer().get()).renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4);
+      ((SpecialBlockModelRenderer)Minecraft.getInstance().getModelManager().specialBlockModelRenderer().get()).renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4, var5);
    }
 
    public void submitMovingBlock(PoseStack var1, MovingBlockRenderState var2) {

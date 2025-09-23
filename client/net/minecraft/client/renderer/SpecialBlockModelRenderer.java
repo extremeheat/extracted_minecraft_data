@@ -20,10 +20,10 @@ public class SpecialBlockModelRenderer {
       return new SpecialBlockModelRenderer(SpecialModelRenderers.createBlockRenderers(var0));
    }
 
-   public void renderByBlock(Block var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6) {
-      SpecialModelRenderer var7 = (SpecialModelRenderer)this.renderers.get(var1);
-      if (var7 != null) {
-         var7.submit((Object)null, var2, var3, var4, var5, var6, false);
+   public void renderByBlock(Block var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, int var7) {
+      SpecialModelRenderer var8 = (SpecialModelRenderer)this.renderers.get(var1);
+      if (var8 != null) {
+         var8.submit((Object)null, var2, var3, var4, var5, var6, false, var7);
       }
 
    }

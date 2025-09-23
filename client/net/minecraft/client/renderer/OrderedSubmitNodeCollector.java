@@ -42,18 +42,18 @@ public interface OrderedSubmitNodeCollector {
    }
 
    default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
+      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
    default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, int var7, @Nullable ModelFeatureRenderer.CrumblingOverlay var8) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, var7, var8);
+      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, var7, var8, 0);
    }
 
    default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, -1, (ModelFeatureRenderer.CrumblingOverlay)null);
+      this.submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
-   void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10);
+   void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10, int var11);
 
    void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5);
 

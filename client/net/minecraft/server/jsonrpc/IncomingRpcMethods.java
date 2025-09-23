@@ -62,7 +62,7 @@ public class IncomingRpcMethods {
 
    private static void registerPlayerService(Registry<IncomingRpcMethod> var0) {
       IncomingRpcMethod.method(PlayerService::get, PlayerDto.CODEC.codec().listOf()).description("Get all connected players").response(new ResultInfo("players", Schema.PLAYER_SCHEMA.asArray())).register(var0, "players");
-      IncomingRpcMethod.method(PlayerService::kick, PlayerService.KickDto.CODEC, PlayerDto.CODEC.codec().listOf()).description("Kick players").param(new ParamInfo("kick", Schema.KICK_PLAYER_SCHEMA.asArray())).response(new ResultInfo("kicked", Schema.PLAYER_SCHEMA.asArray())).register(var0, "players/kick");
+      IncomingRpcMethod.method(PlayerService::kick, PlayerService.KickDto.CODEC.codec().listOf(), PlayerDto.CODEC.codec().listOf()).description("Kick players").param(new ParamInfo("kick", Schema.KICK_PLAYER_SCHEMA.asArray())).response(new ResultInfo("kicked", Schema.PLAYER_SCHEMA.asArray())).register(var0, "players/kick");
    }
 
    private static void registerOperatorService(Registry<IncomingRpcMethod> var0) {
