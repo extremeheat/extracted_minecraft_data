@@ -1334,8 +1334,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var1.connection.send(new ClientboundChangeDifficultyPacket(var2.getDifficulty(), var2.isDifficultyLocked()));
    }
 
-   protected boolean isSpawningMonsters() {
-      return this.worldData.getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
+   public boolean isSpawningMonsters() {
+      return this.worldData.getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
    }
 
    public boolean isDemo() {

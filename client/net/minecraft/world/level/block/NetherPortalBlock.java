@@ -62,7 +62,7 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
+      if (var2.dimensionType().natural() && var2.isSpawningMonsters() && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
          while(var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
          }

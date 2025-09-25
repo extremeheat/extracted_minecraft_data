@@ -133,6 +133,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.translate(0.5F, 0.3F + var6 * 0.2F, 0.5F);
          var2.scale(0.5F, 0.5F, 0.5F);
          var2.mulPose((Quaternionfc)var4.orientation);
+         var2.mulPose((Quaternionfc)(new Quaternionf()).rotationZ(3.1415927F).rotateY(3.1415927F));
          float var11 = 1.3333334F;
          var2.scale(1.3333334F, 1.3333334F, 1.3333334F);
          Material var12 = var1.isHunting ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE;

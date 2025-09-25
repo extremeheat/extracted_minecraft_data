@@ -105,7 +105,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                if (var8 instanceof ServerPlayer) {
                   ServerPlayer var5 = (ServerPlayer)var8;
                   if (var5.connection.isAcceptingMessages()) {
-                     if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     if (this.random.nextFloat() < 0.05F && var7.isSpawningMonsters()) {
                         Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
                         if (var6 != null) {
                            var6.snapTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());

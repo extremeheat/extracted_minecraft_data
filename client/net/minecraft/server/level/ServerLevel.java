@@ -1652,6 +1652,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       });
    }
 
+   public boolean isSpawningMonsters() {
+      return this.server.isSpawningMonsters();
+   }
+
    public void close() throws IOException {
       super.close();
       this.entityManager.close();
