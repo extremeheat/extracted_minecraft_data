@@ -93,7 +93,7 @@ public class Endermite extends Monster {
 
    public void aiStep() {
       super.aiStep();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          for(int var1 = 0; var1 < 2; ++var1) {
             this.level().addParticle(ParticleTypes.PORTAL, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), (this.random.nextDouble() - 0.5) * 2.0, -this.random.nextDouble(), (this.random.nextDouble() - 0.5) * 2.0);
          }

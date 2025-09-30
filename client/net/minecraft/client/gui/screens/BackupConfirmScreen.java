@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -53,19 +54,23 @@ public class BackupConfirmScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 50, -1);
-      this.message.renderCentered(var1, this.width / 2, 70);
+      MultiLineLabel var10000 = this.message;
+      MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
+      int var10003 = this.width / 2;
+      Objects.requireNonNull(this.font);
+      var10000.render(var1, var10002, var10003, 70, 9, true, -1);
    }
 
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.key() == 256) {
          this.onCancel.run();
          return true;
       } else {
-         return super.keyPressed(var1, var2, var3);
+         return super.keyPressed(var1);
       }
    }
 

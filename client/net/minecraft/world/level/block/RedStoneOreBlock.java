@@ -48,7 +48,7 @@ public class RedStoneOreBlock extends Block {
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (var3.isClientSide) {
+      if (var3.isClientSide()) {
          spawnParticles(var3, var4);
       } else {
          interact(var2, var3, var4);

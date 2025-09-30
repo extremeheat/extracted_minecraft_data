@@ -22,42 +22,42 @@ public class PatrolSpawner implements CustomSpawner {
       super();
    }
 
-   public void tick(ServerLevel var1, boolean var2, boolean var3) {
+   public void tick(ServerLevel var1, boolean var2) {
       if (var2) {
          if (var1.getGameRules().getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
-            RandomSource var4 = var1.random;
+            RandomSource var3 = var1.random;
             --this.nextTick;
             if (this.nextTick <= 0) {
-               this.nextTick += 12000 + var4.nextInt(1200);
-               long var5 = var1.getDayTime() / 24000L;
-               if (var5 >= 5L && var1.isBrightOutside()) {
-                  if (var4.nextInt(5) == 0) {
-                     int var7 = var1.players().size();
-                     if (var7 >= 1) {
-                        Player var8 = (Player)var1.players().get(var4.nextInt(var7));
-                        if (!var8.isSpectator()) {
-                           if (!var1.isCloseToVillage(var8.blockPosition(), 2)) {
-                              int var9 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
-                              int var10 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
-                              BlockPos.MutableBlockPos var11 = var8.blockPosition().mutable().move(var9, 0, var10);
-                              boolean var12 = true;
-                              if (var1.hasChunksAt(var11.getX() - 10, var11.getZ() - 10, var11.getX() + 10, var11.getZ() + 10)) {
-                                 Holder var13 = var1.getBiome(var11);
-                                 if (!var13.is(BiomeTags.WITHOUT_PATROL_SPAWNS)) {
-                                    int var14 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var11).getEffectiveDifficulty()) + 1;
+               this.nextTick += 12000 + var3.nextInt(1200);
+               long var4 = var1.getDayTime() / 24000L;
+               if (var4 >= 5L && var1.isBrightOutside()) {
+                  if (var3.nextInt(5) == 0) {
+                     int var6 = var1.players().size();
+                     if (var6 >= 1) {
+                        Player var7 = (Player)var1.players().get(var3.nextInt(var6));
+                        if (!var7.isSpectator()) {
+                           if (!var1.isCloseToVillage(var7.blockPosition(), 2)) {
+                              int var8 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
+                              int var9 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
+                              BlockPos.MutableBlockPos var10 = var7.blockPosition().mutable().move(var8, 0, var9);
+                              boolean var11 = true;
+                              if (var1.hasChunksAt(var10.getX() - 10, var10.getZ() - 10, var10.getX() + 10, var10.getZ() + 10)) {
+                                 Holder var12 = var1.getBiome(var10);
+                                 if (!var12.is(BiomeTags.WITHOUT_PATROL_SPAWNS)) {
+                                    int var13 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var10).getEffectiveDifficulty()) + 1;
 
-                                    for(int var15 = 0; var15 < var14; ++var15) {
-                                       var11.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var11).getY());
-                                       if (var15 == 0) {
-                                          if (!this.spawnPatrolMember(var1, var11, var4, true)) {
+                                    for(int var14 = 0; var14 < var13; ++var14) {
+                                       var10.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var10).getY());
+                                       if (var14 == 0) {
+                                          if (!this.spawnPatrolMember(var1, var10, var3, true)) {
                                              break;
                                           }
                                        } else {
-                                          this.spawnPatrolMember(var1, var11, var4, false);
+                                          this.spawnPatrolMember(var1, var10, var3, false);
                                        }
 
-                                       var11.setX(var11.getX() + var4.nextInt(5) - var4.nextInt(5));
-                                       var11.setZ(var11.getZ() + var4.nextInt(5) - var4.nextInt(5));
+                                       var10.setX(var10.getX() + var3.nextInt(5) - var3.nextInt(5));
+                                       var10.setZ(var10.getZ() + var3.nextInt(5) - var3.nextInt(5));
                                     }
 
                                  }

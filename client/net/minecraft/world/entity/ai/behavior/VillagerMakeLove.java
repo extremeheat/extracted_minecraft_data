@@ -5,7 +5,6 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -69,7 +68,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
             this.giveBedToChild(var1, (Villager)var5.get(), (BlockPos)var4.get());
          } else {
             var1.getPoiManager().release((BlockPos)var4.get());
-            DebugPackets.sendPoiTicketCountPacket(var1, (BlockPos)var4.get());
+            var1.debugSynchronizers().updatePoi((BlockPos)var4.get());
          }
       }
 

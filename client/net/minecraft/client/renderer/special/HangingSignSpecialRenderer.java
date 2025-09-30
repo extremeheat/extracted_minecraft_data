@@ -7,29 +7,31 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MaterialMapper;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector3f;
 
 public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
-   private final Model model;
+   private final MaterialSet materials;
+   private final Model.Simple model;
    private final Material material;
 
-   public HangingSignSpecialRenderer(Model var1, Material var2) {
+   public HangingSignSpecialRenderer(MaterialSet var1, Model.Simple var2, Material var3) {
       super();
-      this.model = var1;
-      this.material = var2;
+      this.materials = var1;
+      this.model = var2;
+      this.material = var3;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      HangingSignRenderer.renderInHand(var2, var3, var4, var5, this.model, this.material);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
+      HangingSignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
    }
 
    public void getExtents(Set<Vector3f> var1) {
@@ -56,13 +58,13 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         Model var2 = HangingSignRenderer.createSignModel(var1, this.woodType, HangingSignRenderer.AttachmentType.CEILING_MIDDLE);
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         Model.Simple var2 = HangingSignRenderer.createSignModel(var1.entityModelSet(), this.woodType, HangingSignRenderer.AttachmentType.CEILING_MIDDLE);
          Optional var10000 = this.texture;
          MaterialMapper var10001 = Sheets.HANGING_SIGN_MAPPER;
          Objects.requireNonNull(var10001);
          Material var3 = (Material)var10000.map(var10001::apply).orElseGet(() -> Sheets.getHangingSignMaterial(this.woodType));
-         return new HangingSignSpecialRenderer(var2, var3);
+         return new HangingSignSpecialRenderer(var1.materials(), var2, var3);
       }
    }
 }

@@ -42,6 +42,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Nullable
    protected EntityReference<Entity> owner;
    private boolean leftOwner = false;
+   private boolean leftOwnerChecked;
    private boolean hasBeenShot = false;
    @Nullable
    private Entity lastDeflectedBy;
@@ -55,12 +56,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public void setOwner(@Nullable Entity var1) {
-      this.setOwner(var1 != null ? new EntityReference(var1) : null);
+      this.setOwner(EntityReference.of(var1));
    }
 
    @Nullable
    public Entity getOwner() {
-      return (Entity)EntityReference.get(this.owner, this.level(), Entity.class);
+      return EntityReference.getEntity(this.owner, this.level());
    }
 
    public Entity getEffectSource() {
@@ -100,14 +101,20 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          this.hasBeenShot = true;
       }
 
-      if (!this.leftOwner) {
-         this.leftOwner = this.checkLeftOwner();
-      }
-
+      this.checkLeftOwner();
       super.tick();
+      this.leftOwnerChecked = false;
    }
 
-   private boolean checkLeftOwner() {
+   protected void checkLeftOwner() {
+      if (!this.leftOwner && !this.leftOwnerChecked) {
+         this.leftOwner = this.isOutsideOwnerCollisionRange();
+         this.leftOwnerChecked = true;
+      }
+
+   }
+
+   private boolean isOutsideOwnerCollisionRange() {
       Entity var1 = this.getOwner();
       if (var1 != null) {
          AABB var2 = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
@@ -196,7 +203,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          Entity var4 = var3.getEntity();
          ProjectileDeflection var5 = var4.deflection(this);
          if (var5 != ProjectileDeflection.NONE) {
-            if (var4 != this.lastDeflectedBy && this.deflect(var5, var4, this.getOwner(), false)) {
+            if (var4 != this.lastDeflectedBy && this.deflect(var5, var4, this.owner, false)) {
                this.lastDeflectedBy = var4;
             }
 
@@ -206,7 +213,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          BlockHitResult var2 = (BlockHitResult)var1;
          if (var2.isWorldBorderHit()) {
             ProjectileDeflection var6 = ProjectileDeflection.REVERSE;
-            if (this.deflect(var6, (Entity)null, this.getOwner(), false)) {
+            if (this.deflect(var6, (Entity)null, this.owner, false)) {
                this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
                return var6;
             }
@@ -221,17 +228,17 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return false;
    }
 
-   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable EntityReference<Entity> var3, boolean var4) {
       var1.deflect(this, var2, this.random);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setOwner(var3);
-         this.onDeflection(var2, var4);
+         this.onDeflection(var4);
       }
 
       return true;
    }
 
-   protected void onDeflection(@Nullable Entity var1, boolean var2) {
+   protected void onDeflection(boolean var1) {
    }
 
    protected void onItemBreak(Item var1) {
@@ -244,7 +251,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          Entity var4 = var3.getEntity();
          if (var4.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var4 instanceof Projectile) {
             Projectile var5 = (Projectile)var4;
-            var5.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.getOwner(), true);
+            var5.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.owner, true);
          }
 
          this.onHitEntity(var3);

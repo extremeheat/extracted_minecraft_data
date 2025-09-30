@@ -1,7 +1,5 @@
 package net.minecraft.commands.arguments;
 
-import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -23,6 +21,7 @@ import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 
 public class GameProfileArgument implements ArgumentType<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "dd12be42-52a9-4a91-a8a1-11c01849e498", "@e");
@@ -32,7 +31,7 @@ public class GameProfileArgument implements ArgumentType<Result> {
       super();
    }
 
-   public static Collection<GameProfile> getGameProfiles(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static Collection<NameAndId> getGameProfiles(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return ((Result)var0.getArgument(var1, Result.class)).getNames((CommandSourceStack)var0.getSource());
    }
 
@@ -66,10 +65,10 @@ public class GameProfileArgument implements ArgumentType<Result> {
 
          String var3 = var0.getString().substring(var2, var0.getCursor());
          return (var1x) -> {
-            Optional var2 = var1x.getServer().getProfileCache().get(var3);
+            Optional var2 = var1x.getServer().services().nameToIdCache().get(var3);
             SimpleCommandExceptionType var10001 = ERROR_UNKNOWN_PLAYER;
             Objects.requireNonNull(var10001);
-            return Collections.singleton((GameProfile)var2.orElseThrow(var10001::create));
+            return Collections.singleton((NameAndId)var2.orElseThrow(var10001::create));
          };
       }
    }
@@ -114,15 +113,15 @@ public class GameProfileArgument implements ArgumentType<Result> {
          this.selector = var1;
       }
 
-      public Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException {
+      public Collection<NameAndId> getNames(CommandSourceStack var1) throws CommandSyntaxException {
          List var2 = this.selector.findPlayers(var1);
          if (var2.isEmpty()) {
             throw EntityArgument.NO_PLAYERS_FOUND.create();
          } else {
-            ArrayList var3 = Lists.newArrayList();
+            ArrayList var3 = new ArrayList();
 
             for(ServerPlayer var5 : var2) {
-               var3.add(var5.getGameProfile());
+               var3.add(var5.nameAndId());
             }
 
             return var3;
@@ -132,6 +131,6 @@ public class GameProfileArgument implements ArgumentType<Result> {
 
    @FunctionalInterface
    public interface Result {
-      Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException;
+      Collection<NameAndId> getNames(CommandSourceStack var1) throws CommandSyntaxException;
    }
 }

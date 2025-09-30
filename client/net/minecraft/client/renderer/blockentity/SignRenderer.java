@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Map;
 import java.util.Objects;
@@ -15,10 +14,13 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
@@ -32,10 +34,10 @@ public class SignRenderer extends AbstractSignRenderer {
 
    public SignRenderer(BlockEntityRendererProvider.Context var1) {
       super(var1);
-      this.signModels = (Map)WoodType.values().collect(ImmutableMap.toImmutableMap((var0) -> var0, (var1x) -> new Models(createSignModel(var1.getModelSet(), var1x, true), createSignModel(var1.getModelSet(), var1x, false))));
+      this.signModels = (Map)WoodType.values().collect(ImmutableMap.toImmutableMap((var0) -> var0, (var1x) -> new Models(createSignModel(var1.entityModelSet(), var1x, true), createSignModel(var1.entityModelSet(), var1x, false))));
    }
 
-   protected Model getSignModel(BlockState var1, WoodType var2) {
+   protected Model.Simple getSignModel(BlockState var1, WoodType var2) {
       Models var3 = (Models)this.signModels.get(var2);
       return var1.getBlock() instanceof StandingSignBlock ? var3.standing() : var3.wall();
    }
@@ -69,13 +71,13 @@ public class SignRenderer extends AbstractSignRenderer {
       return TEXT_OFFSET;
    }
 
-   public static void renderInHand(PoseStack var0, MultiBufferSource var1, int var2, int var3, Model var4, Material var5) {
-      var0.pushPose();
-      applyInHandTransforms(var0);
-      Objects.requireNonNull(var4);
-      VertexConsumer var6 = var5.buffer(var1, var4::renderType);
-      var4.renderToBuffer(var0, var6, var2, var3);
-      var0.popPose();
+   public static void submitSpecial(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model.Simple var5, Material var6) {
+      var1.pushPose();
+      applyInHandTransforms(var1);
+      Unit var10002 = Unit.INSTANCE;
+      Objects.requireNonNull(var5);
+      var2.submitModel(var5, var10002, var1, var6.renderType(var5::renderType), var3, var4, -1, var0.get(var6), 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var1.popPose();
    }
 
    public static void applyInHandTransforms(PoseStack var0) {
@@ -83,7 +85,7 @@ public class SignRenderer extends AbstractSignRenderer {
       var0.scale(0.6666667F, -0.6666667F, -0.6666667F);
    }
 
-   public static Model createSignModel(EntityModelSet var0, WoodType var1, boolean var2) {
+   public static Model.Simple createSignModel(EntityModelSet var0, WoodType var1, boolean var2) {
       ModelLayerLocation var3 = var2 ? ModelLayers.createStandingSignModelName(var1) : ModelLayers.createWallSignModelName(var1);
       return new Model.Simple(var0.bakeLayer(var3), RenderType::entityCutoutNoCull);
    }
@@ -99,8 +101,8 @@ public class SignRenderer extends AbstractSignRenderer {
       return LayerDefinition.create(var1, 64, 32);
    }
 
-   static record Models(Model standing, Model wall) {
-      Models(Model var1, Model var2) {
+   static record Models(Model.Simple standing, Model.Simple wall) {
+      Models(Model.Simple var1, Model.Simple var2) {
          super();
          this.standing = var1;
          this.wall = var2;

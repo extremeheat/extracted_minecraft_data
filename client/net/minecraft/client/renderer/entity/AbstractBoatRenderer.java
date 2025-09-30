@@ -1,13 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -20,7 +21,7 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
       this.shadowRadius = 0.8F;
    }
 
-   public void render(BoatRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(BoatRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.0F, 0.375F, 0.0F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var1.yRot));
@@ -35,16 +36,13 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
 
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-      EntityModel var6 = this.model();
-      var6.setupAnim(var1);
-      VertexConsumer var7 = var3.getBuffer(this.renderType());
-      var6.renderToBuffer(var2, var7, var4, OverlayTexture.NO_OVERLAY);
-      this.renderTypeAdditions(var1, var2, var3, var4);
+      var3.submitModel(this.model(), var1, var2, this.renderType(), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      this.submitTypeAdditions(var1, var2, var3, var1.lightCoords);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
-   protected void renderTypeAdditions(BoatRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   protected void submitTypeAdditions(BoatRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4) {
    }
 
    protected abstract EntityModel<BoatRenderState> model();

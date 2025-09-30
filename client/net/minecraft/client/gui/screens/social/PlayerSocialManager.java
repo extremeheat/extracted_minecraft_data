@@ -75,7 +75,7 @@ public class PlayerSocialManager {
 
    public void addPlayer(PlayerInfo var1) {
       GameProfile var2 = var1.getProfile();
-      this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
+      this.discoveredNamesToUUID.put(var2.name(), var2.id());
       Screen var4 = this.minecraft.screen;
       if (var4 instanceof SocialInteractionsScreen var3) {
          var3.onAddPlayer(var1);

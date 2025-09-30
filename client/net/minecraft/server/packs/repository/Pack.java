@@ -12,8 +12,8 @@ import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
-import net.minecraft.util.InclusiveRange;
 import net.minecraft.world.flag.FeatureFlagSet;
 import org.slf4j.Logger;
 
@@ -26,8 +26,8 @@ public class Pack {
 
    @Nullable
    public static Pack readMetaAndCreate(PackLocationInfo var0, ResourcesSupplier var1, PackType var2, PackSelectionConfig var3) {
-      int var4 = SharedConstants.getCurrentVersion().packVersion(var2);
-      Metadata var5 = readPackMetadata(var0, var1, var4);
+      PackFormat var4 = SharedConstants.getCurrentVersion().packVersion(var2);
+      Metadata var5 = readPackMetadata(var0, var1, var4, var2);
       return var5 != null ? new Pack(var0, var1, var5, var3) : null;
    }
 
@@ -40,39 +40,27 @@ public class Pack {
    }
 
    @Nullable
-   public static Metadata readPackMetadata(PackLocationInfo var0, ResourcesSupplier var1, int var2) {
-      try (PackResources var3 = var1.openPrimary(var0)) {
-         PackMetadataSection var4 = (PackMetadataSection)var3.getMetadataSection(PackMetadataSection.TYPE);
-         if (var4 == null) {
+   public static Metadata readPackMetadata(PackLocationInfo var0, ResourcesSupplier var1, PackFormat var2, PackType var3) {
+      try (PackResources var4 = var1.openPrimary(var0)) {
+         PackMetadataSection var5 = (PackMetadataSection)var4.getMetadataSection(PackMetadataSection.forPackType(var3));
+         if (var5 == null) {
+            var5 = (PackMetadataSection)var4.getMetadataSection(PackMetadataSection.FALLBACK_TYPE);
+         }
+
+         if (var5 == null) {
             LOGGER.warn("Missing metadata in pack {}", var0.id());
             return null;
          } else {
-            FeatureFlagsMetadataSection var5 = (FeatureFlagsMetadataSection)var3.getMetadataSection(FeatureFlagsMetadataSection.TYPE);
-            FeatureFlagSet var6 = var5 != null ? var5.flags() : FeatureFlagSet.of();
-            InclusiveRange var7 = getDeclaredPackVersions(var0.id(), var4);
-            PackCompatibility var8 = PackCompatibility.forVersion(var7, var2);
-            OverlayMetadataSection var9 = (OverlayMetadataSection)var3.getMetadataSection(OverlayMetadataSection.TYPE);
+            FeatureFlagsMetadataSection var6 = (FeatureFlagsMetadataSection)var4.getMetadataSection(FeatureFlagsMetadataSection.TYPE);
+            FeatureFlagSet var7 = var6 != null ? var6.flags() : FeatureFlagSet.of();
+            PackCompatibility var8 = PackCompatibility.forVersion(var5.supportedFormats(), var2);
+            OverlayMetadataSection var9 = (OverlayMetadataSection)var4.getMetadataSection(OverlayMetadataSection.forPackType(var3));
             List var10 = var9 != null ? var9.overlaysForVersion(var2) : List.of();
-            return new Metadata(var4.description(), var8, var6, var10);
+            return new Metadata(var5.description(), var8, var7, var10);
          }
       } catch (Exception var14) {
          LOGGER.warn("Failed to read pack {} metadata", var0.id(), var14);
          return null;
-      }
-   }
-
-   private static InclusiveRange<Integer> getDeclaredPackVersions(String var0, PackMetadataSection var1) {
-      int var2 = var1.packFormat();
-      if (var1.supportedFormats().isEmpty()) {
-         return new InclusiveRange<Integer>(var2);
-      } else {
-         InclusiveRange var3 = (InclusiveRange)var1.supportedFormats().get();
-         if (!var3.isValueInRange(var2)) {
-            LOGGER.warn("Pack {} declared support for versions {} but declared main format is {}, defaulting to {}", new Object[]{var0, var3, var2, var2});
-            return new InclusiveRange<Integer>(var2);
-         } else {
-            return var3;
-         }
       }
    }
 

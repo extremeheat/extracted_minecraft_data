@@ -20,8 +20,8 @@ public abstract class MinecartBehavior {
       return null;
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      this.setDeltaMovement(var1, var3, var5);
+   public void lerpMotion(Vec3 var1) {
+      this.setDeltaMovement(var1);
    }
 
    public abstract void tick();

@@ -6,7 +6,6 @@ import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -40,7 +39,7 @@ public class YieldJobSite {
                         if (var6xx.getBrain().getMemory(MemoryModuleType.JOB_SITE).isEmpty()) {
                            BehaviorUtils.setWalkAndLookTargetMemories(var6xx, (BlockPos)var10, var0, 1);
                            var6xx.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, GlobalPos.of(var6x.dimension(), var10));
-                           DebugPackets.sendPoiTicketCountPacket(var6x, var10);
+                           var6x.debugSynchronizers().updatePoi(var10);
                         }
 
                      });

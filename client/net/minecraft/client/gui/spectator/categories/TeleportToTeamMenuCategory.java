@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.spectator.categories;
 
-import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
@@ -13,11 +13,11 @@ import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -87,9 +87,9 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          if (var2.isEmpty()) {
             return Optional.empty();
          } else {
-            GameProfile var6 = ((PlayerInfo)var2.get(RandomSource.create().nextInt(var2.size()))).getProfile();
-            Supplier var7 = var0.getSkinManager().lookupInsecure(var6);
-            return Optional.of(new TeamSelectionItem(var1, var2, var7));
+            PlayerInfo var6 = (PlayerInfo)var2.get(RandomSource.create().nextInt(var2.size()));
+            Objects.requireNonNull(var6);
+            return Optional.of(new TeamSelectionItem(var1, var2, var6::getSkin));
          }
       }
 

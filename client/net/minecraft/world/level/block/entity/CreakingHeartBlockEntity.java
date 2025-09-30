@@ -19,14 +19,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SpawnUtil;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CreakingHeartBlock;
@@ -110,19 +108,17 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
             if (var3.creakingInfo == null) {
                if (var11.getValue(CreakingHeartBlock.STATE) == CreakingHeartState.AWAKE) {
-                  if (var0.getDifficulty() != Difficulty.PEACEFUL) {
-                     if (var4.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                        Player var13 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
-                        if (var13 != null) {
-                           Creaking var15 = spawnProtector(var4, var3);
-                           if (var15 != null) {
-                              var3.setCreakingInfo(var15);
-                              var15.makeSound(SoundEvents.CREAKING_SPAWN);
-                              var0.playSound((Entity)null, (BlockPos)var3.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
-                           }
+                  if (var4.isSpawningMonsters()) {
+                     Player var13 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
+                     if (var13 != null) {
+                        Creaking var15 = spawnProtector(var4, var3);
+                        if (var15 != null) {
+                           var3.setCreakingInfo(var15);
+                           var15.makeSound(SoundEvents.CREAKING_SPAWN);
+                           var0.playSound((Entity)null, (BlockPos)var3.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                         }
-
                      }
+
                   }
                }
             } else {

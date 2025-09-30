@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -27,7 +28,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    private TrialSpawner createDefaultSpawner() {
-      PlayerDetector var1 = PlayerDetector.NO_CREATIVE_PLAYERS;
+      PlayerDetector var1 = SharedConstants.DEBUG_TRIAL_SPAWNER_DETECTS_SHEEP_AS_PLAYERS ? PlayerDetector.SHEEP : PlayerDetector.NO_CREATIVE_PLAYERS;
       PlayerDetector.EntitySelector var2 = PlayerDetector.EntitySelector.SELECT_FROM_LEVEL;
       return new TrialSpawner(TrialSpawner.FullConfig.DEFAULT, this, var1, var2);
    }

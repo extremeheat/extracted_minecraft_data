@@ -61,7 +61,6 @@ import net.minecraft.network.protocol.status.StatusProtocols;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.LocalSampleLogger;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -189,7 +188,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    private void validateListener(ProtocolInfo<?> var1, PacketListener var2) {
-      Validate.notNull(var2, "packetListener", new Object[0]);
+      Objects.requireNonNull(var2, "packetListener");
       PacketFlow var3 = var2.flow();
       if (var3 != this.receiving) {
          String var5 = String.valueOf(this.receiving);

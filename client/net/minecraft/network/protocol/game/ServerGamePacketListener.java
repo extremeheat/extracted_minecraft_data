@@ -115,7 +115,7 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1);
 
-   void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1);
+   void handleDebugSubscriptionRequest(ServerboundDebugSubscriptionRequestPacket var1);
 
    void handleClientTickEnd(ServerboundClientTickEndPacket var1);
 }

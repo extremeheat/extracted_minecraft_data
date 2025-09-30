@@ -54,7 +54,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1.isClientSide) {
+      if (var1.isClientSide()) {
          return null;
       } else {
          return var2.getValue(STATE) != CreakingHeartState.UPROOTED ? createTickerHelper(var3, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
@@ -178,14 +178,14 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       if (var1.getValue(STATE) == CreakingHeartState.UPROOTED) {
          return 0;
       } else {
-         BlockEntity var5 = var2.getBlockEntity(var3);
-         if (var5 instanceof CreakingHeartBlockEntity) {
-            CreakingHeartBlockEntity var4 = (CreakingHeartBlockEntity)var5;
-            return var4.getAnalogOutputSignal();
+         BlockEntity var6 = var2.getBlockEntity(var3);
+         if (var6 instanceof CreakingHeartBlockEntity) {
+            CreakingHeartBlockEntity var5 = (CreakingHeartBlockEntity)var6;
+            return var5.getAnalogOutputSignal();
          } else {
             return 0;
          }

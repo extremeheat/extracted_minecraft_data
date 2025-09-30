@@ -153,7 +153,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    }
 
    public void reassessWeaponGoal() {
-      if (this.level() != null && !this.level().isClientSide) {
+      if (this.level() != null && !this.level().isClientSide()) {
          this.goalSelector.removeGoal(this.meleeGoal);
          this.goalSelector.removeGoal(this.bowGoal);
          ItemStack var1 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
@@ -215,7 +215,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
       super.onEquipItem(var1, var2, var3);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.reassessWeaponGoal();
       }
 

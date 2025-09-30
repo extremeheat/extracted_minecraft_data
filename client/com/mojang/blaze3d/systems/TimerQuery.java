@@ -1,9 +1,6 @@
 package com.mojang.blaze3d.systems;
 
-import java.util.Optional;
-import javax.annotation.Nullable;
 import org.lwjgl.opengl.ARBTimerQuery;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL32C;
 
 public class TimerQuery {
@@ -13,8 +10,12 @@ public class TimerQuery {
       super();
    }
 
-   public static Optional<TimerQuery> getInstance() {
+   public static TimerQuery getInstance() {
       return TimerQuery.TimerQueryLazyLoader.INSTANCE;
+   }
+
+   public boolean isRecording() {
+      return this.nextQueryName != 0;
    }
 
    public void beginProfile() {
@@ -83,15 +84,14 @@ public class TimerQuery {
    }
 
    static class TimerQueryLazyLoader {
-      static final Optional<TimerQuery> INSTANCE = Optional.ofNullable(instantiate());
+      static final TimerQuery INSTANCE = instantiate();
 
       private TimerQueryLazyLoader() {
          super();
       }
 
-      @Nullable
       private static TimerQuery instantiate() {
-         return !GL.getCapabilities().GL_ARB_timer_query ? null : new TimerQuery();
+         return new TimerQuery();
       }
    }
 }

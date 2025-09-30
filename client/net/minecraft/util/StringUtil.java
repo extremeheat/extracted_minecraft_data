@@ -65,8 +65,8 @@ public class StringUtil {
       return truncateStringIfNecessary(var0, 256, false);
    }
 
-   public static boolean isAllowedChatCharacter(char var0) {
-      return var0 != 167 && var0 >= ' ' && var0 != 127;
+   public static boolean isAllowedChatCharacter(int var0) {
+      return var0 != 167 && var0 >= 32 && var0 != 127;
    }
 
    public static boolean isValidPlayerName(String var0) {

@@ -142,7 +142,7 @@ public class ThrownTrident extends AbstractArrow {
          }
       }
 
-      this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+      this.deflect(ProjectileDeflection.REVERSE, var2, this.owner, false);
       this.setDeltaMovement(this.getDeltaMovement().multiply(0.02, 0.2, 0.02));
       this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
    }

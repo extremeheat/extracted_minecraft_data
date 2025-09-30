@@ -32,13 +32,17 @@ public class ItemDisplayWidget extends AbstractWidget {
       }
 
       if (this.isFocused()) {
-         var1.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
+         var1.submitOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
       }
 
       if (this.tooltip && this.isHoveredOrFocused()) {
-         var1.setTooltipForNextFrame(this.minecraft.font, this.itemStack, var2, var3);
+         this.renderTooltip(var1, var2, var3);
       }
 
+   }
+
+   protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
+      var1.setTooltipForNextFrame(this.minecraft.font, this.itemStack, var2, var3);
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {

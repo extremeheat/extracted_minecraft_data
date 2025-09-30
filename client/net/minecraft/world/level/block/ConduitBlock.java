@@ -51,7 +51,7 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.CONDUIT, var1.isClientSide ? ConduitBlockEntity::clientTick : ConduitBlockEntity::serverTick);
+      return createTickerHelper(var3, BlockEntityType.CONDUIT, var1.isClientSide() ? ConduitBlockEntity::clientTick : ConduitBlockEntity::serverTick);
    }
 
    protected FluidState getFluidState(BlockState var1) {

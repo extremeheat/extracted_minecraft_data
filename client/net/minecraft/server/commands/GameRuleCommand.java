@@ -29,6 +29,7 @@ public class GameRuleCommand {
       CommandSourceStack var2 = (CommandSourceStack)var0.getSource();
       GameRules.Value var3 = var2.getServer().getGameRules().getRule(var1);
       var3.setFromArgument(var0, "value");
+      var2.getServer().onGameRuleChanged(var1.getId(), var3);
       var2.sendSuccess(() -> Component.translatable("commands.gamerule.set", var1.getId(), var3.toString()), true);
       return var3.getCommandResult();
    }

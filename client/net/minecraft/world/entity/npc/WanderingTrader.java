@@ -93,7 +93,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
             var1.awardStat(Stats.TALKED_TO_VILLAGER);
          }
 
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             if (this.getOffers().isEmpty()) {
                return InteractionResult.CONSUME;
             }
@@ -177,7 +177,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.maybeDespawn();
       }
 

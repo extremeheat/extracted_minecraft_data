@@ -228,7 +228,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       int var8 = (Integer)var2.getValue(LEVEL);
       if (var8 < 8 && COMPOSTABLES.containsKey(var1.getItem())) {
-         if (var8 < 7 && !var3.isClientSide) {
+         if (var8 < 7 && !var3.isClientSide()) {
             BlockState var9 = addItem(var5, var2, var3, var4, var1);
             var3.levelEvent(1500, var4, var2 != var9 ? 1 : 0);
             var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
@@ -263,7 +263,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    public static BlockState extractProduce(Entity var0, BlockState var1, Level var2, BlockPos var3) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          Vec3 var4 = Vec3.atLowerCornerWithOffset(var3, 0.5, 1.01, 0.5).offsetRandom(var2.random, 0.7F);
          ItemEntity var5 = new ItemEntity(var2, var4.x(), var4.y(), var4.z(), new ItemStack(Items.BONE_MEAL));
          var5.setDefaultPickUpDelay();
@@ -312,7 +312,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return (Integer)var1.getValue(LEVEL);
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.client.server;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.net.SocketAddress;
 import javax.annotation.Nullable;
@@ -10,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.PlayerDataStorage;
@@ -22,12 +22,12 @@ public class IntegratedPlayerList extends PlayerList {
    private CompoundTag playerData;
 
    public IntegratedPlayerList(IntegratedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
-      super(var1, var2, var3, 8);
+      super(var1, var2, var3, var1.notificationManager());
       this.setViewDistance(10);
    }
 
    protected void save(ServerPlayer var1) {
-      if (this.getServer().isSingleplayerOwner(var1.getGameProfile())) {
+      if (this.getServer().isSingleplayerOwner(var1.nameAndId())) {
          try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
             TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
             var1.saveWithoutId(var3);
@@ -38,8 +38,8 @@ public class IntegratedPlayerList extends PlayerList {
       super.save(var1);
    }
 
-   public Component canPlayerLogin(SocketAddress var1, GameProfile var2) {
-      return (Component)(this.getServer().isSingleplayerOwner(var2) && this.getPlayerByName(var2.getName()) != null ? Component.translatable("multiplayer.disconnect.name_taken") : super.canPlayerLogin(var1, var2));
+   public Component canPlayerLogin(SocketAddress var1, NameAndId var2) {
+      return (Component)(this.getServer().isSingleplayerOwner(var2) && this.getPlayerByName(var2.name()) != null ? Component.translatable("multiplayer.disconnect.name_taken") : super.canPlayerLogin(var1, var2));
    }
 
    public IntegratedServer getServer() {

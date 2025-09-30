@@ -80,37 +80,10 @@ public class TeleportCommand {
    }
 
    private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1, boolean var2) {
-      EnumSet var3 = EnumSet.noneOf(Relative.class);
-      if (var0.isXRelative()) {
-         var3.add(Relative.DELTA_X);
-         if (var2) {
-            var3.add(Relative.X);
-         }
-      }
-
-      if (var0.isYRelative()) {
-         var3.add(Relative.DELTA_Y);
-         if (var2) {
-            var3.add(Relative.Y);
-         }
-      }
-
-      if (var0.isZRelative()) {
-         var3.add(Relative.DELTA_Z);
-         if (var2) {
-            var3.add(Relative.Z);
-         }
-      }
-
-      if (var1 == null || var1.isXRelative()) {
-         var3.add(Relative.X_ROT);
-      }
-
-      if (var1 == null || var1.isYRelative()) {
-         var3.add(Relative.Y_ROT);
-      }
-
-      return var3;
+      Set var3 = Relative.direction(var0.isXRelative(), var0.isYRelative(), var0.isZRelative());
+      Set var4 = var2 ? Relative.position(var0.isXRelative(), var0.isYRelative(), var0.isZRelative()) : Set.of();
+      Set var5 = var1 == null ? Relative.ROTATION : Relative.rotation(var1.isYRelative(), var1.isXRelative());
+      return Relative.union(var3, var4, var5);
    }
 
    private static String formatDouble(double var0) {

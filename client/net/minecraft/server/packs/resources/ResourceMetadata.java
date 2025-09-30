@@ -1,6 +1,5 @@
 package net.minecraft.server.packs.resources;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.JsonOps;
@@ -11,7 +10,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.GsonHelper;
 
@@ -56,39 +58,13 @@ public interface ResourceMetadata {
 
    <T> Optional<T> getSection(MetadataSectionType<T> var1);
 
-   default ResourceMetadata copySections(Collection<MetadataSectionType<?>> var1) {
-      Builder var2 = new Builder();
-
-      for(MetadataSectionType var4 : var1) {
-         this.copySection(var2, var4);
-      }
-
-      return var2.build();
+   default <T> Optional<MetadataSectionType.WithValue<T>> getTypedSection(MetadataSectionType<T> var1) {
+      Optional var10000 = this.getSection(var1);
+      Objects.requireNonNull(var1);
+      return var10000.map(var1::withValue);
    }
 
-   private <T> void copySection(Builder var1, MetadataSectionType<T> var2) {
-      this.getSection(var2).ifPresent((var2x) -> var1.put(var2, var2x));
-   }
-
-   public static class Builder {
-      private final ImmutableMap.Builder<MetadataSectionType<?>, Object> map = ImmutableMap.builder();
-
-      public Builder() {
-         super();
-      }
-
-      public <T> Builder put(MetadataSectionType<T> var1, T var2) {
-         this.map.put(var1, var2);
-         return this;
-      }
-
-      public ResourceMetadata build() {
-         final ImmutableMap var1 = this.map.build();
-         return var1.isEmpty() ? ResourceMetadata.EMPTY : new ResourceMetadata() {
-            public <T> Optional<T> getSection(MetadataSectionType<T> var1x) {
-               return Optional.ofNullable(var1.get(var1x));
-            }
-         };
-      }
+   default List<MetadataSectionType.WithValue<?>> getTypedSections(Collection<MetadataSectionType<?>> var1) {
+      return (List)var1.stream().map(this::getTypedSection).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
    }
 }

@@ -23,6 +23,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 public class BannerBlockEntity extends BlockEntity implements Nameable {
    public static final int MAX_PATTERNS = 6;
    private static final String TAG_PATTERNS = "patterns";
+   private static final Component DEFAULT_NAME = Component.translatable("block.minecraft.banner");
    @Nullable
    private Component name;
    private final DyeColor baseColor;
@@ -39,7 +40,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    public Component getName() {
-      return (Component)(this.name != null ? this.name : Component.translatable("block.minecraft.banner"));
+      return this.name != null ? this.name : DEFAULT_NAME;
    }
 
    @Nullable

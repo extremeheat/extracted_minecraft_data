@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import net.minecraft.client.model.IronGolemModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -17,12 +17,12 @@ public class IronGolemCrackinessLayer extends RenderLayer<IronGolemRenderState, 
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, IronGolemRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, IronGolemRenderState var4, float var5, float var6) {
       if (!var4.isInvisible) {
          Crackiness.Level var7 = var4.crackiness;
          if (var7 != Crackiness.Level.NONE) {
             ResourceLocation var8 = (ResourceLocation)resourceLocations.get(var7);
-            renderColoredCutoutModel(this.getParentModel(), var8, var1, var2, var3, var4, -1);
+            renderColoredCutoutModel(this.getParentModel(), var8, var1, var2, var3, var4, -1, 1);
          }
       }
    }

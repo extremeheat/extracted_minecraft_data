@@ -62,7 +62,7 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
          if (!var4.canUseGameMasterBlocks()) {
             return InteractionResult.PASS;
          } else {
-            if (var2.isClientSide) {
+            if (var2.isClientSide()) {
                var4.openTestBlock(var7);
             }
 

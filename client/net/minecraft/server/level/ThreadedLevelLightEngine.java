@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -135,6 +136,10 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name((Runnable)(() -> {
          if (!var2) {
             super.propagateLightSources(var3);
+         }
+
+         if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+            LOGGER.debug("LIT {}", var3);
          }
 
       }), () -> {

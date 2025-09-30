@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.item.properties.select.SelectItemModelPrope
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RegistryContextSwapper;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -29,9 +29,9 @@ public class SelectItemModel<T> implements ItemModel {
       this.models = var2;
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
       var1.appendModelIdentityElement(this);
-      Object var8 = this.property.get(var2, var5, var6, var7, var4);
+      Object var8 = this.property.get(var2, var5, var6 == null ? null : var6.asLivingEntity(), var7, var4);
       ItemModel var9 = this.models.get(var8, var5);
       if (var9 != null) {
          var9.update(var1, var2, var3, var4, var5, var6, var7);

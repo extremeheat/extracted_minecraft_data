@@ -9,12 +9,14 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class FurnaceBlockEntity extends AbstractFurnaceBlockEntity {
+   private static final Component DEFAULT_NAME = Component.translatable("container.furnace");
+
    public FurnaceBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.FURNACE, var1, var2, RecipeType.SMELTING);
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.furnace");
+      return DEFAULT_NAME;
    }
 
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {

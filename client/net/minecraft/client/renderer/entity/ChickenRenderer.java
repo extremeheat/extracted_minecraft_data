@@ -8,10 +8,11 @@ import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.ColdChickenModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ChickenRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -30,10 +31,10 @@ public class ChickenRenderer extends MobRenderer<Chicken, ChickenRenderState, Ch
       return Maps.newEnumMap(Map.of(ChickenVariant.ModelType.NORMAL, new AdultAndBabyModelPair(new ChickenModel(var0.bakeLayer(ModelLayers.CHICKEN)), new ChickenModel(var0.bakeLayer(ModelLayers.CHICKEN_BABY))), ChickenVariant.ModelType.COLD, new AdultAndBabyModelPair(new ColdChickenModel(var0.bakeLayer(ModelLayers.COLD_CHICKEN)), new ColdChickenModel(var0.bakeLayer(ModelLayers.COLD_CHICKEN_BABY)))));
    }
 
-   public void render(ChickenRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ChickenRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (var1.variant != null) {
          this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.modelAndTexture().model())).getModel(var1.isBaby);
-         super.render(var1, var2, var3, var4);
+         super.submit(var1, var2, var3, var4);
       }
    }
 

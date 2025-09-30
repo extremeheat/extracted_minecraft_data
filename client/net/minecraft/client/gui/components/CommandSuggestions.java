@@ -31,6 +31,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.commands.Commands;
@@ -83,7 +85,7 @@ public class CommandSuggestions {
       this.suggestionLineLimit = var8;
       this.anchorToBottom = var9;
       this.fillColor = var10;
-      var3.setFormatter(this::formatChat);
+      var3.addFormatter(this::formatChat);
    }
 
    public void setAllowSuggestions(boolean var1) {
@@ -98,11 +100,11 @@ public class CommandSuggestions {
       this.allowHiding = var1;
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      boolean var4 = this.suggestions != null;
-      if (var4 && this.suggestions.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      boolean var2 = this.suggestions != null;
+      if (var2 && this.suggestions.keyPressed(var1)) {
          return true;
-      } else if (this.screen.getFocused() != this.input || var1 != 258 || this.allowHiding && !var4) {
+      } else if (this.screen.getFocused() != this.input || !var1.isCycleFocus() || this.allowHiding && !var2) {
          return false;
       } else {
          this.showSuggestions(true);
@@ -114,8 +116,8 @@ public class CommandSuggestions {
       return this.suggestions != null && this.suggestions.mouseScrolled(Mth.clamp(var1, -1.0, 1.0));
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      return this.suggestions != null && this.suggestions.mouseClicked((int)var1, (int)var3, var5);
+   public boolean mouseClicked(MouseButtonEvent var1) {
+      return this.suggestions != null && this.suggestions.mouseClicked((int)var1.x(), (int)var1.y());
    }
 
    public void showSuggestions(boolean var1) {
@@ -250,7 +252,7 @@ public class CommandSuggestions {
             }
 
             if (var2 > 0) {
-               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().create()));
+               this.commandUsage.add(getExceptionMessage(CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(this.currentParse.getReader())));
             }
          } else if (this.currentParse.getReader().canRead()) {
             var1 = true;
@@ -295,8 +297,9 @@ public class CommandSuggestions {
       }
    }
 
+   @Nullable
    private FormattedCharSequence formatChat(String var1, int var2) {
-      return this.currentParse != null ? formatText(this.currentParse, var1, var2) : FormattedCharSequence.forward(var1, Style.EMPTY);
+      return this.currentParse != null ? formatText(this.currentParse, var1, var2) : null;
    }
 
    @Nullable
@@ -462,13 +465,13 @@ public class CommandSuggestions {
 
       }
 
-      public boolean mouseClicked(int var1, int var2, int var3) {
+      public boolean mouseClicked(int var1, int var2) {
          if (!this.rect.contains(var1, var2)) {
             return false;
          } else {
-            int var4 = (var2 - this.rect.getY()) / 12 + this.offset;
-            if (var4 >= 0 && var4 < this.suggestionList.size()) {
-               this.select(var4);
+            int var3 = (var2 - this.rect.getY()) / 12 + this.offset;
+            if (var3 >= 0 && var3 < this.suggestionList.size()) {
+               this.select(var3);
                this.useSuggestion();
             }
 
@@ -487,23 +490,23 @@ public class CommandSuggestions {
          }
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (var1 == 265) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isUp()) {
             this.cycle(-1);
             this.tabCycles = false;
             return true;
-         } else if (var1 == 264) {
+         } else if (var1.isDown()) {
             this.cycle(1);
             this.tabCycles = false;
             return true;
-         } else if (var1 == 258) {
+         } else if (var1.isCycleFocus()) {
             if (this.tabCycles) {
-               this.cycle(Screen.hasShiftDown() ? -1 : 1);
+               this.cycle(var1.hasShiftDown() ? -1 : 1);
             }
 
             this.useSuggestion();
             return true;
-         } else if (var1 == 256) {
+         } else if (var1.isEscape()) {
             CommandSuggestions.this.hide();
             CommandSuggestions.this.input.setSuggestion((String)null);
             return true;

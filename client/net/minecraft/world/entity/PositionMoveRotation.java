@@ -23,6 +23,10 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
       return var0.isInterpolating() ? new PositionMoveRotation(var0.getInterpolation().position(), var0.getKnownMovement(), var0.getInterpolation().yRot(), var0.getInterpolation().xRot()) : new PositionMoveRotation(var0.position(), var0.getKnownMovement(), var0.getYRot(), var0.getXRot());
    }
 
+   public PositionMoveRotation withRotation(float var1, float var2) {
+      return new PositionMoveRotation(this.position(), this.deltaMovement(), var1, var2);
+   }
+
    public static PositionMoveRotation of(TeleportTransition var0) {
       return new PositionMoveRotation(var0.position(), var0.deltaMovement(), var0.yRot(), var0.xRot());
    }

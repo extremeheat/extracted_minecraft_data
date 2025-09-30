@@ -1,5 +1,6 @@
 package net.minecraft.core;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -46,6 +47,8 @@ public enum Direction implements StringRepresentable {
    /** @deprecated */
    @Deprecated
    public static final Codec<Direction> LEGACY_ID_CODEC_2D = Codec.BYTE.xmap(Direction::from2DDataValue, (var0) -> (byte)var0.get2DDataValue());
+   private static final ImmutableList<Axis> YXZ_AXIS_ORDER = ImmutableList.of(Direction.Axis.Y, Direction.Axis.X, Direction.Axis.Z);
+   private static final ImmutableList<Axis> YZX_AXIS_ORDER = ImmutableList.of(Direction.Axis.Y, Direction.Axis.Z, Direction.Axis.X);
    private final int data3d;
    private final int oppositeIndex;
    private final int data2d;
@@ -425,6 +428,10 @@ public enum Direction implements StringRepresentable {
 
       String var10002 = String.valueOf(var0);
       throw new IllegalArgumentException("No such direction: " + var10002 + " " + String.valueOf(var1));
+   }
+
+   public static ImmutableList<Axis> axisStepOrder(Vec3 var0) {
+      return Math.abs(var0.x) < Math.abs(var0.z) ? YZX_AXIS_ORDER : YXZ_AXIS_ORDER;
    }
 
    public Vec3i getUnitVec3i() {

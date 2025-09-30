@@ -146,7 +146,7 @@ public class Rabbit extends Animal {
          }
       }
 
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.level().broadcastEntityEvent(this, (byte)1);
       }
 

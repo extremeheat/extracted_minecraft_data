@@ -1,11 +1,9 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,7 +23,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -144,7 +141,7 @@ public abstract class Animal extends AgeableMob {
             return InteractionResult.SUCCESS;
          }
 
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             return InteractionResult.CONSUME;
          }
       }
@@ -155,19 +152,6 @@ public abstract class Animal extends AgeableMob {
    protected void playEatingSound() {
    }
 
-   protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
-      int var4 = var3.getCount();
-      UseRemainder var5 = (UseRemainder)var3.get(DataComponents.USE_REMAINDER);
-      var3.consume(1, var1);
-      if (var5 != null) {
-         boolean var10003 = var1.hasInfiniteMaterials();
-         Objects.requireNonNull(var1);
-         ItemStack var6 = var5.convertIntoRemainder(var3, var4, var10003, var1::handleExtraItemsCreatedOnUse);
-         var1.setItemInHand(var2, var6);
-      }
-
-   }
-
    public boolean canFallInLove() {
       return this.inLove <= 0;
    }
@@ -175,7 +159,7 @@ public abstract class Animal extends AgeableMob {
    public void setInLove(@Nullable Player var1) {
       this.inLove = 600;
       if (var1 instanceof ServerPlayer var2) {
-         this.loveCause = new EntityReference<ServerPlayer>(var2);
+         this.loveCause = EntityReference.of(var2);
       }
 
       this.level().broadcastEntityEvent(this, (byte)18);
@@ -191,10 +175,7 @@ public abstract class Animal extends AgeableMob {
 
    @Nullable
    public ServerPlayer getLoveCause() {
-      EntityReference var10000 = this.loveCause;
-      Level var10001 = this.level();
-      Objects.requireNonNull(var10001);
-      return (ServerPlayer)EntityReference.get(var10000, var10001::getPlayerByUUID, ServerPlayer.class);
+      return (ServerPlayer)EntityReference.get(this.loveCause, this.level(), ServerPlayer.class);
    }
 
    public boolean isInLove() {

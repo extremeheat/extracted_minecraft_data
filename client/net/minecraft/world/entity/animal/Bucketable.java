@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -36,7 +35,7 @@ public interface Bucketable {
    @Deprecated
    static void saveDefaultDataToBucketTag(Mob var0, ItemStack var1) {
       var1.copyFrom(DataComponents.CUSTOM_NAME, var0);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> {
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
          if (var0.isNoAi()) {
             var1x.putBoolean("NoAI", var0.isNoAi());
          }
@@ -58,7 +57,7 @@ public interface Bucketable {
          }
 
          var1x.putFloat("Health", var0.getHealth());
-      }));
+      });
    }
 
    /** @deprecated */
@@ -93,7 +92,7 @@ public interface Bucketable {
          ItemStack var5 = ItemUtils.createFilledResult(var3, var0, var4, false);
          var0.setItemInHand(var1, var5);
          Level var6 = var2.level();
-         if (!var6.isClientSide) {
+         if (!var6.isClientSide()) {
             CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var0, var4);
          }
 

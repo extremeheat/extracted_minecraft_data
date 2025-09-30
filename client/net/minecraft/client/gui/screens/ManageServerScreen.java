@@ -1,0 +1,84 @@
+package net.minecraft.client.gui.screens;
+
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+
+public class ManageServerScreen extends Screen {
+   private static final Component NAME_LABEL = Component.translatable("manageServer.enterName");
+   private static final Component IP_LABEL = Component.translatable("manageServer.enterIp");
+   private static final Component DEFAULT_SERVER_NAME = Component.translatable("selectServer.defaultName");
+   private Button addButton;
+   private final BooleanConsumer callback;
+   private final ServerData serverData;
+   private EditBox ipEdit;
+   private EditBox nameEdit;
+   private final Screen lastScreen;
+
+   public ManageServerScreen(Screen var1, Component var2, BooleanConsumer var3, ServerData var4) {
+      super(var2);
+      this.lastScreen = var1;
+      this.callback = var3;
+      this.serverData = var4;
+   }
+
+   protected void init() {
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, NAME_LABEL);
+      this.nameEdit.setValue(this.serverData.name);
+      this.nameEdit.setHint(DEFAULT_SERVER_NAME);
+      this.nameEdit.setResponder((var1) -> this.updateAddButtonStatus());
+      this.addWidget(this.nameEdit);
+      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, IP_LABEL);
+      this.ipEdit.setMaxLength(128);
+      this.ipEdit.setValue(this.serverData.ip);
+      this.ipEdit.setResponder((var1) -> this.updateAddButtonStatus());
+      this.addWidget(this.ipEdit);
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues(ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("manageServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
+      this.addButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
+      this.updateAddButtonStatus();
+   }
+
+   protected void setInitialFocus() {
+      this.setInitialFocus(this.nameEdit);
+   }
+
+   public void resize(Minecraft var1, int var2, int var3) {
+      String var4 = this.ipEdit.getValue();
+      String var5 = this.nameEdit.getValue();
+      this.init(var1, var2, var3);
+      this.ipEdit.setValue(var4);
+      this.nameEdit.setValue(var5);
+   }
+
+   private void onAdd() {
+      String var1 = this.nameEdit.getValue();
+      this.serverData.name = var1.isEmpty() ? DEFAULT_SERVER_NAME.getString() : var1;
+      this.serverData.ip = this.ipEdit.getValue();
+      this.callback.accept(true);
+   }
+
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
+   }
+
+   private void updateAddButtonStatus() {
+      this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
+   }
+
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
+      var1.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
+      this.nameEdit.render(var1, var2, var3, var4);
+      this.ipEdit.render(var1, var2, var3, var4);
+   }
+}

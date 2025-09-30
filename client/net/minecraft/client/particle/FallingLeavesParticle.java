@@ -1,29 +1,27 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ColorParticleOption;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class FallingLeavesParticle extends TextureSheetParticle {
+public class FallingLeavesParticle extends SingleQuadParticle {
    private static final float ACCELERATION_SCALE = 0.0025F;
    private static final int INITIAL_LIFETIME = 300;
    private static final int CURVE_ENDPOINT_TIME = 300;
    private float rotSpeed;
-   private final float particleRandom;
    private final float spinAcceleration;
    private final float windBig;
-   private boolean swirl;
-   private boolean flowAway;
-   private double xaFlowScale;
-   private double zaFlowScale;
-   private double swirlPeriod;
+   private final boolean swirl;
+   private final boolean flowAway;
+   private final double xaFlowScale;
+   private final double zaFlowScale;
+   private final double swirlPeriod;
 
-   protected FallingLeavesParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8, float var9, float var10, boolean var11, boolean var12, float var13, float var14) {
-      super(var1, var2, var4, var6);
-      this.setSprite(var8.get(this.random.nextInt(12), 12));
+   protected FallingLeavesParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8, float var9, float var10, boolean var11, boolean var12, float var13, float var14) {
+      super(var1, var2, var4, var6, var8);
       this.rotSpeed = (float)Math.toRadians(this.random.nextBoolean() ? -30.0 : 30.0);
-      this.particleRandom = this.random.nextFloat();
       this.spinAcceleration = (float)Math.toRadians(this.random.nextBoolean() ? -5.0 : 5.0);
       this.windBig = var10;
       this.swirl = var11;
@@ -35,13 +33,14 @@ public class FallingLeavesParticle extends TextureSheetParticle {
       this.setSize(var15, var15);
       this.friction = 1.0F;
       this.yd = (double)(-var14);
-      this.xaFlowScale = Math.cos(Math.toRadians((double)(this.particleRandom * 60.0F))) * (double)this.windBig;
-      this.zaFlowScale = Math.sin(Math.toRadians((double)(this.particleRandom * 60.0F))) * (double)this.windBig;
-      this.swirlPeriod = Math.toRadians((double)(1000.0F + this.particleRandom * 3000.0F));
+      float var16 = this.random.nextFloat();
+      this.xaFlowScale = Math.cos(Math.toRadians((double)(var16 * 60.0F))) * (double)this.windBig;
+      this.zaFlowScale = Math.sin(Math.toRadians((double)(var16 * 60.0F))) * (double)this.windBig;
+      this.swirlPeriod = Math.toRadians((double)(1000.0F + var16 * 3000.0F));
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public void tick() {
@@ -94,13 +93,8 @@ public class FallingLeavesParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.25F, 2.0F, false, true, 1.0F, 0.0F);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.25F, 2.0F, false, true, 1.0F, 0.0F);
       }
    }
 
@@ -112,13 +106,8 @@ public class FallingLeavesParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
       }
    }
 
@@ -130,15 +119,10 @@ public class FallingLeavesParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FallingLeavesParticle var15 = new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
-         ((Particle)var15).setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((ColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         FallingLeavesParticle var16 = new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+         var16.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         return var16;
       }
    }
 }

@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.FoxModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.FoxRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -15,7 +15,7 @@ public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, FoxRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, FoxRenderState var4, float var5, float var6) {
       ItemStackRenderState var7 = var4.heldItem;
       if (!var7.isEmpty()) {
          boolean var8 = var4.isSleeping;
@@ -47,7 +47,7 @@ public class FoxHeldItemLayer extends RenderLayer<FoxRenderState, FoxModel> {
             var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
          }
 
-         var7.render(var1, var2, var3, OverlayTexture.NO_OVERLAY);
+         var7.submit(var1, var2, var3, OverlayTexture.NO_OVERLAY, var4.outlineColor);
          var1.popPose();
       }
    }

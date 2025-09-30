@@ -8,11 +8,11 @@ public class PaintingRenderState extends EntityRenderState {
    public Direction direction;
    @Nullable
    public PaintingVariant variant;
-   public int[] lightCoords;
+   public int[] lightCoordsPerBlock;
 
    public PaintingRenderState() {
       super();
       this.direction = Direction.NORTH;
-      this.lightCoords = new int[0];
+      this.lightCoordsPerBlock = new int[0];
    }
 }

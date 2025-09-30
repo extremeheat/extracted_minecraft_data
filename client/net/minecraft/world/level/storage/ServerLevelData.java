@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
@@ -51,9 +52,13 @@ public interface ServerLevelData extends WritableLevelData {
 
    GameType getGameType();
 
-   void setWorldBorder(WorldBorder.Settings var1);
+   /** @deprecated */
+   @Deprecated
+   Optional<WorldBorder.Settings> getLegacyWorldBorderSettings();
 
-   WorldBorder.Settings getWorldBorder();
+   /** @deprecated */
+   @Deprecated
+   void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1);
 
    boolean isInitialized();
 

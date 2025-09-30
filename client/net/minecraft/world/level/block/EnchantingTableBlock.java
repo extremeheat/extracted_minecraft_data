@@ -10,7 +10,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.Nameable;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -70,11 +69,11 @@ public class EnchantingTableBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENCHANTING_TABLE, EnchantingTableBlockEntity::bookAnimationTick) : null;
+      return var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.ENCHANTING_TABLE, EnchantingTableBlockEntity::bookAnimationTick) : null;
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          var4.openMenu(var1.getMenuProvider(var2, var3));
       }
 
@@ -84,9 +83,9 @@ public class EnchantingTableBlock extends BaseEntityBlock {
    @Nullable
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof EnchantingTableBlockEntity) {
-         Component var5 = ((Nameable)var4).getDisplayName();
-         return new SimpleMenuProvider((var2x, var3x, var4x) -> new EnchantmentMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), var5);
+      if (var4 instanceof EnchantingTableBlockEntity var5) {
+         Component var6 = var5.getDisplayName();
+         return new SimpleMenuProvider((var2x, var3x, var4x) -> new EnchantmentMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), var6);
       } else {
          return null;
       }

@@ -12,7 +12,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
@@ -27,7 +27,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
       this.properties = var2;
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable LivingEntity var6, int var7) {
+   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
       var1.appendModelIdentityElement(this);
       ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
       if (var2.hasFoil()) {
@@ -65,7 +65,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
       }
 
       public ItemModel bake(ItemModel.BakingContext var1) {
-         SpecialModelRenderer var2 = this.specialModel.bake(var1.entityModelSet());
+         SpecialModelRenderer var2 = this.specialModel.bake(var1);
          if (var2 == null) {
             return var1.missingItemModel();
          } else {

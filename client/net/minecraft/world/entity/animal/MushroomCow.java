@@ -11,6 +11,7 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -101,8 +102,8 @@ public class MushroomCow extends AbstractCow implements Shearable {
             var9 = new ItemStack(Items.MUSHROOM_STEW);
          }
 
-         ItemStack var6 = ItemUtils.createFilledResult(var3, var1, var9, false);
-         var1.setItemInHand(var2, var6);
+         ItemStack var13 = ItemUtils.createFilledResult(var3, var1, var9, false);
+         var1.setItemInHand(var2, var13);
          SoundEvent var7;
          if (var12) {
             var7 = SoundEvents.MOOSHROOM_MILK_SUSPICIOUSLY;
@@ -118,7 +119,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
             ServerLevel var8 = (ServerLevel)var11;
             this.shear(var8, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
+            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
          }
 
          return InteractionResult.SUCCESS;
@@ -133,9 +134,10 @@ public class MushroomCow extends AbstractCow implements Shearable {
                }
             } else {
                var3.consume(1, var1);
+               SpellParticleOption var10 = SpellParticleOption.create(ParticleTypes.EFFECT, -1, 1.0F);
 
-               for(int var10 = 0; var10 < 4; ++var10) {
-                  this.level().addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
+               for(int var6 = 0; var6 < 4; ++var6) {
+                  this.level().addParticle(var10, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
                }
 
                this.stewEffects = (SuspiciousStewEffects)var4.get();

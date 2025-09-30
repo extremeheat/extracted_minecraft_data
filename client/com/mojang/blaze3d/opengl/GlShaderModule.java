@@ -2,9 +2,7 @@ package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.ResourceLocation;
-import org.apache.commons.lang3.StringUtils;
 
 public class GlShaderModule implements AutoCloseable {
    private static final int NOT_ALLOCATED = -1;
@@ -18,20 +16,6 @@ public class GlShaderModule implements AutoCloseable {
       this.id = var2;
       this.shaderId = var1;
       this.type = var3;
-   }
-
-   public static GlShaderModule compile(ResourceLocation var0, ShaderType var1, String var2) throws ShaderManager.CompilationException {
-      RenderSystem.assertOnRenderThread();
-      int var3 = GlStateManager.glCreateShader(GlConst.toGl(var1));
-      GlStateManager.glShaderSource(var3, var2);
-      GlStateManager.glCompileShader(var3);
-      if (GlStateManager.glGetShaderi(var3, 35713) == 0) {
-         String var4 = StringUtils.trim(GlStateManager.glGetShaderInfoLog(var3, 32768));
-         String var10002 = var1.getName();
-         throw new ShaderManager.CompilationException("Couldn't compile " + var10002 + " shader (" + String.valueOf(var0) + ") : " + var4);
-      } else {
-         return new GlShaderModule(var3, var0, var1);
-      }
    }
 
    public void close() {

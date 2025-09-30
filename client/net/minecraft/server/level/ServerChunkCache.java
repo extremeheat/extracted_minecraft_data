@@ -23,8 +23,8 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -69,7 +69,6 @@ public class ServerChunkCache extends ChunkSource {
    private final TicketStorage ticketStorage;
    private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
-   private boolean spawnFriendlies = true;
    private static final int CACHE_SIZE = 4;
    private final long[] lastChunkPos = new long[4];
    private final ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
@@ -80,22 +79,22 @@ public class ServerChunkCache extends ChunkSource {
    @VisibleForDebug
    private NaturalSpawner.SpawnState lastSpawnState;
 
-   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, ChunkGenerator var6, int var7, int var8, boolean var9, ChunkProgressListener var10, ChunkStatusUpdateListener var11, Supplier<DimensionDataStorage> var12) {
+   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, ChunkGenerator var6, int var7, int var8, boolean var9, ChunkStatusUpdateListener var10, Supplier<DimensionDataStorage> var11) {
       super();
       this.level = var1;
       this.mainThreadProcessor = new MainThreadExecutor(var1);
       this.mainThread = Thread.currentThread();
-      Path var13 = var2.getDimensionPath(var1.dimension()).resolve("data");
+      Path var12 = var2.getDimensionPath(var1.dimension()).resolve("data");
 
       try {
-         FileUtil.createDirectoriesSafe(var13);
-      } catch (IOException var15) {
-         LOGGER.error("Failed to create dimension data storage directory", var15);
+         FileUtil.createDirectoriesSafe(var12);
+      } catch (IOException var14) {
+         LOGGER.error("Failed to create dimension data storage directory", var14);
       }
 
-      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var13, var3, var1.registryAccess());
+      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var12, var3, var1.registryAccess());
       this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
-      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, this.ticketStorage, var7, var9);
+      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(var8);
@@ -109,10 +108,6 @@ public class ServerChunkCache extends ChunkSource {
    @Nullable
    private ChunkHolder getVisibleChunkIfPresent(long var1) {
       return this.chunkMap.getVisibleChunkIfPresent(var1);
-   }
-
-   public int getTickingGenerated() {
-      return this.chunkMap.getTickingGenerated();
    }
 
    private void storeInCache(long var1, @Nullable ChunkAccess var3, ChunkStatus var4) {
@@ -347,17 +342,16 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    private void tickChunks(ProfilerFiller var1, long var2) {
-      var1.popPush("naturalSpawnCount");
+      var1.push("naturalSpawnCount");
       int var4 = this.distanceManager.getNaturalSpawnChunkCount();
       NaturalSpawner.SpawnState var5 = NaturalSpawner.createState(var4, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
       this.lastSpawnState = var5;
-      var1.popPush("spawnAndTick");
       boolean var6 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
       int var7 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
       List var8;
-      if (var6 && (this.spawnEnemies || this.spawnFriendlies)) {
+      if (var6) {
          boolean var9 = this.level.getLevelData().getGameTime() % 400L == 0L;
-         var8 = NaturalSpawner.getFilteredSpawningCategories(var5, this.spawnFriendlies, this.spawnEnemies, var9);
+         var8 = NaturalSpawner.getFilteredSpawningCategories(var5, true, this.spawnEnemies, var9);
       } else {
          var8 = List.of();
       }
@@ -365,7 +359,7 @@ public class ServerChunkCache extends ChunkSource {
       List var15 = this.spawningChunks;
 
       try {
-         var1.push("filteringSpawningChunks");
+         var1.popPush("filteringSpawningChunks");
          this.chunkMap.collectSpawningChunks(var15);
          var1.popPush("shuffleSpawningChunks");
          Util.shuffle(var15, this.level.random);
@@ -380,12 +374,12 @@ public class ServerChunkCache extends ChunkSource {
 
       var1.popPush("tickTickingChunks");
       this.chunkMap.forEachBlockTickingChunk((var2x) -> this.level.tickChunk(var2x, var7));
-      var1.pop();
-      var1.popPush("customSpawners");
       if (var6) {
-         this.level.tickCustomSpawners(this.spawnEnemies, this.spawnFriendlies);
+         var1.popPush("customSpawners");
+         this.level.tickCustomSpawners(this.spawnEnemies);
       }
 
+      var1.pop();
    }
 
    private void tickSpawningChunk(LevelChunk var1, long var2, List<MobCategory> var4, NaturalSpawner.SpawnState var5) {
@@ -456,8 +450,26 @@ public class ServerChunkCache extends ChunkSource {
       });
    }
 
+   public boolean hasActiveTickets() {
+      return this.ticketStorage.shouldKeepDimensionActive();
+   }
+
    public void addTicket(Ticket var1, ChunkPos var2) {
       this.ticketStorage.addTicket(var1, var2);
+   }
+
+   public CompletableFuture<?> addTicketAndLoadWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      if (!var1.doesLoad()) {
+         throw new IllegalStateException("Ticket type " + String.valueOf(var1) + " does not trigger chunk loading");
+      } else if (var1.canExpireIfUnloaded()) {
+         throw new IllegalStateException("Ticket type " + String.valueOf(var1) + " can expire before it loads, cannot fetch asynchronously");
+      } else {
+         this.addTicketWithRadius(var1, var2, var3);
+         this.runDistanceManagerUpdates();
+         ChunkHolder var4 = this.getVisibleChunkIfPresent(var2.toLong());
+         Objects.requireNonNull(var4, "No chunk was scheduled for loading");
+         return this.chunkMap.getChunkRangeFuture(var4, var3, (var0) -> ChunkStatus.FULL);
+      }
    }
 
    public void addTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
@@ -494,12 +506,12 @@ public class ServerChunkCache extends ChunkSource {
       this.chunkMap.addEntity(var1);
    }
 
-   public void broadcastAndSend(Entity var1, Packet<?> var2) {
-      this.chunkMap.broadcastAndSend(var1, var2);
+   public void sendToTrackingPlayersAndSelf(Entity var1, Packet<? super ClientGamePacketListener> var2) {
+      this.chunkMap.sendToTrackingPlayersAndSelf(var1, var2);
    }
 
-   public void broadcast(Entity var1, Packet<?> var2) {
-      this.chunkMap.broadcast(var1, var2);
+   public void sendToTrackingPlayers(Entity var1, Packet<? super ClientGamePacketListener> var2) {
+      this.chunkMap.sendToTrackingPlayers(var1, var2);
    }
 
    public void setViewDistance(int var1) {
@@ -512,7 +524,6 @@ public class ServerChunkCache extends ChunkSource {
 
    public void setSpawnSettings(boolean var1) {
       this.spawnEnemies = var1;
-      this.spawnFriendlies = this.spawnFriendlies;
    }
 
    public String getChunkDebugData(ChunkPos var1) {

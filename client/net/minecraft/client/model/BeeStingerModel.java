@@ -7,8 +7,9 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Unit;
 
-public class BeeStingerModel extends Model {
+public class BeeStingerModel extends Model<Unit> {
    public BeeStingerModel(ModelPart var1) {
       super(var1, RenderType::entityCutout);
    }

@@ -9,8 +9,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.lighting.LayerLightSectionStorage;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -36,18 +38,18 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.lightLayer = var2;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      Instant var9 = Instant.now();
-      if (this.data == null || Duration.between(this.lastUpdateTime, var9).compareTo(REFRESH_INTERVAL) > 0) {
-         this.lastUpdateTime = var9;
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      Instant var11 = Instant.now();
+      if (this.data == null || Duration.between(this.lastUpdateTime, var11).compareTo(REFRESH_INTERVAL) > 0) {
+         this.lastUpdateTime = var11;
          this.data = new SectionData(this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer);
       }
 
       renderEdges(var1, this.data.lightAndBlocksShape, this.data.minPos, var2, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
       renderEdges(var1, this.data.lightShape, this.data.minPos, var2, var3, var5, var7, LIGHT_ONLY_COLOR);
-      VertexConsumer var10 = var2.getBuffer(RenderType.debugSectionQuads());
-      renderFaces(var1, this.data.lightAndBlocksShape, this.data.minPos, var10, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
-      renderFaces(var1, this.data.lightShape, this.data.minPos, var10, var3, var5, var7, LIGHT_ONLY_COLOR);
+      VertexConsumer var12 = var2.getBuffer(RenderType.debugSectionQuads());
+      renderFaces(var1, this.data.lightAndBlocksShape, this.data.minPos, var12, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
+      renderFaces(var1, this.data.lightShape, this.data.minPos, var12, var3, var5, var7, LIGHT_ONLY_COLOR);
    }
 
    private static void renderFaces(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, VertexConsumer var3, double var4, double var6, double var8, Vector4f var10) {
@@ -76,7 +78,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var13 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var3);
       float var14 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var5);
       float var15 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var7);
-      ShapeRenderer.renderFace(var0, var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
+      ShapeRenderer.renderFace(var0.last().pose(), var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
    }
 
    private static void renderEdge(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, int var8, int var9, int var10, int var11, int var12, int var13, Vector4f var14) {

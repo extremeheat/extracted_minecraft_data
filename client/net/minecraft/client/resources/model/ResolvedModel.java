@@ -117,7 +117,8 @@ public interface ResolvedModel extends ModelDebugName {
       ItemTransform var6 = findTopTransform(var0, ItemDisplayContext.GUI);
       ItemTransform var7 = findTopTransform(var0, ItemDisplayContext.GROUND);
       ItemTransform var8 = findTopTransform(var0, ItemDisplayContext.FIXED);
-      return new ItemTransforms(var1, var2, var3, var4, var5, var6, var7, var8);
+      ItemTransform var9 = findTopTransform(var0, ItemDisplayContext.ON_SHELF);
+      return new ItemTransforms(var1, var2, var3, var4, var5, var6, var7, var8, var9);
    }
 
    default ItemTransforms getTopTransforms() {

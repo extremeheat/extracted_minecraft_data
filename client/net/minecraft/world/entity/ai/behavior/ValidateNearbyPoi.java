@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,7 +35,7 @@ public class ValidateNearbyPoi {
                         var2x.erase();
                         if (!bedIsOccupiedByVillager(var9, var8)) {
                            var3.getPoiManager().release(var8);
-                           DebugPackets.sendPoiTicketCountPacket(var3, var8);
+                           var3.debugSynchronizers().updatePoi(var8);
                         }
                      }
                   } else {

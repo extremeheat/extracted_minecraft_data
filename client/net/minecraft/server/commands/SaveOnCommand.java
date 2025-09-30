@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 
 public class SaveOnCommand {
    private static final SimpleCommandExceptionType ERROR_ALREADY_ON = new SimpleCommandExceptionType(Component.translatable("commands.save.alreadyOn"));
@@ -18,15 +17,7 @@ public class SaveOnCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-on").requires(Commands.hasPermission(4))).executes((var0x) -> {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
-         boolean var2 = false;
-
-         for(ServerLevel var4 : var1.getServer().getAllLevels()) {
-            if (var4 != null && var4.noSave) {
-               var4.noSave = false;
-               var2 = true;
-            }
-         }
-
+         boolean var2 = var1.getServer().setAutoSave(true);
          if (!var2) {
             throw ERROR_ALREADY_ON.create();
          } else {

@@ -2,14 +2,10 @@ package net.minecraft.world.level.chunk;
 
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
@@ -40,10 +36,10 @@ public class LevelChunkSection {
       this.recalcBlockCounts();
    }
 
-   public LevelChunkSection(Registry<Biome> var1) {
+   public LevelChunkSection(PalettedContainerFactory var1) {
       super();
-      this.states = new PalettedContainer<BlockState>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
-      this.biomes = new PalettedContainer<Holder<Biome>>(var1.asHolderIdMap(), var1.getOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
+      this.states = var1.createForBlockStates();
+      this.biomes = var1.createForBiomes();
    }
 
    public BlockState getBlockState(int var1, int var2, int var3) {

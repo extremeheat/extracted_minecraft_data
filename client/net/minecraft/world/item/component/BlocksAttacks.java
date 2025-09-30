@@ -62,13 +62,13 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
 
    public void hurtBlockingItem(Level var1, ItemStack var2, LivingEntity var3, InteractionHand var4, float var5) {
       if (var3 instanceof Player var6) {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             var6.awardStat(Stats.ITEM_USED.get(var2.getItem()));
          }
 
          int var7 = this.itemDamage.apply(var5);
          if (var7 > 0) {
-            var2.hurtAndBreak(var7, var3, LivingEntity.getSlotForHand(var4));
+            var2.hurtAndBreak(var7, var3, var4.asEquipmentSlot());
          }
 
       }

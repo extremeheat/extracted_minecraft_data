@@ -231,10 +231,8 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                RenderSystem.bindDefaultUniforms(var33);
                var33.setUniform("DynamicTransforms", var45);
                var33.setIndexBuffer(var32, var31.type());
-               var33.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
                var33.setUniform("CloudInfo", this.ubo.currentBuffer());
                var33.setUniform("CloudFaces", this.utb.currentBuffer());
-               var33.setPipeline(var25);
                var33.drawIndexed(0, 0, 6 * this.quadCount, 1);
             }
 

@@ -55,7 +55,7 @@ public class EndPortalFrameBlock extends Block {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return (Boolean)var1.getValue(HAS_EYE) ? 15 : 0;
    }
 

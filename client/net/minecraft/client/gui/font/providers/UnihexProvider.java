@@ -1,9 +1,10 @@
 package net.minecraft.client.gui.font.providers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
-import com.mojang.blaze3d.font.SheetGlyphInfo;
+import com.mojang.blaze3d.font.UnbakedGlyph;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -21,7 +22,6 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nullable;
@@ -50,7 +50,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public UnbakedGlyph getGlyph(int var1) {
       return this.glyphs.get(var1);
    }
 
@@ -504,7 +504,7 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record Glyph(LineData contents, int left, int right) implements GlyphInfo {
+   static record Glyph(LineData contents, int left, int right) implements UnbakedGlyph {
       final LineData contents;
       final int left;
       final int right;
@@ -520,20 +520,24 @@ public class UnihexProvider implements GlyphProvider {
          return this.right - this.left + 1;
       }
 
-      public float getAdvance() {
-         return (float)(this.width() / 2 + 1);
+      public GlyphInfo info() {
+         return new GlyphInfo() {
+            public float getAdvance() {
+               return (float)(Glyph.this.width() / 2 + 1);
+            }
+
+            public float getShadowOffset() {
+               return 0.5F;
+            }
+
+            public float getBoldOffset() {
+               return 0.5F;
+            }
+         };
       }
 
-      public float getShadowOffset() {
-         return 0.5F;
-      }
-
-      public float getBoldOffset() {
-         return 0.5F;
-      }
-
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+      public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
+         return var1.stitch(this.info(), new GlyphBitmap() {
             public float getOversample() {
                return 2.0F;
             }
@@ -550,7 +554,7 @@ public class UnihexProvider implements GlyphProvider {
                IntBuffer var4 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
                UnihexProvider.unpackBitsToBytes(var4, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
                var4.rewind();
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, var4, NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var3, MemoryUtil.memByteBuffer(var4), NativeImage.Format.RGBA, 0, 0, var1, var2, Glyph.this.width(), 16);
                MemoryUtil.memFree(var4);
             }
 

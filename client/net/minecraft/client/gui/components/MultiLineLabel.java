@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,26 +15,11 @@ import net.minecraft.util.Mth;
 
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
-      public void renderCentered(GuiGraphics var1, int var2, int var3) {
+      public int render(GuiGraphics var1, Align var2, int var3, int var4, int var5, boolean var6, int var7) {
+         return var4;
       }
 
-      public void renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      }
-
-      public void renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      }
-
-      public int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-         return var3;
-      }
-
-      @Nullable
-      public Style getStyleAtCentered(int var1, int var2, int var3, double var4, double var6) {
-         return null;
-      }
-
-      @Nullable
-      public Style getStyleAtLeftAligned(int var1, int var2, int var3, double var4, double var6) {
+      public Style getStyle(Align var1, int var2, int var3, int var4, double var5, double var7) {
          return null;
       }
 
@@ -67,74 +51,33 @@ public interface MultiLineLabel {
          @Nullable
          private Language splitWithLanguage;
 
-         public void renderCentered(GuiGraphics var1x, int var2x, int var3x) {
-            Objects.requireNonNull(var0);
-            this.renderCentered(var1x, var2x, var3x, 9, -1);
-         }
+         public int render(GuiGraphics var1x, Align var2x, int var3x, int var4, int var5, boolean var6, int var7) {
+            int var8 = var4;
 
-         public void renderCentered(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
-            int var6 = var3x;
-
-            for(TextAndWidth var8 : this.getSplitMessage()) {
-               var1x.drawString(var0, var8.text, var2x - var8.width / 2, var6, var5);
-               var6 += var4;
+            for(TextAndWidth var10 : this.getSplitMessage()) {
+               int var11 = var2x.calculateLeft(var3x, var10.width);
+               var1x.drawString(var0, var10.text, var11, var8, var7);
+               var8 += var5;
             }
 
-         }
-
-         public void renderLeftAligned(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
-            int var6 = var3x;
-
-            for(TextAndWidth var8 : this.getSplitMessage()) {
-               var1x.drawString(var0, var8.text, var2x, var6, var5);
-               var6 += var4;
-            }
-
-         }
-
-         public int renderLeftAlignedNoShadow(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
-            int var6 = var3x;
-
-            for(TextAndWidth var8 : this.getSplitMessage()) {
-               var1x.drawString(var0, var8.text, var2x, var6, var5, false);
-               var6 += var4;
-            }
-
-            return var6;
+            return var8;
          }
 
          @Nullable
-         public Style getStyleAtCentered(int var1x, int var2x, int var3x, double var4, double var6) {
-            List var8 = this.getSplitMessage();
-            int var9 = Mth.floor((var6 - (double)var2x) / (double)var3x);
-            if (var9 >= 0 && var9 < var8.size()) {
-               TextAndWidth var10 = (TextAndWidth)var8.get(var9);
-               int var11 = var1x - var10.width / 2;
-               if (var4 < (double)var11) {
+         public Style getStyle(Align var1x, int var2x, int var3x, int var4, double var5, double var7) {
+            List var9 = this.getSplitMessage();
+            int var10 = Mth.floor((var7 - (double)var3x) / (double)var4);
+            if (var10 >= 0 && var10 < var9.size()) {
+               TextAndWidth var11 = (TextAndWidth)var9.get(var10);
+               int var12 = var1x.calculateLeft(var2x, var11.width);
+               if (var5 < (double)var12) {
                   return null;
                } else {
-                  int var12 = Mth.floor(var4 - (double)var11);
-                  return var0.getSplitter().componentStyleAtWidth(var10.text, var12);
+                  int var13 = Mth.floor(var5 - (double)var12);
+                  return var0.getSplitter().componentStyleAtWidth(var11.text, var13);
                }
             } else {
                return null;
-            }
-         }
-
-         @Nullable
-         public Style getStyleAtLeftAligned(int var1x, int var2x, int var3x, double var4, double var6) {
-            if (var4 < (double)var1x) {
-               return null;
-            } else {
-               List var8 = this.getSplitMessage();
-               int var9 = Mth.floor((var6 - (double)var2x) / (double)var3x);
-               if (var9 >= 0 && var9 < var8.size()) {
-                  TextAndWidth var10 = (TextAndWidth)var8.get(var9);
-                  int var11 = Mth.floor(var4 - (double)var1x);
-                  return var0.getSplitter().componentStyleAtWidth(var10.text, var11);
-               } else {
-                  return null;
-               }
             }
          }
 
@@ -180,19 +123,10 @@ public interface MultiLineLabel {
       };
    }
 
-   void renderCentered(GuiGraphics var1, int var2, int var3);
-
-   void renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5);
-
-   void renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5);
-
-   int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5);
+   int render(GuiGraphics var1, Align var2, int var3, int var4, int var5, boolean var6, int var7);
 
    @Nullable
-   Style getStyleAtCentered(int var1, int var2, int var3, double var4, double var6);
-
-   @Nullable
-   Style getStyleAtLeftAligned(int var1, int var2, int var3, double var4, double var6);
+   Style getStyle(Align var1, int var2, int var3, int var4, double var5, double var7);
 
    int getLineCount();
 
@@ -206,6 +140,34 @@ public interface MultiLineLabel {
          super();
          this.text = var1;
          this.width = var2;
+      }
+   }
+
+   public static enum Align {
+      LEFT {
+         int calculateLeft(int var1, int var2) {
+            return var1;
+         }
+      },
+      CENTER {
+         int calculateLeft(int var1, int var2) {
+            return var1 - var2 / 2;
+         }
+      },
+      RIGHT {
+         int calculateLeft(int var1, int var2) {
+            return var1 - var2;
+         }
+      };
+
+      Align() {
+      }
+
+      abstract int calculateLeft(int var1, int var2);
+
+      // $FF: synthetic method
+      private static Align[] $values() {
+         return new Align[]{LEFT, CENTER, RIGHT};
       }
    }
 }

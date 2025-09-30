@@ -61,17 +61,19 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
       AtomicInteger var10001 = this.finishedTasks;
       Objects.requireNonNull(var10001);
       var6.thenRun(var10001::incrementAndGet);
-      CompletableFuture var9 = var6;
-      ArrayList var10 = new ArrayList();
+      PreparableReloadListener.SharedState var9 = new PreparableReloadListener.SharedState(var3);
+      var4.forEach((var1x) -> var1x.prepareSharedState(var9));
+      CompletableFuture var10 = var6;
+      ArrayList var11 = new ArrayList();
 
-      for(PreparableReloadListener var12 : var4) {
-         PreparableReloadListener.PreparationBarrier var13 = this.createBarrierForListener(var12, var9, var2);
-         CompletableFuture var14 = var5.create(var13, var3, var12, var7, var8);
-         var10.add(var14);
-         var9 = var14;
+      for(PreparableReloadListener var13 : var4) {
+         PreparableReloadListener.PreparationBarrier var14 = this.createBarrierForListener(var13, var10, var2);
+         CompletableFuture var15 = var5.create(var9, var14, var13, var7, var8);
+         var11.add(var15);
+         var10 = var15;
       }
 
-      return Util.sequenceFailFast(var10);
+      return Util.sequenceFailFast(var11);
    }
 
    private PreparableReloadListener.PreparationBarrier createBarrierForListener(final PreparableReloadListener var1, final CompletableFuture<?> var2, final Executor var3) {
@@ -110,8 +112,8 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
 
    @FunctionalInterface
    protected interface StateFactory<S> {
-      StateFactory<Void> SIMPLE = (var0, var1, var2, var3, var4) -> var2.reload(var0, var1, var3, var4);
+      StateFactory<Void> SIMPLE = (var0, var1, var2, var3, var4) -> var2.reload(var0, var3, var1, var4);
 
-      CompletableFuture<S> create(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, PreparableReloadListener var3, Executor var4, Executor var5);
+      CompletableFuture<S> create(PreparableReloadListener.SharedState var1, PreparableReloadListener.PreparationBarrier var2, PreparableReloadListener var3, Executor var4, Executor var5);
    }
 }

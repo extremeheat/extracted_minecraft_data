@@ -7,7 +7,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -209,7 +208,7 @@ public class Zoglin extends Monster implements HoglinBase {
 
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (!this.level().isClientSide && var1) {
+      if (!this.level().isClientSide() && var1) {
          this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0.5);
       }
 
@@ -242,7 +241,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    protected SoundEvent getAmbientSound() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return null;
       } else {
          return this.brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET) ? SoundEvents.ZOGLIN_ANGRY : SoundEvents.ZOGLIN_AMBIENT;
@@ -268,11 +267,6 @@ public class Zoglin extends Monster implements HoglinBase {
    @Nullable
    public LivingEntity getTarget() {
       return this.getTargetFromBrain();
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {

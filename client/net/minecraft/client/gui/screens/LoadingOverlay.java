@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +73,9 @@ public class LoadingOverlay extends Overlay {
       float var11;
       if (var9 >= 1.0F) {
          if (this.minecraft.screen != null) {
-            this.minecraft.screen.renderWithTooltip(var1, 0, 0, var4);
+            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, 0, 0, var4);
+         } else {
+            this.minecraft.gui.renderDeferredSubtitles();
          }
 
          int var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
@@ -81,28 +84,30 @@ public class LoadingOverlay extends Overlay {
          var11 = 1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
          if (this.minecraft.screen != null && var10 < 1.0F) {
-            this.minecraft.screen.renderWithTooltip(var1, var2, var3, var4);
+            this.minecraft.screen.renderWithTooltipAndSubtitles(var1, var2, var3, var4);
+         } else {
+            this.minecraft.gui.renderDeferredSubtitles();
          }
 
-         int var25 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
+         int var23 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
          var1.nextStratum();
-         var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var25));
+         var1.fill(0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var23));
          var11 = Mth.clamp(var10, 0.0F, 1.0F);
       } else {
-         int var26 = BRAND_BACKGROUND.getAsInt();
-         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(this.minecraft.getMainRenderTarget().getColorTexture(), var26);
+         int var24 = BRAND_BACKGROUND.getAsInt();
+         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(this.minecraft.getMainRenderTarget().getColorTexture(), var24);
          var11 = 1.0F;
       }
 
-      int var27 = (int)((double)var1.guiWidth() * 0.5);
+      int var25 = (int)((double)var1.guiWidth() * 0.5);
       int var13 = (int)((double)var1.guiHeight() * 0.5);
       double var14 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
       int var16 = (int)(var14 * 0.5);
       double var17 = var14 * 4.0;
       int var19 = (int)(var17 * 0.5);
       int var20 = ARGB.white(var11);
-      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
-      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var27, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
+      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var25 - var19, var13 - var16, -0.0625F, 0.0F, var19, (int)var14, 120, 60, 120, 120, var20);
+      var1.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, var25, var13 - var16, 0.0625F, 60.0F, var19, (int)var14, 120, 60, 120, 120, var20);
       int var21 = (int)((double)var1.guiHeight() * 0.8325);
       float var22 = this.reload.getActualProgress();
       this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
@@ -114,20 +119,28 @@ public class LoadingOverlay extends Overlay {
          this.minecraft.setOverlay((Overlay)null);
       }
 
-      if (this.fadeOutStart == -1L && this.reload.isDone() && (!this.fadeIn || var10 >= 2.0F)) {
+   }
+
+   public void tick() {
+      if (this.fadeOutStart == -1L && this.reload.isDone() && this.isReadyToFadeOut()) {
          try {
             this.reload.checkExceptions();
             this.onFinish.accept(Optional.empty());
-         } catch (Throwable var24) {
-            this.onFinish.accept(Optional.of(var24));
+         } catch (Throwable var2) {
+            this.onFinish.accept(Optional.of(var2));
          }
 
          this.fadeOutStart = Util.getMillis();
          if (this.minecraft.screen != null) {
-            this.minecraft.screen.init(this.minecraft, var1.guiWidth(), var1.guiHeight());
+            Window var1 = this.minecraft.getWindow();
+            this.minecraft.screen.init(this.minecraft, var1.getGuiScaledWidth(), var1.getGuiScaledHeight());
          }
       }
 
+   }
+
+   private boolean isReadyToFadeOut() {
+      return !this.fadeIn || this.fadeInStart > -1L && Util.getMillis() - this.fadeInStart >= 1000L;
    }
 
    private void drawProgressBar(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {

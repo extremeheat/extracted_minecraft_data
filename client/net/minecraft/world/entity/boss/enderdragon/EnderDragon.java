@@ -134,7 +134,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public void onFlap() {
-      if (this.level().isClientSide && !this.isSilent()) {
+      if (this.level().isClientSide() && !this.isSilent()) {
          this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ENDER_DRAGON_FLAP, this.getSoundSource(), 5.0F, 0.8F + this.random.nextFloat() * 0.3F, false);
       }
 
@@ -147,7 +147,7 @@ public class EnderDragon extends Mob implements Enemy {
 
    public void aiStep() {
       this.processFlappingMovement();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.setHealth(this.getHealth());
          if (!this.isSilent() && !this.phaseManager.getCurrentPhase().isSitting() && --this.growlTime < 0) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ENDER_DRAGON_GROWL, this.getSoundSource(), 2.5F, 0.8F + this.random.nextFloat() * 0.3F, false);
@@ -799,7 +799,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_PHASE.equals(var1) && this.level().isClientSide) {
+      if (DATA_PHASE.equals(var1) && this.level().isClientSide()) {
          this.phaseManager.setPhase(EnderDragonPhase.getById((Integer)this.getEntityData().get(DATA_PHASE)));
       }
 

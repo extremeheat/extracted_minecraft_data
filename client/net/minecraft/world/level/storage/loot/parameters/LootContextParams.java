@@ -11,6 +11,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class LootContextParams {
    public static final ContextKey<Entity> THIS_ENTITY = ContextKey.<Entity>vanilla("this_entity");
+   public static final ContextKey<Entity> INTERACTING_ENTITY = ContextKey.<Entity>vanilla("interacting_entity");
+   public static final ContextKey<Entity> TARGET_ENTITY = ContextKey.<Entity>vanilla("target_entity");
    public static final ContextKey<Player> LAST_DAMAGE_PLAYER = ContextKey.<Player>vanilla("last_damage_player");
    public static final ContextKey<DamageSource> DAMAGE_SOURCE = ContextKey.<DamageSource>vanilla("damage_source");
    public static final ContextKey<Entity> ATTACKING_ENTITY = ContextKey.<Entity>vanilla("attacking_entity");

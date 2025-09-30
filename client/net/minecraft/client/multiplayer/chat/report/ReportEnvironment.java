@@ -4,6 +4,7 @@ import com.mojang.authlib.yggdrasil.request.AbuseReportRequest;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 
 public record ReportEnvironment(String clientVersion, @Nullable Server server) {
@@ -55,7 +56,7 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
 
    private static String getClientVersion() {
       StringBuilder var0 = new StringBuilder();
-      var0.append("1.21.8");
+      var0.append(SharedConstants.getCurrentVersion().id());
       if (Minecraft.checkModStatus().shouldReportAsModified()) {
          var0.append(" (modded)");
       }

@@ -12,6 +12,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -27,9 +28,9 @@ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.thread.BlockableEventLoop;
 import org.slf4j.Logger;
 
 public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
@@ -97,14 +98,14 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void handleCustomClickAction(ServerboundCustomClickActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       this.server.handleCustomClickAction(var1.id(), var1.payload());
    }
 
    public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       if (var1.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
-         LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().getName(), var1.id());
+         LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().name(), var1.id());
          this.disconnect((Component)Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
       }
 
@@ -187,7 +188,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    protected boolean isSingleplayerOwner() {
-      return this.server.isSingleplayerOwner(this.playerProfile());
+      return this.server.isSingleplayerOwner(new NameAndId(this.playerProfile()));
    }
 
    protected abstract GameProfile playerProfile();

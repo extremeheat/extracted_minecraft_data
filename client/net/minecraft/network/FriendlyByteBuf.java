@@ -47,7 +47,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
@@ -420,15 +419,6 @@ public class FriendlyByteBuf extends ByteBuf {
       var0.writeLong(var1.toLong());
    }
 
-   public SectionPos readSectionPos() {
-      return SectionPos.of(this.readLong());
-   }
-
-   public FriendlyByteBuf writeSectionPos(SectionPos var1) {
-      this.writeLong(var1.asLong());
-      return this;
-   }
-
    public GlobalPos readGlobalPos() {
       ResourceKey var1 = this.readResourceKey(Registries.DIMENSION);
       BlockPos var2 = this.readBlockPos();
@@ -493,6 +483,14 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public void writeVec3(Vec3 var1) {
       writeVec3(this, var1);
+   }
+
+   public Vec3 readLpVec3() {
+      return LpVec3.read(this);
+   }
+
+   public void writeLpVec3(Vec3 var1) {
+      LpVec3.write(this, var1);
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {

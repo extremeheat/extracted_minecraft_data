@@ -10,11 +10,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -30,35 +32,35 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      double var9 = (double)Util.getNanos();
-      if (var9 - this.lastUpdateTime > 3.0E9) {
-         this.lastUpdateTime = var9;
-         IntegratedServer var11 = this.minecraft.getSingleplayerServer();
-         if (var11 != null) {
-            this.data = new ChunkData(var11, var3, var7);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      double var11 = (double)Util.getNanos();
+      if (var11 - this.lastUpdateTime > 3.0E9) {
+         this.lastUpdateTime = var11;
+         IntegratedServer var13 = this.minecraft.getSingleplayerServer();
+         if (var13 != null) {
+            this.data = new ChunkData(var13, var3, var7);
          } else {
             this.data = null;
          }
       }
 
       if (this.data != null) {
-         Map var24 = (Map)this.data.serverData.getNow((Object)null);
-         double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
+         Map var26 = (Map)this.data.serverData.getNow((Object)null);
+         double var14 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
 
-         for(Map.Entry var15 : this.data.clientData.entrySet()) {
-            ChunkPos var16 = (ChunkPos)var15.getKey();
-            String var17 = (String)var15.getValue();
-            if (var24 != null) {
-               var17 = var17 + (String)var24.get(var16);
+         for(Map.Entry var17 : this.data.clientData.entrySet()) {
+            ChunkPos var18 = (ChunkPos)var17.getKey();
+            String var19 = (String)var17.getValue();
+            if (var26 != null) {
+               var19 = var19 + (String)var26.get(var18);
             }
 
-            String[] var18 = var17.split("\n");
-            int var19 = 0;
+            String[] var20 = var19.split("\n");
+            int var21 = 0;
 
-            for(String var23 : var18) {
-               DebugRenderer.renderFloatingText(var1, var2, var23, (double)SectionPos.sectionToBlockCoord(var16.x, 8), var12 + (double)var19, (double)SectionPos.sectionToBlockCoord(var16.z, 8), -1, 0.15F, true, 0.0F, true);
-               var19 -= 2;
+            for(String var25 : var20) {
+               DebugRenderer.renderFloatingText(var1, var2, var25, (double)SectionPos.sectionToBlockCoord(var18.x, 8), var14 + (double)var21, (double)SectionPos.sectionToBlockCoord(var18.z, 8), -1, 0.15F, true, 0.0F, true);
+               var21 -= 2;
             }
          }
       }

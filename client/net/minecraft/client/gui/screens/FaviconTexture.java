@@ -77,6 +77,10 @@ public class FaviconTexture implements AutoCloseable {
       this.closed = true;
    }
 
+   public boolean isClosed() {
+      return this.closed;
+   }
+
    private void checkOpen() {
       if (this.closed) {
          throw new IllegalStateException("Icon already closed");

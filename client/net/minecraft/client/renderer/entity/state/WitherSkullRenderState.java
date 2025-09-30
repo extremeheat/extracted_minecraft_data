@@ -1,9 +1,10 @@
 package net.minecraft.client.renderer.entity.state;
 
+import net.minecraft.client.model.SkullModelBase;
+
 public class WitherSkullRenderState extends EntityRenderState {
    public boolean isDangerous;
-   public float xRot;
-   public float yRot;
+   public final SkullModelBase.State modelState = new SkullModelBase.State();
 
    public WitherSkullRenderState() {
       super();

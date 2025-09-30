@@ -109,7 +109,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          --this.offerFlowerTick;
       }
 
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
 

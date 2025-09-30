@@ -45,7 +45,7 @@ public interface ScoreHolder {
    }
 
    static ScoreHolder fromGameProfile(GameProfile var0) {
-      final String var1 = var0.getName();
+      final String var1 = var0.name();
       return new ScoreHolder() {
          public String getScoreboardName() {
             return var1;

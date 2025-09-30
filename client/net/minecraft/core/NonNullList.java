@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.Validate;
 
 public class NonNullList<E> extends AbstractList<E> {
    private final List<E> list;
@@ -22,7 +22,7 @@ public class NonNullList<E> extends AbstractList<E> {
    }
 
    public static <E> NonNullList<E> withSize(int var0, E var1) {
-      Validate.notNull(var1);
+      Objects.requireNonNull(var1);
       Object[] var2 = new Object[var0];
       Arrays.fill(var2, var1);
       return new NonNullList<E>(Arrays.asList(var2), var1);
@@ -45,12 +45,12 @@ public class NonNullList<E> extends AbstractList<E> {
    }
 
    public E set(int var1, E var2) {
-      Validate.notNull(var2);
+      Objects.requireNonNull(var2);
       return (E)this.list.set(var1, var2);
    }
 
    public void add(int var1, E var2) {
-      Validate.notNull(var2);
+      Objects.requireNonNull(var2);
       this.list.add(var1, var2);
    }
 

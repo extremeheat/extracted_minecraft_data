@@ -22,11 +22,12 @@ public class PiglinHeadModel extends SkullModelBase {
       return var0;
    }
 
-   public void setupAnim(float var1, float var2, float var3) {
-      this.head.yRot = var2 * 0.017453292F;
-      this.head.xRot = var3 * 0.017453292F;
-      float var4 = 1.2F;
-      this.leftEar.zRot = (float)(-(Math.cos((double)(var1 * 3.1415927F * 0.2F * 1.2F)) + 2.5)) * 0.2F;
-      this.rightEar.zRot = (float)(Math.cos((double)(var1 * 3.1415927F * 0.2F)) + 2.5) * 0.2F;
+   public void setupAnim(SkullModelBase.State var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      float var2 = 1.2F;
+      this.leftEar.zRot = (float)(-(Math.cos((double)(var1.animationPos * 3.1415927F * 0.2F * 1.2F)) + 2.5)) * 0.2F;
+      this.rightEar.zRot = (float)(Math.cos((double)(var1.animationPos * 3.1415927F * 0.2F)) + 2.5) * 0.2F;
    }
 }

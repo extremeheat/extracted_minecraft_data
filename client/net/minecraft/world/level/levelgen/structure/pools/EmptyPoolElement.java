@@ -32,7 +32,7 @@ public class EmptyPoolElement extends StructurePoolElement {
    }
 
    public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
-      throw new IllegalStateException("Invalid call to EmtyPoolElement.getBoundingBox, filter me!");
+      throw new IllegalStateException("Invalid call to EmptyPoolElement.getBoundingBox, filter me!");
    }
 
    public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {

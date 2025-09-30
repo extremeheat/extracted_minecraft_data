@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
 import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
@@ -80,7 +81,7 @@ public class ServerTickRateManager extends TickRateManager {
       long var1 = this.scheduledCurrentSprintTicks - this.remainingSprintTicks;
       double var3 = Math.max(1.0, (double)this.sprintTimeSpend) / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
       int var5 = (int)((double)(TimeUtil.MILLISECONDS_PER_SECOND * var1) / var3);
-      String var6 = String.format("%.2f", var1 == 0L ? (double)this.millisecondsPerTick() : var3 / (double)var1);
+      String var6 = String.format(Locale.ROOT, "%.2f", var1 == 0L ? (double)this.millisecondsPerTick() : var3 / (double)var1);
       this.scheduledCurrentSprintTicks = 0L;
       this.sprintTimeSpend = 0L;
       this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", var5, var6), true);

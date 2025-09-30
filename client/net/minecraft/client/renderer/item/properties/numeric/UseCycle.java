@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,8 +17,9 @@ public record UseCycle(float period) implements RangeSelectItemModelProperty {
       this.period = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4) {
-      return var3 != null && var3.getUseItem() == var1 ? (float)var3.getUseItemRemainingTicks() % this.period : 0.0F;
+   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
+      LivingEntity var5 = var3 == null ? null : var3.asLivingEntity();
+      return var5 != null && var5.getUseItem() == var1 ? (float)var5.getUseItemRemainingTicks() % this.period : 0.0F;
    }
 
    public MapCodec<UseCycle> type() {

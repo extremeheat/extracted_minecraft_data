@@ -17,15 +17,14 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.commands.PermissionSource;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ToFloatFunction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
@@ -60,7 +59,9 @@ public class EntitySelectorParser {
    private int maxResults;
    private boolean includesEntities;
    private boolean worldLimited;
+   @Nullable
    private MinMaxBounds.Doubles distance;
+   @Nullable
    private MinMaxBounds.Ints level;
    @Nullable
    private Double x;
@@ -74,9 +75,11 @@ public class EntitySelectorParser {
    private Double deltaY;
    @Nullable
    private Double deltaZ;
-   private WrappedMinMaxBounds rotX;
-   private WrappedMinMaxBounds rotY;
-   private final List<Predicate<Entity>> predicates;
+   @Nullable
+   private MinMaxBounds.FloatDegrees rotX;
+   @Nullable
+   private MinMaxBounds.FloatDegrees rotY;
+   private final List<Predicate<Entity>> predicates = new ArrayList();
    private BiConsumer<Vec3, List<? extends Entity>> order;
    private boolean currentEntity;
    @Nullable
@@ -102,11 +105,6 @@ public class EntitySelectorParser {
 
    public EntitySelectorParser(StringReader var1, boolean var2) {
       super();
-      this.distance = MinMaxBounds.Doubles.ANY;
-      this.level = MinMaxBounds.Ints.ANY;
-      this.rotX = WrappedMinMaxBounds.ANY;
-      this.rotY = WrappedMinMaxBounds.ANY;
-      this.predicates = new ArrayList();
       this.order = EntitySelector.ORDER_ARBITRARY;
       this.suggestions = SUGGEST_NOTHING;
       this.reader = var1;
@@ -129,7 +127,7 @@ public class EntitySelectorParser {
    public EntitySelector getSelector() {
       AABB var1;
       if (this.deltaX == null && this.deltaY == null && this.deltaZ == null) {
-         if (this.distance.max().isPresent()) {
+         if (this.distance != null && this.distance.max().isPresent()) {
             double var2 = (Double)this.distance.max().get();
             var1 = new AABB(-var2, -var2, -var2, var2 + 1.0, var2 + 1.0, var2 + 1.0);
          } else {
@@ -163,29 +161,40 @@ public class EntitySelectorParser {
    }
 
    private void finalizePredicates() {
-      if (this.rotX != WrappedMinMaxBounds.ANY) {
+      if (this.rotX != null) {
          this.predicates.add(this.createRotationPredicate(this.rotX, Entity::getXRot));
       }
 
-      if (this.rotY != WrappedMinMaxBounds.ANY) {
+      if (this.rotY != null) {
          this.predicates.add(this.createRotationPredicate(this.rotY, Entity::getYRot));
       }
 
-      if (!this.level.isAny()) {
-         this.predicates.add((Predicate)(var1) -> !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel));
+      if (this.level != null) {
+         this.predicates.add((Predicate)(var1) -> {
+            boolean var10000;
+            if (var1 instanceof ServerPlayer var2) {
+               if (this.level.matches(var2.experienceLevel)) {
+                  var10000 = true;
+                  return var10000;
+               }
+            }
+
+            var10000 = false;
+            return var10000;
+         });
       }
 
    }
 
-   private Predicate<Entity> createRotationPredicate(WrappedMinMaxBounds var1, ToDoubleFunction<Entity> var2) {
-      double var3 = (double)Mth.wrapDegrees(var1.min() == null ? 0.0F : var1.min());
-      double var5 = (double)Mth.wrapDegrees(var1.max() == null ? 359.0F : var1.max());
-      return (var5x) -> {
-         double var6 = Mth.wrapDegrees(var2.applyAsDouble(var5x));
-         if (var3 > var5) {
-            return var6 >= var3 || var6 <= var5;
+   private Predicate<Entity> createRotationPredicate(MinMaxBounds.FloatDegrees var1, ToFloatFunction<Entity> var2) {
+      float var3 = Mth.wrapDegrees((Float)var1.min().orElse(0.0F));
+      float var4 = Mth.wrapDegrees((Float)var1.max().orElse(359.0F));
+      return (var3x) -> {
+         float var4x = Mth.wrapDegrees(var2.applyAsFloat(var3x));
+         if (var3 > var4) {
+            return var4x >= var3 || var4x <= var4;
          } else {
-            return var6 >= var3 && var6 <= var5;
+            return var4x >= var3 && var4x <= var4;
          }
       };
    }
@@ -375,6 +384,7 @@ public class EntitySelectorParser {
       this.worldLimited = true;
    }
 
+   @Nullable
    public MinMaxBounds.Doubles getDistance() {
       return this.distance;
    }
@@ -383,6 +393,7 @@ public class EntitySelectorParser {
       this.distance = var1;
    }
 
+   @Nullable
    public MinMaxBounds.Ints getLevel() {
       return this.level;
    }
@@ -391,19 +402,21 @@ public class EntitySelectorParser {
       this.level = var1;
    }
 
-   public WrappedMinMaxBounds getRotX() {
+   @Nullable
+   public MinMaxBounds.FloatDegrees getRotX() {
       return this.rotX;
    }
 
-   public void setRotX(WrappedMinMaxBounds var1) {
+   public void setRotX(MinMaxBounds.FloatDegrees var1) {
       this.rotX = var1;
    }
 
-   public WrappedMinMaxBounds getRotY() {
+   @Nullable
+   public MinMaxBounds.FloatDegrees getRotY() {
       return this.rotY;
    }
 
-   public void setRotY(WrappedMinMaxBounds var1) {
+   public void setRotY(MinMaxBounds.FloatDegrees var1) {
       this.rotY = var1;
    }
 

@@ -9,7 +9,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 
-public class BannerFlagModel extends Model {
+public class BannerFlagModel extends Model<Float> {
    private final ModelPart flag;
 
    public BannerFlagModel(ModelPart var1) {
@@ -24,7 +24,8 @@ public class BannerFlagModel extends Model {
       return LayerDefinition.create(var1, 64, 64);
    }
 
-   public void setupAnim(float var1) {
+   public void setupAnim(Float var1) {
+      super.setupAnim(var1);
       this.flag.xRot = (-0.0125F + 0.01F * Mth.cos(6.2831855F * var1)) * 3.1415927F;
    }
 }

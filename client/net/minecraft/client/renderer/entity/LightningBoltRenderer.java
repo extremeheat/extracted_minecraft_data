@@ -2,10 +2,11 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -16,7 +17,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       super(var1);
    }
 
-   public void render(LightningBoltRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(LightningBoltRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       float[] var5 = new float[8];
       float[] var6 = new float[8];
       float var7 = 0.0F;
@@ -30,59 +31,60 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
          var8 += (float)(var9.nextInt(11) - 5);
       }
 
-      VertexConsumer var27 = var3.getBuffer(RenderType.lightning());
-      Matrix4f var28 = var2.last().pose();
+      var3.submitCustomGeometry(var2, RenderType.lightning(), (var5x, var6x) -> {
+         Matrix4f var7x = var5x.pose();
 
-      for(int var11 = 0; var11 < 4; ++var11) {
-         RandomSource var12 = RandomSource.create(var1.seed);
+         for(int var8x = 0; var8x < 4; ++var8x) {
+            RandomSource var9 = RandomSource.create(var1.seed);
 
-         for(int var13 = 0; var13 < 3; ++var13) {
-            int var14 = 7;
-            int var15 = 0;
-            if (var13 > 0) {
-               var14 = 7 - var13;
-            }
-
-            if (var13 > 0) {
-               var15 = var14 - 2;
-            }
-
-            float var16 = var5[var14] - var7;
-            float var17 = var6[var14] - var8;
-
-            for(int var18 = var14; var18 >= var15; --var18) {
-               float var19 = var16;
-               float var20 = var17;
-               if (var13 == 0) {
-                  var16 += (float)(var12.nextInt(11) - 5);
-                  var17 += (float)(var12.nextInt(11) - 5);
-               } else {
-                  var16 += (float)(var12.nextInt(31) - 15);
-                  var17 += (float)(var12.nextInt(31) - 15);
+            for(int var10 = 0; var10 < 3; ++var10) {
+               int var11 = 7;
+               int var12 = 0;
+               if (var10 > 0) {
+                  var11 = 7 - var10;
                }
 
-               float var21 = 0.5F;
-               float var22 = 0.45F;
-               float var23 = 0.45F;
-               float var24 = 0.5F;
-               float var25 = 0.1F + (float)var11 * 0.2F;
-               if (var13 == 0) {
-                  var25 *= (float)var18 * 0.1F + 1.0F;
+               if (var10 > 0) {
+                  var12 = var11 - 2;
                }
 
-               float var26 = 0.1F + (float)var11 * 0.2F;
-               if (var13 == 0) {
-                  var26 *= ((float)var18 - 1.0F) * 0.1F + 1.0F;
-               }
+               float var13 = var5[var11] - var7;
+               float var14 = var6[var11] - var8;
 
-               quad(var28, var27, var16, var17, var18, var19, var20, 0.45F, 0.45F, 0.5F, var25, var26, false, false, true, false);
-               quad(var28, var27, var16, var17, var18, var19, var20, 0.45F, 0.45F, 0.5F, var25, var26, true, false, true, true);
-               quad(var28, var27, var16, var17, var18, var19, var20, 0.45F, 0.45F, 0.5F, var25, var26, true, true, false, true);
-               quad(var28, var27, var16, var17, var18, var19, var20, 0.45F, 0.45F, 0.5F, var25, var26, false, true, false, false);
+               for(int var15 = var11; var15 >= var12; --var15) {
+                  float var16 = var13;
+                  float var17 = var14;
+                  if (var10 == 0) {
+                     var13 += (float)(var9.nextInt(11) - 5);
+                     var14 += (float)(var9.nextInt(11) - 5);
+                  } else {
+                     var13 += (float)(var9.nextInt(31) - 15);
+                     var14 += (float)(var9.nextInt(31) - 15);
+                  }
+
+                  float var18 = 0.5F;
+                  float var19 = 0.45F;
+                  float var20 = 0.45F;
+                  float var21 = 0.5F;
+                  float var22 = 0.1F + (float)var8x * 0.2F;
+                  if (var10 == 0) {
+                     var22 *= (float)var15 * 0.1F + 1.0F;
+                  }
+
+                  float var23 = 0.1F + (float)var8x * 0.2F;
+                  if (var10 == 0) {
+                     var23 *= ((float)var15 - 1.0F) * 0.1F + 1.0F;
+                  }
+
+                  quad(var7x, var6x, var13, var14, var15, var16, var17, 0.45F, 0.45F, 0.5F, var22, var23, false, false, true, false);
+                  quad(var7x, var6x, var13, var14, var15, var16, var17, 0.45F, 0.45F, 0.5F, var22, var23, true, false, true, true);
+                  quad(var7x, var6x, var13, var14, var15, var16, var17, 0.45F, 0.45F, 0.5F, var22, var23, true, true, false, true);
+                  quad(var7x, var6x, var13, var14, var15, var16, var17, 0.45F, 0.45F, 0.5F, var22, var23, false, true, false, false);
+               }
             }
          }
-      }
 
+      });
    }
 
    private static void quad(Matrix4f var0, VertexConsumer var1, float var2, float var3, int var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, boolean var12, boolean var13, boolean var14, boolean var15) {

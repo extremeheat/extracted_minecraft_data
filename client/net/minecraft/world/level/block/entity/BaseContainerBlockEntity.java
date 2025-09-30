@@ -75,6 +75,10 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       }
    }
 
+   public boolean isLocked() {
+      return !this.lockKey.equals(LockCode.NO_LOCK);
+   }
+
    protected abstract NonNullList<ItemStack> getItems();
 
    protected abstract void setItems(NonNullList<ItemStack> var1);
@@ -137,7 +141,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    protected void collectImplicitComponents(DataComponentMap.Builder var1) {
       super.collectImplicitComponents(var1);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
-      if (!this.lockKey.equals(LockCode.NO_LOCK)) {
+      if (this.isLocked()) {
          var1.set(DataComponents.LOCK, this.lockKey);
       }
 

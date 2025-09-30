@@ -38,8 +38,6 @@ public abstract class RenderStateShard {
    protected static final LayeringStateShard VIEW_OFFSET_Z_LAYERING_FORWARD;
    protected static final OutputStateShard MAIN_TARGET;
    protected static final OutputStateShard OUTLINE_TARGET;
-   protected static final OutputStateShard TRANSLUCENT_TARGET;
-   protected static final OutputStateShard PARTICLES_TARGET;
    protected static final OutputStateShard WEATHER_TARGET;
    protected static final OutputStateShard ITEM_ENTITY_TARGET;
    protected static final LineStateShard DEFAULT_LINE;
@@ -112,14 +110,6 @@ public abstract class RenderStateShard {
       MAIN_TARGET = new OutputStateShard("main_target", () -> Minecraft.getInstance().getMainRenderTarget());
       OUTLINE_TARGET = new OutputStateShard("outline_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.entityOutlineTarget();
-         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
-      });
-      TRANSLUCENT_TARGET = new OutputStateShard("translucent_target", () -> {
-         RenderTarget var0 = Minecraft.getInstance().levelRenderer.getTranslucentTarget();
-         return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
-      });
-      PARTICLES_TARGET = new OutputStateShard("particles_target", () -> {
-         RenderTarget var0 = Minecraft.getInstance().levelRenderer.getParticlesTarget();
          return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
       });
       WEATHER_TARGET = new OutputStateShard("weather_target", () -> {

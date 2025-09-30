@@ -1,25 +1,26 @@
 package net.minecraft.client.renderer.debug;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Locale;
-import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debug.DebugPathInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueAccess;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 
 public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
-   private final Map<Integer, Path> pathMap = Maps.newHashMap();
-   private final Map<Integer, Float> pathMaxDist = Maps.newHashMap();
-   private final Map<Integer, Long> creationMap = Maps.newHashMap();
-   private static final long TIMEOUT = 5000L;
    private static final float MAX_RENDER_DIST = 80.0F;
+   private static final int MAX_TARGETING_DIST = 8;
+   private static final boolean SHOW_ONLY_SELECTED = false;
    private static final boolean SHOW_OPEN_CLOSED = true;
    private static final boolean SHOW_OPEN_CLOSED_COST_MALUS = false;
    private static final boolean SHOW_OPEN_CLOSED_NODE_TYPE_WITH_TEXT = false;
@@ -31,30 +32,12 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       super();
    }
 
-   public void addPath(int var1, Path var2, float var3) {
-      this.pathMap.put(var1, var2);
-      this.creationMap.put(var1, Util.getMillis());
-      this.pathMaxDist.put(var1, var3);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      var9.forEachEntity(DebugSubscriptions.ENTITY_PATHS, (var8, var9x) -> renderPath(var1, var2, var3, var5, var7, var9x.path(), var9x.maxNodeDistance()));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      if (!this.pathMap.isEmpty()) {
-         long var9 = Util.getMillis();
-
-         for(Integer var12 : this.pathMap.keySet()) {
-            Path var13 = (Path)this.pathMap.get(var12);
-            float var14 = (Float)this.pathMaxDist.get(var12);
-            renderPath(var1, var2, var13, var14, true, true, var3, var5, var7);
-         }
-
-         for(Integer var18 : (Integer[])this.creationMap.keySet().toArray(new Integer[0])) {
-            if (var9 - (Long)this.creationMap.get(var18) > 5000L) {
-               this.pathMap.remove(var18);
-               this.creationMap.remove(var18);
-            }
-         }
-
-      }
+   private static void renderPath(PoseStack var0, MultiBufferSource var1, double var2, double var4, double var6, Path var8, float var9) {
+      renderPath(var0, var1, var8, var9, true, true, var2, var4, var6);
    }
 
    public static void renderPath(PoseStack var0, MultiBufferSource var1, Path var2, float var3, boolean var4, boolean var5, double var6, double var8, double var10) {
@@ -105,11 +88,8 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
          Node var10 = var2.getNode(var9);
          if (!(distanceToCamera(var10.asBlockPos(), var3, var5, var7) > 80.0F)) {
             float var11 = (float)var9 / (float)var2.getNodeCount() * 0.33F;
-            int var12 = var9 == 0 ? 0 : Mth.hsvToRgb(var11, 0.9F, 0.9F);
-            int var13 = var12 >> 16 & 255;
-            int var14 = var12 >> 8 & 255;
-            int var15 = var12 & 255;
-            var1.addVertex(var0.last(), (float)((double)var10.x - var3 + 0.5), (float)((double)var10.y - var5 + 0.5), (float)((double)var10.z - var7 + 0.5)).setColor(var13, var14, var15, 255);
+            int var12 = var9 == 0 ? -16777216 : ARGB.opaque(Mth.hsvToRgb(var11, 0.9F, 0.9F));
+            var1.addVertex(var0.last(), (float)((double)var10.x - var3 + 0.5), (float)((double)var10.y - var5 + 0.5), (float)((double)var10.z - var7 + 0.5)).setColor(var12);
          }
       }
 
@@ -117,5 +97,14 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private static float distanceToCamera(BlockPos var0, double var1, double var3, double var5) {
       return (float)(Math.abs((double)var0.getX() - var1) + Math.abs((double)var0.getY() - var3) + Math.abs((double)var0.getZ() - var5));
+   }
+
+   // $FF: synthetic method
+   private static void lambda$render$0(DebugValueAccess var0, PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, Entity var9) {
+      DebugPathInfo var10 = (DebugPathInfo)var0.getEntityValue(DebugSubscriptions.ENTITY_PATHS, var9);
+      if (var10 != null) {
+         renderPath(var1, var2, var3, var5, var7, var10.path(), var10.maxNodeDistance());
+      }
+
    }
 }

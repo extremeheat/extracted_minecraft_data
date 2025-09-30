@@ -28,7 +28,7 @@ public class DyeItem extends Item implements SignApplicator {
       if (var3 instanceof Sheep var5) {
          if (var5.isAlive() && !var5.isSheared() && var5.getColor() != this.dyeColor) {
             var5.level().playSound(var2, (Entity)var5, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
-            if (!var2.level().isClientSide) {
+            if (!var2.level().isClientSide()) {
                var5.setColor(this.dyeColor);
                var1.shrink(1);
             }

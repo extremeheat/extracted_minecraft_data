@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,10 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -58,6 +61,7 @@ import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
@@ -69,7 +73,6 @@ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
-import net.minecraft.util.thread.BlockableEventLoop;
 import org.slf4j.Logger;
 
 public abstract class ClientCommonPacketListenerImpl implements ClientCommonPacketListener {
@@ -89,6 +92,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final Map<ResourceLocation, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
    private ServerLinks serverLinks;
+   protected final Map<UUID, PlayerInfo> seenPlayers;
+   protected boolean seenInsecureChatWarning;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -101,6 +106,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverCookies = var3.serverCookies();
       this.customReportDetails = var3.customReportDetails();
       this.serverLinks = var3.serverLinks();
+      this.seenPlayers = new HashMap(var3.seenPlayers());
+      this.seenInsecureChatWarning = var3.seenInsecureChatWarning();
    }
 
    public ServerLinks serverLinks() {
@@ -143,14 +150,14 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handlePing(ClientboundPingPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.send(new ServerboundPongPacket(var1.getId()));
    }
 
    public void handleCustomPayload(ClientboundCustomPayloadPacket var1) {
       CustomPacketPayload var2 = var1.payload();
       if (!(var2 instanceof DiscardedPayload)) {
-         PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+         PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
          if (var2 instanceof BrandPayload) {
             BrandPayload var3 = (BrandPayload)var2;
             this.serverBrand = var3.brand();
@@ -165,7 +172,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected abstract void handleCustomPayload(CustomPacketPayload var1);
 
    public void handleResourcePackPush(ClientboundResourcePackPushPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       UUID var2 = var1.id();
       URL var3 = parseResourcePackUrl(var1.url());
       if (var3 == null) {
@@ -184,7 +191,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleResourcePackPop(ClientboundResourcePackPopPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       var1.id().ifPresentOrElse((var1x) -> this.minecraft.getDownloadedPackSource().popPack(var1x), () -> this.minecraft.getDownloadedPackSource().popAll());
    }
 
@@ -204,22 +211,22 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleRequestCookie(ClientboundCookieRequestPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.connection.send(new ServerboundCookieResponsePacket(var1.key(), (byte[])this.serverCookies.get(var1.key())));
    }
 
    public void handleStoreCookie(ClientboundStoreCookiePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.serverCookies.put(var1.key(), var1.payload());
    }
 
    public void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.customReportDetails = var1.details();
    }
 
    public void handleServerLinks(ClientboundServerLinksPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       List var2 = var1.links();
       ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(var2.size());
 
@@ -236,7 +243,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleShowDialog(ClientboundShowDialogPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.showDialog(var1.dialog(), this.minecraft.screen);
    }
 
@@ -285,7 +292,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleClearDialog(ClientboundClearDialogPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.clearDialog();
    }
 
@@ -307,7 +314,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void handleTransfer(ClientboundTransferPacket var1) {
       this.isTransferring = true;
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       if (this.serverData == null) {
          throw new IllegalStateException("Cannot transfer to server from singleplayer");
       } else {
@@ -315,7 +322,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          this.connection.setReadOnly();
          this.connection.handleDisconnection();
          ServerAddress var2 = new ServerAddress(var1.host(), var1.port());
-         ConnectScreen.startConnecting((Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new), this.minecraft, var2, this.serverData, false, new TransferState(this.serverCookies));
+         ConnectScreen.startConnecting((Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new), this.minecraft, var2, this.serverData, false, new TransferState(this.serverCookies, this.seenPlayers, this.seenInsecureChatWarning));
       }
    }
 
@@ -362,7 +369,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    protected Screen createDisconnectScreen(DisconnectionDetails var1) {
-      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
+      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> (Screen)(this.serverData != null ? new JoinMultiplayerScreen(new TitleScreen()) : new TitleScreen()));
       return this.serverData != null && this.serverData.isRealm() ? new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1, CommonComponents.GUI_BACK) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1);
    }
 
@@ -453,6 +460,29 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
             this.url = var2;
             this.hash = var3;
          }
+      }
+   }
+
+   protected abstract class CommonDialogAccess implements DialogConnectionAccess {
+      protected CommonDialogAccess() {
+         super();
+      }
+
+      public void disconnect(Component var1) {
+         ClientCommonPacketListenerImpl.this.connection.disconnect(var1);
+         ClientCommonPacketListenerImpl.this.connection.handleDisconnection();
+      }
+
+      public void openDialog(Holder<Dialog> var1, @Nullable Screen var2) {
+         ClientCommonPacketListenerImpl.this.showDialog(var1, this, var2);
+      }
+
+      public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
+         ClientCommonPacketListenerImpl.this.send(new ServerboundCustomClickActionPacket(var1, var2));
+      }
+
+      public ServerLinks serverLinks() {
+         return ClientCommonPacketListenerImpl.this.serverLinks();
       }
    }
 }

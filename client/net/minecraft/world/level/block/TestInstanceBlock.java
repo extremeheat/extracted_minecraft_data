@@ -30,7 +30,7 @@ public class TestInstanceBlock extends BaseEntityBlock implements GameMasterBloc
          if (!var4.canUseGameMasterBlocks()) {
             return InteractionResult.PASS;
          } else {
-            if (var4.level().isClientSide) {
+            if (var4.level().isClientSide()) {
                var4.openTestInstanceBlock(var7);
             }
 

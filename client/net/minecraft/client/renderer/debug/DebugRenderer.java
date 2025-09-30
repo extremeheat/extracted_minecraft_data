@@ -2,12 +2,15 @@ package net.minecraft.client.renderer.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
@@ -15,6 +18,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -27,108 +31,126 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Quaternionfc;
 
 public class DebugRenderer {
-   public final PathfindingRenderer pathfindingRenderer = new PathfindingRenderer();
-   public final SimpleDebugRenderer waterDebugRenderer;
-   public final SimpleDebugRenderer chunkBorderRenderer;
-   public final SimpleDebugRenderer heightMapRenderer;
-   public final SimpleDebugRenderer collisionBoxRenderer;
-   public final SimpleDebugRenderer supportBlockRenderer;
-   public final NeighborsUpdateRenderer neighborsUpdateRenderer;
-   public final RedstoneWireOrientationsRenderer redstoneWireOrientationsRenderer;
-   public final StructureRenderer structureRenderer;
-   public final SimpleDebugRenderer lightDebugRenderer;
-   public final SimpleDebugRenderer worldGenAttemptRenderer;
-   public final SimpleDebugRenderer solidFaceRenderer;
-   public final SimpleDebugRenderer chunkRenderer;
-   public final BrainDebugRenderer brainDebugRenderer;
-   public final VillageSectionsDebugRenderer villageSectionsDebugRenderer;
-   public final BeeDebugRenderer beeDebugRenderer;
-   public final RaidDebugRenderer raidDebugRenderer;
-   public final GoalSelectorDebugRenderer goalSelectorRenderer;
-   public final GameTestDebugRenderer gameTestDebugRenderer;
-   public final GameEventListenerRenderer gameEventListenerRenderer;
-   public final LightSectionDebugRenderer skyLightSectionDebugRenderer;
-   public final BreezeDebugRenderer breezeDebugRenderer;
-   public final ChunkCullingDebugRenderer chunkCullingDebugRenderer;
-   public final OctreeDebugRenderer octreeDebugRenderer;
-   private boolean renderChunkborder;
-   private boolean renderOctree;
+   private final List<SimpleDebugRenderer> opaqueRenderers = new ArrayList();
+   private final List<SimpleDebugRenderer> translucentRenderers = new ArrayList();
+   private long lastDebugEntriesVersion;
 
-   public DebugRenderer(Minecraft var1) {
+   public DebugRenderer() {
       super();
-      this.waterDebugRenderer = new WaterDebugRenderer(var1);
-      this.chunkBorderRenderer = new ChunkBorderRenderer(var1);
-      this.heightMapRenderer = new HeightMapRenderer(var1);
-      this.collisionBoxRenderer = new CollisionBoxRenderer(var1);
-      this.supportBlockRenderer = new SupportBlockRenderer(var1);
-      this.neighborsUpdateRenderer = new NeighborsUpdateRenderer(var1);
-      this.redstoneWireOrientationsRenderer = new RedstoneWireOrientationsRenderer(var1);
-      this.structureRenderer = new StructureRenderer(var1);
-      this.lightDebugRenderer = new LightDebugRenderer(var1);
-      this.worldGenAttemptRenderer = new WorldGenAttemptRenderer();
-      this.solidFaceRenderer = new SolidFaceRenderer(var1);
-      this.chunkRenderer = new ChunkDebugRenderer(var1);
-      this.brainDebugRenderer = new BrainDebugRenderer(var1);
-      this.villageSectionsDebugRenderer = new VillageSectionsDebugRenderer();
-      this.beeDebugRenderer = new BeeDebugRenderer(var1);
-      this.raidDebugRenderer = new RaidDebugRenderer(var1);
-      this.goalSelectorRenderer = new GoalSelectorDebugRenderer(var1);
-      this.gameTestDebugRenderer = new GameTestDebugRenderer();
-      this.gameEventListenerRenderer = new GameEventListenerRenderer(var1);
-      this.skyLightSectionDebugRenderer = new LightSectionDebugRenderer(var1, LightLayer.SKY);
-      this.breezeDebugRenderer = new BreezeDebugRenderer(var1);
-      this.chunkCullingDebugRenderer = new ChunkCullingDebugRenderer(var1);
-      this.octreeDebugRenderer = new OctreeDebugRenderer(var1);
+      this.refreshRendererList();
    }
 
-   public void clear() {
-      this.pathfindingRenderer.clear();
-      this.waterDebugRenderer.clear();
-      this.chunkBorderRenderer.clear();
-      this.heightMapRenderer.clear();
-      this.collisionBoxRenderer.clear();
-      this.supportBlockRenderer.clear();
-      this.neighborsUpdateRenderer.clear();
-      this.structureRenderer.clear();
-      this.lightDebugRenderer.clear();
-      this.worldGenAttemptRenderer.clear();
-      this.solidFaceRenderer.clear();
-      this.chunkRenderer.clear();
-      this.brainDebugRenderer.clear();
-      this.villageSectionsDebugRenderer.clear();
-      this.beeDebugRenderer.clear();
-      this.raidDebugRenderer.clear();
-      this.goalSelectorRenderer.clear();
-      this.gameTestDebugRenderer.clear();
-      this.gameEventListenerRenderer.clear();
-      this.skyLightSectionDebugRenderer.clear();
-      this.breezeDebugRenderer.clear();
-      this.chunkCullingDebugRenderer.clear();
-   }
-
-   public boolean switchRenderChunkborder() {
-      this.renderChunkborder = !this.renderChunkborder;
-      return this.renderChunkborder;
-   }
-
-   public boolean toggleRenderOctree() {
-      return this.renderOctree = !this.renderOctree;
-   }
-
-   public void render(PoseStack var1, Frustum var2, MultiBufferSource.BufferSource var3, double var4, double var6, double var8) {
-      if (this.renderChunkborder && !Minecraft.getInstance().showOnlyReducedInfo()) {
-         this.chunkBorderRenderer.render(var1, var3, var4, var6, var8);
+   public void refreshRendererList() {
+      Minecraft var1 = Minecraft.getInstance();
+      this.opaqueRenderers.clear();
+      this.translucentRenderers.clear();
+      if (var1.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_BORDERS) && !var1.showOnlyReducedInfo()) {
+         this.opaqueRenderers.add(new ChunkBorderRenderer(var1));
       }
 
-      if (this.renderOctree) {
-         this.octreeDebugRenderer.render(var1, var2, var3, var4, var6, var8);
+      if (var1.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE)) {
+         this.opaqueRenderers.add(new OctreeDebugRenderer(var1));
       }
 
-      this.gameTestDebugRenderer.render(var1, var3, var4, var6, var8);
+      if (SharedConstants.DEBUG_PATHFINDING) {
+         this.opaqueRenderers.add(new PathfindingRenderer());
+      }
+
+      if (SharedConstants.DEBUG_WATER) {
+         this.opaqueRenderers.add(new WaterDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_HEIGHTMAP) {
+         this.opaqueRenderers.add(new HeightMapRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_COLLISION) {
+         this.opaqueRenderers.add(new CollisionBoxRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_SUPPORT_BLOCKS) {
+         this.opaqueRenderers.add(new SupportBlockRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_NEIGHBORSUPDATE) {
+         this.opaqueRenderers.add(new NeighborsUpdateRenderer());
+      }
+
+      if (SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER) {
+         this.opaqueRenderers.add(new RedstoneWireOrientationsRenderer());
+      }
+
+      if (SharedConstants.DEBUG_STRUCTURES) {
+         this.opaqueRenderers.add(new StructureRenderer());
+      }
+
+      if (SharedConstants.DEBUG_LIGHT) {
+         this.opaqueRenderers.add(new LightDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_SOLID_FACE) {
+         this.opaqueRenderers.add(new SolidFaceRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_VILLAGE_SECTIONS) {
+         this.opaqueRenderers.add(new VillageSectionsDebugRenderer());
+      }
+
+      if (SharedConstants.DEBUG_BRAIN) {
+         this.opaqueRenderers.add(new BrainDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_POI) {
+         this.opaqueRenderers.add(new PoiDebugRenderer(new BrainDebugRenderer(var1)));
+      }
+
+      if (SharedConstants.DEBUG_BEES) {
+         this.opaqueRenderers.add(new BeeDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_RAIDS) {
+         this.opaqueRenderers.add(new RaidDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_GOAL_SELECTOR) {
+         this.opaqueRenderers.add(new GoalSelectorDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_CHUNKS) {
+         this.opaqueRenderers.add(new ChunkDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_GAME_EVENT_LISTENERS) {
+         this.opaqueRenderers.add(new GameEventListenerRenderer());
+      }
+
+      if (SharedConstants.DEBUG_SKY_LIGHT_SECTIONS) {
+         this.opaqueRenderers.add(new LightSectionDebugRenderer(var1, LightLayer.SKY));
+      }
+
+      if (SharedConstants.DEBUG_BREEZE_MOB) {
+         this.opaqueRenderers.add(new BreezeDebugRenderer(var1));
+      }
+
+      if (SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION) {
+         this.opaqueRenderers.add(new EntityBlockIntersectionDebugRenderer());
+      }
+
+      this.translucentRenderers.add(new ChunkCullingDebugRenderer(var1));
    }
 
-   public void renderAfterTranslucents(PoseStack var1, MultiBufferSource.BufferSource var2, double var3, double var5, double var7) {
-      this.chunkCullingDebugRenderer.render(var1, var2, var3, var5, var7);
+   public void render(PoseStack var1, Frustum var2, MultiBufferSource.BufferSource var3, double var4, double var6, double var8, boolean var10) {
+      Minecraft var11 = Minecraft.getInstance();
+      DebugValueAccess var12 = var11.getConnection().createDebugValueAccess();
+      if (var11.debugEntries.getCurrentlyEnabledVersion() != this.lastDebugEntriesVersion) {
+         this.lastDebugEntriesVersion = var11.debugEntries.getCurrentlyEnabledVersion();
+         this.refreshRendererList();
+      }
+
+      for(SimpleDebugRenderer var15 : var10 ? this.translucentRenderers : this.opaqueRenderers) {
+         var15.render(var1, var3, var4, var6, var8, var12, var2);
+      }
+
    }
 
    public static Optional<Entity> getTargetedEntity(@Nullable Entity var0, int var1) {
@@ -178,6 +200,25 @@ public class DebugRenderer {
    public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, float var15, float var16, float var17) {
       VertexConsumer var18 = var1.getBuffer(RenderType.debugFilledBox());
       ShapeRenderer.addChainedFilledBoxVertices(var0, var18, var2, var4, var6, var8, var10, var12, var14, var15, var16, var17);
+   }
+
+   public static void renderTextOverBlock(PoseStack var0, MultiBufferSource var1, String var2, BlockPos var3, int var4, int var5, float var6) {
+      double var7 = 1.3;
+      double var9 = 0.2;
+      double var11 = (double)var3.getX() + 0.5;
+      double var13 = (double)var3.getY() + 1.3 + (double)var4 * 0.2;
+      double var15 = (double)var3.getZ() + 0.5;
+      renderFloatingText(var0, var1, var2, var11, var13, var15, var5, var6, true, 0.0F, true);
+   }
+
+   public static void renderTextOverMob(PoseStack var0, MultiBufferSource var1, Entity var2, int var3, String var4, int var5, float var6) {
+      double var7 = 2.4;
+      double var9 = 0.25;
+      double var11 = (double)var2.getBlockX() + 0.5;
+      double var13 = var2.getY() + 2.4 + (double)var3 * 0.25;
+      double var15 = (double)var2.getBlockZ() + 0.5;
+      float var17 = 0.5F;
+      renderFloatingText(var0, var1, var4, var11, var13, var15, var5, var6, false, 0.5F, true);
    }
 
    public static void renderFloatingText(PoseStack var0, MultiBufferSource var1, String var2, int var3, int var4, int var5, int var6) {
@@ -255,9 +296,6 @@ public class DebugRenderer {
    }
 
    public interface SimpleDebugRenderer {
-      void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7);
-
-      default void clear() {
-      }
+      void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10);
    }
 }

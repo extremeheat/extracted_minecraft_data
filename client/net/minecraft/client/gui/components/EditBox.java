@@ -1,17 +1,22 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -27,9 +32,10 @@ public class EditBox extends AbstractWidget {
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
-   private static final int CURSOR_INSERT_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
    public static final int DEFAULT_TEXT_COLOR = -2039584;
+   public static final Style DEFAULT_HINT_STYLE;
+   public static final Style SEARCH_HINT_STYLE;
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private String value;
@@ -49,7 +55,7 @@ public class EditBox extends AbstractWidget {
    @Nullable
    private Consumer<String> responder;
    private Predicate<String> filter;
-   private BiFunction<String, Integer, FormattedCharSequence> formatter;
+   private final List<TextFormatter> formatters;
    @Nullable
    private Component hint;
    private long focusedTime;
@@ -76,7 +82,7 @@ public class EditBox extends AbstractWidget {
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
       this.filter = Objects::nonNull;
-      this.formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
+      this.formatters = new ArrayList();
       this.focusedTime = Util.getMillis();
       this.font = var1;
       if (var6 != null) {
@@ -90,8 +96,8 @@ public class EditBox extends AbstractWidget {
       this.responder = var1;
    }
 
-   public void setFormatter(BiFunction<String, Integer, FormattedCharSequence> var1) {
-      this.formatter = var1;
+   public void addFormatter(TextFormatter var1) {
+      this.formatters.add(var1);
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -171,8 +177,8 @@ public class EditBox extends AbstractWidget {
       this.updateTextPosition();
    }
 
-   private void deleteText(int var1) {
-      if (Screen.hasControlDown()) {
+   private void deleteText(int var1, boolean var2) {
+      if (var2) {
          this.deleteWords(var1);
       } else {
          this.deleteChars(var1);
@@ -280,12 +286,12 @@ public class EditBox extends AbstractWidget {
       this.moveCursorTo(this.value.length(), var1);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       if (this.isActive() && this.isFocused()) {
-         switch (var1) {
+         switch (var1.key()) {
             case 259:
                if (this.isEditable) {
-                  this.deleteText(-1);
+                  this.deleteText(-1, var1.hasControlDown());
                }
 
                return true;
@@ -295,21 +301,21 @@ public class EditBox extends AbstractWidget {
             case 266:
             case 267:
             default:
-               if (Screen.isSelectAll(var1)) {
+               if (var1.isSelectAll()) {
                   this.moveCursorToEnd(false);
                   this.setHighlightPos(0);
                   return true;
-               } else if (Screen.isCopy(var1)) {
+               } else if (var1.isCopy()) {
                   Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                   return true;
-               } else if (Screen.isPaste(var1)) {
+               } else if (var1.isPaste()) {
                   if (this.isEditable()) {
                      this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
                   }
 
                   return true;
                } else {
-                  if (Screen.isCut(var1)) {
+                  if (var1.isCut()) {
                      Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                      if (this.isEditable()) {
                         this.insertText("");
@@ -322,31 +328,31 @@ public class EditBox extends AbstractWidget {
                }
             case 261:
                if (this.isEditable) {
-                  this.deleteText(1);
+                  this.deleteText(1, var1.hasControlDown());
                }
 
                return true;
             case 262:
-               if (Screen.hasControlDown()) {
-                  this.moveCursorTo(this.getWordPosition(1), Screen.hasShiftDown());
+               if (var1.hasControlDown()) {
+                  this.moveCursorTo(this.getWordPosition(1), var1.hasShiftDown());
                } else {
-                  this.moveCursor(1, Screen.hasShiftDown());
+                  this.moveCursor(1, var1.hasShiftDown());
                }
 
                return true;
             case 263:
-               if (Screen.hasControlDown()) {
-                  this.moveCursorTo(this.getWordPosition(-1), Screen.hasShiftDown());
+               if (var1.hasControlDown()) {
+                  this.moveCursorTo(this.getWordPosition(-1), var1.hasShiftDown());
                } else {
-                  this.moveCursor(-1, Screen.hasShiftDown());
+                  this.moveCursor(-1, var1.hasShiftDown());
                }
 
                return true;
             case 268:
-               this.moveCursorToStart(Screen.hasShiftDown());
+               this.moveCursorToStart(var1.hasShiftDown());
                return true;
             case 269:
-               this.moveCursorToEnd(Screen.hasShiftDown());
+               this.moveCursorToEnd(var1.hasShiftDown());
                return true;
          }
       } else {
@@ -358,12 +364,12 @@ public class EditBox extends AbstractWidget {
       return this.isActive() && this.isFocused() && this.isEditable();
    }
 
-   public boolean charTyped(char var1, int var2) {
+   public boolean charTyped(CharacterEvent var1) {
       if (!this.canConsumeInput()) {
          return false;
-      } else if (StringUtil.isAllowedChatCharacter(var1)) {
+      } else if (var1.isAllowedChatCharacter()) {
          if (this.isEditable) {
-            this.insertText(Character.toString(var1));
+            this.insertText(var1.codepointAsString());
          }
 
          return true;
@@ -372,10 +378,31 @@ public class EditBox extends AbstractWidget {
       }
    }
 
-   public void onClick(double var1, double var3) {
-      int var5 = Mth.floor(var1) - this.textX;
-      String var6 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-      this.moveCursorTo(this.font.plainSubstrByWidth(var6, var5).length() + this.displayPos, Screen.hasShiftDown());
+   private int findClickedPositionInText(MouseButtonEvent var1) {
+      int var2 = Math.min(Mth.floor(var1.x()) - this.textX, this.getInnerWidth());
+      String var3 = this.value.substring(this.displayPos);
+      return this.displayPos + this.font.plainSubstrByWidth(var3, var2).length();
+   }
+
+   private void selectWord(MouseButtonEvent var1) {
+      int var2 = this.findClickedPositionInText(var1);
+      int var3 = this.getWordPosition(-1, var2);
+      int var4 = this.getWordPosition(1, var2);
+      this.moveCursorTo(var3, false);
+      this.moveCursorTo(var4, true);
+   }
+
+   public void onClick(MouseButtonEvent var1, boolean var2) {
+      if (var2) {
+         this.selectWord(var1);
+      } else {
+         this.moveCursorTo(this.findClickedPositionInText(var1), var1.hasShiftDown());
+      }
+
+   }
+
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
+      this.moveCursorTo(this.findClickedPositionInText(var1), true);
    }
 
    public void playDownSound(SoundManager var1) {
@@ -397,7 +424,7 @@ public class EditBox extends AbstractWidget {
          int var11 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
          if (!var7.isEmpty()) {
             String var12 = var8 ? var7.substring(0, var6) : var7;
-            FormattedCharSequence var13 = (FormattedCharSequence)this.formatter.apply(var12, this.displayPos);
+            FormattedCharSequence var13 = this.applyFormat(var12, this.displayPos);
             var1.drawString(this.font, var13, var10, this.textY, var15, this.textShadow);
             var10 += this.font.width(var13) + 1;
          }
@@ -412,7 +439,7 @@ public class EditBox extends AbstractWidget {
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
-            var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
+            var1.drawString(this.font, this.applyFormat(var7.substring(var6), this.cursorPos), var10, this.textY, var15, this.textShadow);
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
@@ -439,13 +466,28 @@ public class EditBox extends AbstractWidget {
                int var19 = var17 + 1;
                int var20 = this.textY + 1;
                Objects.requireNonNull(this.font);
-               var1.fill(var17, var18, var19, var20 + 9, -3092272);
+               var1.fill(var17, var18, var19, var20 + 9, var15);
             } else {
                var1.drawString(this.font, "_", var17, this.textY, var15, this.textShadow);
             }
          }
 
+         if (this.isHovered()) {
+            var1.requestCursor(this.isEditable() ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
+         }
+
       }
+   }
+
+   private FormattedCharSequence applyFormat(String var1, int var2) {
+      for(TextFormatter var4 : this.formatters) {
+         FormattedCharSequence var5 = var4.format(var1, var2);
+         if (var5 != null) {
+            return var5;
+         }
+      }
+
+      return FormattedCharSequence.forward(var1, Style.EMPTY);
    }
 
    private void updateTextPosition() {
@@ -575,6 +617,18 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setHint(Component var1) {
-      this.hint = var1;
+      boolean var2 = var1.getStyle().equals(Style.EMPTY);
+      this.hint = (Component)(var2 ? var1.copy().withStyle(DEFAULT_HINT_STYLE) : var1);
+   }
+
+   static {
+      DEFAULT_HINT_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_GRAY);
+      SEARCH_HINT_STYLE = Style.EMPTY.applyFormats(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+   }
+
+   @FunctionalInterface
+   public interface TextFormatter {
+      @Nullable
+      FormattedCharSequence format(String var1, int var2);
    }
 }

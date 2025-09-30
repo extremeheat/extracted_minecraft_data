@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.LlamaModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LlamaRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -27,7 +27,7 @@ public class LlamaDecorLayer extends RenderLayer<LlamaRenderState, LlamaModel> {
       this.babyModel = new LlamaModel(var2.bakeLayer(ModelLayers.LLAMA_BABY_DECOR));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, LlamaRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, LlamaRenderState var4, float var5, float var6) {
       ItemStack var7 = var4.bodyItem;
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
       if (var8 != null && var8.assetId().isPresent()) {
@@ -38,9 +38,8 @@ public class LlamaDecorLayer extends RenderLayer<LlamaRenderState, LlamaModel> {
 
    }
 
-   private void renderEquipment(PoseStack var1, MultiBufferSource var2, LlamaRenderState var3, ItemStack var4, ResourceKey<EquipmentAsset> var5, int var6) {
+   private void renderEquipment(PoseStack var1, SubmitNodeCollector var2, LlamaRenderState var3, ItemStack var4, ResourceKey<EquipmentAsset> var5, int var6) {
       LlamaModel var7 = var3.isBaby ? this.babyModel : this.adultModel;
-      var7.setupAnim(var3);
-      this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, var5, var7, var4, var1, var2, var6);
+      this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, var5, var7, var3, var4, var1, var2, var6, var3.outlineColor);
    }
 }

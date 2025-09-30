@@ -138,7 +138,7 @@ public interface Leashable {
             }
 
             if (var1) {
-               var4.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
+               var4.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
             }
 
             var3.leashHolder.notifyLeasheeRemoved((Leashable)var0);
@@ -154,7 +154,7 @@ public interface Leashable {
       }
 
       if (var2 != null && var2.leashHolder != null) {
-         if (!var1.isAlive() || !var2.leashHolder.isAlive()) {
+         if (!var1.canInteractWithLevel() || !var2.leashHolder.canInteractWithLevel()) {
             if (var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                ((Leashable)var1).dropLeash();
             } else {
@@ -325,7 +325,7 @@ public interface Leashable {
          Level var5 = var0.level();
          if (var5 instanceof ServerLevel) {
             ServerLevel var7 = (ServerLevel)var5;
-            var7.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, var1));
+            var7.getChunkSource().sendToTrackingPlayers(var0, new ClientboundSetEntityLinkPacket(var0, var1));
          }
       }
 
@@ -346,7 +346,7 @@ public interface Leashable {
       if (var1 == null) {
          return null;
       } else {
-         if (var1.delayedLeashHolderId != 0 && var0.level().isClientSide) {
+         if (var1.delayedLeashHolderId != 0 && var0.level().isClientSide()) {
             Entity var3 = var0.level().getEntity(var1.delayedLeashHolderId);
             if (var3 instanceof Entity) {
                var1.setLeashHolder(var3);

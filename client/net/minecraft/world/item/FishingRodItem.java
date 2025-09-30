@@ -8,7 +8,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -24,9 +23,9 @@ public class FishingRodItem extends Item {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var2.fishing != null) {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             int var5 = var2.fishing.retrieve(var4);
-            var4.hurtAndBreak(var5, var2, (EquipmentSlot)LivingEntity.getSlotForHand(var3));
+            var4.hurtAndBreak(var5, var2, (EquipmentSlot)var3.asEquipmentSlot());
          }
 
          var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.NEUTRAL, 1.0F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));

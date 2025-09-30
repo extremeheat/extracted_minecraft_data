@@ -36,11 +36,11 @@ public class BlockAgeProcessor extends StructureProcessor {
       BlockState var10 = null;
       if (!var8.is(Blocks.STONE_BRICKS) && !var8.is(Blocks.STONE) && !var8.is(Blocks.CHISELED_STONE_BRICKS)) {
          if (var8.is(BlockTags.STAIRS)) {
-            var10 = this.maybeReplaceStairs(var7, var5.state());
+            var10 = this.maybeReplaceStairs(var8, var7);
          } else if (var8.is(BlockTags.SLABS)) {
-            var10 = this.maybeReplaceSlab(var7);
+            var10 = this.maybeReplaceSlab(var8, var7);
          } else if (var8.is(BlockTags.WALLS)) {
-            var10 = this.maybeReplaceWall(var7);
+            var10 = this.maybeReplaceWall(var8, var7);
          } else if (var8.is(Blocks.OBSIDIAN)) {
             var10 = this.maybeReplaceObsidian(var7);
          }
@@ -63,25 +63,23 @@ public class BlockAgeProcessor extends StructureProcessor {
    }
 
    @Nullable
-   private BlockState maybeReplaceStairs(RandomSource var1, BlockState var2) {
-      Direction var3 = (Direction)var2.getValue(StairBlock.FACING);
-      Half var4 = (Half)var2.getValue(StairBlock.HALF);
-      if (var1.nextFloat() >= 0.5F) {
+   private BlockState maybeReplaceStairs(BlockState var1, RandomSource var2) {
+      if (var2.nextFloat() >= 0.5F) {
          return null;
       } else {
-         BlockState[] var5 = new BlockState[]{(BlockState)((BlockState)Blocks.MOSSY_STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, var3)).setValue(StairBlock.HALF, var4), Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState()};
-         return this.getRandomBlock(var1, NON_MOSSY_REPLACEMENTS, var5);
+         BlockState[] var3 = new BlockState[]{Blocks.MOSSY_STONE_BRICK_STAIRS.withPropertiesOf(var1), Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState()};
+         return this.getRandomBlock(var2, NON_MOSSY_REPLACEMENTS, var3);
       }
    }
 
    @Nullable
-   private BlockState maybeReplaceSlab(RandomSource var1) {
-      return var1.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_SLAB.defaultBlockState() : null;
+   private BlockState maybeReplaceSlab(BlockState var1, RandomSource var2) {
+      return var2.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_SLAB.withPropertiesOf(var1) : null;
    }
 
    @Nullable
-   private BlockState maybeReplaceWall(RandomSource var1) {
-      return var1.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_WALL.defaultBlockState() : null;
+   private BlockState maybeReplaceWall(BlockState var1, RandomSource var2) {
+      return var2.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_WALL.withPropertiesOf(var1) : null;
    }
 
    @Nullable

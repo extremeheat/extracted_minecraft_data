@@ -12,7 +12,7 @@ public interface OwnableEntity {
 
    @Nullable
    default LivingEntity getOwner() {
-      return (LivingEntity)EntityReference.get(this.getOwnerReference(), this.level(), LivingEntity.class);
+      return EntityReference.getLivingEntity(this.getOwnerReference(), this.level());
    }
 
    @Nullable

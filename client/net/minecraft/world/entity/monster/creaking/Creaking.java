@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -212,7 +211,7 @@ public class Creaking extends Monster {
          --this.attackAnimationRemainingTicks;
       }
 
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          boolean var1 = (Boolean)this.entityData.get(CAN_MOVE);
          boolean var2 = this.checkCanMove();
          if (var2 != var1) {
@@ -232,7 +231,7 @@ public class Creaking extends Monster {
    }
 
    public void tick() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          BlockPos var1 = this.getHomePos();
          if (var1 != null) {
             boolean var10000;
@@ -257,7 +256,7 @@ public class Creaking extends Monster {
       }
 
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.setupAnimationStates();
          this.checkEyeBlink();
       }
@@ -430,11 +429,6 @@ public class Creaking extends Monster {
    @Nullable
    public LivingEntity getTarget() {
       return this.getTargetFromBrain();
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    public void knockback(double var1, double var3, double var5) {

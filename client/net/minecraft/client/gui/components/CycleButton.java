@@ -6,17 +6,18 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 
 public class CycleButton<T> extends AbstractButton {
-   public static final BooleanSupplier DEFAULT_ALT_LIST_SELECTOR = Screen::hasAltDown;
+   public static final BooleanSupplier DEFAULT_ALT_LIST_SELECTOR = () -> Minecraft.getInstance().hasAltDown();
    private static final List<Boolean> BOOLEAN_OPTIONS;
    private final Component name;
    private int index;
@@ -46,8 +47,8 @@ public class CycleButton<T> extends AbstractButton {
       this.setTooltip(this.tooltipSupplier.apply(this.value));
    }
 
-   public void onPress() {
-      if (Screen.hasShiftDown()) {
+   public void onPress(InputWithModifiers var1) {
+      if (var1.hasShiftDown()) {
          this.cycleValue(-1);
       } else {
          this.cycleValue(1);

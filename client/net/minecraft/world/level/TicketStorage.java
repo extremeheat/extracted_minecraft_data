@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
@@ -123,6 +123,22 @@ public class TicketStorage extends SavedData {
       return !this.tickets.isEmpty();
    }
 
+   public boolean shouldKeepDimensionActive() {
+      ObjectIterator var1 = this.tickets.values().iterator();
+
+      while(var1.hasNext()) {
+         List var2 = (List)var1.next();
+
+         for(Ticket var4 : var2) {
+            if (var4.getType().shouldKeepDimensionActive()) {
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
    public List<Ticket> getTickets(long var1) {
       return (List)this.tickets.getOrDefault(var1, List.of());
    }
@@ -154,6 +170,10 @@ public class TicketStorage extends SavedData {
       int var7 = getTicketLevelAt(var4, true);
       int var8 = getTicketLevelAt(var4, false);
       var4.add(var3);
+      if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+         LOGGER.debug("ATI {} {}", new ChunkPos(var1), var3);
+      }
+
       if (var3.getType().doesSimulate() && var3.getTicketLevel() < var7 && this.simulationChunkUpdatedListener != null) {
          this.simulationChunkUpdatedListener.update(var1, var3.getTicketLevel(), true);
       }
@@ -225,6 +245,10 @@ public class TicketStorage extends SavedData {
             Ticket var7 = (Ticket)var6.next();
             if (isTicketSameTypeAndLevel(var3, var7)) {
                var6.remove();
+               if (SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+                  LOGGER.debug("RTI {} {}", new ChunkPos(var1), var7);
+               }
+
                var5 = true;
                break;
             }
@@ -266,24 +290,33 @@ public class TicketStorage extends SavedData {
    }
 
    public void purgeStaleTickets(ChunkMap var1) {
-      this.removeTicketIf((var1x, var2) -> {
-         ChunkHolder var3 = var1.getUpdatingChunkIfPresent(var1x);
-         boolean var4 = var3 != null && !var3.isReadyForSaving() && var2.getType().doesSimulate();
-         if (var4) {
-            return false;
-         } else {
+      this.removeTicketIf((var2, var3) -> {
+         if (this.canTicketExpire(var1, var2, var3)) {
             var2.decreaseTicksLeft();
             return var2.isTimedOut();
+         } else {
+            return false;
          }
       }, (Long2ObjectOpenHashMap)null);
       this.setDirty();
    }
 
-   public void deactivateTicketsOnClosing() {
-      this.removeTicketIf((var0, var1) -> var1.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
+   private boolean canTicketExpire(ChunkMap var1, Ticket var2, long var3) {
+      if (!var2.getType().hasTimeout()) {
+         return false;
+      } else if (var2.getType().canExpireIfUnloaded()) {
+         return true;
+      } else {
+         ChunkHolder var5 = var1.getUpdatingChunkIfPresent(var3);
+         return var5 == null || var5.isReadyForSaving();
+      }
    }
 
-   public void removeTicketIf(BiPredicate<Long, Ticket> var1, @Nullable Long2ObjectOpenHashMap<List<Ticket>> var2) {
+   public void deactivateTicketsOnClosing() {
+      this.removeTicketIf((var0, var1) -> var0.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
+   }
+
+   public void removeTicketIf(TicketPredicate var1, @Nullable Long2ObjectOpenHashMap<List<Ticket>> var2) {
       ObjectIterator var3 = this.tickets.long2ObjectEntrySet().fastIterator();
       boolean var4 = false;
 
@@ -296,7 +329,7 @@ public class TicketStorage extends SavedData {
 
          while(var6.hasNext()) {
             Ticket var11 = (Ticket)var6.next();
-            if (var1.test(var7, var11)) {
+            if (var1.test(var11, var7)) {
                if (var2 != null) {
                   List var12 = (List)var2.computeIfAbsent(var7, (var1x) -> new ObjectArrayList(((List)var5.getValue()).size()));
                   var12.add(var11);
@@ -399,5 +432,9 @@ public class TicketStorage extends SavedData {
    @FunctionalInterface
    public interface ChunkUpdated {
       void update(long var1, int var3, boolean var4);
+   }
+
+   public interface TicketPredicate {
+      boolean test(Ticket var1, long var2);
    }
 }

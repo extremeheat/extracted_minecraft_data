@@ -18,6 +18,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public final class ModelPart {
    public static final float DEFAULT_SCALE = 1.0F;
@@ -69,18 +70,6 @@ public final class ModelPart {
       this.xScale = var1.xScale();
       this.yScale = var1.yScale();
       this.zScale = var1.zScale();
-   }
-
-   public void copyFrom(ModelPart var1) {
-      this.xScale = var1.xScale;
-      this.yScale = var1.yScale;
-      this.zScale = var1.zScale;
-      this.xRot = var1.xRot;
-      this.yRot = var1.yRot;
-      this.zRot = var1.zRot;
-      this.x = var1.x;
-      this.y = var1.y;
-      this.z = var1.z;
    }
 
    public boolean hasChild(String var1) {
@@ -141,9 +130,9 @@ public final class ModelPart {
       this.visit(var1, (var1x, var2x, var3, var4) -> {
          for(Polygon var8 : var4.polygons) {
             for(Vertex var12 : var8.vertices()) {
-               float var13 = var12.pos().x() / 16.0F;
-               float var14 = var12.pos().y() / 16.0F;
-               float var15 = var12.pos().z() / 16.0F;
+               float var13 = var12.worldX();
+               float var14 = var12.worldY();
+               float var15 = var12.worldZ();
                Vector3f var16 = var1x.pose().transformPosition(var13, var14, var15, new Vector3f());
                var2.add(var16);
             }
@@ -332,9 +321,9 @@ public final class ModelPart {
             float var15 = var12.z();
 
             for(Vertex var19 : var11.vertices) {
-               float var20 = var19.pos.x() / 16.0F;
-               float var21 = var19.pos.y() / 16.0F;
-               float var22 = var19.pos.z() / 16.0F;
+               float var20 = var19.worldX();
+               float var21 = var19.worldY();
+               float var22 = var19.worldZ();
                Vector3f var23 = var6.transformPosition(var20, var21, var22, var7);
                var2.addVertex(var23.x(), var23.y(), var23.z(), var5, var19.u, var19.v, var4, var3, var13, var14, var15);
             }
@@ -343,12 +332,12 @@ public final class ModelPart {
       }
    }
 
-   public static record Polygon(Vertex[] vertices, Vector3f normal) {
+   public static record Polygon(Vertex[] vertices, Vector3fc normal) {
       final Vertex[] vertices;
-      final Vector3f normal;
+      final Vector3fc normal;
 
       public Polygon(Vertex[] var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8, Direction var9) {
-         this(var1, var9.step());
+         this(var1, (var8 ? mirrorFacing(var9) : var9).getUnitVec3f());
          float var10 = 0.0F / var6;
          float var11 = 0.0F / var7;
          var1[0] = var1[0].remap(var4 / var6 - var10, var3 / var7 + var11);
@@ -365,37 +354,47 @@ public final class ModelPart {
             }
          }
 
-         if (var8) {
-            this.normal.mul(-1.0F, 1.0F, 1.0F);
-         }
-
       }
 
-      public Polygon(Vertex[] var1, Vector3f var2) {
+      public Polygon(Vertex[] var1, Vector3fc var2) {
          super();
          this.vertices = var1;
          this.normal = var2;
       }
+
+      private static Direction mirrorFacing(Direction var0) {
+         return var0.getAxis() == Direction.Axis.X ? var0.getOpposite() : var0;
+      }
    }
 
-   public static record Vertex(Vector3f pos, float u, float v) {
-      final Vector3f pos;
+   public static record Vertex(float x, float y, float z, float u, float v) {
       final float u;
       final float v;
+      public static final float SCALE_FACTOR = 16.0F;
 
       public Vertex(float var1, float var2, float var3, float var4, float var5) {
-         this(new Vector3f(var1, var2, var3), var4, var5);
-      }
-
-      public Vertex(Vector3f var1, float var2, float var3) {
          super();
-         this.pos = var1;
-         this.u = var2;
-         this.v = var3;
+         this.x = var1;
+         this.y = var2;
+         this.z = var3;
+         this.u = var4;
+         this.v = var5;
       }
 
       public Vertex remap(float var1, float var2) {
-         return new Vertex(this.pos, var1, var2);
+         return new Vertex(this.x, this.y, this.z, var1, var2);
+      }
+
+      public float worldX() {
+         return this.x / 16.0F;
+      }
+
+      public float worldY() {
+         return this.y / 16.0F;
+      }
+
+      public float worldZ() {
+         return this.z / 16.0F;
       }
    }
 

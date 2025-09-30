@@ -1,9 +1,5 @@
 package com.mojang.blaze3d.font;
 
-import java.util.function.Function;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
-
 public interface GlyphInfo {
    float getAdvance();
 
@@ -19,11 +15,7 @@ public interface GlyphInfo {
       return 1.0F;
    }
 
-   BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1);
-
-   public interface SpaceGlyphInfo extends GlyphInfo {
-      default BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return EmptyGlyph.INSTANCE;
-      }
+   static GlyphInfo simple(float var0) {
+      return () -> var0;
    }
 }

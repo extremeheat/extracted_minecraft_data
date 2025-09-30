@@ -6,11 +6,13 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
-public class Path {
+public final class Path {
+   public static final StreamCodec<FriendlyByteBuf, Path> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, Path>of((var0, var1) -> var1.writeToStream(var0), Path::createFromStream);
    private final List<Node> nodes;
    @Nullable
    private DebugData debugData;
@@ -101,21 +103,19 @@ public class Path {
    }
 
    public boolean sameAs(@Nullable Path var1) {
-      if (var1 == null) {
-         return false;
-      } else if (var1.nodes.size() != this.nodes.size()) {
+      return var1 != null && this.nodes.equals(var1.nodes);
+   }
+
+   public boolean equals(Object var1) {
+      if (!(var1 instanceof Path var2)) {
          return false;
       } else {
-         for(int var2 = 0; var2 < this.nodes.size(); ++var2) {
-            Node var3 = (Node)this.nodes.get(var2);
-            Node var4 = (Node)var1.nodes.get(var2);
-            if (var3.x != var4.x || var3.y != var4.y || var3.z != var4.z) {
-               return false;
-            }
-         }
-
-         return true;
+         return this.nextNodeIndex == var2.nextNodeIndex && this.debugData == var2.debugData && this.reached == var2.reached && this.target.equals(var2.target) && this.nodes.equals(var2.nodes);
       }
+   }
+
+   public int hashCode() {
+      return this.nextNodeIndex + this.nodes.hashCode() * 31;
    }
 
    public boolean canReach() {
@@ -139,6 +139,8 @@ public class Path {
          var1.writeBlockPos(this.target);
          var1.writeCollection(this.nodes, (var0, var1x) -> var1x.writeToStream(var0));
          this.debugData.write(var1);
+      } else {
+         throw new IllegalStateException("Missing debug data");
       }
    }
 

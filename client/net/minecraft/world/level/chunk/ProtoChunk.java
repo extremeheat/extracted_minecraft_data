@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
@@ -54,11 +53,11 @@ public class ProtoChunk extends ChunkAccess {
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, Registry<Biome> var4, @Nullable BlendingData var5) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, @Nullable BlendingData var5) {
       this(var1, var2, (LevelChunkSection[])null, new ProtoChunkTicks(), new ProtoChunkTicks(), var3, var4, var5);
    }
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, Registry<Biome> var7, @Nullable BlendingData var8) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, PalettedContainerFactory var7, @Nullable BlendingData var8) {
       super(var1, var2, var6, var7, 0L, var3, var8);
       this.status = ChunkStatus.EMPTY;
       this.entities = Lists.newArrayList();

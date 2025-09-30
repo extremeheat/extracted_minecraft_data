@@ -12,6 +12,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
@@ -23,7 +24,6 @@ import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.thread.ParallelMapTransform;
@@ -45,18 +45,22 @@ public class ModelBakery {
    public static final List<RenderType> DESTROY_TYPES;
    static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
+   private final MaterialSet materials;
+   private final PlayerSkinRenderCache playerSkinRenderCache;
    private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
    private final Map<ResourceLocation, ClientItem> clientInfos;
    final Map<ResourceLocation, ResolvedModel> resolvedModels;
    final ResolvedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, Map<BlockState, BlockStateModel.UnbakedRoot> var2, Map<ResourceLocation, ClientItem> var3, Map<ResourceLocation, ResolvedModel> var4, ResolvedModel var5) {
+   public ModelBakery(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3, Map<BlockState, BlockStateModel.UnbakedRoot> var4, Map<ResourceLocation, ClientItem> var5, Map<ResourceLocation, ResolvedModel> var6, ResolvedModel var7) {
       super();
       this.entityModelSet = var1;
-      this.unbakedBlockStateModels = var2;
-      this.clientInfos = var3;
-      this.resolvedModels = var4;
-      this.missingModel = var5;
+      this.materials = var2;
+      this.playerSkinRenderCache = var3;
+      this.unbakedBlockStateModels = var4;
+      this.clientInfos = var5;
+      this.resolvedModels = var6;
+      this.missingModel = var7;
    }
 
    public CompletableFuture<BakingResult> bakeModels(SpriteGetter var1, Executor var2) {
@@ -72,7 +76,7 @@ public class ModelBakery {
       }, var2);
       CompletableFuture var6 = ParallelMapTransform.schedule(this.clientInfos, (var3x, var4x) -> {
          try {
-            return var4x.model().bake(new ItemModel.BakingContext(var4, this.entityModelSet, var3.item, var4x.registrySwapper()));
+            return var4x.model().bake(new ItemModel.BakingContext(var4, this.entityModelSet, this.materials, this.playerSkinRenderCache, var3.item, var4x.registrySwapper()));
          } catch (Exception var6) {
             LOGGER.warn("Unable to bake item model: '{}'", var3x, var6);
             return null;
@@ -90,11 +94,11 @@ public class ModelBakery {
    }
 
    static {
-      FIRE_0 = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/fire_0"));
-      FIRE_1 = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/fire_1"));
-      LAVA_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/lava_flow"));
-      WATER_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/water_flow"));
-      WATER_OVERLAY = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/water_overlay"));
+      FIRE_0 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_0");
+      FIRE_1 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_1");
+      LAVA_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("lava_flow");
+      WATER_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_flow");
+      WATER_OVERLAY = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_overlay");
       BANNER_BASE = new Material(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner_base"));
       SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
       NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));

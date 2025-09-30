@@ -1,6 +1,5 @@
 package net.minecraft.world.phys.shapes;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,22 +12,21 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 public class EntityCollisionContext implements CollisionContext {
-   protected static final CollisionContext EMPTY;
    private final boolean descending;
    private final double entityBottom;
    private final boolean placement;
    private final ItemStack heldItem;
-   private final Predicate<FluidState> canStandOnFluid;
+   private final boolean alwaysCollideWithFluid;
    @Nullable
    private final Entity entity;
 
-   protected EntityCollisionContext(boolean var1, boolean var2, double var3, ItemStack var5, Predicate<FluidState> var6, @Nullable Entity var7) {
+   protected EntityCollisionContext(boolean var1, boolean var2, double var3, ItemStack var5, boolean var6, @Nullable Entity var7) {
       super();
       this.descending = var1;
       this.placement = var2;
       this.entityBottom = var3;
       this.heldItem = var5;
-      this.canStandOnFluid = var6;
+      this.alwaysCollideWithFluid = var6;
       this.entity = var7;
    }
 
@@ -44,25 +42,24 @@ public class EntityCollisionContext implements CollisionContext {
          var10004 = ItemStack.EMPTY;
       }
 
-      Predicate var10005;
-      if (var2) {
-         var10005 = (var0) -> true;
-      } else if (var1 instanceof LivingEntity) {
-         LivingEntity var5 = (LivingEntity)var1;
-         var10005 = (var1x) -> var5.canStandOnFluid(var1x);
-      } else {
-         var10005 = (var0) -> false;
-      }
-
-      this(var10001, var3, var10003, var10004, var10005, var1);
+      this(var10001, var3, var10003, var10004, var2, var1);
    }
 
    public boolean isHoldingItem(Item var1) {
       return this.heldItem.is(var1);
    }
 
+   public boolean alwaysCollideWithFluid() {
+      return this.alwaysCollideWithFluid;
+   }
+
    public boolean canStandOnFluid(FluidState var1, FluidState var2) {
-      return this.canStandOnFluid.test(var2) && !var1.getType().isSame(var2.getType());
+      Entity var4 = this.entity;
+      if (!(var4 instanceof LivingEntity var3)) {
+         return false;
+      } else {
+         return var3.canStandOnFluid(var2) && !var1.getType().isSame(var2.getType());
+      }
    }
 
    public VoxelShape getCollisionShape(BlockState var1, CollisionGetter var2, BlockPos var3) {
@@ -86,11 +83,16 @@ public class EntityCollisionContext implements CollisionContext {
       return this.placement;
    }
 
-   static {
-      EMPTY = new EntityCollisionContext(false, false, -1.7976931348623157E308, ItemStack.EMPTY, (var0) -> false, (Entity)null) {
-         public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
-            return var3;
-         }
-      };
+   protected static class Empty extends EntityCollisionContext {
+      protected static final CollisionContext WITHOUT_FLUID_COLLISIONS = new Empty(false);
+      protected static final CollisionContext WITH_FLUID_COLLISIONS = new Empty(true);
+
+      public Empty(boolean var1) {
+         super(false, false, -1.7976931348623157E308, ItemStack.EMPTY, var1, (Entity)null);
+      }
+
+      public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
+         return var3;
+      }
    }
 }

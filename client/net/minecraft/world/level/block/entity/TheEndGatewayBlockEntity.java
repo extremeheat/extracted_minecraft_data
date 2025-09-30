@@ -113,7 +113,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    public static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
-      if (!var0.isClientSide) {
+      if (!var0.isClientSide()) {
          var3.teleportCooldown = 40;
          var0.blockEvent(var1, var2.getBlock(), 1, 0);
          setChanged(var0, var1, var2);

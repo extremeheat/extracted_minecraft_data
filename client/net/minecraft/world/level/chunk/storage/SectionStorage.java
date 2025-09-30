@@ -269,10 +269,6 @@ public class SectionStorage<R, P> implements AutoCloseable {
       }
    }
 
-   static int getVersion(Dynamic<?> var0) {
-      return var0.get("DataVersion").asInt(1945);
-   }
-
    public void flush(ChunkPos var1) {
       if (this.dirtyChunks.remove(var1.toLong())) {
          this.writeChunk(var1);
@@ -295,26 +291,24 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
       public static <T> PackedChunk<T> parse(Codec<T> var0, DynamicOps<Tag> var1, Tag var2, SimpleRegionStorage var3, LevelHeightAccessor var4) {
          Dynamic var5 = new Dynamic(var1, var2);
-         int var6 = SectionStorage.getVersion(var5);
-         int var7 = SharedConstants.getCurrentVersion().dataVersion().version();
-         boolean var8 = var6 != var7;
-         Dynamic var9 = var3.upgradeChunkTag(var5, var6);
-         OptionalDynamic var10 = var9.get("Sections");
-         Int2ObjectOpenHashMap var11 = new Int2ObjectOpenHashMap();
+         Dynamic var6 = var3.upgradeChunkTag((Dynamic)var5, 1945);
+         boolean var7 = var5 != var6;
+         OptionalDynamic var8 = var6.get("Sections");
+         Int2ObjectOpenHashMap var9 = new Int2ObjectOpenHashMap();
 
-         for(int var12 = var4.getMinSectionY(); var12 <= var4.getMaxSectionY(); ++var12) {
-            Optional var13 = var10.get(Integer.toString(var12)).result().flatMap((var1x) -> {
+         for(int var10 = var4.getMinSectionY(); var10 <= var4.getMaxSectionY(); ++var10) {
+            Optional var11 = var8.get(Integer.toString(var10)).result().flatMap((var1x) -> {
                DataResult var10000 = var0.parse(var1x);
                Logger var10001 = SectionStorage.LOGGER;
                Objects.requireNonNull(var10001);
                return var10000.resultOrPartial(var10001::error);
             });
-            if (var13.isPresent()) {
-               var11.put(var12, var13.get());
+            if (var11.isPresent()) {
+               var9.put(var10, var11.get());
             }
          }
 
-         return new PackedChunk<T>(var11, var8);
+         return new PackedChunk<T>(var9, var7);
       }
    }
 }

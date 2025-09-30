@@ -2,6 +2,7 @@ package net.minecraft;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import java.lang.management.ManagementFactory;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -49,10 +51,14 @@ public class SystemReport {
       }));
       this.setDetail("CPUs", (Supplier)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
-      this.setDetail("JVM Flags", (Supplier)(() -> {
-         List var0 = (List)Util.getVmArguments().collect(Collectors.toList());
-         return String.format(Locale.ROOT, "%d total; %s", var0.size(), String.join(" ", var0));
-      }));
+      this.setDetail("JVM Flags", (Supplier)(() -> printJvmFlags((var0) -> var0.startsWith("-X"))));
+      this.setDetail("Debug Flags", (Supplier)(() -> printJvmFlags((var0) -> var0.startsWith("-DMC_DEBUG_"))));
+   }
+
+   private static String printJvmFlags(Predicate<String> var0) {
+      List var1 = ManagementFactory.getRuntimeMXBean().getInputArguments();
+      List var2 = var1.stream().filter(var0).toList();
+      return String.format(Locale.ROOT, "%d total; %s", var2.size(), String.join(" ", var2));
    }
 
    public void setDetail(String var1, String var2) {

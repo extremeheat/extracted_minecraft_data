@@ -61,7 +61,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
       } else {
          if (this.nextBlock >= this.capacity) {
             int var2 = this.capacity * 2;
-            LOGGER.info("Resizing " + this.label + ", capacity limit of {} reached during a single frame. New capacity will be {}.", this.capacity, var2);
+            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, var2});
             this.resizeBuffers(var2);
          }
 
@@ -83,7 +83,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
       } else {
          if (this.nextBlock + var1.length > this.capacity) {
             int var2 = Mth.smallestEncompassingPowerOfTwo(Math.max(this.capacity + 1, var1.length));
-            LOGGER.info("Resizing " + this.label + ", capacity limit of {} reached during a single frame. New capacity will be {}.", this.capacity, var2);
+            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, var2});
             this.resizeBuffers(var2);
          }
 

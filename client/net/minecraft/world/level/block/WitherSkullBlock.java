@@ -52,7 +52,7 @@ public class WitherSkullBlock extends SkullBlock {
    }
 
    public static void checkSpawn(Level var0, BlockPos var1, SkullBlockEntity var2) {
-      if (!var0.isClientSide) {
+      if (!var0.isClientSide()) {
          BlockState var3 = var2.getBlockState();
          boolean var4 = var3.is(Blocks.WITHER_SKELETON_SKULL) || var3.is(Blocks.WITHER_SKELETON_WALL_SKULL);
          if (var4 && var1.getY() >= var0.getMinY() && var0.getDifficulty() != Difficulty.PEACEFUL) {
@@ -80,7 +80,7 @@ public class WitherSkullBlock extends SkullBlock {
    }
 
    public static boolean canSpawnMob(Level var0, BlockPos var1, ItemStack var2) {
-      if (var2.is(Items.WITHER_SKELETON_SKULL) && var1.getY() >= var0.getMinY() + 2 && var0.getDifficulty() != Difficulty.PEACEFUL && !var0.isClientSide) {
+      if (var2.is(Items.WITHER_SKELETON_SKULL) && var1.getY() >= var0.getMinY() + 2 && var0.getDifficulty() != Difficulty.PEACEFUL && !var0.isClientSide()) {
          return getOrCreateWitherBase().find(var0, var1) != null;
       } else {
          return false;

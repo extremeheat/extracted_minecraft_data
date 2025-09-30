@@ -11,7 +11,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -28,7 +27,8 @@ public class LightTexture implements AutoCloseable {
    public static final int FULL_SKY = 15728640;
    public static final int FULL_BLOCK = 240;
    private static final int TEXTURE_SIZE = 16;
-   private static final int LIGHTMAP_UBO_SIZE = (new Std140SizeCalculator()).putFloat().putFloat().putFloat().putInt().putFloat().putFloat().putFloat().putFloat().putVec3().get();
+   private static final int LIGHTMAP_UBO_SIZE = (new Std140SizeCalculator()).putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().putVec3().putVec3().get();
+   private static final Vector3f END_FLASH_SKY_LIGHT_COLOR = new Vector3f(0.9F, 0.5F, 1.0F);
    private final GpuTexture texture;
    private final GpuTextureView textureView;
    private boolean updateLightTexture;
@@ -87,45 +87,63 @@ public class LightTexture implements AutoCloseable {
          if (var3 != null) {
             float var4 = var3.getSkyDarken(1.0F);
             float var5;
-            if (var3.getSkyFlashTime() > 0) {
-               var5 = 1.0F;
+            Vector3f var6;
+            if (var3.effects().hasEndFlashes()) {
+               var6 = new Vector3f(0.99F, 1.12F, 1.0F);
+               EndFlashState var7 = var3.endFlashState();
+               if (var7 != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
+                  float var8 = var7.getIntensity(var1);
+                  if (this.minecraft.gui.getBossOverlay().shouldCreateWorldFog()) {
+                     var5 = var8 / 3.0F;
+                  } else {
+                     var5 = var8;
+                  }
+               } else {
+                  var5 = 0.0F;
+               }
             } else {
-               var5 = var4 * 0.95F + 0.05F;
+               var6 = new Vector3f(1.0F, 1.0F, 1.0F);
+               if (var3.getSkyFlashTime() > 0) {
+                  var5 = 1.0F;
+               } else {
+                  var5 = var4 * 0.95F + 0.05F;
+               }
             }
 
-            float var6 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
-            float var7 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var6;
-            float var8 = this.calculateDarknessScale(this.minecraft.player, var7, var1) * var6;
-            float var10 = this.minecraft.player.getWaterVision();
-            float var9;
+            float var24 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
+            float var25 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var24;
+            float var9 = this.calculateDarknessScale(this.minecraft.player, var25, var1) * var24;
+            float var11 = this.minecraft.player.getWaterVision();
+            float var10;
             if (this.minecraft.player.hasEffect(MobEffects.NIGHT_VISION)) {
-               var9 = GameRenderer.getNightVisionScale(this.minecraft.player, var1);
-            } else if (var10 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONDUIT_POWER)) {
-               var9 = var10;
+               var10 = GameRenderer.getNightVisionScale(this.minecraft.player, var1);
+            } else if (var11 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONDUIT_POWER)) {
+               var10 = var11;
             } else {
-               var9 = 0.0F;
+               var10 = 0.0F;
             }
 
-            Vector3f var11 = (new Vector3f(var4, var4, 1.0F)).lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
-            float var12 = this.blockLightRedFlicker + 1.5F;
-            float var13 = var3.dimensionType().ambientLight();
-            boolean var14 = var3.effects().forceBrightLightmap();
+            Vector3f var12;
+            if (var3.effects().hasEndFlashes()) {
+               var12 = END_FLASH_SKY_LIGHT_COLOR;
+            } else {
+               var12 = (new Vector3f(var4, var4, 1.0F)).lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
+            }
+
+            float var13 = this.blockLightRedFlicker + 1.5F;
+            float var14 = var3.dimensionType().ambientLight();
             float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
-            RenderSystem.AutoStorageIndexBuffer var16 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-            GpuBuffer var17 = var16.getBuffer(6);
-            CommandEncoder var18 = RenderSystem.getDevice().createCommandEncoder();
+            CommandEncoder var16 = RenderSystem.getDevice().createCommandEncoder();
 
-            try (GpuBuffer.MappedView var19 = var18.mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var19.data()).putFloat(var13).putFloat(var5).putFloat(var12).putInt(var14 ? 1 : 0).putFloat(var9).putFloat(var8).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var7)).putVec3(var11);
+            try (GpuBuffer.MappedView var17 = var16.mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var17.data()).putFloat(var14).putFloat(var5).putFloat(var13).putFloat(var10).putFloat(var9).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var25)).putVec3(var12).putVec3(var6);
             }
 
-            try (RenderPass var26 = var18.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
+            try (RenderPass var26 = var16.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
                var26.setPipeline(RenderPipelines.LIGHTMAP);
                RenderSystem.bindDefaultUniforms(var26);
                var26.setUniform("LightmapInfo", this.ubo.currentBuffer());
-               var26.setVertexBuffer(0, RenderSystem.getQuadVertexBuffer());
-               var26.setIndexBuffer(var17, var16.type());
-               var26.drawIndexed(0, 0, 6, 1);
+               var26.draw(0, 3);
             }
 
             this.ubo.rotate();

@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -15,6 +14,7 @@ import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.players.UserBanListEntry;
 
@@ -29,17 +29,17 @@ public class BanPlayerCommands {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(3))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
    }
 
-   private static int banPlayers(CommandSourceStack var0, Collection<GameProfile> var1, @Nullable Component var2) throws CommandSyntaxException {
+   private static int banPlayers(CommandSourceStack var0, Collection<NameAndId> var1, @Nullable Component var2) throws CommandSyntaxException {
       UserBanList var3 = var0.getServer().getPlayerList().getBans();
       int var4 = 0;
 
-      for(GameProfile var6 : var1) {
+      for(NameAndId var6 : var1) {
          if (!var3.isBanned(var6)) {
             UserBanListEntry var7 = new UserBanListEntry(var6, (Date)null, var0.getTextName(), (Date)null, var2 == null ? null : var2.getString());
             var3.add(var7);
             ++var4;
-            var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.getName()), var7.getReason()), true);
-            ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.getId());
+            var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.name()), var7.getReasonMessage()), true);
+            ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.id());
             if (var8 != null) {
                var8.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
             }

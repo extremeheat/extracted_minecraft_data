@@ -68,6 +68,7 @@ public class SoundType {
    public static final SoundType COPPER;
    public static final SoundType COPPER_BULB;
    public static final SoundType COPPER_GRATE;
+   public static final SoundType COPPER_GOLEM_STATUE;
    public static final SoundType CAVE_VINES;
    public static final SoundType SPORE_BLOSSOM;
    public static final SoundType CACTUS_FLOWER;
@@ -109,6 +110,7 @@ public class SoundType {
    public static final SoundType CHERRY_LEAVES;
    public static final SoundType CHERRY_WOOD_HANGING_SIGN;
    public static final SoundType CHISELED_BOOKSHELF;
+   public static final SoundType SHELF;
    public static final SoundType SUSPICIOUS_SAND;
    public static final SoundType SUSPICIOUS_GRAVEL;
    public static final SoundType DECORATED_POT;
@@ -237,6 +239,7 @@ public class SoundType {
       COPPER = new SoundType(1.0F, 1.0F, SoundEvents.COPPER_BREAK, SoundEvents.COPPER_STEP, SoundEvents.COPPER_PLACE, SoundEvents.COPPER_HIT, SoundEvents.COPPER_FALL);
       COPPER_BULB = new SoundType(1.0F, 1.0F, SoundEvents.COPPER_BULB_BREAK, SoundEvents.COPPER_BULB_STEP, SoundEvents.COPPER_BULB_PLACE, SoundEvents.COPPER_BULB_HIT, SoundEvents.COPPER_BULB_FALL);
       COPPER_GRATE = new SoundType(1.0F, 1.0F, SoundEvents.COPPER_GRATE_BREAK, SoundEvents.COPPER_GRATE_STEP, SoundEvents.COPPER_GRATE_PLACE, SoundEvents.COPPER_GRATE_HIT, SoundEvents.COPPER_GRATE_FALL);
+      COPPER_GOLEM_STATUE = new SoundType(1.0F, 1.0F, SoundEvents.COPPER_GOLEM_STATUE_BREAK, SoundEvents.COPPER_GOLEM_STATUE_STEP, SoundEvents.COPPER_GOLEM_STATUE_PLACE, SoundEvents.COPPER_GOLEM_STATUE_HIT, SoundEvents.COPPER_GOLEM_STATUE_FALL);
       CAVE_VINES = new SoundType(1.0F, 1.0F, SoundEvents.CAVE_VINES_BREAK, SoundEvents.CAVE_VINES_STEP, SoundEvents.CAVE_VINES_PLACE, SoundEvents.CAVE_VINES_HIT, SoundEvents.CAVE_VINES_FALL);
       SPORE_BLOSSOM = new SoundType(1.0F, 1.0F, SoundEvents.SPORE_BLOSSOM_BREAK, SoundEvents.SPORE_BLOSSOM_STEP, SoundEvents.SPORE_BLOSSOM_PLACE, SoundEvents.SPORE_BLOSSOM_HIT, SoundEvents.SPORE_BLOSSOM_FALL);
       CACTUS_FLOWER = new SoundType(1.0F, 1.0F, SoundEvents.CACTUS_FLOWER_BREAK, SoundEvents.EMPTY, SoundEvents.CACTUS_FLOWER_PLACE, SoundEvents.EMPTY, SoundEvents.EMPTY);
@@ -278,6 +281,7 @@ public class SoundType {
       CHERRY_LEAVES = new SoundType(1.0F, 1.0F, SoundEvents.CHERRY_LEAVES_BREAK, SoundEvents.CHERRY_LEAVES_STEP, SoundEvents.CHERRY_LEAVES_PLACE, SoundEvents.CHERRY_LEAVES_HIT, SoundEvents.CHERRY_LEAVES_FALL);
       CHERRY_WOOD_HANGING_SIGN = new SoundType(1.0F, 1.0F, SoundEvents.CHERRY_WOOD_HANGING_SIGN_BREAK, SoundEvents.CHERRY_WOOD_HANGING_SIGN_STEP, SoundEvents.CHERRY_WOOD_HANGING_SIGN_PLACE, SoundEvents.CHERRY_WOOD_HANGING_SIGN_HIT, SoundEvents.CHERRY_WOOD_HANGING_SIGN_FALL);
       CHISELED_BOOKSHELF = new SoundType(1.0F, 1.0F, SoundEvents.CHISELED_BOOKSHELF_BREAK, SoundEvents.CHISELED_BOOKSHELF_STEP, SoundEvents.CHISELED_BOOKSHELF_PLACE, SoundEvents.CHISELED_BOOKSHELF_HIT, SoundEvents.CHISELED_BOOKSHELF_FALL);
+      SHELF = new SoundType(1.0F, 1.0F, SoundEvents.SHELF_BREAK, SoundEvents.SHELF_STEP, SoundEvents.SHELF_PLACE, SoundEvents.SHELF_HIT, SoundEvents.SHELF_FALL);
       SUSPICIOUS_SAND = new SoundType(1.0F, 1.0F, SoundEvents.SUSPICIOUS_SAND_BREAK, SoundEvents.SUSPICIOUS_SAND_STEP, SoundEvents.SUSPICIOUS_SAND_PLACE, SoundEvents.SUSPICIOUS_SAND_HIT, SoundEvents.SUSPICIOUS_SAND_FALL);
       SUSPICIOUS_GRAVEL = new SoundType(1.0F, 1.0F, SoundEvents.SUSPICIOUS_GRAVEL_BREAK, SoundEvents.SUSPICIOUS_GRAVEL_STEP, SoundEvents.SUSPICIOUS_GRAVEL_PLACE, SoundEvents.SUSPICIOUS_GRAVEL_HIT, SoundEvents.SUSPICIOUS_GRAVEL_FALL);
       DECORATED_POT = new SoundType(1.0F, 1.0F, SoundEvents.DECORATED_POT_BREAK, SoundEvents.DECORATED_POT_STEP, SoundEvents.DECORATED_POT_PLACE, SoundEvents.DECORATED_POT_HIT, SoundEvents.DECORATED_POT_FALL);

@@ -1,7 +1,6 @@
 package net.minecraft.server.level;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
@@ -10,10 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
@@ -61,8 +58,7 @@ public class ServerEntity {
    private final Entity entity;
    private final int updateInterval;
    private final boolean trackDelta;
-   private final Consumer<Packet<?>> broadcast;
-   private final BiConsumer<Packet<?>, List<UUID>> broadcastWithIgnore;
+   private final Synchronizer synchronizer;
    private final VecDeltaCodec positionCodec = new VecDeltaCodec();
    private byte lastSentYRot;
    private byte lastSentXRot;
@@ -76,14 +72,13 @@ public class ServerEntity {
    @Nullable
    private List<SynchedEntityData.DataValue<?>> trackedDataValues;
 
-   public ServerEntity(ServerLevel var1, Entity var2, int var3, boolean var4, Consumer<Packet<?>> var5, BiConsumer<Packet<?>, List<UUID>> var6) {
+   public ServerEntity(ServerLevel var1, Entity var2, int var3, boolean var4, Synchronizer var5) {
       super();
       this.level = var1;
-      this.broadcast = var5;
+      this.synchronizer = var5;
       this.entity = var2;
       this.updateInterval = var3;
       this.trackDelta = var4;
-      this.broadcastWithIgnore = var6;
       this.positionCodec.setBase(var2.trackingPosition());
       this.lastSentMovement = var2.getDeltaMovement();
       this.lastSentYRot = Mth.packDegrees(var2.getYRot());
@@ -96,21 +91,20 @@ public class ServerEntity {
    public void sendChanges() {
       List var1 = this.entity.getPassengers();
       if (!var1.equals(this.lastPassengers)) {
-         List var2 = this.mountedOrDismounted(var1).map(Entity::getUUID).toList();
-         this.broadcastWithIgnore.accept(new ClientboundSetPassengersPacket(this.entity), var2);
+         this.synchronizer.sendToTrackingPlayersFiltered(new ClientboundSetPassengersPacket(this.entity), (var2x) -> var1.contains(var2x) == this.lastPassengers.contains(var2x));
          this.lastPassengers = var1;
       }
 
       Entity var3 = this.entity;
-      if (var3 instanceof ItemFrame var25) {
+      if (var3 instanceof ItemFrame var2) {
          if (this.tickCount % 10 == 0) {
-            ItemStack var27 = var25.getItem();
-            if (var27.getItem() instanceof MapItem) {
-               MapId var4 = (MapId)var27.get(DataComponents.MAP_ID);
+            ItemStack var26 = var2.getItem();
+            if (var26.getItem() instanceof MapItem) {
+               MapId var4 = (MapId)var26.get(DataComponents.MAP_ID);
                MapItemSavedData var5 = MapItem.getSavedData((MapId)var4, this.level);
                if (var5 != null) {
                   for(ServerPlayer var7 : this.level.players()) {
-                     var5.tickCarriedBy(var7, var27);
+                     var5.tickCarriedBy(var7, var26);
                      Packet var8 = var5.getUpdatePacket(var4, var7);
                      if (var8 != null) {
                         var7.connection.send(var8);
@@ -124,14 +118,14 @@ public class ServerEntity {
       }
 
       if (this.tickCount % this.updateInterval == 0 || this.entity.hasImpulse || this.entity.getEntityData().isDirty()) {
-         byte var26 = Mth.packDegrees(this.entity.getYRot());
-         byte var28 = Mth.packDegrees(this.entity.getXRot());
-         boolean var29 = Math.abs(var26 - this.lastSentYRot) >= 1 || Math.abs(var28 - this.lastSentXRot) >= 1;
+         byte var25 = Mth.packDegrees(this.entity.getYRot());
+         byte var27 = Mth.packDegrees(this.entity.getXRot());
+         boolean var28 = Math.abs(var25 - this.lastSentYRot) >= 1 || Math.abs(var27 - this.lastSentXRot) >= 1;
          if (this.entity.isPassenger()) {
-            if (var29) {
-               this.broadcast.accept(new ClientboundMoveEntityPacket.Rot(this.entity.getId(), var26, var28, this.entity.onGround()));
-               this.lastSentYRot = var26;
-               this.lastSentXRot = var28;
+            if (var28) {
+               this.synchronizer.sendToTrackingPlayers(new ClientboundMoveEntityPacket.Rot(this.entity.getId(), var25, var27, this.entity.onGround()));
+               this.lastSentYRot = var25;
+               this.lastSentXRot = var27;
             }
 
             this.positionCodec.setBase(this.entity.trackingPosition());
@@ -139,39 +133,39 @@ public class ServerEntity {
             this.wasRiding = true;
          } else {
             label197: {
-               Entity var33 = this.entity;
-               if (var33 instanceof AbstractMinecart) {
-                  AbstractMinecart var30 = (AbstractMinecart)var33;
-                  MinecartBehavior var34 = var30.getBehavior();
-                  if (var34 instanceof NewMinecartBehavior) {
-                     NewMinecartBehavior var32 = (NewMinecartBehavior)var34;
-                     this.handleMinecartPosRot(var32, var26, var28, var29);
+               Entity var32 = this.entity;
+               if (var32 instanceof AbstractMinecart) {
+                  AbstractMinecart var29 = (AbstractMinecart)var32;
+                  MinecartBehavior var33 = var29.getBehavior();
+                  if (var33 instanceof NewMinecartBehavior) {
+                     NewMinecartBehavior var31 = (NewMinecartBehavior)var33;
+                     this.handleMinecartPosRot(var31, var25, var27, var28);
                      break label197;
                   }
                }
 
                ++this.teleportDelay;
-               Vec3 var35 = this.entity.trackingPosition();
-               boolean var36 = this.positionCodec.delta(var35).lengthSqr() >= 7.62939453125E-6;
+               Vec3 var34 = this.entity.trackingPosition();
+               boolean var35 = this.positionCodec.delta(var34).lengthSqr() >= 7.62939453125E-6;
                Object var9 = null;
-               boolean var10 = var36 || this.tickCount % 60 == 0;
+               boolean var10 = var35 || this.tickCount % 60 == 0;
                boolean var11 = false;
                boolean var12 = false;
-               long var13 = this.positionCodec.encodeX(var35);
-               long var15 = this.positionCodec.encodeY(var35);
-               long var17 = this.positionCodec.encodeZ(var35);
+               long var13 = this.positionCodec.encodeX(var34);
+               long var15 = this.positionCodec.encodeY(var34);
+               long var17 = this.positionCodec.encodeZ(var34);
                boolean var19 = var13 < -32768L || var13 > 32767L || var15 < -32768L || var15 > 32767L || var17 < -32768L || var17 > 32767L;
                if (!this.entity.getRequiresPrecisePosition() && !var19 && this.teleportDelay <= 400 && !this.wasRiding && this.wasOnGround == this.entity.onGround()) {
-                  if ((!var10 || !var29) && !(this.entity instanceof AbstractArrow)) {
+                  if ((!var10 || !var28) && !(this.entity instanceof AbstractArrow)) {
                      if (var10) {
                         var9 = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), this.entity.onGround());
                         var11 = true;
-                     } else if (var29) {
-                        var9 = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), var26, var28, this.entity.onGround());
+                     } else if (var28) {
+                        var9 = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), var25, var27, this.entity.onGround());
                         var12 = true;
                      }
                   } else {
-                     var9 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), var26, var28, this.entity.onGround());
+                     var9 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var13), (short)((int)var15), (short)((int)var17), var25, var27, this.entity.onGround());
                      var11 = true;
                      var12 = true;
                   }
@@ -191,35 +185,35 @@ public class ServerEntity {
                      Entity var24 = this.entity;
                      if (var24 instanceof AbstractHurtingProjectile) {
                         AbstractHurtingProjectile var23 = (AbstractHurtingProjectile)var24;
-                        this.broadcast.accept(new ClientboundBundlePacket(List.of(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement), new ClientboundProjectilePowerPacket(var23.getId(), var23.accelerationPower))));
+                        this.synchronizer.sendToTrackingPlayers(new ClientboundBundlePacket(List.of(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement), new ClientboundProjectilePowerPacket(var23.getId(), var23.accelerationPower))));
                      } else {
-                        this.broadcast.accept(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
+                        this.synchronizer.sendToTrackingPlayers(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
                      }
                   }
                }
 
                if (var9 != null) {
-                  this.broadcast.accept(var9);
+                  this.synchronizer.sendToTrackingPlayers((Packet)var9);
                }
 
                this.sendDirtyEntityData();
                if (var11) {
-                  this.positionCodec.setBase(var35);
+                  this.positionCodec.setBase(var34);
                }
 
                if (var12) {
-                  this.lastSentYRot = var26;
-                  this.lastSentXRot = var28;
+                  this.lastSentYRot = var25;
+                  this.lastSentXRot = var27;
                }
 
                this.wasRiding = false;
             }
          }
 
-         byte var31 = Mth.packDegrees(this.entity.getYHeadRot());
-         if (Math.abs(var31 - this.lastSentYHeadRot) >= 1) {
-            this.broadcast.accept(new ClientboundRotateHeadPacket(this.entity, var31));
-            this.lastSentYHeadRot = var31;
+         byte var30 = Mth.packDegrees(this.entity.getYHeadRot());
+         if (Math.abs(var30 - this.lastSentYHeadRot) >= 1) {
+            this.synchronizer.sendToTrackingPlayers(new ClientboundRotateHeadPacket(this.entity, var30));
+            this.lastSentYHeadRot = var30;
          }
 
          this.entity.hasImpulse = false;
@@ -228,13 +222,9 @@ public class ServerEntity {
       ++this.tickCount;
       if (this.entity.hurtMarked) {
          this.entity.hurtMarked = false;
-         this.broadcastAndSend(new ClientboundSetEntityMotionPacket(this.entity));
+         this.synchronizer.sendToTrackingPlayersAndSelf(new ClientboundSetEntityMotionPacket(this.entity));
       }
 
-   }
-
-   private Stream<Entity> mountedOrDismounted(List<Entity> var1) {
-      return Streams.concat(new Stream[]{this.lastPassengers.stream().filter((var1x) -> !var1.contains(var1x)), var1.stream().filter((var1x) -> !this.lastPassengers.contains(var1x))});
    }
 
    private void handleMinecartPosRot(NewMinecartBehavior var1, byte var2, byte var3, boolean var4) {
@@ -246,10 +236,10 @@ public class ServerEntity {
          boolean var9 = this.positionCodec.delta(var8).lengthSqr() >= 7.62939453125E-6;
          boolean var10 = var9 || this.tickCount % 60 == 0;
          if (var10 || var4 || var6 > 1.0E-7) {
-            this.broadcast.accept(new ClientboundMoveMinecartPacket(this.entity.getId(), List.of(new NewMinecartBehavior.MinecartStep(this.entity.position(), this.entity.getDeltaMovement(), this.entity.getYRot(), this.entity.getXRot(), 1.0F))));
+            this.synchronizer.sendToTrackingPlayers(new ClientboundMoveMinecartPacket(this.entity.getId(), List.of(new NewMinecartBehavior.MinecartStep(this.entity.position(), this.entity.getDeltaMovement(), this.entity.getYRot(), this.entity.getXRot(), 1.0F))));
          }
       } else {
-         this.broadcast.accept(new ClientboundMoveMinecartPacket(this.entity.getId(), List.copyOf(var1.lerpSteps)));
+         this.synchronizer.sendToTrackingPlayers(new ClientboundMoveMinecartPacket(this.entity.getId(), List.copyOf(var1.lerpSteps)));
          var1.lerpSteps.clear();
       }
 
@@ -348,13 +338,13 @@ public class ServerEntity {
       List var2 = var1.packDirty();
       if (var2 != null) {
          this.trackedDataValues = var1.getNonDefaultValues();
-         this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), var2));
+         this.synchronizer.sendToTrackingPlayersAndSelf(new ClientboundSetEntityDataPacket(this.entity.getId(), var2));
       }
 
       if (this.entity instanceof LivingEntity) {
          Set var3 = ((LivingEntity)this.entity).getAttributes().getAttributesToSync();
          if (!var3.isEmpty()) {
-            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), var3));
+            this.synchronizer.sendToTrackingPlayersAndSelf(new ClientboundUpdateAttributesPacket(this.entity.getId(), var3));
          }
 
          var3.clear();
@@ -362,11 +352,11 @@ public class ServerEntity {
 
    }
 
-   private void broadcastAndSend(Packet<?> var1) {
-      this.broadcast.accept(var1);
-      if (this.entity instanceof ServerPlayer) {
-         ((ServerPlayer)this.entity).connection.send(var1);
-      }
+   public interface Synchronizer {
+      void sendToTrackingPlayers(Packet<? super ClientGamePacketListener> var1);
 
+      void sendToTrackingPlayersAndSelf(Packet<? super ClientGamePacketListener> var1);
+
+      void sendToTrackingPlayersFiltered(Packet<? super ClientGamePacketListener> var1, Predicate<ServerPlayer> var2);
    }
 }

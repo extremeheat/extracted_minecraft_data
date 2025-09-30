@@ -11,8 +11,10 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
@@ -26,22 +28,22 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      double var9 = (double)Util.getNanos();
-      if (var9 - this.lastUpdateTime > 1.0E8) {
-         this.lastUpdateTime = var9;
-         Entity var11 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-         this.surroundEntities = ImmutableList.copyOf(var11.level().getEntities(var11, var11.getBoundingBox().inflate(16.0)));
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      double var11 = (double)Util.getNanos();
+      if (var11 - this.lastUpdateTime > 1.0E8) {
+         this.lastUpdateTime = var11;
+         Entity var13 = this.minecraft.gameRenderer.getMainCamera().getEntity();
+         this.surroundEntities = ImmutableList.copyOf(var13.level().getEntities(var13, var13.getBoundingBox().inflate(16.0)));
       }
 
-      LocalPlayer var14 = this.minecraft.player;
-      if (var14 != null && var14.mainSupportingBlockPos.isPresent()) {
-         this.drawHighlights(var1, var2, var3, var5, var7, var14, () -> 0.0, 1.0F, 0.0F, 0.0F);
+      LocalPlayer var16 = this.minecraft.player;
+      if (var16 != null && var16.mainSupportingBlockPos.isPresent()) {
+         this.drawHighlights(var1, var2, var3, var5, var7, var16, () -> 0.0, 1.0F, 0.0F, 0.0F);
       }
 
-      for(Entity var13 : this.surroundEntities) {
-         if (var13 != var14) {
-            this.drawHighlights(var1, var2, var3, var5, var7, var13, () -> this.getBias(var13), 0.0F, 1.0F, 0.0F);
+      for(Entity var15 : this.surroundEntities) {
+         if (var15 != var16) {
+            this.drawHighlights(var1, var2, var3, var5, var7, var15, () -> this.getBias(var15), 0.0F, 1.0F, 0.0F);
          }
       }
 
@@ -71,7 +73,7 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
       double var21 = var15 + 1.0 + 4.0 * var10;
       double var23 = var17 + 1.0 + 4.0 * var10;
       double var25 = var19 + 1.0 + 4.0 * var10;
-      ShapeRenderer.renderLineBox(var2, var9.getBuffer(RenderType.lines()), var15, var17, var19, var21, var23, var25, var12, var13, var14, 0.4F);
+      ShapeRenderer.renderLineBox(var2.last(), var9.getBuffer(RenderType.lines()), var15, var17, var19, var21, var23, var25, var12, var13, var14, 0.4F);
       DebugRenderer.renderVoxelShape(var2, var9.getBuffer(RenderType.lines()), this.minecraft.level.getBlockState(var1).getCollisionShape(this.minecraft.level, var1, CollisionContext.empty()).move((Vec3i)var1), -var3, -var5, -var7, var12, var13, var14, 1.0F, false);
    }
 }

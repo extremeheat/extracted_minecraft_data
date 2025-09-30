@@ -23,7 +23,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -231,6 +230,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.requiredFeatures;
    }
 
+   protected boolean shouldChangedStateKeepBlockEntity(BlockState var1) {
+      return false;
+   }
+
    protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1;
    }
@@ -295,7 +298,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return var1.isCollisionShapeFullBlock(var2, var3) ? 0.2F : 1.0F;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return 0;
    }
 
@@ -538,7 +541,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties noCollission() {
+      public Properties noCollision() {
          this.hasCollision = false;
          this.canOcclude = false;
          return this;
@@ -970,8 +973,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().hasAnalogOutputSignal(this.asState());
       }
 
-      public int getAnalogOutputSignal(Level var1, BlockPos var2) {
-         return this.getBlock().getAnalogOutputSignal(this.asState(), var1, var2);
+      public int getAnalogOutputSignal(Level var1, BlockPos var2, Direction var3) {
+         return this.getBlock().getAnalogOutputSignal(this.asState(), var1, var2, var3);
       }
 
       public float getDestroySpeed(BlockGetter var1, BlockPos var2) {
@@ -1056,7 +1059,6 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public void handleNeighborChanged(Level var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
-         DebugPackets.sendNeighborsUpdatePacket(var1, var2);
          this.getBlock().neighborChanged(this.asState(), var1, var2, var3, var4, var5);
       }
 
@@ -1189,6 +1191,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean hasBlockEntity() {
          return this.getBlock() instanceof EntityBlock;
+      }
+
+      public boolean shouldChangedStateKeepBlockEntity(BlockState var1) {
+         return this.getBlock().shouldChangedStateKeepBlockEntity(var1);
       }
 
       @Nullable

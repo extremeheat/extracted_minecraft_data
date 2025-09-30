@@ -7,9 +7,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
-import net.minecraft.util.StringUtil;
 
 public class TextFieldHelper {
    private final Supplier<String> getMessageFn;
@@ -46,53 +46,53 @@ public class TextFieldHelper {
       var0.keyboardHandler.setClipboard(var1);
    }
 
-   public boolean charTyped(char var1) {
-      if (StringUtil.isAllowedChatCharacter(var1)) {
-         this.insertText((String)this.getMessageFn.get(), Character.toString(var1));
+   public boolean charTyped(CharacterEvent var1) {
+      if (var1.isAllowedChatCharacter()) {
+         this.insertText((String)this.getMessageFn.get(), var1.codepointAsString());
       }
 
       return true;
    }
 
-   public boolean keyPressed(int var1) {
-      if (Screen.isSelectAll(var1)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (var1.isSelectAll()) {
          this.selectAll();
          return true;
-      } else if (Screen.isCopy(var1)) {
+      } else if (var1.isCopy()) {
          this.copy();
          return true;
-      } else if (Screen.isPaste(var1)) {
+      } else if (var1.isPaste()) {
          this.paste();
          return true;
-      } else if (Screen.isCut(var1)) {
+      } else if (var1.isCut()) {
          this.cut();
          return true;
       } else {
-         CursorStep var2 = Screen.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
-         if (var1 == 259) {
+         CursorStep var2 = var1.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
+         if (var1.key() == 259) {
             this.removeFromCursor(-1, var2);
             return true;
          } else {
-            if (var1 == 261) {
+            if (var1.key() == 261) {
                this.removeFromCursor(1, var2);
             } else {
-               if (var1 == 263) {
-                  this.moveBy(-1, Screen.hasShiftDown(), var2);
+               if (var1.isLeft()) {
+                  this.moveBy(-1, var1.hasShiftDown(), var2);
                   return true;
                }
 
-               if (var1 == 262) {
-                  this.moveBy(1, Screen.hasShiftDown(), var2);
+               if (var1.isRight()) {
+                  this.moveBy(1, var1.hasShiftDown(), var2);
                   return true;
                }
 
-               if (var1 == 268) {
-                  this.setCursorToStart(Screen.hasShiftDown());
+               if (var1.key() == 268) {
+                  this.setCursorToStart(var1.hasShiftDown());
                   return true;
                }
 
-               if (var1 == 269) {
-                  this.setCursorToEnd(Screen.hasShiftDown());
+               if (var1.key() == 269) {
+                  this.setCursorToEnd(var1.hasShiftDown());
                   return true;
                }
             }

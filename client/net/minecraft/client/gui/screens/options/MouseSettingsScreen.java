@@ -12,7 +12,7 @@ public class MouseSettingsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.mouse_settings.title");
 
    private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.sensitivity(), var0.invertYMouse(), var0.mouseWheelSensitivity(), var0.discreteMouseScroll(), var0.touchscreen()};
+      return new OptionInstance[]{var0.sensitivity(), var0.touchscreen(), var0.mouseWheelSensitivity(), var0.discreteMouseScroll(), var0.invertMouseX(), var0.invertMouseY(), var0.allowCursorChanges()};
    }
 
    public MouseSettingsScreen(Screen var1, Options var2) {

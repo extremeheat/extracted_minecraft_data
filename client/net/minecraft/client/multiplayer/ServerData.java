@@ -33,6 +33,7 @@ public class ServerData {
    @Nullable
    private byte[] iconBytes;
    private Type type;
+   private int acceptedCodeOfConduct;
    private State state;
 
    public ServerData(String var1, String var2, Type var3) {
@@ -50,6 +51,10 @@ public class ServerData {
       var1.putString("ip", this.ip);
       var1.storeNullable("icon", ExtraCodecs.BASE64_STRING, this.iconBytes);
       var1.store(ServerData.ServerPackStatus.FIELD_CODEC, this.packStatus);
+      if (this.acceptedCodeOfConduct != 0) {
+         var1.putInt("acceptedCodeOfConduct", this.acceptedCodeOfConduct);
+      }
+
       return var1;
    }
 
@@ -65,6 +70,7 @@ public class ServerData {
       ServerData var1 = new ServerData(var0.getStringOr("name", ""), var0.getStringOr("ip", ""), ServerData.Type.OTHER);
       var1.setIconBytes((byte[])var0.read("icon", ExtraCodecs.BASE64_STRING).orElse((Object)null));
       var1.setResourcePackStatus((ServerPackStatus)var0.read(ServerData.ServerPackStatus.FIELD_CODEC).orElse(ServerData.ServerPackStatus.PROMPT));
+      var1.acceptedCodeOfConduct = var0.getIntOr("acceptedCodeOfConduct", 0);
       return var1;
    }
 
@@ -87,6 +93,18 @@ public class ServerData {
 
    public Type type() {
       return this.type;
+   }
+
+   public boolean hasAcceptedCodeOfConduct(String var1) {
+      return this.acceptedCodeOfConduct == var1.hashCode();
+   }
+
+   public void acceptCodeOfConduct(String var1) {
+      this.acceptedCodeOfConduct = var1.hashCode();
+   }
+
+   public void clearCodeOfConduct() {
+      this.acceptedCodeOfConduct = 0;
    }
 
    public void copyNameIconFrom(ServerData var1) {
@@ -144,7 +162,7 @@ public class ServerData {
       private final Component name;
 
       private ServerPackStatus(final String var3) {
-         this.name = Component.translatable("addServer.resourcePack." + var3);
+         this.name = Component.translatable("manageServer.resourcePack." + var3);
       }
 
       public Component getName() {

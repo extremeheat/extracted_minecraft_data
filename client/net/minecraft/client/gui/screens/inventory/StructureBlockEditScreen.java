@@ -10,6 +10,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.CommonComponents;
@@ -152,8 +154,8 @@ public class StructureBlockEditScreen extends Screen {
          this.updateDirectionButtons();
       }).bounds(this.width / 2 + 1 + 40 + 1 + 20, 185, 40, 20).build());
       this.nameEdit = new EditBox(this.font, this.width / 2 - 152, 40, 300, 20, Component.translatable("structure_block.structure_name")) {
-         public boolean charTyped(char var1, int var2) {
-            return !StructureBlockEditScreen.this.isValidCharacterForName(this.getValue(), var1, this.getCursorPosition()) ? false : super.charTyped(var1, var2);
+         public boolean charTyped(CharacterEvent var1) {
+            return !StructureBlockEditScreen.this.isValidCharacterForName(this.getValue(), var1.codepoint(), this.getCursorPosition()) ? false : super.charTyped(var1);
          }
       };
       this.nameEdit.setMaxLength(128);
@@ -203,10 +205,6 @@ public class StructureBlockEditScreen extends Screen {
 
    protected void setInitialFocus() {
       this.setInitialFocus(this.nameEdit);
-   }
-
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
    }
 
    public void resize(Minecraft var1, int var2, int var3) {
@@ -349,14 +347,14 @@ public class StructureBlockEditScreen extends Screen {
       this.onCancel();
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (super.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (super.keyPressed(var1)) {
          return true;
-      } else if (var1 != 257 && var1 != 335) {
-         return false;
-      } else {
+      } else if (var1.isConfirmation()) {
          this.onDone();
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -404,6 +402,10 @@ public class StructureBlockEditScreen extends Screen {
 
    public boolean isPauseScreen() {
       return false;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    static {

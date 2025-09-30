@@ -1,8 +1,12 @@
 package net.minecraft.client.gui;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.platform.cursor.CursorType;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +26,7 @@ import net.minecraft.client.gui.render.state.ColoredRectangleRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.GuiTextRenderState;
+import net.minecraft.client.gui.render.state.TiledBlitRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBannerResultRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiBookModelRenderState;
 import net.minecraft.client.gui.render.state.pip.GuiEntityRenderState;
@@ -33,19 +38,25 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
+import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -75,22 +86,37 @@ public class GuiGraphics {
    private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
-   private final GuiSpriteManager sprites;
+   private final MaterialSet materials;
+   private final TextureAtlas guiSprites;
    private final GuiRenderState guiRenderState;
+   private CursorType pendingCursor;
    @Nullable
    private Runnable deferredTooltip;
+   private final List<OutlineBox> deferredOutlines;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
       this.scissorStack = new ScissorStack();
+      this.pendingCursor = CursorType.DEFAULT;
+      this.deferredOutlines = new ArrayList();
       this.minecraft = var1;
       this.pose = var2;
-      this.sprites = var1.getGuiSprites();
+      AtlasManager var4 = var1.getAtlasManager();
+      this.materials = var4;
+      this.guiSprites = var4.getAtlasOrThrow(AtlasIds.GUI);
       this.guiRenderState = var3;
    }
 
    public GuiGraphics(Minecraft var1, GuiRenderState var2) {
       this(var1, new Matrix3x2fStack(16), var2);
+   }
+
+   public void requestCursor(CursorType var1) {
+      this.pendingCursor = var1;
+   }
+
+   public void applyCursor(Window var1) {
+      var1.selectCursor(this.pendingCursor);
    }
 
    public int guiWidth() {
@@ -251,11 +277,8 @@ public class GuiGraphics {
       this.drawString(var1, var2, var3, var4, var6, true);
    }
 
-   public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
-      this.fill(var1, var2, var1 + var3, var2 + 1, var5);
-      this.fill(var1, var2 + var4 - 1, var1 + var3, var2 + var4, var5);
-      this.fill(var1, var2 + 1, var1 + 1, var2 + var4 - 1, var5);
-      this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
+   public void submitOutline(int var1, int var2, int var3, int var4, int var5) {
+      this.deferredOutlines.add(new OutlineBox(var1, var2, var3, var4, var5));
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
@@ -266,17 +289,31 @@ public class GuiGraphics {
       this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.color(var7, -1));
    }
 
+   private static GuiSpriteScaling getSpriteScaling(TextureAtlasSprite var0) {
+      return ((GuiMetadataSection)var0.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)).scaling();
+   }
+
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7) {
-      TextureAtlasSprite var8 = this.sprites.getSprite(var2);
-      GuiSpriteScaling var9 = this.sprites.getSpriteScaling(var8);
-      if (var9 instanceof GuiSpriteScaling.Stretch) {
-         this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
-      } else if (var9 instanceof GuiSpriteScaling.Tile) {
-         GuiSpriteScaling.Tile var10 = (GuiSpriteScaling.Tile)var9;
-         this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var10.width(), var10.height(), var10.width(), var10.height(), var7);
-      } else if (var9 instanceof GuiSpriteScaling.NineSlice) {
-         GuiSpriteScaling.NineSlice var11 = (GuiSpriteScaling.NineSlice)var9;
-         this.blitNineSlicedSprite(var1, var8, var11, var3, var4, var5, var6, var7);
+      TextureAtlasSprite var8 = this.guiSprites.getSprite(var2);
+      GuiSpriteScaling var9 = getSpriteScaling(var8);
+      Objects.requireNonNull(var9);
+      byte var11 = 0;
+      //$FF: var11->value
+      //0->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Stretch
+      //1->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$Tile
+      //2->net/minecraft/client/resources/metadata/gui/GuiSpriteScaling$NineSlice
+      switch (var9.typeSwitch<invokedynamic>(var9, var11)) {
+         case 0:
+            GuiSpriteScaling.Stretch var12 = (GuiSpriteScaling.Stretch)var9;
+            this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
+            break;
+         case 1:
+            GuiSpriteScaling.Tile var13 = (GuiSpriteScaling.Tile)var9;
+            this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var13.width(), var13.height(), var13.width(), var13.height(), var7);
+            break;
+         case 2:
+            GuiSpriteScaling.NineSlice var14 = (GuiSpriteScaling.NineSlice)var9;
+            this.blitNineSlicedSprite(var1, var8, var14, var3, var4, var5, var6, var7);
       }
 
    }
@@ -286,8 +323,8 @@ public class GuiGraphics {
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      TextureAtlasSprite var12 = this.sprites.getSprite(var2);
-      GuiSpriteScaling var13 = this.sprites.getSpriteScaling(var12);
+      TextureAtlasSprite var12 = this.guiSprites.getSprite(var2);
+      GuiSpriteScaling var13 = getSpriteScaling(var12);
       if (var13 instanceof GuiSpriteScaling.Stretch) {
          this.blitSprite(var1, var12, var3, var4, var5, var6, var7, var8, var9, var10, var11);
       } else {
@@ -357,17 +394,10 @@ public class GuiGraphics {
    private void blitTiledSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
       if (var5 > 0 && var6 > 0) {
          if (var9 > 0 && var10 > 0) {
-            for(int var14 = 0; var14 < var5; var14 += var9) {
-               int var15 = Math.min(var9, var5 - var14);
-
-               for(int var16 = 0; var16 < var6; var16 += var10) {
-                  int var17 = Math.min(var10, var6 - var16);
-                  this.blitSprite(var1, var2, var11, var12, var7, var8, var3 + var14, var4 + var16, var15, var17, var13);
-               }
-            }
-
+            GpuTextureView var14 = this.minecraft.getTextureManager().getTexture(var2.atlasLocation()).getTextureView();
+            this.submitTiledBlit(var1, var14, var9, var10, var3, var4, var3 + var5, var4 + var6, var2.getU((float)var7 / (float)var11), var2.getU((float)(var7 + var9) / (float)var11), var2.getV((float)var8 / (float)var12), var2.getV((float)(var8 + var10) / (float)var12), var13);
          } else {
-            throw new IllegalArgumentException("Tiled sprite texture size must be positive, got " + var9 + "x" + var10);
+            throw new IllegalArgumentException("Tile size must be positive, got " + var9 + "x" + var10);
          }
       }
    }
@@ -399,6 +429,10 @@ public class GuiGraphics {
 
    private void submitBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
       this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, this.scissorStack.peek()));
+   }
+
+   private void submitTiledBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13) {
+      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, this.scissorStack.peek()));
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {
@@ -551,7 +585,17 @@ public class GuiGraphics {
       this.pose.popMatrix();
    }
 
-   public void renderDeferredTooltip() {
+   public void renderDeferredElements() {
+      if (!this.deferredOutlines.isEmpty()) {
+         this.nextStratum();
+
+         for(OutlineBox var2 : this.deferredOutlines) {
+            var2.render(this);
+         }
+
+         this.deferredOutlines.clear();
+      }
+
       if (this.deferredTooltip != null) {
          this.nextStratum();
          this.deferredTooltip.run();
@@ -590,56 +634,62 @@ public class GuiGraphics {
    }
 
    public void renderComponentHoverEffect(Font var1, @Nullable Style var2, int var3, int var4) {
-      if (var2 != null && var2.getHoverEvent() != null) {
-         HoverEvent.ShowText var10000 = var2.getHoverEvent();
-         Objects.requireNonNull(var10000);
-         HoverEvent var5 = var10000;
-         byte var6 = 0;
-         //$FF: var6->value
-         //0->net/minecraft/network/chat/HoverEvent$ShowItem
-         //1->net/minecraft/network/chat/HoverEvent$ShowEntity
-         //2->net/minecraft/network/chat/HoverEvent$ShowText
-         switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
-            case 0:
-               HoverEvent.ShowItem var7 = (HoverEvent.ShowItem)var5;
-               HoverEvent.ShowItem var23 = var7;
+      if (var2 != null) {
+         if (var2.getClickEvent() != null) {
+            this.requestCursor(CursorTypes.POINTING_HAND);
+         }
 
-               try {
-                  var24 = var23.item();
-               } catch (Throwable var16) {
-                  throw new MatchException(var16.toString(), var16);
-               }
+         if (var2.getHoverEvent() != null) {
+            HoverEvent.ShowText var10000 = var2.getHoverEvent();
+            Objects.requireNonNull(var10000);
+            HoverEvent var5 = var10000;
+            byte var6 = 0;
+            //$FF: var6->value
+            //0->net/minecraft/network/chat/HoverEvent$ShowItem
+            //1->net/minecraft/network/chat/HoverEvent$ShowEntity
+            //2->net/minecraft/network/chat/HoverEvent$ShowText
+            switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
+               case 0:
+                  HoverEvent.ShowItem var7 = (HoverEvent.ShowItem)var5;
+                  HoverEvent.ShowItem var23 = var7;
 
-               ItemStack var17 = var24;
-               this.setTooltipForNextFrame(var1, var17, var3, var4);
-               break;
-            case 1:
-               HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
-               HoverEvent.ShowEntity var21 = var9;
+                  try {
+                     var24 = var23.item();
+                  } catch (Throwable var16) {
+                     throw new MatchException(var16.toString(), var16);
+                  }
 
-               try {
-                  var22 = var21.entity();
-               } catch (Throwable var15) {
-                  throw new MatchException(var15.toString(), var15);
-               }
+                  ItemStack var17 = var24;
+                  this.setTooltipForNextFrame(var1, var17, var3, var4);
+                  break;
+               case 1:
+                  HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
+                  HoverEvent.ShowEntity var21 = var9;
 
-               HoverEvent.EntityTooltipInfo var18 = var22;
-               if (this.minecraft.options.advancedItemTooltips) {
-                  this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
-               }
-               break;
-            case 2:
-               HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
-               var10000 = var11;
+                  try {
+                     var22 = var21.entity();
+                  } catch (Throwable var15) {
+                     throw new MatchException(var15.toString(), var15);
+                  }
 
-               try {
-                  var20 = var10000.value();
-               } catch (Throwable var14) {
-                  throw new MatchException(var14.toString(), var14);
-               }
+                  HoverEvent.EntityTooltipInfo var18 = var22;
+                  if (this.minecraft.options.advancedItemTooltips) {
+                     this.setComponentTooltipForNextFrame(var1, var18.getTooltipLines(), var3, var4);
+                  }
+                  break;
+               case 2:
+                  HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
+                  var10000 = var11;
 
-               Component var13 = var20;
-               this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+                  try {
+                     var20 = var10000.value();
+                  } catch (Throwable var14) {
+                     throw new MatchException(var14.toString(), var14);
+                  }
+
+                  Component var13 = var20;
+                  this.setTooltipForNextFrame(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+            }
          }
 
       }
@@ -694,16 +744,20 @@ public class GuiGraphics {
       this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var3, this.scissorStack.peek()));
    }
 
-   public void submitBannerPatternRenderState(ModelPart var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
+   public void submitBannerPatternRenderState(BannerFlagModel var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7) {
       this.guiRenderState.submitPicturesInPictureState(new GuiBannerResultRenderState(var1, var2, var3, var4, var5, var6, var7, this.scissorStack.peek()));
    }
 
-   public void submitSignRenderState(Model var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
+   public void submitSignRenderState(Model.Simple var1, float var2, WoodType var3, int var4, int var5, int var6, int var7) {
       this.guiRenderState.submitPicturesInPictureState(new GuiSignRenderState(var1, var3, var4, var5, var6, var7, var2, this.scissorStack.peek()));
    }
 
    public void submitProfilerChartRenderState(List<ResultField> var1, int var2, int var3, int var4, int var5) {
       this.guiRenderState.submitPicturesInPictureState(new GuiProfilerChartRenderState(var1, var2, var3, var4, var5, this.scissorStack.peek()));
+   }
+
+   public TextureAtlasSprite getSprite(Material var1) {
+      return this.materials.get(var1);
    }
 
    static class ScissorStack {
@@ -742,6 +796,24 @@ public class GuiGraphics {
 
       public boolean containsPoint(int var1, int var2) {
          return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
+      }
+   }
+
+   static record OutlineBox(int x, int y, int width, int height, int color) {
+      OutlineBox(int var1, int var2, int var3, int var4, int var5) {
+         super();
+         this.x = var1;
+         this.y = var2;
+         this.width = var3;
+         this.height = var4;
+         this.color = var5;
+      }
+
+      public void render(GuiGraphics var1) {
+         var1.fill(this.x, this.y, this.x + this.width, this.y + 1, this.color);
+         var1.fill(this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, this.color);
+         var1.fill(this.x, this.y + 1, this.x + 1, this.y + this.height - 1, this.color);
+         var1.fill(this.x + this.width - 1, this.y + 1, this.x + this.width, this.y + this.height - 1, this.color);
       }
    }
 }

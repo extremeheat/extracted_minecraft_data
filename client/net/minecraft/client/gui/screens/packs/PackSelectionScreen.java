@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -27,14 +28,12 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.ContainerEventHandler;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -60,7 +59,10 @@ public class PackSelectionScreen extends Screen {
    private static final Component AVAILABLE_TITLE = Component.translatable("pack.available.title");
    private static final Component SELECTED_TITLE = Component.translatable("pack.selected.title");
    private static final Component OPEN_PACK_FOLDER_TITLE = Component.translatable("pack.openFolder");
+   private static final Component SEARCH;
    private static final int LIST_WIDTH = 200;
+   private static final int HEADER_ELEMENT_SPACING = 4;
+   private static final int SEARCH_BOX_HEIGHT = 15;
    private static final Component DRAG_AND_DROP;
    private static final Component DIRECTORY_BUTTON_TOOLTIP;
    private static final int RELOAD_COOLDOWN = 20;
@@ -70,9 +72,14 @@ public class PackSelectionScreen extends Screen {
    @Nullable
    private Watcher watcher;
    private long ticksToReload;
+   @Nullable
    private TransferableSelectionList availablePackList;
+   @Nullable
    private TransferableSelectionList selectedPackList;
+   @Nullable
+   private EditBox search;
    private final Path packDir;
+   @Nullable
    private Button doneButton;
    private final Map<String, ResourceLocation> packIcons = Maps.newHashMap();
 
@@ -100,28 +107,54 @@ public class PackSelectionScreen extends Screen {
    }
 
    protected void init() {
-      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(5));
+      HeaderAndFooterLayout var10000 = this.layout;
+      Objects.requireNonNull(this.font);
+      int var10001 = 4 + 9 + 4;
+      Objects.requireNonNull(this.font);
+      var10000.setHeaderHeight(var10001 + 9 + 4 + 15 + 4);
+      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.getTitle(), this.font));
       var1.addChild(new StringWidget(DRAG_AND_DROP, this.font));
+      this.search = (EditBox)var1.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
+      this.search.setHint(SEARCH);
+      this.search.setResponder(this::updateFilteredEntries);
       this.availablePackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
       this.selectedPackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
       this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
-      this.reload();
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
+      this.setInitialFocus(this.search);
+      this.reload();
+   }
+
+   private void updateFilteredEntries(String var1) {
+      this.filterEntries(var1, this.model.getSelected(), this.selectedPackList);
+      this.filterEntries(var1, this.model.getUnselected(), this.availablePackList);
+   }
+
+   private void filterEntries(String var1, Stream<PackSelectionModel.Entry> var2, @Nullable TransferableSelectionList var3) {
+      if (var3 != null) {
+         String var4 = var1.toLowerCase(Locale.ROOT);
+         Stream var5 = var2.filter((var2x) -> var1.isBlank() || var2x.getId().toLowerCase(Locale.ROOT).contains(var4) || var2x.getTitle().getString().toLowerCase(Locale.ROOT).contains(var4) || var2x.getDescription().getString().toLowerCase(Locale.ROOT).contains(var4));
+         var3.updateList(var5, (PackSelectionModel.EntryBase)null);
+      }
    }
 
    protected void repositionElements() {
       this.layout.arrangeElements();
-      this.availablePackList.updateSize(200, this.layout);
-      this.availablePackList.setX(this.width / 2 - 15 - 200);
-      this.selectedPackList.updateSize(200, this.layout);
-      this.selectedPackList.setX(this.width / 2 + 15);
+      if (this.availablePackList != null) {
+         this.availablePackList.updateSizeAndPosition(200, this.layout.getContentHeight(), this.width / 2 - 15 - 200, this.layout.getHeaderHeight());
+      }
+
+      if (this.selectedPackList != null) {
+         this.selectedPackList.updateSizeAndPosition(200, this.layout.getContentHeight(), this.width / 2 + 15, this.layout.getHeaderHeight());
+      }
+
    }
 
    public void tick() {
@@ -142,40 +175,39 @@ public class PackSelectionScreen extends Screen {
 
    }
 
-   private void populateLists() {
-      this.updateList(this.selectedPackList, this.model.getSelected());
-      this.updateList(this.availablePackList, this.model.getUnselected());
-      this.doneButton.active = !this.selectedPackList.children().isEmpty();
-   }
+   private void populateLists(@Nullable PackSelectionModel.EntryBase var1) {
+      if (this.selectedPackList != null) {
+         this.selectedPackList.updateList(this.model.getSelected(), var1);
+      }
 
-   private void updateList(TransferableSelectionList var1, Stream<PackSelectionModel.Entry> var2) {
-      var1.children().clear();
-      TransferableSelectionList.PackEntry var3 = (TransferableSelectionList.PackEntry)var1.getSelected();
-      String var4 = var3 == null ? "" : var3.getPackId();
-      var1.setSelected((AbstractSelectionList.Entry)null);
-      var2.forEach((var3x) -> {
-         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
-         var1.children().add(var4x);
-         if (var3x.getId().equals(var4)) {
-            var1.setSelected(var4x);
-         }
+      if (this.availablePackList != null) {
+         this.availablePackList.updateList(this.model.getUnselected(), var1);
+      }
 
-      });
-   }
+      if (this.search != null) {
+         this.updateFilteredEntries(this.search.getValue());
+      }
 
-   public void updateFocus(TransferableSelectionList var1) {
-      TransferableSelectionList var2 = this.selectedPackList == var1 ? this.availablePackList : this.selectedPackList;
-      this.changeFocus(ComponentPath.path((GuiEventListener)var2.getFirstElement(), (ContainerEventHandler[])(var2, this)));
+      if (this.doneButton != null) {
+         this.doneButton.active = !this.selectedPackList.children().isEmpty();
+      }
+
    }
 
    public void clearSelected() {
-      this.selectedPackList.setSelected((AbstractSelectionList.Entry)null);
-      this.availablePackList.setSelected((AbstractSelectionList.Entry)null);
+      if (this.selectedPackList != null) {
+         this.selectedPackList.setSelected((AbstractSelectionList.Entry)null);
+      }
+
+      if (this.availablePackList != null) {
+         this.availablePackList.setSelected((AbstractSelectionList.Entry)null);
+      }
+
    }
 
    private void reload() {
       this.model.findNewPacks();
-      this.populateLists();
+      this.populateLists((PackSelectionModel.EntryBase)null);
       this.ticksToReload = 0L;
       this.packIcons.clear();
    }
@@ -337,6 +369,7 @@ public class PackSelectionScreen extends Screen {
    }
 
    static {
+      SEARCH = Component.translatable("gui.packSelection.search").withStyle(EditBox.SEARCH_HINT_STYLE);
       DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
       DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
       DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");

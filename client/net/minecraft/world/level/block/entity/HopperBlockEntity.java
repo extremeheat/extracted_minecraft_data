@@ -34,6 +34,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    public static final int HOPPER_CONTAINER_SIZE = 5;
    private static final int[][] CACHED_SLOTS = new int[54][];
    private static final int NO_COOLDOWN_TIME = -1;
+   private static final Component DEFAULT_NAME = Component.translatable("container.hopper");
    private NonNullList<ItemStack> items;
    private int cooldownTime;
    private long tickedGameTime;
@@ -86,7 +87,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.hopper");
+      return DEFAULT_NAME;
    }
 
    public static void pushItemsTick(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3) {
@@ -100,7 +101,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    private static boolean tryMoveItems(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3, BooleanSupplier var4) {
-      if (var0.isClientSide) {
+      if (var0.isClientSide()) {
          return false;
       } else {
          if (!var3.isOnCooldown() && (Boolean)var2.getValue(HopperBlock.ENABLED)) {

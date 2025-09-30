@@ -85,7 +85,7 @@ public class VaultBlockEntity extends BlockEntity {
 
    @Nullable
    public VaultServerData getServerData() {
-      return this.level != null && !this.level.isClientSide ? this.serverData : null;
+      return this.level != null && !this.level.isClientSide() ? this.serverData : null;
    }
 
    public VaultSharedData getSharedData() {

@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -106,6 +107,16 @@ public class SculkSpreader {
 
    public void save(ValueOutput var1) {
       var1.store("cursors", SculkSpreader.ChargeCursor.CODEC.listOf(), this.cursors);
+      if (SharedConstants.DEBUG_SCULK_CATALYST) {
+         int var2 = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Integer::sum);
+         int var3 = (Integer)this.getCursors().stream().map((var0) -> 1).reduce(0, Integer::sum);
+         int var4 = (Integer)this.getCursors().stream().map(ChargeCursor::getCharge).reduce(0, Math::max);
+         var1.putInt("stats.total", var2);
+         var1.putInt("stats.count", var3);
+         var1.putInt("stats.max", var4);
+         var1.putInt("stats.avg", var2 / (var3 + 1));
+      }
+
    }
 
    public void addCursors(BlockPos var1, int var2) {
@@ -170,11 +181,6 @@ public class SculkSpreader {
 
          this.cursors = var5;
       }
-   }
-
-   // $FF: synthetic method
-   private static Integer lambda$save$0(ChargeCursor var0) {
-      return 1;
    }
 
    public static class ChargeCursor {

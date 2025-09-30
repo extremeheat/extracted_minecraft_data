@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,7 +8,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -19,8 +17,6 @@ public abstract class RenderTarget {
    private static int UNNAMED_RENDER_TARGETS = 0;
    public int width;
    public int height;
-   public int viewWidth;
-   public int viewHeight;
    protected final String label;
    public final boolean useDepth;
    @Nullable
@@ -85,8 +81,6 @@ public abstract class RenderTarget {
       GpuDevice var3 = RenderSystem.getDevice();
       int var4 = var3.getMaxTextureSize();
       if (var1 > 0 && var1 <= var4 && var2 > 0 && var2 <= var4) {
-         this.viewWidth = var1;
-         this.viewHeight = var2;
          this.width = var1;
          this.height = var2;
          if (this.useDepth) {
@@ -131,17 +125,12 @@ public abstract class RenderTarget {
 
    public void blitAndBlendToTexture(GpuTextureView var1) {
       RenderSystem.assertOnRenderThread();
-      RenderSystem.AutoStorageIndexBuffer var2 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-      GpuBuffer var3 = var2.getBuffer(6);
-      GpuBuffer var4 = RenderSystem.getQuadVertexBuffer();
 
-      try (RenderPass var5 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", var1, OptionalInt.empty())) {
-         var5.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
-         RenderSystem.bindDefaultUniforms(var5);
-         var5.setVertexBuffer(0, var4);
-         var5.setIndexBuffer(var3, var2.type());
-         var5.bindSampler("InSampler", this.colorTextureView);
-         var5.drawIndexed(0, 0, 6, 1);
+      try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", var1, OptionalInt.empty())) {
+         var2.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
+         RenderSystem.bindDefaultUniforms(var2);
+         var2.bindSampler("InSampler", this.colorTextureView);
+         var2.draw(0, 3);
       }
 
    }

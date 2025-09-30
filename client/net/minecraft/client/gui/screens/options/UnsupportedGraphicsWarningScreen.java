@@ -70,7 +70,12 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
       int var10004 = this.contentTop;
       Objects.requireNonNull(this.font);
       var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
-      this.messageLines.renderCentered(var1, this.width / 2, this.contentTop);
+      MultiLineLabel var10000 = this.messageLines;
+      MultiLineLabel.Align var5 = MultiLineLabel.Align.CENTER;
+      var10003 = this.width / 2;
+      var10004 = this.contentTop;
+      Objects.requireNonNull(this.font);
+      var10000.render(var1, var5, var10003, var10004, 9, true, -1);
    }
 
    public boolean shouldCloseOnEsc() {

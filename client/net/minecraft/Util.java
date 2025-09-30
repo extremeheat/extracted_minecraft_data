@@ -24,8 +24,6 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -515,11 +513,6 @@ public class Util {
       }
    }
 
-   public static Stream<String> getVmArguments() {
-      RuntimeMXBean var0 = ManagementFactory.getRuntimeMXBean();
-      return var0.getInputArguments().stream().filter((var0x) -> var0x.startsWith("-X"));
-   }
-
    public static <T> T lastOf(List<T> var0) {
       return (T)var0.get(var0.size() - 1);
    }
@@ -646,12 +639,38 @@ public class Util {
       return var0;
    }
 
-   public static <T> Supplier<T> name(Supplier<T> var0, Supplier<String> var1) {
-      return var0;
+   public static <T> Supplier<T> name(final Supplier<T> var0, Supplier<String> var1) {
+      if (SharedConstants.DEBUG_NAMED_RUNNABLES) {
+         final String var2 = (String)var1.get();
+         return new Supplier<T>() {
+            public T get() {
+               return (T)var0.get();
+            }
+
+            public String toString() {
+               return var2;
+            }
+         };
+      } else {
+         return var0;
+      }
    }
 
-   public static Runnable name(Runnable var0, Supplier<String> var1) {
-      return var0;
+   public static Runnable name(final Runnable var0, Supplier<String> var1) {
+      if (SharedConstants.DEBUG_NAMED_RUNNABLES) {
+         final String var2 = (String)var1.get();
+         return new Runnable() {
+            public void run() {
+               var0.run();
+            }
+
+            public String toString() {
+               return var2;
+            }
+         };
+      } else {
+         return var0;
+      }
    }
 
    public static void logAndPauseIfInIde(String var0) {

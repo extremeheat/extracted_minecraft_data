@@ -38,6 +38,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -62,7 +63,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private Button playButton;
    @Nullable
    private TabNavigationBar tabNavigationBar;
-   private final HeaderAndFooterLayout layout;
+   final HeaderAndFooterLayout layout;
 
    public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2, @Nullable RealmsServer var4, @Nullable PreferredRegionsDto var5) {
       super(Component.empty());
@@ -169,8 +170,8 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       var1.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+   public boolean keyPressed(KeyEvent var1) {
+      return this.tabNavigationBar.keyPressed(var1) ? true : super.keyPressed(var1);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -218,13 +219,21 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
             }
          }
 
+         int var3 = -1;
+         if (this.tabNavigationBar != null) {
+            var3 = this.tabNavigationBar.getTabs().indexOf(this.tabManager.getCurrentTab());
+         }
+
          if (this.tabNavigationBar != null) {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build();
-         this.addRenderableWidget(this.tabNavigationBar);
-         this.tabNavigationBar.selectTab(0, false);
+         this.tabNavigationBar = (TabNavigationBar)this.addRenderableWidget(TabNavigationBar.builder(this.tabManager, this.width).addTabs(new RealmsWorldsTab(this, (Minecraft)Objects.requireNonNull(this.minecraft), this.serverData), new RealmsPlayersTab(this, this.minecraft, this.serverData), new RealmsSubscriptionTab(this, this.minecraft, this.serverData), new RealmsSettingsTab(this, this.minecraft, this.serverData, this.regionServiceQuality)).build());
+         this.setFocused(this.tabNavigationBar);
+         if (var3 != -1) {
+            this.tabNavigationBar.selectTab(var3, false);
+         }
+
          this.tabNavigationBar.setTabActiveState(3, !this.serverData.expired);
          if (this.serverData.expired) {
             this.tabNavigationBar.setTabTooltip(3, Tooltip.create(Component.translatable("mco.configure.world.settings.expired")));

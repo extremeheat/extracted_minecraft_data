@@ -2,6 +2,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -30,7 +31,7 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
          double var12 = var4 + var9.nextGaussian() / 2.0;
          double var14 = var6 + var9.nextGaussian() / 2.0;
          Vec3 var16 = this.dragon.getDeltaMovement();
-         this.dragon.level().addParticle(ParticleTypes.DRAGON_BREATH, var10, var12, var14, -var1.x * 0.07999999821186066 + var16.x, -var1.y * 0.30000001192092896 + var16.y, -var1.z * 0.07999999821186066 + var16.z);
+         this.dragon.level().addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F), var10, var12, var14, -var1.x * 0.07999999821186066 + var16.x, -var1.y * 0.30000001192092896 + var16.y, -var1.z * 0.07999999821186066 + var16.z);
          var1.yRot(0.19634955F);
       }
 

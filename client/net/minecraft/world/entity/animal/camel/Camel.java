@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -373,7 +372,7 @@ public class Camel extends AbstractHorse {
          boolean var5 = this.isBaby();
          if (var5) {
             this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                this.ageUp(10);
             }
          }
@@ -495,11 +494,6 @@ public class Camel extends AbstractHorse {
       return this.getPassengers().size() <= 2;
    }
 
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
-   }
-
    public boolean isCamelSitting() {
       return (Long)this.entityData.get(LAST_POSE_CHANGE_TICK) < 0L;
    }
@@ -571,7 +565,7 @@ public class Camel extends AbstractHorse {
    }
 
    public void openCustomInventoryScreen(Player var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          var1.openHorseInventory(this, this.inventory);
       }
 

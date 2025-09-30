@@ -32,6 +32,7 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -69,12 +70,12 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.Consumable;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.Weapon;
@@ -245,7 +246,6 @@ public final class ItemStack implements DataComponentHolder {
       this.item = var1.asItem();
       this.count = var2;
       this.components = var3;
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    private ItemStack(@Nullable Void var1) {
@@ -470,7 +470,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public void hurtAndBreak(int var1, LivingEntity var2, InteractionHand var3) {
-      this.hurtAndBreak(var1, var2, LivingEntity.getSlotForHand(var3));
+      this.hurtAndBreak(var1, var2, var3.asEquipmentSlot());
    }
 
    public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
@@ -716,6 +716,11 @@ public final class ItemStack implements DataComponentHolder {
       return (T)this.components.set(var1, var2);
    }
 
+   @Nullable
+   public <T> T set(TypedDataComponent<T> var1) {
+      return (T)this.components.set(var1);
+   }
+
    public <T> void copyFrom(DataComponentType<T> var1, DataComponentGetter var2) {
       this.set(var1, var2.get(var1));
    }
@@ -743,19 +748,16 @@ public final class ItemStack implements DataComponentHolder {
       if (var3.isPresent()) {
          LOGGER.error("Failed to apply component patch '{}' to item: '{}'", var1, ((DataResult.Error)var3.get()).message());
          this.components.restorePatch(var2);
-      } else {
-         this.getItem().verifyComponentsAfterLoad(this);
       }
+
    }
 
    public void applyComponents(DataComponentPatch var1) {
       this.components.applyPatch(var1);
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    public void applyComponents(DataComponentMap var1) {
       this.components.setAll(var1);
-      this.getItem().verifyComponentsAfterLoad(this);
    }
 
    public Component getHoverName() {
@@ -836,6 +838,7 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.PROFILE, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
       this.addAttributeTooltips(var5, var2, var3);
       if (this.has(DataComponents.UNBREAKABLE) && var2.shows(DataComponents.UNBREAKABLE)) {
@@ -845,8 +848,9 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.ENTITY_DATA, var1, var2, var5, var4);
       if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && var2.shows(DataComponents.BLOCK_ENTITY_DATA)) {
-         CustomData var6 = (CustomData)this.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         TypedEntityData var6 = (TypedEntityData)this.get(DataComponents.BLOCK_ENTITY_DATA);
          Spawner.appendHoverText(var6, var5, "SpawnData");
       }
 

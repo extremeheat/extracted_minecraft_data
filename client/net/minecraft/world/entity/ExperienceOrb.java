@@ -52,7 +52,7 @@ public class ExperienceOrb extends Entity {
    public ExperienceOrb(Level var1, Vec3 var2, Vec3 var3, int var4) {
       this(EntityType.EXPERIENCE_ORB, var1);
       this.setPos(var2);
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          this.setYRot(this.random.nextFloat() * 360.0F);
          Vec3 var5 = new Vec3((this.random.nextDouble() * 0.2 - 0.1) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.2 - 0.1) * 2.0);
          if (var3.lengthSqr() > 0.0 && var3.dot(var5) < 0.0) {
@@ -98,7 +98,7 @@ public class ExperienceOrb extends Entity {
 
    public void tick() {
       this.interpolation.interpolate();
-      if (this.firstTick && this.level().isClientSide) {
+      if (this.firstTick && this.level().isClientSide()) {
          this.firstTick = false;
       } else {
          super.tick();
@@ -118,7 +118,7 @@ public class ExperienceOrb extends Entity {
          }
 
          this.followNearbyPlayer();
-         if (this.followingPlayer == null && !this.level().isClientSide && var1) {
+         if (this.followingPlayer == null && !this.level().isClientSide() && var1) {
             boolean var2 = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
             if (var2) {
                this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());

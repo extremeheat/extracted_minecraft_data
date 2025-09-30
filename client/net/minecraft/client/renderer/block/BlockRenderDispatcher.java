@@ -15,11 +15,11 @@ import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +27,7 @@ import net.minecraft.world.level.material.FluidState;
 
 public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelShaper blockModelShaper;
+   private final MaterialSet materials;
    private final ModelBlockRenderer modelRenderer;
    private final Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer;
    private final LiquidBlockRenderer liquidBlockRenderer;
@@ -34,11 +35,12 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(BlockModelShaper var1, Supplier<SpecialBlockModelRenderer> var2, BlockColors var3) {
+   public BlockRenderDispatcher(BlockModelShaper var1, MaterialSet var2, Supplier<SpecialBlockModelRenderer> var3, BlockColors var4) {
       super();
       this.blockModelShaper = var1;
-      this.specialBlockModelRenderer = var2;
-      this.blockColors = var3;
+      this.materials = var2;
+      this.specialBlockModelRenderer = var3;
+      this.blockColors = var4;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
       this.liquidBlockRenderer = new LiquidBlockRenderer();
    }
@@ -96,11 +98,10 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
          float var10 = (float)(var8 >> 8 & 255) / 255.0F;
          float var11 = (float)(var8 & 255) / 255.0F;
          ModelBlockRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var7, var9, var10, var11, var4, var5);
-         ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
       }
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      this.liquidBlockRenderer.setupSprites();
+      this.liquidBlockRenderer.setupSprites(this.blockModelShaper, this.materials);
    }
 }

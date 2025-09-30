@@ -35,7 +35,7 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1.isClientSide) {
+      if (var1.isClientSide()) {
          boolean var4 = var2.is(Blocks.DRAGON_HEAD) || var2.is(Blocks.DRAGON_WALL_HEAD) || var2.is(Blocks.PIGLIN_HEAD) || var2.is(Blocks.PIGLIN_WALL_HEAD);
          if (var4) {
             return createTickerHelper(var3, BlockEntityType.SKULL, SkullBlockEntity::animation);
@@ -62,7 +62,7 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          boolean var7 = var2.hasNeighborSignal(var3);
          if (var7 != (Boolean)var1.getValue(POWERED)) {
             var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 2);

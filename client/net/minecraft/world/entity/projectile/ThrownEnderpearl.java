@@ -71,7 +71,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
-            return this.owner.getEntity((var1x) -> findOwnerInAnyDimension(var1, var1x), Entity.class);
+            return (Entity)this.owner.getEntity(var1, Entity.class);
          }
       }
 
@@ -79,22 +79,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    @Nullable
-   private static Entity findOwnerInAnyDimension(ServerLevel var0, UUID var1) {
-      Entity var2 = var0.getEntity(var1);
-      if (var2 != null) {
-         return var2;
-      } else {
-         for(ServerLevel var4 : var0.getServer().getAllLevels()) {
-            if (var4 != var0) {
-               var2 = var4.getEntity(var1);
-               if (var2 != null) {
-                  return var2;
-               }
-            }
-         }
-
-         return null;
-      }
+   private static Entity findOwnerIncludingDeadPlayer(ServerLevel var0, UUID var1) {
+      Entity var2 = var0.getEntityInAnyDimension(var1);
+      return (Entity)(var2 != null ? var2 : var0.getServer().getPlayerList().getPlayer(var1));
    }
 
    protected void onHitEntity(EntityHitResult var1) {
@@ -118,7 +105,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                if (var8 instanceof ServerPlayer) {
                   ServerPlayer var5 = (ServerPlayer)var8;
                   if (var5.connection.isAcceptingMessages()) {
-                     if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     if (this.random.nextFloat() < 0.05F && var7.isSpawningMonsters()) {
                         Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
                         if (var6 != null) {
                            var6.snapTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
@@ -173,30 +160,34 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    public void tick() {
-      int var1;
-      int var2;
-      Entity var3;
-      label30: {
-         var1 = SectionPos.blockToSectionCoord(this.position().x());
-         var2 = SectionPos.blockToSectionCoord(this.position().z());
-         var3 = this.getOwner();
-         if (var3 instanceof ServerPlayer var4) {
-            if (!var3.isAlive() && var4.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
-               this.discard();
-               break label30;
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         int var3;
+         Entity var4;
+         label39: {
+            var7 = SectionPos.blockToSectionCoord(this.position().x());
+            var3 = SectionPos.blockToSectionCoord(this.position().z());
+            var4 = this.owner != null ? findOwnerIncludingDeadPlayer(var1, this.owner.getUUID()) : null;
+            if (var4 instanceof ServerPlayer var5) {
+               if (!var4.isAlive() && !var5.wonGame && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+                  this.discard();
+                  break label39;
+               }
             }
+
+            super.tick();
          }
 
+         if (this.isAlive()) {
+            BlockPos var8 = BlockPos.containing(this.position());
+            if ((--this.ticketTimer <= 0L || var7 != SectionPos.blockToSectionCoord(var8.getX()) || var3 != SectionPos.blockToSectionCoord(var8.getZ())) && var4 instanceof ServerPlayer) {
+               ServerPlayer var6 = (ServerPlayer)var4;
+               this.ticketTimer = var6.registerAndUpdateEnderPearlTicket(this);
+            }
+
+         }
+      } else {
          super.tick();
-      }
-
-      if (this.isAlive()) {
-         BlockPos var6 = BlockPos.containing(this.position());
-         if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var6.getX()) || var2 != SectionPos.blockToSectionCoord(var6.getZ())) && var3 instanceof ServerPlayer) {
-            ServerPlayer var5 = (ServerPlayer)var3;
-            this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
-         }
-
       }
    }
 

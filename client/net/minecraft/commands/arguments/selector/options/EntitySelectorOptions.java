@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -37,11 +36,11 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -91,7 +90,7 @@ public class EntitySelectorOptions {
                   var0.setHasNameEquals(true);
                }
 
-               var0.addPredicate((var2x) -> var2x.getName().getString().equals(var3) != var2);
+               var0.addPredicate((var2x) -> var2x.getPlainTextName().equals(var3) != var2);
             }
          }, (var0) -> !var0.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
          register("distance", (var0) -> {
@@ -104,7 +103,7 @@ public class EntitySelectorOptions {
                var0.getReader().setCursor(var1);
                throw ERROR_RANGE_NEGATIVE.createWithContext(var0.getReader());
             }
-         }, (var0) -> var0.getDistance().isAny(), Component.translatable("argument.entity.options.distance.description"));
+         }, (var0) -> var0.getDistance() == null, Component.translatable("argument.entity.options.distance.description"));
          register("level", (var0) -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Ints var2 = MinMaxBounds.Ints.fromReader(var0.getReader());
@@ -115,7 +114,7 @@ public class EntitySelectorOptions {
                var0.getReader().setCursor(var1);
                throw ERROR_LEVEL_NEGATIVE.createWithContext(var0.getReader());
             }
-         }, (var0) -> var0.getLevel().isAny(), Component.translatable("argument.entity.options.level.description"));
+         }, (var0) -> var0.getLevel() == null, Component.translatable("argument.entity.options.level.description"));
          register("x", (var0) -> {
             var0.setWorldLimited();
             var0.setX(var0.getReader().readDouble());
@@ -140,8 +139,8 @@ public class EntitySelectorOptions {
             var0.setWorldLimited();
             var0.setDeltaZ(var0.getReader().readDouble());
          }, (var0) -> var0.getDeltaZ() == null, Component.translatable("argument.entity.options.dz.description"));
-         register("x_rotation", (var0) -> var0.setRotX(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees)), (var0) -> var0.getRotX() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.x_rotation.description"));
-         register("y_rotation", (var0) -> var0.setRotY(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees)), (var0) -> var0.getRotY() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.y_rotation.description"));
+         register("x_rotation", (var0) -> var0.setRotX(MinMaxBounds.FloatDegrees.fromReader(var0.getReader())), (var0) -> var0.getRotX() == null, Component.translatable("argument.entity.options.x_rotation.description"));
+         register("y_rotation", (var0) -> var0.setRotY(MinMaxBounds.FloatDegrees.fromReader(var0.getReader())), (var0) -> var0.getRotY() == null, Component.translatable("argument.entity.options.y_rotation.description"));
          register("limit", (var0) -> {
             int var1 = var0.getReader().getCursor();
             int var2 = var0.getReader().readInt();
@@ -346,7 +345,7 @@ public class EntitySelectorOptions {
             var1.expect('}');
             if (!var2.isEmpty()) {
                var0.addPredicate((var1x) -> {
-                  ServerScoreboard var2x = var1x.getServer().getScoreboard();
+                  ServerScoreboard var2x = var1x.level().getServer().getScoreboard();
 
                   for(Map.Entry var4 : var2.entrySet()) {
                      Objective var5 = ((Scoreboard)var2x).getObjective((String)var4.getKey());
@@ -433,7 +432,7 @@ public class EntitySelectorOptions {
                      return false;
                   } else {
                      PlayerAdvancements var3 = var2x.getAdvancements();
-                     ServerAdvancementManager var4 = var2x.getServer().getAdvancements();
+                     ServerAdvancementManager var4 = var2x.level().getServer().getAdvancements();
 
                      for(Map.Entry var6 : var2.entrySet()) {
                         AdvancementHolder var7 = var4.get((ResourceLocation)var6.getKey());
@@ -454,19 +453,19 @@ public class EntitySelectorOptions {
             boolean var1 = var0.shouldInvertValue();
             ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, ResourceLocation.read(var0.getReader()));
             var0.addPredicate((var2x) -> {
-               if (!(var2x.level() instanceof ServerLevel)) {
-                  return false;
-               } else {
-                  ServerLevel var3 = (ServerLevel)var2x.level();
-                  Optional var4 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
-                  if (var4.isEmpty()) {
+               Level var4 = var2x.level();
+               if (var4 instanceof ServerLevel var3) {
+                  Optional var7 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
+                  if (var7.isEmpty()) {
                      return false;
                   } else {
                      LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.THIS_ENTITY, var2x).withParameter(LootContextParams.ORIGIN, var2x.position()).create(LootContextParamSets.SELECTOR);
                      LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
-                     var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var4.get()));
-                     return var1 ^ ((LootItemCondition)var4.get()).test(var6);
+                     var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var7.get()));
+                     return var1 ^ ((LootItemCondition)var7.get()).test(var6);
                   }
+               } else {
+                  return false;
                }
             });
          }, (var0) -> true, Component.translatable("argument.entity.options.predicate.description"));
@@ -511,6 +510,7 @@ public class EntitySelectorOptions {
       }
    }
 
+   @FunctionalInterface
    public interface Modifier {
       void handle(EntitySelectorParser var1) throws CommandSyntaxException;
    }

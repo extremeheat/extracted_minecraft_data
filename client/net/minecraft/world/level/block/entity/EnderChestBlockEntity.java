@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -25,7 +26,7 @@ public class EnderChestBlockEntity extends BlockEntity implements LidBlockEntity
          var1.blockEvent(EnderChestBlockEntity.this.worldPosition, Blocks.ENDER_CHEST, 1, var5);
       }
 
-      protected boolean isOwnContainer(Player var1) {
+      public boolean isOwnContainer(Player var1) {
          return var1.getEnderChestInventory().isActiveChest(EnderChestBlockEntity.this);
       }
    };
@@ -47,16 +48,16 @@ public class EnderChestBlockEntity extends BlockEntity implements LidBlockEntity
       }
    }
 
-   public void startOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.incrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void startOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.incrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), var1.getContainerInteractionRange());
       }
 
    }
 
-   public void stopOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.decrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void stopOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.decrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
 
    }

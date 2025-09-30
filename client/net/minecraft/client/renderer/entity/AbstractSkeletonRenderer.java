@@ -10,13 +10,13 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.item.Items;
 
 public abstract class AbstractSkeletonRenderer<T extends AbstractSkeleton, S extends SkeletonRenderState> extends HumanoidMobRenderer<T, S, SkeletonModel<S>> {
-   public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4) {
-      this(var1, var3, var4, new SkeletonModel(var1.bakeLayer(var2)));
+   public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ArmorModelSet<ModelLayerLocation> var3) {
+      this(var1, var3, new SkeletonModel(var1.bakeLayer(var2)));
    }
 
-   public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, SkeletonModel<S> var4) {
-      super(var1, var4, 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, new SkeletonModel(var1.bakeLayer(var2)), new SkeletonModel(var1.bakeLayer(var3)), var1.getEquipmentRenderer()));
+   public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ArmorModelSet<ModelLayerLocation> var2, SkeletonModel<S> var3) {
+      super(var1, var3, 0.5F);
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(var2, var1.getModelSet(), SkeletonModel::new), var1.getEquipmentRenderer()));
    }
 
    public void extractRenderState(T var1, S var2, float var3) {

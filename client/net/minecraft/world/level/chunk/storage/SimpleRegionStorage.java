@@ -40,7 +40,9 @@ public class SimpleRegionStorage implements AutoCloseable {
    }
 
    public Dynamic<Tag> upgradeChunkTag(Dynamic<Tag> var1, int var2) {
-      return this.dataFixType.updateToCurrentVersion(this.fixerUpper, var1, var2);
+      int var3 = NbtUtils.getDataVersion(var1, var2);
+      Dynamic var4 = this.dataFixType.updateToCurrentVersion(this.fixerUpper, var1, var3);
+      return NbtUtils.addCurrentDataVersion(var4);
    }
 
    public CompletableFuture<Void> synchronize(boolean var1) {

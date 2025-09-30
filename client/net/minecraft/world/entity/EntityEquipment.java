@@ -20,7 +20,6 @@ public class EntityEquipment {
    }
 
    public ItemStack set(EquipmentSlot var1, ItemStack var2) {
-      var2.getItem().verifyComponentsAfterLoad(var2);
       return (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.put(var1, var2), ItemStack.EMPTY);
    }
 

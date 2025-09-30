@@ -54,6 +54,7 @@ import net.minecraft.server.commands.BanIpCommands;
 import net.minecraft.server.commands.BanListCommands;
 import net.minecraft.server.commands.BanPlayerCommands;
 import net.minecraft.server.commands.BossBarCommands;
+import net.minecraft.server.commands.ChaseCommand;
 import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.commands.CloneCommands;
 import net.minecraft.server.commands.DamageCommand;
@@ -71,6 +72,7 @@ import net.minecraft.server.commands.EmoteCommands;
 import net.minecraft.server.commands.EnchantCommand;
 import net.minecraft.server.commands.ExecuteCommand;
 import net.minecraft.server.commands.ExperienceCommand;
+import net.minecraft.server.commands.FetchProfileCommand;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.commands.FillCommand;
 import net.minecraft.server.commands.ForceLoadCommand;
@@ -223,6 +225,7 @@ public class Commands {
       RandomCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
       RecipeCommand.register(this.dispatcher);
+      FetchProfileCommand.register(this.dispatcher);
       ReturnCommand.register(this.dispatcher);
       RideCommand.register(this.dispatcher);
       RotateCommand.register(this.dispatcher);
@@ -255,7 +258,11 @@ public class Commands {
          JfrCommand.register(this.dispatcher);
       }
 
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (SharedConstants.DEBUG_CHASE_COMMAND) {
+         ChaseCommand.register(this.dispatcher);
+      }
+
+      if (SharedConstants.DEBUG_DEV_COMMANDS || SharedConstants.IS_RUNNING_IN_IDE) {
          RaidCommand.register(this.dispatcher, var2);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
@@ -328,7 +335,7 @@ public class Commands {
          }
 
          var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(var6)))));
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
+         if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || SharedConstants.IS_RUNNING_IN_IDE) {
             var3.sendFailure(Component.literal(Util.describeError(var12)));
             LOGGER.error("'/{}' threw an exception", var2, var12);
          }

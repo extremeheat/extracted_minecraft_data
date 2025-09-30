@@ -34,7 +34,7 @@ public enum ConversionType {
          Entity var9 = var1.getVehicle();
          if (var9 != null) {
             var1.stopRiding();
-            var2.startRiding(var9);
+            var2.startRiding(var9, false, false);
          }
 
          if (var3.keepEquipment()) {

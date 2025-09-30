@@ -17,7 +17,7 @@ public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, Huma
    public GiantMobRenderer(EntityRendererProvider.Context var1, float var2) {
       super(var1, new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT)), 0.5F * var2);
       this.addLayer(new ItemInHandLayer(this));
-      this.addLayer(new HumanoidArmorLayer(this, new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_INNER_ARMOR)), new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_OUTER_ARMOR)), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.GIANT_ARMOR, var1.getModelSet(), GiantZombieModel::new), var1.getEquipmentRenderer()));
    }
 
    public ResourceLocation getTextureLocation(ZombieRenderState var1) {

@@ -1,15 +1,16 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class ChestBlockEntity extends RandomizableContainerBlockEntity implements LidBlockEntity {
    private static final int EVENT_SET_OPEN_COUNT = 1;
+   private static final Component DEFAULT_NAME = Component.translatable("container.chest");
    private NonNullList<ItemStack> items;
    private final ContainerOpenersCounter openersCounter;
    private final ChestLidController chestLidController;
@@ -36,18 +38,26 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
       this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
          protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
-            ChestBlockEntity.playSound(var1, var2, var3, SoundEvents.CHEST_OPEN);
+            Block var5 = var3.getBlock();
+            if (var5 instanceof ChestBlock var4) {
+               ChestBlockEntity.playSound(var1, var2, var3, var4.getOpenChestSound());
+            }
+
          }
 
          protected void onClose(Level var1, BlockPos var2, BlockState var3) {
-            ChestBlockEntity.playSound(var1, var2, var3, SoundEvents.CHEST_CLOSE);
+            Block var5 = var3.getBlock();
+            if (var5 instanceof ChestBlock var4) {
+               ChestBlockEntity.playSound(var1, var2, var3, var4.getCloseChestSound());
+            }
+
          }
 
          protected void openerCountChanged(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
             ChestBlockEntity.this.signalOpenCount(var1, var2, var3, var4, var5);
          }
 
-         protected boolean isOwnContainer(Player var1) {
+         public boolean isOwnContainer(Player var1) {
             if (!(var1.containerMenu instanceof ChestMenu)) {
                return false;
             } else {
@@ -68,7 +78,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.chest");
+      return DEFAULT_NAME;
    }
 
    protected void loadAdditional(ValueInput var1) {
@@ -117,18 +127,22 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
       }
    }
 
-   public void startOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.incrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void startOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.incrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), var1.getContainerInteractionRange());
       }
 
    }
 
-   public void stopOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
-         this.openersCounter.decrementOpeners(var1, this.getLevel(), this.getBlockPos(), this.getBlockState());
+   public void stopOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
+         this.openersCounter.decrementOpeners(var1.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
 
+   }
+
+   public List<ContainerUser> getEntitiesWithContainerOpen() {
+      return this.openersCounter.getEntitiesWithContainerOpen(this.getLevel(), this.getBlockPos());
    }
 
    protected NonNullList<ItemStack> getItems() {

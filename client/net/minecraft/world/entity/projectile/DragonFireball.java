@@ -3,6 +3,7 @@ package net.minecraft.world.entity.projectile;
 import java.util.List;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AreaEffectCloud;
@@ -28,7 +29,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (var1.getType() != HitResult.Type.ENTITY || !this.ownedBy(((EntityHitResult)var1).getEntity())) {
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             List var2 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0, 2.0, 4.0));
             AreaEffectCloud var3 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
             Entity var4 = this.getOwner();
@@ -36,7 +37,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
                var3.setOwner((LivingEntity)var4);
             }
 
-            var3.setCustomParticle(ParticleTypes.DRAGON_BREATH);
+            var3.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
             var3.setRadius(3.0F);
             var3.setDuration(600);
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
@@ -61,7 +62,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
    }
 
    protected ParticleOptions getTrailParticle() {
-      return ParticleTypes.DRAGON_BREATH;
+      return PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F);
    }
 
    protected boolean shouldBurn() {

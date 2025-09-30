@@ -7,13 +7,17 @@ import java.util.Collection;
 import java.util.Collections;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.AngleArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.coordinates.RotationArgument;
+import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.Vec2;
 
 public class SetSpawnCommand {
    public SetSpawnCommand() {
@@ -21,21 +25,24 @@ public class SetSpawnCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawnpoint").requires(Commands.hasPermission(2))).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPosArgument.getSpawnablePos(var0x, "pos"), 0.0F))).then(Commands.argument("angle", AngleArgument.angle()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPosArgument.getSpawnablePos(var0x, "pos"), AngleArgument.getAngle(var0x, "angle")))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawnpoint").requires(Commands.hasPermission(2))).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPosArgument.getSpawnablePos(var0x, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((var0x) -> setSpawn((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), BlockPosArgument.getSpawnablePos(var0x, "pos"), RotationArgument.getRotation(var0x, "rotation")))))));
    }
 
-   private static int setSpawn(CommandSourceStack var0, Collection<ServerPlayer> var1, BlockPos var2, float var3) {
+   private static int setSpawn(CommandSourceStack var0, Collection<ServerPlayer> var1, BlockPos var2, Coordinates var3) {
       ResourceKey var4 = var0.getLevel().dimension();
+      Vec2 var5 = var3.getRotation(var0);
+      float var6 = var5.y;
+      float var7 = var5.x;
 
-      for(ServerPlayer var6 : var1) {
-         var6.setRespawnPosition(new ServerPlayer.RespawnConfig(var4, var2, var3, true), false);
+      for(ServerPlayer var9 : var1) {
+         var9.setRespawnPosition(new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var4, var2, var6, var7), true), false);
       }
 
-      String var7 = var4.location().toString();
+      String var10 = var4.location().toString();
       if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.spawnpoint.success.single", var2.getX(), var2.getY(), var2.getZ(), var3, var7, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.spawnpoint.success.single", var2.getX(), var2.getY(), var2.getZ(), var6, var7, var10, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.spawnpoint.success.multiple", var2.getX(), var2.getY(), var2.getZ(), var3, var7, var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.spawnpoint.success.multiple", var2.getX(), var2.getY(), var2.getZ(), var6, var7, var10, var1.size()), true);
       }
 
       return var1.size();

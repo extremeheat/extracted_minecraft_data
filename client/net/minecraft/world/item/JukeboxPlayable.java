@@ -54,7 +54,7 @@ public record JukeboxPlayable(EitherHolder<JukeboxSong> song) implements Tooltip
       } else {
          BlockState var5 = var0.getBlockState(var1);
          if (var5.is(Blocks.JUKEBOX) && !(Boolean)var5.getValue(JukeboxBlock.HAS_RECORD)) {
-            if (!var0.isClientSide) {
+            if (!var0.isClientSide()) {
                ItemStack var6 = var2.consumeAndReturn(1, var3);
                BlockEntity var8 = var0.getBlockEntity(var1);
                if (var8 instanceof JukeboxBlockEntity) {

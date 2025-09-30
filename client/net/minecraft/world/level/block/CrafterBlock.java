@@ -62,10 +62,10 @@ public class CrafterBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof CrafterBlockEntity var5) {
-         return var5.getRedstoneSignal();
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
+      BlockEntity var5 = var2.getBlockEntity(var3);
+      if (var5 instanceof CrafterBlockEntity var6) {
+         return var6.getRedstoneSignal();
       } else {
          return 0;
       }
@@ -92,7 +92,7 @@ public class CrafterBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.CRAFTER, CrafterBlockEntity::serverTick);
+      return var1.isClientSide() ? null : createTickerHelper(var3, BlockEntityType.CRAFTER, CrafterBlockEntity::serverTick);
    }
 
    private void setBlockEntityTriggered(@Nullable BlockEntity var1, boolean var2) {
@@ -144,7 +144,7 @@ public class CrafterBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof CrafterBlockEntity) {
             CrafterBlockEntity var6 = (CrafterBlockEntity)var7;

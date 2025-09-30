@@ -41,7 +41,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick);
+      return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide() ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -82,7 +82,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.canUsePortal(false)) {
          BlockEntity var6 = var2.getBlockEntity(var3);
-         if (!var2.isClientSide && var6 instanceof TheEndGatewayBlockEntity) {
+         if (!var2.isClientSide() && var6 instanceof TheEndGatewayBlockEntity) {
             TheEndGatewayBlockEntity var7 = (TheEndGatewayBlockEntity)var6;
             if (!var7.isCoolingDown()) {
                var4.setAsInsidePortal(this, var3);

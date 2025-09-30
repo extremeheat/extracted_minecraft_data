@@ -27,9 +27,10 @@ public class DragonHeadModel extends SkullModelBase {
       return LayerDefinition.create(var0, 256, 256);
    }
 
-   public void setupAnim(float var1, float var2, float var3) {
-      this.jaw.xRot = (float)(Math.sin((double)(var1 * 3.1415927F * 0.2F)) + 1.0) * 0.2F;
-      this.head.yRot = var2 * 0.017453292F;
-      this.head.xRot = var3 * 0.017453292F;
+   public void setupAnim(SkullModelBase.State var1) {
+      super.setupAnim(var1);
+      this.jaw.xRot = (float)(Math.sin((double)(var1.animationPos * 3.1415927F * 0.2F)) + 1.0) * 0.2F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
    }
 }

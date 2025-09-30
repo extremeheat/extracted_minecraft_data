@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -187,7 +188,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    }
 
    private static boolean isDebugEnabled(CarverConfiguration var0) {
-      return var0.debugSettings.isDebugMode();
+      return SharedConstants.DEBUG_CARVERS || var0.debugSettings.isDebugMode();
    }
 
    static {

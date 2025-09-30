@@ -199,7 +199,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
 
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             if (this.random.nextInt(10) == 0) {
                this.tame(var1);
                this.level().broadcastEntityEvent(this, (byte)7);
@@ -211,7 +211,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          return InteractionResult.SUCCESS;
       } else if (!var3.is(ItemTags.PARROT_POISONOUS_FOOD)) {
          if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                this.setOrderedToSit(!this.isOrderedToSit());
             }
 

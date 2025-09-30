@@ -81,7 +81,7 @@ public class Blaze extends Monster {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.6, 1.0));
       }
 
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.random.nextInt(24) == 0 && !this.isSilent()) {
             this.level().playLocalSound(this.getX() + 0.5, this.getY() + 0.5, this.getZ() + 0.5, SoundEvents.BLAZE_BURN, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
          }

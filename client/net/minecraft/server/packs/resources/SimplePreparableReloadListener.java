@@ -11,10 +11,11 @@ public abstract class SimplePreparableReloadListener<T> implements PreparableRel
       super();
    }
 
-   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> this.prepare(var2, Profiler.get()), var3);
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> this.apply(var2x, var2, Profiler.get()), var4);
+   public final CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      ResourceManager var5 = var1.resourceManager();
+      CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> this.prepare(var5, Profiler.get()), var2);
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var2x) -> this.apply(var2x, var5, Profiler.get()), var4);
    }
 
    protected abstract T prepare(ResourceManager var1, ProfilerFiller var2);

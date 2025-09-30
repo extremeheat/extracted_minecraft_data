@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.RabbitModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -50,7 +49,7 @@ public class RabbitRenderer extends AgeableMobRenderer<Rabbit, RabbitRenderState
    public void extractRenderState(Rabbit var1, RabbitRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.jumpCompletion = var1.getJumpCompletion(var3);
-      var2.isToast = "Toast".equals(ChatFormatting.stripFormatting(var1.getName().getString()));
+      var2.isToast = checkMagicName(var1, "Toast");
       var2.variant = var1.getVariant();
    }
 

@@ -7,7 +7,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 
 public interface GuiElementRenderState extends ScreenArea {
-   void buildVertices(VertexConsumer var1, float var2);
+   void buildVertices(VertexConsumer var1);
 
    RenderPipeline pipeline();
 

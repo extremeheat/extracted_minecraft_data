@@ -549,6 +549,15 @@ public final class NbtUtils {
       return var0;
    }
 
+   public static Dynamic<Tag> addCurrentDataVersion(Dynamic<Tag> var0) {
+      int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
+      return addDataVersion(var0, var1);
+   }
+
+   public static Dynamic<Tag> addDataVersion(Dynamic<Tag> var0, int var1) {
+      return var0.set("DataVersion", var0.createInt(var1));
+   }
+
    public static void addCurrentDataVersion(ValueOutput var0) {
       int var1 = SharedConstants.getCurrentVersion().dataVersion().version();
       addDataVersion(var0, var1);

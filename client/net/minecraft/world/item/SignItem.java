@@ -22,7 +22,7 @@ public class SignItem extends StandingAndWallBlockItem {
 
    protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {
       boolean var6 = super.updateCustomBlockEntityTag(var1, var2, var3, var4, var5);
-      if (!var2.isClientSide && !var6 && var3 != null) {
+      if (!var2.isClientSide() && !var6 && var3 != null) {
          BlockEntity var9 = var2.getBlockEntity(var1);
          if (var9 instanceof SignBlockEntity) {
             SignBlockEntity var7 = (SignBlockEntity)var9;

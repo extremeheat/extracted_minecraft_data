@@ -10,15 +10,16 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class PlayerModel extends HumanoidModel<PlayerRenderState> {
-   private static final String LEFT_SLEEVE = "left_sleeve";
-   private static final String RIGHT_SLEEVE = "right_sleeve";
-   private static final String LEFT_PANTS = "left_pants";
-   private static final String RIGHT_PANTS = "right_pants";
+public class PlayerModel extends HumanoidModel<AvatarRenderState> {
+   protected static final String LEFT_SLEEVE = "left_sleeve";
+   protected static final String RIGHT_SLEEVE = "right_sleeve";
+   protected static final String LEFT_PANTS = "left_pants";
+   protected static final String RIGHT_PANTS = "right_pants";
    private final List<ModelPart> bodyParts;
    public final ModelPart leftSleeve;
    public final ModelPart rightSleeve;
@@ -63,7 +64,24 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       return var2;
    }
 
-   public void setupAnim(PlayerRenderState var1) {
+   public static ArmorModelSet<MeshDefinition> createArmorMeshSet(CubeDeformation var0, CubeDeformation var1) {
+      return HumanoidModel.createArmorMeshSet(var0, var1).<MeshDefinition>map((var0x) -> {
+         PartDefinition var1 = var0x.getRoot();
+         PartDefinition var2 = var1.getChild("left_arm");
+         PartDefinition var3 = var1.getChild("right_arm");
+         var2.addOrReplaceChild("left_sleeve", CubeListBuilder.create(), PartPose.ZERO);
+         var3.addOrReplaceChild("right_sleeve", CubeListBuilder.create(), PartPose.ZERO);
+         PartDefinition var4 = var1.getChild("left_leg");
+         PartDefinition var5 = var1.getChild("right_leg");
+         var4.addOrReplaceChild("left_pants", CubeListBuilder.create(), PartPose.ZERO);
+         var5.addOrReplaceChild("right_pants", CubeListBuilder.create(), PartPose.ZERO);
+         PartDefinition var6 = var1.getChild("body");
+         var6.addOrReplaceChild("jacket", CubeListBuilder.create(), PartPose.ZERO);
+         return var0x;
+      });
+   }
+
+   public void setupAnim(AvatarRenderState var1) {
       boolean var2 = !var1.isSpectator;
       this.body.visible = var2;
       this.rightArm.visible = var2;
@@ -88,16 +106,16 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       this.jacket.visible = var1;
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      this.root().translateAndRotate(var2);
-      ModelPart var3 = this.getArm(var1);
+   public void translateToHand(AvatarRenderState var1, HumanoidArm var2, PoseStack var3) {
+      this.root().translateAndRotate(var3);
+      ModelPart var4 = this.getArm(var2);
       if (this.slim) {
-         float var4 = 0.5F * (float)(var1 == HumanoidArm.RIGHT ? 1 : -1);
-         var3.x += var4;
-         var3.translateAndRotate(var2);
-         var3.x -= var4;
+         float var5 = 0.5F * (float)(var2 == HumanoidArm.RIGHT ? 1 : -1);
+         var4.x += var5;
+         var4.translateAndRotate(var3);
+         var4.x -= var5;
       } else {
-         var3.translateAndRotate(var2);
+         var4.translateAndRotate(var3);
       }
 
    }

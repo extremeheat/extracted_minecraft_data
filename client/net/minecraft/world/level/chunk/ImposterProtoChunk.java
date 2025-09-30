@@ -9,7 +9,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -35,7 +34,7 @@ public class ImposterProtoChunk extends ProtoChunk {
    private final boolean allowWrites;
 
    public ImposterProtoChunk(LevelChunk var1, boolean var2) {
-      super(var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().lookupOrThrow(Registries.BIOME), var1.getBlendingData());
+      super(var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().palettedContainerFactory(), var1.getBlendingData());
       this.wrapped = var1;
       this.allowWrites = var2;
    }

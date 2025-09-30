@@ -12,11 +12,11 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.item.DyeColor;
@@ -41,6 +41,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    public static final float MAX_LID_HEIGHT = 0.5F;
    public static final float MAX_LID_ROTATION = 270.0F;
    private static final int[] SLOTS = IntStream.range(0, 27).toArray();
+   private static final Component DEFAULT_NAME = Component.translatable("container.shulkerBox");
    private NonNullList<ItemStack> itemStacks;
    private int openCount;
    private AnimationStatus animationStatus;
@@ -167,8 +168,8 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
    }
 
-   public void startOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
+   public void startOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
          if (this.openCount < 0) {
             this.openCount = 0;
          }
@@ -176,19 +177,19 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          ++this.openCount;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount == 1) {
-            this.level.gameEvent(var1, GameEvent.CONTAINER_OPEN, this.worldPosition);
+            this.level.gameEvent(var1.getLivingEntity(), GameEvent.CONTAINER_OPEN, this.worldPosition);
             this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
 
    }
 
-   public void stopOpen(Player var1) {
-      if (!this.remove && !var1.isSpectator()) {
+   public void stopOpen(ContainerUser var1) {
+      if (!this.remove && !var1.getLivingEntity().isSpectator()) {
          --this.openCount;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount <= 0) {
-            this.level.gameEvent(var1, GameEvent.CONTAINER_CLOSE, this.worldPosition);
+            this.level.gameEvent(var1.getLivingEntity(), GameEvent.CONTAINER_CLOSE, this.worldPosition);
             this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_CLOSE, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
@@ -196,7 +197,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.shulkerBox");
+      return DEFAULT_NAME;
    }
 
    protected void loadAdditional(ValueInput var1) {

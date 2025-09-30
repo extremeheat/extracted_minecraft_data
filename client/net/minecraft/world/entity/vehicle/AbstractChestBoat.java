@@ -9,6 +9,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
@@ -62,7 +63,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    }
 
    public void remove(Entity.RemovalReason var1) {
-      if (!this.level().isClientSide && var1.shouldDestroy()) {
+      if (!this.level().isClientSide() && var1.shouldDestroy()) {
          Containers.dropContents(this.level(), (Entity)this, this);
       }
 
@@ -174,7 +175,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
    }
 
-   public void stopOpen(Player var1) {
-      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1));
+   public void stopOpen(ContainerUser var1) {
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1.getLivingEntity()));
    }
 }

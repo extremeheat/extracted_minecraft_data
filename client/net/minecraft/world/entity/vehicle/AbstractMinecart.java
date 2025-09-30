@@ -285,12 +285,11 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      Vec3 var2 = this.getDeltaMovement();
-      this.behavior.lerpMotion(var2.x, var2.y, var2.z);
+      this.behavior.lerpMotion(this.getDeltaMovement());
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      this.behavior.lerpMotion(var1, var3, var5);
+   public void lerpMotion(Vec3 var1) {
+      this.behavior.lerpMotion(var1);
    }
 
    protected void moveAlongTrack(ServerLevel var1) {
@@ -422,7 +421,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public void push(Entity var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (!var1.noPhysics && !this.noPhysics) {
             if (!this.hasPassenger(var1)) {
                double var2 = var1.getX() - this.getX();

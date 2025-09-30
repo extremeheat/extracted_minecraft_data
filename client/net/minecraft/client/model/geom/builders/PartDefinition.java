@@ -35,6 +35,14 @@ public class PartDefinition {
       return var2;
    }
 
+   public PartDefinition clearRecursively() {
+      for(String var2 : this.children.keySet()) {
+         this.clearChild(var2).clearRecursively();
+      }
+
+      return this;
+   }
+
    public PartDefinition clearChild(String var1) {
       PartDefinition var2 = (PartDefinition)this.children.get(var1);
       if (var2 == null) {
@@ -42,6 +50,28 @@ public class PartDefinition {
       } else {
          return this.addOrReplaceChild(var1, CubeListBuilder.create(), var2.partPose);
       }
+   }
+
+   public void retainPartsAndChildren(Set<String> var1) {
+      for(Map.Entry var3 : this.children.entrySet()) {
+         PartDefinition var4 = (PartDefinition)var3.getValue();
+         if (!var1.contains(var3.getKey())) {
+            this.addOrReplaceChild((String)var3.getKey(), CubeListBuilder.create(), var4.partPose).retainPartsAndChildren(var1);
+         }
+      }
+
+   }
+
+   public void retainExactParts(Set<String> var1) {
+      for(Map.Entry var3 : this.children.entrySet()) {
+         PartDefinition var4 = (PartDefinition)var3.getValue();
+         if (var1.contains(var3.getKey())) {
+            var4.clearRecursively();
+         } else {
+            this.addOrReplaceChild((String)var3.getKey(), CubeListBuilder.create(), var4.partPose).retainExactParts(var1);
+         }
+      }
+
    }
 
    public ModelPart bake(int var1, int var2) {

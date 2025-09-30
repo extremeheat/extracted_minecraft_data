@@ -50,6 +50,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.LimitCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
@@ -256,6 +257,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.POLISHED_BASALT);
       this.dropSelf(Blocks.SMOOTH_BASALT);
       this.dropSelf(Blocks.SOUL_TORCH);
+      this.dropSelf(Blocks.COPPER_TORCH);
       this.dropSelf(Blocks.CARVED_PUMPKIN);
       this.dropSelf(Blocks.JACK_O_LANTERN);
       this.dropSelf(Blocks.REPEATER);
@@ -282,6 +284,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.CRACKED_STONE_BRICKS);
       this.dropSelf(Blocks.CHISELED_STONE_BRICKS);
       this.dropSelf(Blocks.IRON_BARS);
+      Blocks.COPPER_BARS.forEach((var1x) -> this.dropSelf(var1x));
       this.dropSelf(Blocks.OAK_FENCE_GATE);
       this.dropSelf(Blocks.MANGROVE_FENCE_GATE);
       this.dropSelf(Blocks.BAMBOO_FENCE_GATE);
@@ -317,12 +320,6 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.MANGROVE_BUTTON);
       this.dropSelf(Blocks.CHERRY_BUTTON);
       this.dropSelf(Blocks.BAMBOO_BUTTON);
-      this.dropSelf(Blocks.SKELETON_SKULL);
-      this.dropSelf(Blocks.WITHER_SKELETON_SKULL);
-      this.dropSelf(Blocks.ZOMBIE_HEAD);
-      this.dropSelf(Blocks.CREEPER_HEAD);
-      this.dropSelf(Blocks.DRAGON_HEAD);
-      this.dropSelf(Blocks.PIGLIN_HEAD);
       this.dropSelf(Blocks.ANVIL);
       this.dropSelf(Blocks.CHIPPED_ANVIL);
       this.dropSelf(Blocks.DAMAGED_ANVIL);
@@ -549,7 +546,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.CHISELED_NETHER_BRICKS);
       this.dropSelf(Blocks.CRACKED_NETHER_BRICKS);
       this.dropSelf(Blocks.QUARTZ_BRICKS);
-      this.dropSelf(Blocks.CHAIN);
+      this.dropSelf(Blocks.IRON_CHAIN);
+      Blocks.COPPER_CHAIN.forEach((var1x) -> this.dropSelf(var1x));
       this.dropSelf(Blocks.WARPED_ROOTS);
       this.dropSelf(Blocks.CRIMSON_ROOTS);
       this.dropSelf(Blocks.MUD_BRICKS);
@@ -591,6 +589,13 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.WEATHERED_CUT_COPPER_STAIRS);
       this.dropSelf(Blocks.OXIDIZED_CUT_COPPER_STAIRS);
       this.dropSelf(Blocks.LIGHTNING_ROD);
+      this.dropSelf(Blocks.EXPOSED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.WEATHERED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.OXIDIZED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.WAXED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.WAXED_EXPOSED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.WAXED_WEATHERED_LIGHTNING_ROD);
+      this.dropSelf(Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
       this.dropSelf(Blocks.POINTED_DRIPSTONE);
       this.dropSelf(Blocks.DRIPSTONE_BLOCK);
       this.dropSelf(Blocks.SPORE_BLOSSOM);
@@ -669,6 +674,14 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.WAXED_EXPOSED_COPPER_BULB);
       this.dropSelf(Blocks.WAXED_WEATHERED_COPPER_BULB);
       this.dropSelf(Blocks.WAXED_OXIDIZED_COPPER_BULB);
+      this.add(Blocks.COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.EXPOSED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.WEATHERED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.WAXED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE, (var1x) -> this.createCopperGolemStatueBlock(var1x));
       this.dropSelf(Blocks.HEAVY_CORE);
       this.dropSelf(Blocks.FIREFLY_BUSH);
       this.dropSelf(Blocks.CACTUS_FLOWER);
@@ -861,6 +874,14 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.BEACON, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.BREWING_STAND, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.EXPOSED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.WEATHERED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.OXIDIZED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.WAXED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.WAXED_EXPOSED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.WAXED_WEATHERED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_CHEST, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.DISPENSER, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.DROPPER, (var1x) -> this.createNameableBlockEntityTable(var1x));
       this.add(Blocks.ENCHANTING_TABLE, (var1x) -> this.createNameableBlockEntityTable(var1x));
@@ -876,9 +897,22 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.LECTERN);
       this.dropSelf(Blocks.SMITHING_TABLE);
       this.dropSelf(Blocks.STONECUTTER);
+      this.dropSelf(Blocks.ACACIA_SHELF);
+      this.dropSelf(Blocks.BAMBOO_SHELF);
+      this.dropSelf(Blocks.BIRCH_SHELF);
+      this.dropSelf(Blocks.CHERRY_SHELF);
+      this.dropSelf(Blocks.CRIMSON_SHELF);
+      this.dropSelf(Blocks.DARK_OAK_SHELF);
+      this.dropSelf(Blocks.JUNGLE_SHELF);
+      this.dropSelf(Blocks.MANGROVE_SHELF);
+      this.dropSelf(Blocks.OAK_SHELF);
+      this.dropSelf(Blocks.PALE_OAK_SHELF);
+      this.dropSelf(Blocks.SPRUCE_SHELF);
+      this.dropSelf(Blocks.WARPED_SHELF);
       this.add(Blocks.BELL, this::createSingleItemTable);
       this.add(Blocks.LANTERN, this::createSingleItemTable);
       this.add(Blocks.SOUL_LANTERN, this::createSingleItemTable);
+      Blocks.COPPER_LANTERN.forEach((var1x) -> this.add(var1x, this::createSingleItemTable));
       this.add(Blocks.SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));
       this.add(Blocks.BLACK_SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));
       this.add(Blocks.BLUE_SHULKER_BOX, (var1x) -> this.createShulkerBoxDrop(var1x));
@@ -912,7 +946,13 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.RED_BANNER, (var1x) -> this.createBannerDrop(var1x));
       this.add(Blocks.WHITE_BANNER, (var1x) -> this.createBannerDrop(var1x));
       this.add(Blocks.YELLOW_BANNER, (var1x) -> this.createBannerDrop(var1x));
-      this.add(Blocks.PLAYER_HEAD, (var1x) -> LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1x, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1x).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.PROFILE).include(DataComponents.NOTE_BLOCK_SOUND).include(DataComponents.CUSTOM_NAME))))));
+      this.add(Blocks.PLAYER_HEAD, (var1x) -> LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1x, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1x).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.PROFILE).include(DataComponents.NOTE_BLOCK_SOUND).include(DataComponents.CUSTOM_NAME))))));
+      this.add(Blocks.SKELETON_SKULL, this::createMobSkullDrop);
+      this.add(Blocks.WITHER_SKELETON_SKULL, this::createMobSkullDrop);
+      this.add(Blocks.ZOMBIE_HEAD, this::createMobSkullDrop);
+      this.add(Blocks.CREEPER_HEAD, this::createMobSkullDrop);
+      this.add(Blocks.PIGLIN_HEAD, this::createMobSkullDrop);
+      this.add(Blocks.DRAGON_HEAD, this::createMobSkullDrop);
       this.add(Blocks.BEE_NEST, (var1x) -> this.createBeeNestDrop(var1x));
       this.add(Blocks.BEEHIVE, (var1x) -> this.createBeeHiveDrop(var1x));
       this.add(Blocks.OAK_LEAVES, (var1x) -> this.createOakLeavesDrops(var1x, Blocks.OAK_SAPLING, NORMAL_LEAVES_SAPLING_CHANCES));
@@ -1101,7 +1141,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
    }
 
    private LootTable.Builder createDecoratedPotTable(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true)))).otherwise(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.POT_DECORATIONS)))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true)))).otherwise(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.POT_DECORATIONS)))));
    }
 
    private LootTable.Builder createPitcherCropLoot() {
@@ -1110,6 +1150,10 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
          LootItemBlockStatePropertyCondition.Builder var2 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.PITCHER_CROP).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PitcherCropBlock.AGE, var0));
          return var0 == 4 ? ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.PITCHER_PLANT).when(var2)).when(var1)).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F))) : ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.PITCHER_POD).when(var2)).when(var1)).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F)));
       }))));
+   }
+
+   private LootTable.Builder createMobSkullDrop(Block var1) {
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionCondition(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var1).apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME)))));
    }
 
    static {

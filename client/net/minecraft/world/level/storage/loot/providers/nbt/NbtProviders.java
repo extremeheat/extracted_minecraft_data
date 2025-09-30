@@ -34,6 +34,6 @@ public class NbtProviders {
             return var10000;
          }));
       STORAGE = register("storage", StorageNbtProvider.CODEC);
-      CONTEXT = register("context", ContextNbtProvider.CODEC);
+      CONTEXT = register("context", ContextNbtProvider.MAP_CODEC);
    }
 }

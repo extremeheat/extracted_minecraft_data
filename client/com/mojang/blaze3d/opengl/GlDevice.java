@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GpuOutOfMemoryException;
+import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -13,7 +14,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
@@ -64,11 +63,12 @@ public class GlDevice implements GpuDevice {
       GLCapabilities var7 = GL.createCapabilities();
       int var8 = getMaxSupportedTextureSize();
       GLFW.glfwSetWindowSizeLimits(var1, -1, -1, var8, var8);
+      GraphicsWorkarounds var9 = GraphicsWorkarounds.get(this);
       this.debugLog = GlDebug.enableDebugCallback(var3, var4, this.enabledExtensions);
       this.debugLabels = GlDebugLabel.create(var7, var6, this.enabledExtensions);
       this.vertexArrayCache = VertexArrayCache.create(var7, this.debugLabels, this.enabledExtensions);
       this.bufferStorage = BufferStorage.create(var7, this.enabledExtensions);
-      this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions);
+      this.directStateAccess = DirectStateAccess.create(var7, this.enabledExtensions, var9);
       this.maxSupportedTextureSize = var8;
       this.defaultShaderSource = var5;
       this.encoder = new GlCommandEncoder(this);
@@ -136,12 +136,12 @@ public class GlDevice implements GpuDevice {
          if (var8) {
             for(int var14 : GlConst.CUBEMAP_TARGETS) {
                for(int var15 = 0; var15 < var7; ++var15) {
-                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+                  GlStateManager._texImage2D(var14, var15, GlConst.toGlInternalId(var3), var4 >> var15, var5 >> var15, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (ByteBuffer)null);
                }
             }
          } else {
             for(int var16 = 0; var16 < var7; ++var16) {
-               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (IntBuffer)null);
+               GlStateManager._texImage2D(var10, var16, GlConst.toGlInternalId(var3), var4 >> var16, var5 >> var16, 0, GlConst.toGlExternalId(var3), GlConst.toGlType(var3), (ByteBuffer)null);
             }
          }
 
@@ -246,7 +246,7 @@ public class GlDevice implements GpuDevice {
       int var0 = GlStateManager._getInteger(3379);
 
       for(int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
-         GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (IntBuffer)null);
+         GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (ByteBuffer)null);
          int var2 = GlStateManager._getTexLevelParameter(32868, 0, 4096);
          if (var2 != 0) {
             return var1;
@@ -284,26 +284,17 @@ public class GlDevice implements GpuDevice {
       this.shaderCache.clear();
       String var4 = GlStateManager._getString(7937);
       if (var4.contains("AMD")) {
-         amdDummyShaderWorkaround();
+         sacrificeShaderToOpenGlAndAmd();
       }
 
    }
 
-   private static void amdDummyShaderWorkaround() {
+   private static void sacrificeShaderToOpenGlAndAmd() {
       int var0 = GlStateManager.glCreateShader(35633);
-      GlStateManager.glShaderSource(var0, "#version 150\nvoid main() {\n    gl_Position = vec4(0.0);\n}\n");
-      GlStateManager.glCompileShader(var0);
-      int var1 = GlStateManager.glCreateShader(35632);
-      GlStateManager.glShaderSource(var1, "#version 150\nlayout(std140) uniform Dummy {\n    float Value;\n};\nout vec4 fragColor;\nvoid main() {\n    fragColor = vec4(0.0);\n}\n");
-      GlStateManager.glCompileShader(var1);
-      int var2 = GlStateManager.glCreateProgram();
-      GlStateManager.glAttachShader(var2, var0);
-      GlStateManager.glAttachShader(var2, var1);
-      GlStateManager.glLinkProgram(var2);
-      GL31.glGetUniformBlockIndex(var2, "Dummy");
+      int var1 = GlStateManager.glCreateProgram();
+      GlStateManager.glAttachShader(var1, var0);
       GlStateManager.glDeleteShader(var0);
-      GlStateManager.glDeleteShader(var1);
-      GlStateManager.glDeleteProgram(var2);
+      GlStateManager.glDeleteProgram(var1);
    }
 
    public List<String> getEnabledExtensions() {

@@ -8,6 +8,7 @@ import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -30,10 +31,10 @@ public class ItemModelResolver {
    }
 
    public void updateForNonLiving(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, Entity var4) {
-      this.updateForTopItem(var1, var2, var3, var4.level(), (LivingEntity)null, var4.getId());
+      this.updateForTopItem(var1, var2, var3, var4.level(), (ItemOwner)null, var4.getId());
    }
 
-   public void updateForTopItem(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable LivingEntity var5, int var6) {
+   public void updateForTopItem(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable ItemOwner var5, int var6) {
       var1.clear();
       if (!var2.isEmpty()) {
          var1.displayContext = var3;
@@ -42,7 +43,7 @@ public class ItemModelResolver {
 
    }
 
-   public void appendItemLayers(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable LivingEntity var5, int var6) {
+   public void appendItemLayers(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable ItemOwner var5, int var6) {
       ResourceLocation var7 = (ResourceLocation)var2.get(DataComponents.ITEM_MODEL);
       if (var7 != null) {
          var1.setOversizedInGui(((ClientItem.Properties)this.clientProperties.apply(var7)).oversizedInGui());

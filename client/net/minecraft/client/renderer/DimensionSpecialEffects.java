@@ -19,14 +19,14 @@ public abstract class DimensionSpecialEffects {
       var0.put(BuiltinDimensionTypes.END_EFFECTS, new EndEffects());
    });
    private final SkyType skyType;
-   private final boolean forceBrightLightmap;
    private final boolean constantAmbientLight;
+   private final boolean hasEndFlashes;
 
    public DimensionSpecialEffects(SkyType var1, boolean var2, boolean var3) {
       super();
       this.skyType = var1;
-      this.forceBrightLightmap = var2;
-      this.constantAmbientLight = var3;
+      this.constantAmbientLight = var2;
+      this.hasEndFlashes = var3;
    }
 
    public static DimensionSpecialEffects forType(DimensionType var0) {
@@ -49,12 +49,12 @@ public abstract class DimensionSpecialEffects {
       return this.skyType;
    }
 
-   public boolean forceBrightLightmap() {
-      return this.forceBrightLightmap;
-   }
-
    public boolean constantAmbientLight() {
       return this.constantAmbientLight;
+   }
+
+   public boolean hasEndFlashes() {
+      return this.hasEndFlashes;
    }
 
    public static enum SkyType {
@@ -73,7 +73,7 @@ public abstract class DimensionSpecialEffects {
 
    public static class NetherEffects extends DimensionSpecialEffects {
       public NetherEffects() {
-         super(DimensionSpecialEffects.SkyType.NONE, false, true);
+         super(DimensionSpecialEffects.SkyType.NONE, true, false);
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
@@ -115,7 +115,7 @@ public abstract class DimensionSpecialEffects {
 
    public static class EndEffects extends DimensionSpecialEffects {
       public EndEffects() {
-         super(DimensionSpecialEffects.SkyType.END, true, false);
+         super(DimensionSpecialEffects.SkyType.END, false, true);
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {

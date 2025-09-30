@@ -1,70 +1,66 @@
 package net.minecraft.client.renderer.debug;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.phys.AABB;
 
 public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRenderer {
-   private final Minecraft minecraft;
-   private final Map<Long, Map<BlockPos, Integer>> lastUpdate = Maps.newTreeMap(Ordering.natural().reverse());
-
-   NeighborsUpdateRenderer(Minecraft var1) {
+   public NeighborsUpdateRenderer() {
       super();
-      this.minecraft = var1;
    }
 
-   public void addUpdate(long var1, BlockPos var3) {
-      Map var4 = (Map)this.lastUpdate.computeIfAbsent(var1, (var0) -> Maps.newHashMap());
-      int var5 = (Integer)var4.getOrDefault(var3, 0);
-      var4.put(var3, var5 + 1);
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      int var11 = DebugSubscriptions.NEIGHBOR_UPDATES.expireAfterTicks();
+      double var12 = 1.0 / (double)(var11 * 2);
+      HashMap var14 = new HashMap();
+      var9.forEachEvent(DebugSubscriptions.NEIGHBOR_UPDATES, (var1x, var2x, var3x) -> {
+         long var4 = (long)(var3x - var2x);
+         LastUpdate var6 = (LastUpdate)var14.getOrDefault(var1x, NeighborsUpdateRenderer.LastUpdate.NONE);
+         var14.put(var1x, var6.tryCount((int)var4));
+      });
+      VertexConsumer var15 = var2.getBuffer(RenderType.lines());
+
+      for(Map.Entry var17 : var14.entrySet()) {
+         BlockPos var18 = (BlockPos)var17.getKey();
+         LastUpdate var19 = (LastUpdate)var17.getValue();
+         AABB var20 = (new AABB(BlockPos.ZERO)).inflate(0.002).deflate(var12 * (double)var19.age).move((double)var18.getX(), (double)var18.getY(), (double)var18.getZ()).move(-var3, -var5, -var7);
+         ShapeRenderer.renderLineBox(var1.last(), var15, var20.minX, var20.minY, var20.minZ, var20.maxX, var20.maxY, var20.maxZ, 1.0F, 1.0F, 1.0F, 1.0F);
+      }
+
+      for(Map.Entry var22 : var14.entrySet()) {
+         BlockPos var23 = (BlockPos)var22.getKey();
+         LastUpdate var24 = (LastUpdate)var22.getValue();
+         DebugRenderer.renderFloatingText(var1, var2, String.valueOf(var24.count), var23.getX(), var23.getY(), var23.getZ(), -1);
+      }
+
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      long var9 = this.minecraft.level.getGameTime();
-      boolean var11 = true;
-      double var12 = 0.0025;
-      HashSet var14 = Sets.newHashSet();
-      HashMap var15 = Maps.newHashMap();
-      VertexConsumer var16 = var2.getBuffer(RenderType.lines());
-      Iterator var17 = this.lastUpdate.entrySet().iterator();
+   static record LastUpdate(int count, int age) {
+      final int count;
+      final int age;
+      static final LastUpdate NONE = new LastUpdate(0, 2147483647);
 
-      while(var17.hasNext()) {
-         Map.Entry var18 = (Map.Entry)var17.next();
-         Long var19 = (Long)var18.getKey();
-         Map var20 = (Map)var18.getValue();
-         long var21 = var9 - var19;
-         if (var21 > 200L) {
-            var17.remove();
+      private LastUpdate(int var1, int var2) {
+         super();
+         this.count = var1;
+         this.age = var2;
+      }
+
+      public LastUpdate tryCount(int var1) {
+         if (var1 == this.age) {
+            return new LastUpdate(this.count + 1, var1);
          } else {
-            for(Map.Entry var24 : var20.entrySet()) {
-               BlockPos var25 = (BlockPos)var24.getKey();
-               Integer var26 = (Integer)var24.getValue();
-               if (var14.add(var25)) {
-                  AABB var27 = (new AABB(BlockPos.ZERO)).inflate(0.002).deflate(0.0025 * (double)var21).move((double)var25.getX(), (double)var25.getY(), (double)var25.getZ()).move(-var3, -var5, -var7);
-                  ShapeRenderer.renderLineBox(var1, var16, var27.minX, var27.minY, var27.minZ, var27.maxX, var27.maxY, var27.maxZ, 1.0F, 1.0F, 1.0F, 1.0F);
-                  var15.put(var25, var26);
-               }
-            }
+            return var1 < this.age ? new LastUpdate(1, var1) : this;
          }
       }
-
-      for(Map.Entry var29 : var15.entrySet()) {
-         BlockPos var30 = (BlockPos)var29.getKey();
-         Integer var31 = (Integer)var29.getValue();
-         DebugRenderer.renderFloatingText(var1, var2, String.valueOf(var31), var30.getX(), var30.getY(), var30.getZ(), -1);
-      }
-
    }
 }

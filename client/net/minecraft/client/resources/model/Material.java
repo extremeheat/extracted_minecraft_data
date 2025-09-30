@@ -5,11 +5,9 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
 public class Material {
@@ -33,10 +31,6 @@ public class Material {
       return this.texture;
    }
 
-   public TextureAtlasSprite sprite() {
-      return (TextureAtlasSprite)Minecraft.getInstance().getTextureAtlas(this.atlasLocation()).apply(this.texture());
-   }
-
    public RenderType renderType(Function<ResourceLocation, RenderType> var1) {
       if (this.renderType == null) {
          this.renderType = (RenderType)var1.apply(this.atlasLocation);
@@ -45,12 +39,12 @@ public class Material {
       return this.renderType;
    }
 
-   public VertexConsumer buffer(MultiBufferSource var1, Function<ResourceLocation, RenderType> var2) {
-      return this.sprite().wrap(var1.getBuffer(this.renderType(var2)));
+   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<ResourceLocation, RenderType> var3) {
+      return var1.get(this).wrap(var2.getBuffer(this.renderType(var3)));
    }
 
-   public VertexConsumer buffer(MultiBufferSource var1, Function<ResourceLocation, RenderType> var2, boolean var3, boolean var4) {
-      return this.sprite().wrap(ItemRenderer.getFoilBuffer(var1, this.renderType(var2), var3, var4));
+   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<ResourceLocation, RenderType> var3, boolean var4, boolean var5) {
+      return var1.get(this).wrap(ItemRenderer.getFoilBuffer(var2, this.renderType(var3), var4, var5));
    }
 
    public boolean equals(Object var1) {

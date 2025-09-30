@@ -1,14 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Objects;
 import net.minecraft.client.model.MinecartModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -26,17 +26,15 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
    private static final ResourceLocation MINECART_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/minecart.png");
    private static final float DISPLAY_BLOCK_SCALE = 0.75F;
    protected final MinecartModel model;
-   private final BlockRenderDispatcher blockRenderer;
 
    public AbstractMinecartRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
       super(var1);
       this.shadowRadius = 0.7F;
       this.model = new MinecartModel(var1.bakeLayer(var2));
-      this.blockRenderer = var1.getBlockRenderDispatcher();
    }
 
-   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
-      super.render(var1, var2, var3, var4);
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      super.submit(var1, var2, var3, var4);
       var2.pushPose();
       long var5 = var1.offsetSeed;
       float var7 = (((float)(var5 >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
@@ -60,14 +58,12 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
          var2.scale(0.75F, 0.75F, 0.75F);
          var2.translate(-0.5F, (float)(var1.displayOffset - 8) / 16.0F, 0.5F);
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.renderMinecartContents(var1, var11, var2, var3, var4);
+         this.submitMinecartContents(var1, var11, var2, var3, var1.lightCoords);
          var2.popPose();
       }
 
       var2.scale(-1.0F, -1.0F, 1.0F);
-      this.model.setupAnim(var1);
-      VertexConsumer var12 = var3.getBuffer(this.model.renderType(MINECART_LOCATION));
-      this.model.renderToBuffer(var2, var12, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1, var2, this.model.renderType(MINECART_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
    }
 
@@ -158,8 +154,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
    }
 
-   protected void renderMinecartContents(S var1, BlockState var2, PoseStack var3, MultiBufferSource var4, int var5) {
-      this.blockRenderer.renderSingleBlock(var2, var3, var4, var5, OverlayTexture.NO_OVERLAY);
+   protected void submitMinecartContents(S var1, BlockState var2, PoseStack var3, SubmitNodeCollector var4, int var5) {
+      var4.submitBlock(var3, var2, var5, OverlayTexture.NO_OVERLAY, var1.outlineColor);
    }
 
    protected AABB getBoundingBoxForCulling(T var1) {

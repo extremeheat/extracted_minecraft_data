@@ -16,6 +16,8 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.Holder;
@@ -112,48 +114,48 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
    }
 
-   public void onClick(double var1, double var3) {
+   public void onClick(MouseButtonEvent var1, boolean var2) {
    }
 
-   public void onRelease(double var1, double var3) {
+   public void onRelease(MouseButtonEvent var1) {
    }
 
-   protected void onDrag(double var1, double var3, double var5, double var7) {
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.active && this.visible) {
-         if (this.isValidClickButton(var5)) {
-            boolean var6 = this.isMouseOver(var1, var3);
-            if (var6) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (!this.isActive()) {
+         return false;
+      } else {
+         if (this.isValidClickButton(var1.buttonInfo())) {
+            boolean var3 = this.isMouseOver(var1.x(), var1.y());
+            if (var3) {
                this.playDownSound(Minecraft.getInstance().getSoundManager());
-               this.onClick(var1, var3);
+               this.onClick(var1, var2);
                return true;
             }
          }
 
          return false;
-      } else {
-         return false;
       }
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      if (this.isValidClickButton(var5)) {
-         this.onRelease(var1, var3);
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      if (this.isValidClickButton(var1.buttonInfo())) {
+         this.onRelease(var1);
          return true;
       } else {
          return false;
       }
    }
 
-   protected boolean isValidClickButton(int var1) {
-      return var1 == 0;
+   protected boolean isValidClickButton(MouseButtonInfo var1) {
+      return var1.button() == 0;
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      if (this.isValidClickButton(var5)) {
-         this.onDrag(var1, var3, var6, var8);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      if (this.isValidClickButton(var1.buttonInfo())) {
+         this.onDrag(var1, var2, var4);
          return true;
       } else {
          return false;
@@ -162,15 +164,15 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-      if (this.active && this.visible) {
-         return !this.isFocused() ? ComponentPath.leaf(this) : null;
-      } else {
+      if (!this.isActive()) {
          return null;
+      } else {
+         return !this.isFocused() ? ComponentPath.leaf(this) : null;
       }
    }
 
    public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && this.areCoordinatesInRectangle(var1, var3);
+      return this.isActive() && this.areCoordinatesInRectangle(var1, var3);
    }
 
    public void playDownSound(SoundManager var1) {

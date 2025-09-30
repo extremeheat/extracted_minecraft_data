@@ -192,10 +192,6 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
    }
 
-   protected ItemStack getSkull() {
-      return ItemStack.EMPTY;
-   }
-
    protected void randomizeReinforcementsChance() {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(0.0);
    }

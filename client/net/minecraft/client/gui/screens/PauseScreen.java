@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.realmsclient.RealmsMainScreen;
 import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,11 +18,9 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -31,6 +28,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
@@ -76,10 +74,11 @@ public class PauseScreen extends Screen {
          this.createPauseMenu();
       }
 
+      int var1 = this.font.width((FormattedText)this.title);
+      int var10003 = this.width / 2 - var1 / 2;
       int var10004 = this.showPauseMenu ? 40 : 10;
-      int var10005 = this.width;
       Objects.requireNonNull(this.font);
-      this.addRenderableWidget(new StringWidget(0, var10004, var10005, 9, this.title, this.font));
+      this.addRenderableWidget(new StringWidget(var10003, var10004, var1, 9, this.title, this.font));
    }
 
    private void createPauseMenu() {
@@ -108,7 +107,7 @@ public class PauseScreen extends Screen {
 
       this.disconnectButton = (Button)var2.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (var1x) -> {
          var1x.active = false;
-         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> disconnectFromWorld(this.minecraft, ClientLevel.DEFAULT_QUIT_MESSAGE), true);
+         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> this.minecraft.disconnectFromWorld(ClientLevel.DEFAULT_QUIT_MESSAGE), true);
       }).width(204).build(), 2);
       var1.arrangeElements();
       FrameLayout.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
@@ -141,30 +140,6 @@ public class PauseScreen extends Screen {
    private void addFeedbackSubscreenAndCustomDialogButtons(Minecraft var1, Holder<Dialog> var2, GridLayout.RowHelper var3) {
       var3.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
       var3.addChild(Button.builder(((Dialog)var2.value()).common().computeExternalTitle(), (var3x) -> var1.player.connection.showDialog(var2, this)).width(98).tooltip(CUSTOM_OPTIONS_TOOLTIP).build());
-   }
-
-   public static void disconnectFromWorld(Minecraft var0, Component var1) {
-      boolean var2 = var0.isLocalServer();
-      ServerData var3 = var0.getCurrentServer();
-      if (var0.level != null) {
-         var0.level.disconnect(var1);
-      }
-
-      if (var2) {
-         var0.disconnectWithSavingScreen();
-      } else {
-         var0.disconnectWithProgressScreen();
-      }
-
-      TitleScreen var4 = new TitleScreen();
-      if (var2) {
-         var0.setScreen(var4);
-      } else if (var3 != null && var3.isRealm()) {
-         var0.setScreen(new RealmsMainScreen(var4));
-      } else {
-         var0.setScreen(new JoinMultiplayerScreen(var4));
-      }
-
    }
 
    public void tick() {

@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -13,35 +13,47 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BedRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.Unit;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
-public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
-   private final Model headModel;
-   private final Model footModel;
+public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRenderState> {
+   private final MaterialSet materials;
+   private final Model.Simple headModel;
+   private final Model.Simple footModel;
 
    public BedRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.materials(), var1.entityModelSet());
    }
 
-   public BedRenderer(EntityModelSet var1) {
+   public BedRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.materials(), var1.entityModelSet());
+   }
+
+   public BedRenderer(MaterialSet var1, EntityModelSet var2) {
       super();
-      this.headModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
-      this.footModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
+      this.materials = var1;
+      this.headModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
+      this.footModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
    }
 
    public static LayerDefinition createHeadLayer() {
@@ -62,28 +74,36 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void render(BedBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      Level var8 = var1.getLevel();
-      if (var8 != null) {
-         Material var9 = Sheets.getBedMaterial(var1.getColor());
-         BlockState var10 = var1.getBlockState();
-         DoubleBlockCombiner.NeighborCombineResult var11 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var10, var8, var1.getBlockPos(), (var0, var1x) -> false);
-         int var12 = ((Int2IntFunction)var11.apply(new BrightnessCombiner())).get(var5);
-         this.renderPiece(var3, var4, var10.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var10.getValue(BedBlock.FACING), var9, var12, var6, false);
+   public BedRenderState createRenderState() {
+      return new BedRenderState();
+   }
+
+   public void extractRenderState(BedBlockEntity var1, BedRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.color = var1.getColor();
+      var2.facing = (Direction)var1.getBlockState().getValue(BedBlock.FACING);
+      var2.isHead = var1.getBlockState().getValue(BedBlock.PART) == BedPart.HEAD;
+      if (var1.getLevel() != null) {
+         DoubleBlockCombiner.NeighborCombineResult var6 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var1.getBlockState(), var1.getLevel(), var1.getBlockPos(), (var0, var1x) -> false);
+         var2.lightCoords = ((Int2IntFunction)var6.apply(new BrightnessCombiner())).get(var2.lightCoords);
       }
 
    }
 
-   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, Material var5) {
-      this.renderPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false);
-      this.renderPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true);
+   public void submit(BedRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      Material var5 = Sheets.getBedMaterial(var1.color);
+      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress, 0);
    }
 
-   private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
+   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Material var5, int var6) {
+      this.submitPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      this.submitPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+   }
+
+   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, int var10) {
       var1.pushPose();
       preparePose(var1, var8, var4);
-      VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
-      var3.renderToBuffer(var1, var9, var6, var7);
+      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderType::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);
       var1.popPose();
    }
 
@@ -102,5 +122,10 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       var2.setIdentity();
       preparePose(var2, true, Direction.SOUTH);
       this.footModel.root().getExtentsForGui(var2, var1);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

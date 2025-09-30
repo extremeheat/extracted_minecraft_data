@@ -1,6 +1,6 @@
 package net.minecraft.network.codec;
 
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -373,7 +372,7 @@ public interface ByteBufCodecs {
 
       public PropertyMap decode(ByteBuf var1) {
          int var2 = ByteBufCodecs.readCount(var1, 16);
-         PropertyMap var3 = new PropertyMap();
+         ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
 
          for(int var4 = 0; var4 < var2; ++var4) {
             String var5 = Utf8String.read(var1, 64);
@@ -383,7 +382,7 @@ public interface ByteBufCodecs {
             var3.put(var8.name(), var8);
          }
 
-         return var3;
+         return new PropertyMap(var3.build());
       }
 
       public void encode(ByteBuf var1, PropertyMap var2) {
@@ -407,31 +406,8 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = new StreamCodec<ByteBuf, GameProfile>() {
-      public GameProfile decode(ByteBuf var1) {
-         UUID var2 = (UUID)UUIDUtil.STREAM_CODEC.decode(var1);
-         String var3 = Utf8String.read(var1, 16);
-         GameProfile var4 = new GameProfile(var2, var3);
-         var4.getProperties().putAll((Multimap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1));
-         return var4;
-      }
-
-      public void encode(ByteBuf var1, GameProfile var2) {
-         UUIDUtil.STREAM_CODEC.encode(var1, var2.getId());
-         Utf8String.write(var1, var2.getName(), 16);
-         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var1, var2.getProperties());
-      }
-
-      // $FF: synthetic method
-      public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (GameProfile)var2);
-      }
-
-      // $FF: synthetic method
-      public Object decode(final Object var1) {
-         return this.decode((ByteBuf)var1);
-      }
-   };
+   StreamCodec<ByteBuf, String> PLAYER_NAME = stringUtf8(16);
+   StreamCodec<ByteBuf, GameProfile> GAME_PROFILE = StreamCodec.composite(UUIDUtil.STREAM_CODEC, GameProfile::id, PLAYER_NAME, GameProfile::name, GAME_PROFILE_PROPERTIES, GameProfile::properties, GameProfile::new);
    StreamCodec<ByteBuf, Integer> RGB_COLOR = new StreamCodec<ByteBuf, Integer>() {
       public Integer decode(ByteBuf var1) {
          return ARGB.color(var1.readByte() & 255, var1.readByte() & 255, var1.readByte() & 255);
@@ -636,7 +612,7 @@ public interface ByteBufCodecs {
       };
    }
 
-   static <B extends ByteBuf, V> StreamCodec<B, Optional<V>> optional(final StreamCodec<B, V> var0) {
+   static <B extends ByteBuf, V> StreamCodec<B, Optional<V>> optional(final StreamCodec<? super B, V> var0) {
       return new StreamCodec<B, Optional<V>>() {
          public Optional<V> decode(B var1) {
             return var1.readBoolean() ? Optional.of(var0.decode(var1)) : Optional.empty();

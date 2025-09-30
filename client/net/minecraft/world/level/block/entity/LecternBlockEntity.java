@@ -179,7 +179,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          var3 = "Lectern";
          var4 = Component.literal("Lectern");
       } else {
-         var3 = var1.getName().getString();
+         var3 = var1.getPlainTextName();
          var4 = var1.getDisplayName();
       }
 

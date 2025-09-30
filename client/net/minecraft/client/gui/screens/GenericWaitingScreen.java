@@ -69,7 +69,11 @@ public class GenericWaitingScreen extends Screen {
          String var5 = LoadingDotsText.get(Util.getMillis());
          var1.drawCenteredString(this.font, (String)var5, this.width / 2, 120, -6250336);
       } else {
-         this.message.renderCentered(var1, this.width / 2, 120);
+         MultiLineLabel var10000 = this.message;
+         MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
+         int var10003 = this.width / 2;
+         Objects.requireNonNull(this.font);
+         var10000.render(var1, var10002, var10003, 120, 9, true, -1);
       }
 
    }

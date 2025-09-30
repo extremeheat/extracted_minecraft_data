@@ -1,7 +1,5 @@
 package net.minecraft.client.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 public class NoRenderParticle extends Particle {
@@ -13,10 +11,7 @@ public class NoRenderParticle extends Particle {
       super(var1, var2, var4, var6, var8, var10, var12);
    }
 
-   public final void render(VertexConsumer var1, Camera var2, float var3) {
-   }
-
-   public ParticleRenderType getRenderType() {
+   public ParticleRenderType getGroup() {
       return ParticleRenderType.NO_RENDER;
    }
 }

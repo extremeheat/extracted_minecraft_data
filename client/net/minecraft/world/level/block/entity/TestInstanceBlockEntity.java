@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -64,6 +66,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    private static final List<BeaconBeamOwner.Section> BEAM_OPTIONAL_FAILED = List.of(new BeaconBeamOwner.Section(ARGB.color(255, 128, 0)));
    private static final Vec3i STRUCTURE_OFFSET = new Vec3i(0, 1, 1);
    private Data data;
+   private final List<ErrorMarker> errorMarkers = new ArrayList();
 
    public TestInstanceBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.TEST_INSTANCE_BLOCK, var1, var2);
@@ -130,7 +133,6 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
 
    public void setSuccess() {
       this.set(this.data.withStatus(TestInstanceBlockEntity.Status.FINISHED));
-      this.removeBarriers();
    }
 
    public void setRunning() {
@@ -155,10 +157,16 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
 
    protected void loadAdditional(ValueInput var1) {
       var1.read("data", TestInstanceBlockEntity.Data.CODEC).ifPresent(this::set);
+      this.errorMarkers.clear();
+      this.errorMarkers.addAll((Collection)var1.read("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC).orElse(List.of()));
    }
 
    protected void saveAdditional(ValueOutput var1) {
       var1.store("data", TestInstanceBlockEntity.Data.CODEC, this.data);
+      if (!this.errorMarkers.isEmpty()) {
+         var1.store("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC, this.errorMarkers);
+      }
+
    }
 
    public BoundingBoxRenderable.Mode renderMode() {
@@ -200,6 +208,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
 
    public void resetTest(Consumer<Component> var1) {
       this.removeBarriers();
+      this.clearErrorMarkers();
       boolean var2 = this.placeStructure();
       if (var2) {
          var1.accept(Component.translatable("test_instance_block.reset_success", this.getTestName()).withStyle(ChatFormatting.GREEN));
@@ -276,7 +285,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          } else if (!this.placeStructure()) {
             var1.accept(Component.translatable("test_instance_block.error.no_test_structure", var4.getX(), var4.getY(), var4.getZ()).withStyle(ChatFormatting.RED));
          } else {
-            GameTestRunner.clearMarkers(var2);
+            this.clearErrorMarkers();
             GameTestTicker.SINGLETON.clear();
             FailedTestTracker.forgetFailedTests();
             var1.accept(Component.translatable("test_instance_block.starting", ((Holder.Reference)var7.get()).getRegisteredName()));
@@ -305,6 +314,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       StructurePlaceSettings var3 = (new StructurePlaceSettings()).setRotation(this.getRotation()).setIgnoreEntities(this.data.ignoreEntities()).setKnownShape(true);
       BlockPos var4 = this.getStartCorner();
       this.forceLoadChunks();
+      StructureUtils.clearSpaceForStructure(this.getStructureBoundingBox(), var1);
       this.removeEntities();
       var2.placeInWorld(var1, var4, var4, var3, var1.getRandom(), 818);
    }
@@ -370,6 +380,23 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       });
    }
 
+   public void markError(BlockPos var1, Component var2) {
+      this.errorMarkers.add(new ErrorMarker(var1, var2));
+      this.setChanged();
+   }
+
+   public void clearErrorMarkers() {
+      if (!this.errorMarkers.isEmpty()) {
+         this.errorMarkers.clear();
+         this.setChanged();
+      }
+
+   }
+
+   public List<ErrorMarker> getErrorMarkers() {
+      return this.errorMarkers;
+   }
+
    // $FF: synthetic method
    public Packet getUpdatePacket() {
       return this.getUpdatePacket();
@@ -433,6 +460,21 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
 
       static {
          STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.optional(ResourceKey.streamCodec(Registries.TEST_INSTANCE)), Data::test, Vec3i.STREAM_CODEC, Data::size, Rotation.STREAM_CODEC, Data::rotation, ByteBufCodecs.BOOL, Data::ignoreEntities, TestInstanceBlockEntity.Status.STREAM_CODEC, Data::status, ByteBufCodecs.optional(ComponentSerialization.STREAM_CODEC), Data::errorMessage, Data::new);
+      }
+   }
+
+   public static record ErrorMarker(BlockPos pos, Component text) {
+      public static final Codec<ErrorMarker> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(ErrorMarker::pos), ComponentSerialization.CODEC.fieldOf("text").forGetter(ErrorMarker::text)).apply(var0, ErrorMarker::new));
+      public static final Codec<List<ErrorMarker>> LIST_CODEC;
+
+      public ErrorMarker(BlockPos var1, Component var2) {
+         super();
+         this.pos = var1;
+         this.text = var2;
+      }
+
+      static {
+         LIST_CODEC = CODEC.listOf();
       }
    }
 }

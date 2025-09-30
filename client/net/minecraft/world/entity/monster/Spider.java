@@ -74,7 +74,7 @@ public class Spider extends Monster {
 
    public void tick() {
       super.tick();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setClimbing(this.horizontalCollision);
       }
 
@@ -139,7 +139,7 @@ public class Spider extends Monster {
          if (var6 != null) {
             var6.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var6.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
-            var6.startRiding(this);
+            var6.startRiding(this, false, false);
          }
       }
 

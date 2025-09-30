@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
@@ -52,20 +51,6 @@ public enum ChunkSectionLayer {
       AbstractTexture var2 = var1.getTexture(TextureAtlas.LOCATION_BLOCKS);
       var2.setUseMipmaps(this.useMipmaps);
       return var2.getTextureView();
-   }
-
-   public RenderTarget outputTarget() {
-      Minecraft var1 = Minecraft.getInstance();
-      switch (this.ordinal()) {
-         case 3:
-            RenderTarget var3 = var1.levelRenderer.getTranslucentTarget();
-            return var3 != null ? var3 : var1.getMainRenderTarget();
-         case 4:
-            RenderTarget var2 = var1.levelRenderer.getWeatherTarget();
-            return var2 != null ? var2 : var1.getMainRenderTarget();
-         default:
-            return var1.getMainRenderTarget();
-      }
    }
 
    // $FF: synthetic method

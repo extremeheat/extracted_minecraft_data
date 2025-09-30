@@ -22,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,7 +40,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -66,19 +67,17 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.PalettedContainerFactory;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
-import net.minecraft.world.level.entity.UUIDLookup;
-import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
-import net.minecraft.world.level.redstone.NeighborUpdater;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -87,8 +86,9 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCloseable {
+public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
    public static final ResourceKey<Level> OVERWORLD;
    public static final ResourceKey<Level> NETHER;
@@ -100,8 +100,9 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public static final int TICKS_PER_DAY = 24000;
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
+   private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
    protected final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList();
-   protected final NeighborUpdater neighborUpdater;
+   protected final CollectingNeighborUpdater neighborUpdater;
    private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
    private boolean tickingBlockEntities;
    private final Thread thread;
@@ -119,40 +120,27 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
-   public final boolean isClientSide;
-   private final WorldBorder worldBorder;
+   private final boolean isClientSide;
    private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
    private final RegistryAccess registryAccess;
    private final DamageSources damageSources;
+   private final PalettedContainerFactory palettedContainerFactory;
    private long subTickCount;
 
    protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
       super();
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      final DimensionType var10 = (DimensionType)var4.value();
+      DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
       this.isClientSide = var5;
-      if (var10.coordinateScale() != 1.0) {
-         this.worldBorder = new WorldBorder() {
-            public double getCenterX() {
-               return super.getCenterX() / var10.coordinateScale();
-            }
-
-            public double getCenterZ() {
-               return super.getCenterZ() / var10.coordinateScale();
-            }
-         };
-      } else {
-         this.worldBorder = new WorldBorder();
-      }
-
       this.thread = Thread.currentThread();
       this.biomeManager = new BiomeManager(this, var7);
       this.isDebug = var6;
       this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
       this.registryAccess = var3;
+      this.palettedContainerFactory = PalettedContainerFactory.create(var3);
       this.damageSources = new DamageSources(var3);
    }
 
@@ -206,7 +194,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
       if (this.isOutsideBuildHeight(var1)) {
          return false;
-      } else if (!this.isClientSide && this.isDebug()) {
+      } else if (!this.isClientSide() && this.isDebug()) {
          return false;
       } else {
          LevelChunk var5 = this.getChunkAt(var1);
@@ -221,13 +209,13 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
                   this.setBlocksDirty(var1, var7, var8);
                }
 
-               if ((var3 & 2) != 0 && (!this.isClientSide || (var3 & 4) == 0) && (this.isClientSide || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
+               if ((var3 & 2) != 0 && (!this.isClientSide() || (var3 & 4) == 0) && (this.isClientSide() || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
                   this.sendBlockUpdated(var1, var7, var2, var3);
                }
 
                if ((var3 & 1) != 0) {
                   this.updateNeighborsAt(var1, var7.getBlock());
-                  if (!this.isClientSide && var2.hasAnalogOutputSignal()) {
+                  if (!this.isClientSide() && var2.hasAnalogOutputSignal()) {
                      this.updateNeighbourForOutputSignal(var1, var6);
                   }
                }
@@ -423,29 +411,26 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       (this.tickingBlockEntities ? this.pendingBlockEntityTickers : this.blockEntityTickers).add(var1);
    }
 
-   protected void tickBlockEntities() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("blockEntities");
+   public void tickBlockEntities() {
       this.tickingBlockEntities = true;
       if (!this.pendingBlockEntityTickers.isEmpty()) {
          this.blockEntityTickers.addAll(this.pendingBlockEntityTickers);
          this.pendingBlockEntityTickers.clear();
       }
 
-      Iterator var2 = this.blockEntityTickers.iterator();
-      boolean var3 = this.tickRateManager().runsNormally();
+      Iterator var1 = this.blockEntityTickers.iterator();
+      boolean var2 = this.tickRateManager().runsNormally();
 
-      while(var2.hasNext()) {
-         TickingBlockEntity var4 = (TickingBlockEntity)var2.next();
-         if (var4.isRemoved()) {
-            var2.remove();
-         } else if (var3 && this.shouldTickBlocksAt(var4.getPos())) {
-            var4.tick();
+      while(var1.hasNext()) {
+         TickingBlockEntity var3 = (TickingBlockEntity)var1.next();
+         if (var3.isRemoved()) {
+            var1.remove();
+         } else if (var2 && this.shouldTickBlocksAt(var3.getPos())) {
+            var3.tick();
          }
       }
 
       this.tickingBlockEntities = false;
-      var1.pop();
    }
 
    public <T extends Entity> void guardEntityTick(Consumer<T> var1, T var2) {
@@ -472,22 +457,22 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    }
 
    public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, ExplosionInteraction var10) {
-      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, Vec3 var4, float var5, boolean var6, ExplosionInteraction var7) {
-      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
    public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12) {
-      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15);
+   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16);
 
    public abstract String gatherChunkSourceStats();
 
@@ -496,7 +481,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       if (this.isOutsideBuildHeight(var1)) {
          return null;
       } else {
-         return !this.isClientSide && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
+         return !this.isClientSide() && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
       }
    }
 
@@ -541,17 +526,18 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       this.getChunkSource().setSpawnSettings(var1);
    }
 
-   public BlockPos getSharedSpawnPos() {
-      BlockPos var1 = this.levelData.getSpawnPos();
-      if (!this.getWorldBorder().isWithinBounds(var1)) {
-         var1 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(this.getWorldBorder().getCenterX(), 0.0, this.getWorldBorder().getCenterZ()));
+   public abstract void setRespawnData(LevelData.RespawnData var1);
+
+   public abstract LevelData.RespawnData getRespawnData();
+
+   public LevelData.RespawnData getWorldBorderAdjustedRespawnData(LevelData.RespawnData var1) {
+      WorldBorder var2 = this.getWorldBorder();
+      if (!var2.isWithinBounds(var1.pos())) {
+         BlockPos var3 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(var2.getCenterX(), 0.0, var2.getCenterZ()));
+         return LevelData.RespawnData.of(var1.dimension(), var3, var1.yaw(), var1.pitch());
+      } else {
+         return var1;
       }
-
-      return var1;
-   }
-
-   public float getSharedSpawnAngle() {
-      return this.levelData.getSpawnAngle();
    }
 
    protected void prepareWeather() {
@@ -628,6 +614,32 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       });
    }
 
+   public <T extends Entity> boolean hasEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
+      Profiler.get().incrementCounter("hasEntities");
+      MutableBoolean var4 = new MutableBoolean();
+      this.getEntities().get(var1, var2, (var3x) -> {
+         if (var3.test(var3x)) {
+            var4.setTrue();
+            return AbortableIterationConsumer.Continuation.ABORT;
+         } else {
+            if (var3x instanceof EnderDragon) {
+               EnderDragon var4x = (EnderDragon)var3x;
+
+               for(EnderDragonPart var8 : var4x.getSubEntities()) {
+                  Entity var9 = (Entity)var1.tryCast(var8);
+                  if (var9 != null && var3.test(var9)) {
+                     var4.setTrue();
+                     return AbortableIterationConsumer.Continuation.ABORT;
+                  }
+               }
+            }
+
+            return AbortableIterationConsumer.Continuation.CONTINUE;
+         }
+      });
+      return var4.isTrue();
+   }
+
    public List<Entity> getPushableEntities(Entity var1, AABB var2) {
       return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
    }
@@ -638,6 +650,16 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    @Nullable
    public Entity getEntity(UUID var1) {
       return (Entity)this.getEntities().get(var1);
+   }
+
+   @Nullable
+   public Entity getEntityInAnyDimension(UUID var1) {
+      return this.getEntity(var1);
+   }
+
+   @Nullable
+   public Player getPlayerInAnyDimension(UUID var1) {
+      return this.getPlayerByUUID(var1);
    }
 
    public abstract Collection<EnderDragonPart> dragonParts();
@@ -800,10 +822,6 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public void setSkyFlashTime(int var1) {
    }
 
-   public WorldBorder getWorldBorder() {
-      return this.worldBorder;
-   }
-
    public void sendPacketToServer(Packet<?> var1) {
       throw new UnsupportedOperationException("Can't send packets to server unless you're on the client.");
    }
@@ -874,15 +892,13 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       return 0;
    }
 
-   // $FF: synthetic method
-   public ChunkAccess getChunk(final int var1, final int var2) {
-      return this.getChunk(var1, var2);
+   public PalettedContainerFactory palettedContainerFactory() {
+      return this.palettedContainerFactory;
    }
 
    // $FF: synthetic method
-   @Nullable
-   public UniquelyIdentifyable getEntity(final UUID var1) {
-      return this.getEntity(var1);
+   public ChunkAccess getChunk(final int var1, final int var2) {
+      return this.getChunk(var1, var2);
    }
 
    static {
@@ -890,6 +906,7 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
       OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
       NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
       END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
+      DEFAULT_EXPLOSION_BLOCK_PARTICLES = WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build();
    }
 
    public static enum ExplosionInteraction implements StringRepresentable {

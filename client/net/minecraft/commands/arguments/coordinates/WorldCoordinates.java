@@ -6,10 +6,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class WorldCoordinates implements Coordinates {
-   private final WorldCoordinate x;
-   private final WorldCoordinate y;
-   private final WorldCoordinate z;
+public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordinate z) implements Coordinates {
+   public static final WorldCoordinates ZERO_ROTATION = absolute(new Vec2(0.0F, 0.0F));
 
    public WorldCoordinates(WorldCoordinate var1, WorldCoordinate var2, WorldCoordinate var3) {
       super();
@@ -38,21 +36,6 @@ public class WorldCoordinates implements Coordinates {
 
    public boolean isZRelative() {
       return this.z.isRelative();
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof WorldCoordinates)) {
-         return false;
-      } else {
-         WorldCoordinates var2 = (WorldCoordinates)var1;
-         if (!this.x.equals(var2.x)) {
-            return false;
-         } else {
-            return !this.y.equals(var2.y) ? false : this.z.equals(var2.z);
-         }
-      }
    }
 
    public static WorldCoordinates parseInt(StringReader var0) throws CommandSyntaxException {
@@ -101,12 +84,5 @@ public class WorldCoordinates implements Coordinates {
 
    public static WorldCoordinates absolute(Vec2 var0) {
       return new WorldCoordinates(new WorldCoordinate(false, (double)var0.x), new WorldCoordinate(false, (double)var0.y), new WorldCoordinate(true, 0.0));
-   }
-
-   public int hashCode() {
-      int var1 = this.x.hashCode();
-      var1 = 31 * var1 + this.y.hashCode();
-      var1 = 31 * var1 + this.z.hashCode();
-      return var1;
    }
 }

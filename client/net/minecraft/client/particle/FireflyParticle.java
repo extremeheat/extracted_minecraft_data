@@ -1,12 +1,13 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 
-public class FireflyParticle extends TextureSheetParticle {
+public class FireflyParticle extends SingleQuadParticle {
    private static final float PARTICLE_FADE_OUT_LIGHT_TIME = 0.3F;
    private static final float PARTICLE_FADE_IN_LIGHT_TIME = 0.1F;
    private static final float PARTICLE_FADE_OUT_ALPHA_TIME = 0.5F;
@@ -14,8 +15,8 @@ public class FireflyParticle extends TextureSheetParticle {
    private static final int PARTICLE_MIN_LIFETIME = 200;
    private static final int PARTICLE_MAX_LIFETIME = 300;
 
-   FireflyParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(var1, var2, var4, var6, var8, var10, var12);
+   FireflyParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
+      super(var1, var2, var4, var6, var8, var10, var12, var14);
       this.speedUpWhenYMotionIsBlocked = true;
       this.friction = 0.96F;
       this.quadSize *= 0.75F;
@@ -24,8 +25,8 @@ public class FireflyParticle extends TextureSheetParticle {
       this.zd *= 0.800000011920929;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
    public int getLightColor(float var1) {
@@ -65,18 +66,12 @@ public class FireflyParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FireflyParticle var15 = new FireflyParticle(var2, var3, var5, var7, 0.5 - var2.random.nextDouble(), var2.random.nextBoolean() ? var11 : -var11, 0.5 - var2.random.nextDouble());
-         var15.setLifetime(var2.random.nextIntBetweenInclusive(200, 300));
-         var15.scale(1.5F);
-         var15.pickSprite(this.sprite);
-         var15.setAlpha(0.0F);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         FireflyParticle var16 = new FireflyParticle(var2, var3, var5, var7, 0.5 - var15.nextDouble(), var15.nextBoolean() ? var11 : -var11, 0.5 - var15.nextDouble(), this.sprite.get(var15));
+         var16.setLifetime(var15.nextIntBetweenInclusive(200, 300));
+         var16.scale(1.5F);
+         var16.setAlpha(0.0F);
+         return var16;
       }
    }
 }

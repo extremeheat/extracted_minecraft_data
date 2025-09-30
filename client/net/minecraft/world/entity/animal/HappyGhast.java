@@ -4,7 +4,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -81,7 +80,7 @@ public class HappyGhast extends Animal {
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
             this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-            var2.getChunkSource().chunkMap.broadcast(this, ClientboundEntityPositionSyncPacket.of(this));
+            var2.getChunkSource().chunkMap.sendToTrackingPlayers(this, ClientboundEntityPositionSyncPacket.of(this));
          }
       }
 
@@ -195,6 +194,10 @@ public class HappyGhast extends Animal {
       return this.isBaby() ? SoundEvents.GHASTLING_DEATH : SoundEvents.HAPPY_GHAST_DEATH;
    }
 
+   protected float getSoundVolume() {
+      return this.isBaby() ? 1.0F : 4.0F;
+   }
+
    public int getMaxSpawnClusterSize() {
       return 1;
    }
@@ -249,7 +252,7 @@ public class HappyGhast extends Animal {
    }
 
    private void doPlayerRide(Player var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          var1.startRiding(this);
       }
 
@@ -261,7 +264,7 @@ public class HappyGhast extends Animal {
       }
 
       super.addPassenger(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (!this.scanPlayerAboveGhast()) {
             this.setServerStillTimeout(0);
          } else if (this.serverStillTimeout > 10) {
@@ -273,7 +276,7 @@ public class HappyGhast extends Animal {
 
    protected void removePassenger(Entity var1) {
       super.removePassenger(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setServerStillTimeout(10);
       }
 
@@ -382,7 +385,7 @@ public class HappyGhast extends Animal {
    }
 
    public void aiStep() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setRequiresPrecisePosition(this.isOnStillTimeout());
       }
 
@@ -416,11 +419,6 @@ public class HappyGhast extends Animal {
          }
       }
 
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

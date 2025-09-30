@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -9,9 +10,8 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.entity.BellBlockEntity;
 
-public class BellModel extends Model {
+public class BellModel extends Model<State> {
    private static final String BELL_BODY = "bell_body";
    private final ModelPart bellBody;
 
@@ -28,24 +28,33 @@ public class BellModel extends Model {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   public void setupAnim(BellBlockEntity var1, float var2) {
-      float var3 = (float)var1.ticks + var2;
-      float var4 = 0.0F;
-      float var5 = 0.0F;
-      if (var1.shaking) {
-         float var6 = Mth.sin(var3 / 3.1415927F) / (4.0F + var3 / 3.0F);
-         if (var1.clickDirection == Direction.NORTH) {
-            var4 = -var6;
-         } else if (var1.clickDirection == Direction.SOUTH) {
-            var4 = var6;
-         } else if (var1.clickDirection == Direction.EAST) {
-            var5 = -var6;
-         } else if (var1.clickDirection == Direction.WEST) {
-            var5 = var6;
+   public void setupAnim(State var1) {
+      super.setupAnim(var1);
+      float var2 = 0.0F;
+      float var3 = 0.0F;
+      if (var1.shakeDirection != null) {
+         float var4 = Mth.sin(var1.ticks / 3.1415927F) / (4.0F + var1.ticks / 3.0F);
+         switch (var1.shakeDirection) {
+            case NORTH -> var2 = -var4;
+            case SOUTH -> var2 = var4;
+            case EAST -> var3 = -var4;
+            case WEST -> var3 = var4;
          }
       }
 
-      this.bellBody.xRot = var4;
-      this.bellBody.zRot = var5;
+      this.bellBody.xRot = var2;
+      this.bellBody.zRot = var3;
+   }
+
+   public static record State(float ticks, @Nullable Direction shakeDirection) {
+      final float ticks;
+      @Nullable
+      final Direction shakeDirection;
+
+      public State(float var1, @Nullable Direction var2) {
+         super();
+         this.ticks = var1;
+         this.shakeDirection = var2;
+      }
    }
 }

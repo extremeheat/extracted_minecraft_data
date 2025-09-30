@@ -1,14 +1,12 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.SnowGolemModel;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -26,9 +24,9 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
       this.blockRenderer = var2;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, SnowGolemRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, SnowGolemRenderState var4, float var5, float var6) {
       if (var4.hasPumpkin) {
-         if (!var4.isInvisible || var4.appearsGlowing) {
+         if (!var4.isInvisible || var4.appearsGlowing()) {
             var1.pushPose();
             ((SnowGolemModel)this.getParentModel()).getHead().translateAndRotate(var1);
             float var7 = 0.625F;
@@ -39,8 +37,8 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolemRenderState, SnowGo
             BlockStateModel var9 = this.blockRenderer.getBlockModel(var8);
             int var10 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
             var1.translate(-0.5F, -0.5F, -0.5F);
-            VertexConsumer var11 = var4.appearsGlowing && var4.isInvisible ? var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)) : var2.getBuffer(ItemBlockRenderTypes.getRenderType(var8));
-            ModelBlockRenderer.renderModel(var1.last(), var11, var9, 0.0F, 0.0F, 0.0F, var3, var10);
+            RenderType var11 = var4.appearsGlowing() && var4.isInvisible ? RenderType.outline(TextureAtlas.LOCATION_BLOCKS) : ItemBlockRenderTypes.getRenderType(var8);
+            var2.submitBlockModel(var1, var11, var9, 0.0F, 0.0F, 0.0F, var3, var10, var4.outlineColor);
             var1.popPose();
          }
       }

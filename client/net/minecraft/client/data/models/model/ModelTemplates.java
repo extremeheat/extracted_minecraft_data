@@ -108,6 +108,13 @@ public class ModelTemplates {
    public static final ModelTemplate CHISELED_BOOKSHELF_SLOT_BOTTOM_LEFT;
    public static final ModelTemplate CHISELED_BOOKSHELF_SLOT_BOTTOM_MID;
    public static final ModelTemplate CHISELED_BOOKSHELF_SLOT_BOTTOM_RIGHT;
+   public static final ModelTemplate SHELF_BODY;
+   public static final ModelTemplate SHELF_INVENTORY;
+   public static final ModelTemplate SHELF_UNPOWERED;
+   public static final ModelTemplate SHELF_UNCONNECTED;
+   public static final ModelTemplate SHELF_LEFT;
+   public static final ModelTemplate SHELF_CENTER;
+   public static final ModelTemplate SHELF_RIGHT;
    public static final ModelTemplate ANVIL;
    public static final ModelTemplate[] STEMS;
    public static final ModelTemplate ATTACHED_STEM;
@@ -121,6 +128,13 @@ public class ModelTemplates {
    public static final ModelTemplate CAMPFIRE;
    public static final ModelTemplate LANTERN;
    public static final ModelTemplate HANGING_LANTERN;
+   public static final ModelTemplate CHAIN;
+   public static final ModelTemplate BARS_CAP;
+   public static final ModelTemplate BARS_CAP_ALT;
+   public static final ModelTemplate BARS_POST;
+   public static final ModelTemplate BARS_POST_ENDS;
+   public static final ModelTemplate BARS_POST_SIDE;
+   public static final ModelTemplate BARS_POST_SIDE_ALT;
    public static final ModelTemplate TORCH;
    public static final ModelTemplate TORCH_UNLIT;
    public static final ModelTemplate WALL_TORCH;
@@ -165,6 +179,7 @@ public class ModelTemplates {
    public static final ModelTemplate SCULK_SHRIEKER;
    public static final ModelTemplate VAULT;
    public static final ModelTemplate FLAT_HANDHELD_MACE_ITEM;
+   public static final ModelTemplate LIGHTNING_ROD;
 
    public ModelTemplates() {
       super();
@@ -294,6 +309,13 @@ public class ModelTemplates {
       CHISELED_BOOKSHELF_SLOT_BOTTOM_LEFT = create("template_chiseled_bookshelf_slot_bottom_left", "_slot_bottom_left", TextureSlot.TEXTURE);
       CHISELED_BOOKSHELF_SLOT_BOTTOM_MID = create("template_chiseled_bookshelf_slot_bottom_mid", "_slot_bottom_mid", TextureSlot.TEXTURE);
       CHISELED_BOOKSHELF_SLOT_BOTTOM_RIGHT = create("template_chiseled_bookshelf_slot_bottom_right", "_slot_bottom_right", TextureSlot.TEXTURE);
+      SHELF_BODY = create("template_shelf_body", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_INVENTORY = create("template_shelf_inventory", "_inventory", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_UNPOWERED = create("template_shelf_unpowered", "_unpowered", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_UNCONNECTED = create("template_shelf_unconnected", "_unconnected", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_LEFT = create("template_shelf_left", "_left", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_CENTER = create("template_shelf_center", "_center", TextureSlot.ALL, TextureSlot.PARTICLE);
+      SHELF_RIGHT = create("template_shelf_right", "_right", TextureSlot.ALL, TextureSlot.PARTICLE);
       ANVIL = create("template_anvil", TextureSlot.TOP);
       STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((var0) -> create("stem_growth" + var0, "_stage" + var0, TextureSlot.STEM)).toArray((var0) -> new ModelTemplate[var0]);
       ATTACHED_STEM = create("stem_fruit", TextureSlot.STEM, TextureSlot.UPPER_STEM);
@@ -307,6 +329,13 @@ public class ModelTemplates {
       CAMPFIRE = create("template_campfire", TextureSlot.FIRE, TextureSlot.LIT_LOG);
       LANTERN = create("template_lantern", TextureSlot.LANTERN);
       HANGING_LANTERN = create("template_hanging_lantern", "_hanging", TextureSlot.LANTERN);
+      CHAIN = create("template_chain", TextureSlot.TEXTURE);
+      BARS_CAP = create("template_bars_cap", "_cap", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_CAP_ALT = create("template_bars_cap_alt", "_cap_alt", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST = create("template_bars_post", "_post", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_ENDS = create("template_bars_post_ends", "_post_ends", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_SIDE = create("template_bars_side", "_side", TextureSlot.BARS, TextureSlot.EDGE);
+      BARS_POST_SIDE_ALT = create("template_bars_side_alt", "_side_alt", TextureSlot.BARS, TextureSlot.EDGE);
       TORCH = create("template_torch", TextureSlot.TORCH);
       TORCH_UNLIT = create("template_torch_unlit", TextureSlot.TORCH);
       WALL_TORCH = create("template_torch_wall", TextureSlot.TORCH);
@@ -351,5 +380,6 @@ public class ModelTemplates {
       SCULK_SHRIEKER = create("template_sculk_shrieker", TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE, TextureSlot.INNER_TOP);
       VAULT = create("template_vault", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.FRONT);
       FLAT_HANDHELD_MACE_ITEM = createItem("handheld_mace", TextureSlot.LAYER0);
+      LIGHTNING_ROD = create("template_lightning_rod", TextureSlot.TEXTURE);
    }
 }

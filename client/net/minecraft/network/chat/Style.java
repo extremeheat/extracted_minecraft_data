@@ -10,12 +10,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
-public class Style {
-   public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (ResourceLocation)null);
-   public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
+public final class Style {
+   public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (FontDescription)null);
    @Nullable
    final TextColor color;
    @Nullable
@@ -37,14 +35,14 @@ public class Style {
    @Nullable
    final String insertion;
    @Nullable
-   final ResourceLocation font;
+   final FontDescription font;
 
-   private static Style create(Optional<TextColor> var0, Optional<Integer> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<ClickEvent> var7, Optional<HoverEvent> var8, Optional<String> var9, Optional<ResourceLocation> var10) {
-      Style var11 = new Style((TextColor)var0.orElse((Object)null), (Integer)var1.orElse((Object)null), (Boolean)var2.orElse((Object)null), (Boolean)var3.orElse((Object)null), (Boolean)var4.orElse((Object)null), (Boolean)var5.orElse((Object)null), (Boolean)var6.orElse((Object)null), (ClickEvent)var7.orElse((Object)null), (HoverEvent)var8.orElse((Object)null), (String)var9.orElse((Object)null), (ResourceLocation)var10.orElse((Object)null));
+   private static Style create(Optional<TextColor> var0, Optional<Integer> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<ClickEvent> var7, Optional<HoverEvent> var8, Optional<String> var9, Optional<FontDescription> var10) {
+      Style var11 = new Style((TextColor)var0.orElse((Object)null), (Integer)var1.orElse((Object)null), (Boolean)var2.orElse((Object)null), (Boolean)var3.orElse((Object)null), (Boolean)var4.orElse((Object)null), (Boolean)var5.orElse((Object)null), (Boolean)var6.orElse((Object)null), (ClickEvent)var7.orElse((Object)null), (HoverEvent)var8.orElse((Object)null), (String)var9.orElse((Object)null), (FontDescription)var10.orElse((Object)null));
       return var11.equals(EMPTY) ? EMPTY : var11;
    }
 
-   private Style(@Nullable TextColor var1, @Nullable Integer var2, @Nullable Boolean var3, @Nullable Boolean var4, @Nullable Boolean var5, @Nullable Boolean var6, @Nullable Boolean var7, @Nullable ClickEvent var8, @Nullable HoverEvent var9, @Nullable String var10, @Nullable ResourceLocation var11) {
+   private Style(@Nullable TextColor var1, @Nullable Integer var2, @Nullable Boolean var3, @Nullable Boolean var4, @Nullable Boolean var5, @Nullable Boolean var6, @Nullable Boolean var7, @Nullable ClickEvent var8, @Nullable HoverEvent var9, @Nullable String var10, @Nullable FontDescription var11) {
       super();
       this.color = var1;
       this.shadowColor = var2;
@@ -108,8 +106,8 @@ public class Style {
       return this.insertion;
    }
 
-   public ResourceLocation getFont() {
-      return this.font != null ? this.font : DEFAULT_FONT;
+   public FontDescription getFont() {
+      return (FontDescription)(this.font != null ? this.font : FontDescription.DEFAULT);
    }
 
    private static <T> Style checkEmptyAfterChange(Style var0, @Nullable T var1, @Nullable T var2) {
@@ -129,7 +127,7 @@ public class Style {
    }
 
    public Style withShadowColor(int var1) {
-      return checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
+      return Objects.equals(this.shadowColor, var1) ? this : checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
    }
 
    public Style withBold(@Nullable Boolean var1) {
@@ -164,7 +162,7 @@ public class Style {
       return Objects.equals(this.insertion, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, var1, this.font), this.insertion, var1);
    }
 
-   public Style withFont(@Nullable ResourceLocation var1) {
+   public Style withFont(@Nullable FontDescription var1) {
       return Objects.equals(this.font, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, var1), this.font, var1);
    }
 
@@ -343,7 +341,7 @@ public class Style {
    }
 
    public static class Serializer {
-      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TextColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((var0x) -> Optional.ofNullable(var0x.shadowColor)), Codec.BOOL.optionalFieldOf("bold").forGetter((var0x) -> Optional.ofNullable(var0x.bold)), Codec.BOOL.optionalFieldOf("italic").forGetter((var0x) -> Optional.ofNullable(var0x.italic)), Codec.BOOL.optionalFieldOf("underlined").forGetter((var0x) -> Optional.ofNullable(var0x.underlined)), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((var0x) -> Optional.ofNullable(var0x.strikethrough)), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((var0x) -> Optional.ofNullable(var0x.obfuscated)), ClickEvent.CODEC.optionalFieldOf("click_event").forGetter((var0x) -> Optional.ofNullable(var0x.clickEvent)), HoverEvent.CODEC.optionalFieldOf("hover_event").forGetter((var0x) -> Optional.ofNullable(var0x.hoverEvent)), Codec.STRING.optionalFieldOf("insertion").forGetter((var0x) -> Optional.ofNullable(var0x.insertion)), ResourceLocation.CODEC.optionalFieldOf("font").forGetter((var0x) -> Optional.ofNullable(var0x.font))).apply(var0, Style::create));
+      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TextColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((var0x) -> Optional.ofNullable(var0x.shadowColor)), Codec.BOOL.optionalFieldOf("bold").forGetter((var0x) -> Optional.ofNullable(var0x.bold)), Codec.BOOL.optionalFieldOf("italic").forGetter((var0x) -> Optional.ofNullable(var0x.italic)), Codec.BOOL.optionalFieldOf("underlined").forGetter((var0x) -> Optional.ofNullable(var0x.underlined)), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((var0x) -> Optional.ofNullable(var0x.strikethrough)), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((var0x) -> Optional.ofNullable(var0x.obfuscated)), ClickEvent.CODEC.optionalFieldOf("click_event").forGetter((var0x) -> Optional.ofNullable(var0x.clickEvent)), HoverEvent.CODEC.optionalFieldOf("hover_event").forGetter((var0x) -> Optional.ofNullable(var0x.hoverEvent)), Codec.STRING.optionalFieldOf("insertion").forGetter((var0x) -> Optional.ofNullable(var0x.insertion)), FontDescription.CODEC.optionalFieldOf("font").forGetter((var0x) -> Optional.ofNullable(var0x.font))).apply(var0, Style::create));
       public static final Codec<Style> CODEC;
       public static final StreamCodec<RegistryFriendlyByteBuf, Style> TRUSTED_STREAM_CODEC;
 

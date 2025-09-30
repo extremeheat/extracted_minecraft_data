@@ -30,7 +30,7 @@ public class BanListCommands {
          var0.sendSuccess(() -> Component.translatable("commands.banlist.list", var1.size()), false);
 
          for(BanListEntry var3 : var1) {
-            var0.sendSuccess(() -> Component.translatable("commands.banlist.entry", var3.getDisplayName(), var3.getSource(), var3.getReason()), false);
+            var0.sendSuccess(() -> Component.translatable("commands.banlist.entry", var3.getDisplayName(), var3.getSource(), var3.getReasonMessage()), false);
          }
       }
 

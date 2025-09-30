@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringRepresentable;
@@ -44,7 +45,7 @@ public enum ChatTrustLevel implements StringRepresentable {
    }
 
    private static boolean isModifiedStyle(Style var0) {
-      return !var0.getFont().equals(Style.DEFAULT_FONT);
+      return !var0.getFont().equals(FontDescription.DEFAULT);
    }
 
    public boolean isNotSecure() {

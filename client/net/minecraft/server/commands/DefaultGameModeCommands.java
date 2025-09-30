@@ -7,7 +7,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 
 public class DefaultGameModeCommands {
@@ -20,19 +19,10 @@ public class DefaultGameModeCommands {
    }
 
    private static int setMode(CommandSourceStack var0, GameType var1) {
-      int var2 = 0;
-      MinecraftServer var3 = var0.getServer();
-      var3.setDefaultGameType(var1);
-      GameType var4 = var3.getForcedGameType();
-      if (var4 != null) {
-         for(ServerPlayer var6 : var3.getPlayerList().getPlayers()) {
-            if (var6.setGameMode(var4)) {
-               ++var2;
-            }
-         }
-      }
-
+      MinecraftServer var2 = var0.getServer();
+      var2.setDefaultGameType(var1);
+      int var3 = var2.enforceGameTypeForPlayers(var2.getForcedGameType());
       var0.sendSuccess(() -> Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName()), true);
-      return var2;
+      return var3;
    }
 }

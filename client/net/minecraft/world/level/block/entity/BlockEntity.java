@@ -22,7 +22,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +37,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
-public abstract class BlockEntity {
+public abstract class BlockEntity implements DebugValueSource {
    private static final Codec<BlockEntityType<?>> TYPE_CODEC;
    private static final Logger LOGGER;
    private final BlockEntityType<?> type;
@@ -340,6 +342,9 @@ public abstract class BlockEntity {
 
    public ProblemReporter.PathElement problemPath() {
       return new BlockEntityPathElement(this);
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
    }
 
    static {

@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -15,10 +15,18 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.DecoratedPotRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
@@ -29,7 +37,8 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
-public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
+public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
+   private final MaterialSet materials;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
    private static final String BACK = "back";
@@ -47,20 +56,25 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.getModelSet());
+      this(var1.entityModelSet(), var1.materials());
    }
 
-   public DecoratedPotRenderer(EntityModelSet var1) {
+   public DecoratedPotRenderer(SpecialModelRenderer.BakingContext var1) {
+      this(var1.entityModelSet(), var1.materials());
+   }
+
+   public DecoratedPotRenderer(EntityModelSet var1, MaterialSet var2) {
       super();
-      ModelPart var2 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
-      this.neck = var2.getChild("neck");
-      this.top = var2.getChild("top");
-      this.bottom = var2.getChild("bottom");
-      ModelPart var3 = var1.bakeLayer(ModelLayers.DECORATED_POT_SIDES);
-      this.frontSide = var3.getChild("front");
-      this.backSide = var3.getChild("back");
-      this.leftSide = var3.getChild("left");
-      this.rightSide = var3.getChild("right");
+      this.materials = var2;
+      ModelPart var3 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
+      this.neck = var3.getChild("neck");
+      this.top = var3.getChild("top");
+      this.bottom = var3.getChild("bottom");
+      ModelPart var4 = var1.bakeLayer(ModelLayers.DECORATED_POT_SIDES);
+      this.frontSide = var4.getChild("front");
+      this.backSide = var4.getChild("back");
+      this.leftSide = var4.getChild("left");
+      this.rightSide = var4.getChild("right");
    }
 
    public static LayerDefinition createBaseLayer() {
@@ -97,52 +111,62 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return Sheets.DECORATED_POT_SIDE;
    }
 
-   public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      var3.pushPose();
-      Direction var8 = var1.getDirection();
-      var3.translate(0.5, 0.0, 0.5);
-      var3.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var8.toYRot()));
-      var3.translate(-0.5, 0.0, -0.5);
-      DecoratedPotBlockEntity.WobbleStyle var9 = var1.lastWobbleStyle;
-      if (var9 != null && var1.getLevel() != null) {
-         float var10 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var9.duration;
-         if (var10 >= 0.0F && var10 <= 1.0F) {
-            if (var9 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-               float var11 = 0.015625F;
-               float var12 = var10 * 6.2831855F;
-               float var13 = -1.5F * (Mth.cos(var12) + 0.5F) * Mth.sin(var12 / 2.0F);
-               var3.rotateAround(Axis.XP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
-               float var14 = Mth.sin(var12);
-               var3.rotateAround(Axis.ZP.rotation(var14 * 0.015625F), 0.5F, 0.0F, 0.5F);
-            } else {
-               float var15 = Mth.sin(-var10 * 3.0F * 3.1415927F) * 0.125F;
-               float var16 = 1.0F - var10;
-               var3.rotateAround(Axis.YP.rotation(var15 * var16), 0.5F, 0.0F, 0.5F);
-            }
+   public DecoratedPotRenderState createRenderState() {
+      return new DecoratedPotRenderState();
+   }
+
+   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.decorations = var1.getDecorations();
+      var2.direction = var1.getDirection();
+      DecoratedPotBlockEntity.WobbleStyle var6 = var1.lastWobbleStyle;
+      if (var6 != null && var1.getLevel() != null) {
+         var2.wobbleProgress = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var3) / (float)var6.duration;
+      } else {
+         var2.wobbleProgress = 0.0F;
+      }
+
+   }
+
+   public void submit(DecoratedPotRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      var2.pushPose();
+      Direction var5 = var1.direction;
+      var2.translate(0.5, 0.0, 0.5);
+      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var5.toYRot()));
+      var2.translate(-0.5, 0.0, -0.5);
+      if (var1.wobbleProgress >= 0.0F && var1.wobbleProgress <= 1.0F) {
+         if (var1.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
+            float var6 = 0.015625F;
+            float var7 = var1.wobbleProgress * 6.2831855F;
+            float var8 = -1.5F * (Mth.cos(var7) + 0.5F) * Mth.sin(var7 / 2.0F);
+            var2.rotateAround(Axis.XP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
+            float var9 = Mth.sin(var7);
+            var2.rotateAround(Axis.ZP.rotation(var9 * 0.015625F), 0.5F, 0.0F, 0.5F);
+         } else {
+            float var10 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
+            float var11 = 1.0F - var1.wobbleProgress;
+            var2.rotateAround(Axis.YP.rotation(var10 * var11), 0.5F, 0.0F, 0.5F);
          }
       }
 
-      this.render(var3, var4, var5, var6, var1.getDecorations());
-      var3.popPose();
+      this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.decorations, 0);
+      var2.popPose();
    }
 
-   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
-      this.render(var1, var2, var3, var4, var5);
-   }
-
-   private void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
-      VertexConsumer var6 = Sheets.DECORATED_POT_BASE.buffer(var2, RenderType::entitySolid);
-      this.neck.render(var1, var6, var3, var4);
-      this.top.render(var1, var6, var3, var4);
-      this.bottom.render(var1, var6, var3, var4);
-      this.renderSide(this.frontSide, var1, var2, var3, var4, getSideMaterial(var5.front()));
-      this.renderSide(this.backSide, var1, var2, var3, var4, getSideMaterial(var5.back()));
-      this.renderSide(this.leftSide, var1, var2, var3, var4, getSideMaterial(var5.left()));
-      this.renderSide(this.rightSide, var1, var2, var3, var4, getSideMaterial(var5.right()));
-   }
-
-   private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, Material var6) {
-      var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, PotDecorations var5, int var6) {
+      RenderType var7 = Sheets.DECORATED_POT_BASE.renderType(RenderType::entitySolid);
+      TextureAtlasSprite var8 = this.materials.get(Sheets.DECORATED_POT_BASE);
+      var2.submitModelPart(this.neck, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.top, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      var2.submitModelPart(this.bottom, var1, var7, var3, var4, var8, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var9 = getSideMaterial(var5.front());
+      var2.submitModelPart(this.frontSide, var1, var9.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var9), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var10 = getSideMaterial(var5.back());
+      var2.submitModelPart(this.backSide, var1, var10.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var10), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var11 = getSideMaterial(var5.left());
+      var2.submitModelPart(this.leftSide, var1, var11.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var11), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+      Material var12 = getSideMaterial(var5.right());
+      var2.submitModelPart(this.rightSide, var1, var12.renderType(RenderType::entitySolid), var3, var4, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
    public void getExtents(Set<Vector3f> var1) {
@@ -150,5 +174,10 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       this.neck.getExtentsForGui(var2, var1);
       this.top.getExtentsForGui(var2, var1);
       this.bottom.getExtentsForGui(var2, var1);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

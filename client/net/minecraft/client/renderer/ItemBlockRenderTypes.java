@@ -22,10 +22,12 @@ public class ItemBlockRenderTypes {
       ChunkSectionLayer var2 = ChunkSectionLayer.CUTOUT_MIPPED;
       var0.put(Blocks.GRASS_BLOCK, var2);
       var0.put(Blocks.IRON_BARS, var2);
+      Blocks.COPPER_BARS.forEach((var2x) -> var0.put(var2x, var2));
       var0.put(Blocks.GLASS_PANE, var2);
       var0.put(Blocks.TRIPWIRE_HOOK, var2);
       var0.put(Blocks.HOPPER, var2);
-      var0.put(Blocks.CHAIN, var2);
+      var0.put(Blocks.IRON_CHAIN, var2);
+      Blocks.COPPER_CHAIN.forEach((var2x) -> var0.put(var2x, var2));
       var0.put(Blocks.JUNGLE_LEAVES, var2);
       var0.put(Blocks.OAK_LEAVES, var2);
       var0.put(Blocks.SPRUCE_LEAVES, var2);
@@ -96,6 +98,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WALL_TORCH, var3);
       var0.put(Blocks.SOUL_TORCH, var3);
       var0.put(Blocks.SOUL_WALL_TORCH, var3);
+      var0.put(Blocks.COPPER_TORCH, var3);
+      var0.put(Blocks.COPPER_WALL_TORCH, var3);
       var0.put(Blocks.FIRE, var3);
       var0.put(Blocks.SOUL_FIRE, var3);
       var0.put(Blocks.SPAWNER, var3);
@@ -257,6 +261,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.STONECUTTER, var3);
       var0.put(Blocks.LANTERN, var3);
       var0.put(Blocks.SOUL_LANTERN, var3);
+      Blocks.COPPER_LANTERN.forEach((var2x) -> var0.put(var2x, var3));
       var0.put(Blocks.CAMPFIRE, var3);
       var0.put(Blocks.SOUL_CAMPFIRE, var3);
       var0.put(Blocks.SWEET_BERRY_BUSH, var3);
@@ -280,7 +285,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.MEDIUM_AMETHYST_BUD, var3);
       var0.put(Blocks.LARGE_AMETHYST_BUD, var3);
       var0.put(Blocks.AMETHYST_CLUSTER, var3);
-      var0.put(Blocks.LIGHTNING_ROD, var3);
       var0.put(Blocks.CAVE_VINES, var3);
       var0.put(Blocks.CAVE_VINES_PLANT, var3);
       var0.put(Blocks.SPORE_BLOSSOM, var3);

@@ -86,7 +86,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public void aiStep() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       }
 
@@ -139,7 +139,7 @@ public class Sheep extends Animal implements Shearable {
             if (this.readyForShearing()) {
                this.shear(var4, SoundSource.PLAYERS, var3);
                this.gameEvent(GameEvent.SHEAR, var1);
-               var3.hurtAndBreak(1, var1, (EquipmentSlot)getSlotForHand(var2));
+               var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
                return InteractionResult.SUCCESS_SERVER;
             }
          }

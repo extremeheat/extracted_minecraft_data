@@ -5,8 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
@@ -16,11 +14,12 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.slf4j.Logger;
 
 public class RealmsServerPlayerLists extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public Map<Long, List<ProfileResult>> servers = Map.of();
+   public Map<Long, List<ResolvableProfile>> servers = Map.of();
 
    public RealmsServerPlayerLists() {
       super();
@@ -59,22 +58,14 @@ public class RealmsServerPlayerLists extends ValueObject {
       return var1;
    }
 
-   private static List<ProfileResult> parsePlayers(JsonArray var0) {
+   private static List<ResolvableProfile> parsePlayers(JsonArray var0) {
       ArrayList var1 = new ArrayList(var0.size());
-      MinecraftSessionService var2 = Minecraft.getInstance().getMinecraftSessionService();
 
-      for(JsonElement var4 : var0) {
-         if (var4.isJsonObject()) {
-            UUID var5 = JsonUtils.getUuidOr("playerId", var4.getAsJsonObject(), (UUID)null);
-            if (var5 != null && !Minecraft.getInstance().isLocalPlayer(var5)) {
-               try {
-                  ProfileResult var6 = var2.fetchProfile(var5, false);
-                  if (var6 != null) {
-                     var1.add(var6);
-                  }
-               } catch (Exception var7) {
-                  LOGGER.error("Could not get name for {}", var5, var7);
-               }
+      for(JsonElement var3 : var0) {
+         if (var3.isJsonObject()) {
+            UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), (UUID)null);
+            if (var4 != null && !Minecraft.getInstance().isLocalPlayer(var4)) {
+               var1.add(ResolvableProfile.createUnresolved(var4));
             }
          }
       }
@@ -82,7 +73,7 @@ public class RealmsServerPlayerLists extends ValueObject {
       return var1;
    }
 
-   public List<ProfileResult> getProfileResultsFor(long var1) {
+   public List<ResolvableProfile> getProfileResultsFor(long var1) {
       List var3 = (List)this.servers.get(var1);
       return var3 != null ? var3 : List.of();
    }

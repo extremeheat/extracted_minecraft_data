@@ -6,6 +6,10 @@ import net.minecraft.network.protocol.Packet;
 public interface ConfigurationTask {
    void start(Consumer<Packet<?>> var1);
 
+   default boolean tick() {
+      return false;
+   }
+
    Type type();
 
    public static record Type(String id) {

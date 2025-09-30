@@ -20,7 +20,7 @@ public class PlayerListComponent extends JList<String> {
          Vector var1 = new Vector();
 
          for(int var2 = 0; var2 < this.server.getPlayerList().getPlayers().size(); ++var2) {
-            var1.add(((ServerPlayer)this.server.getPlayerList().getPlayers().get(var2)).getGameProfile().getName());
+            var1.add(((ServerPlayer)this.server.getPlayerList().getPlayers().get(var2)).getGameProfile().name());
          }
 
          this.setListData(var1);

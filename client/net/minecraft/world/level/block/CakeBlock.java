@@ -70,7 +70,7 @@ public class CakeBlock extends Block {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
+      if (var2.isClientSide()) {
          if (eat(var2, var3, var1, var4).consumesAction()) {
             return InteractionResult.SUCCESS;
          }
@@ -114,7 +114,7 @@ public class CakeBlock extends Block {
       var1.add(BITES);
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return getOutputSignal((Integer)var1.getValue(BITES));
    }
 

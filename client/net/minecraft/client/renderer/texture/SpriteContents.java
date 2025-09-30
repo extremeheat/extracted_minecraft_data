@@ -1,46 +1,56 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationFrame;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 
 public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final ResourceLocation name;
+   final ResourceLocation name;
    final int width;
    final int height;
    private final NativeImage originalImage;
    NativeImage[] byMipLevel;
    @Nullable
    private final AnimatedTexture animatedTexture;
-   private final ResourceMetadata metadata;
+   private final List<MetadataSectionType.WithValue<?>> additionalMetadata;
 
-   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3, ResourceMetadata var4) {
+   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3) {
+      this(var1, var2, var3, Optional.empty(), List.of());
+   }
+
+   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5) {
       super();
       this.name = var1;
       this.width = var2.width();
       this.height = var2.height();
-      this.metadata = var4;
-      this.animatedTexture = (AnimatedTexture)var4.getSection(AnimationMetadataSection.TYPE).map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
+      this.additionalMetadata = var5;
+      this.animatedTexture = (AnimatedTexture)var4.map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
       this.originalImage = var3;
       this.byMipLevel = new NativeImage[]{this.originalImage};
    }
@@ -48,29 +58,27 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    public void increaseMipLevel(int var1) {
       try {
          this.byMipLevel = MipmapGenerator.generateMipLevels(this.byMipLevel, var1);
-      } catch (Throwable var6) {
-         CrashReport var3 = CrashReport.forThrowable(var6, "Generating mipmaps for frame");
-         CrashReportCategory var4 = var3.addCategory("Sprite being mipmapped");
-         var4.setDetail("First frame", (CrashReportDetail)(() -> {
-            StringBuilder var1 = new StringBuilder();
-            if (var1.length() > 0) {
-               var1.append(", ");
-            }
-
-            var1.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
-            return var1.toString();
+      } catch (Throwable var5) {
+         CrashReport var3 = CrashReport.forThrowable(var5, "Generating mipmaps for frame");
+         CrashReportCategory var4 = var3.addCategory("Frame being iterated");
+         var4.setDetail("Sprite name", this.name);
+         var4.setDetail("Sprite size", (CrashReportDetail)(() -> this.width + " x " + this.height));
+         var4.setDetail("Sprite frames", (CrashReportDetail)(() -> this.getFrameCount() + " frames"));
+         var4.setDetail("Mipmap levels", var1);
+         var4.setDetail("Original image size", (CrashReportDetail)(() -> {
+            int var10000 = this.originalImage.getWidth();
+            return var10000 + "x" + this.originalImage.getHeight();
          }));
-         CrashReportCategory var5 = var3.addCategory("Frame being iterated");
-         var5.setDetail("Sprite name", this.name);
-         var5.setDetail("Sprite size", (CrashReportDetail)(() -> this.width + " x " + this.height));
-         var5.setDetail("Sprite frames", (CrashReportDetail)(() -> this.getFrameCount() + " frames"));
-         var5.setDetail("Mipmap levels", var1);
          throw new ReportedException(var3);
       }
    }
 
    private int getFrameCount() {
       return this.animatedTexture != null ? this.animatedTexture.frames.size() : 1;
+   }
+
+   public boolean isAnimated() {
+      return this.getFrameCount() > 1;
    }
 
    @Nullable
@@ -154,8 +162,15 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return this.animatedTexture != null ? this.animatedTexture.createTicker() : null;
    }
 
-   public ResourceMetadata metadata() {
-      return this.metadata;
+   public <T> Optional<T> getAdditionalMetadata(MetadataSectionType<T> var1) {
+      for(MetadataSectionType.WithValue var3 : this.additionalMetadata) {
+         Optional var4 = var3.unwrapToType(var1);
+         if (var4.isPresent()) {
+            return var4;
+         }
+      }
+
+      return Optional.empty();
    }
 
    public void close() {
@@ -227,6 +242,18 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
             }
 
             SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame, var4);
+            if (SharedConstants.DEBUG_DUMP_INTERPOLATED_TEXTURE_FRAMES) {
+               try {
+                  Path var19 = TextureUtil.getDebugTexturePath();
+                  Path var20 = var19.resolve(SpriteContents.this.name.toDebugFileName());
+                  Files.createDirectories(var20);
+
+                  for(int var21 = 0; var21 < this.activeFrame.length; ++var21) {
+                     this.activeFrame[var21].writeToFile(var20.resolve(SpriteContents.this.name.toDebugFileName() + "_" + var21 + "_" + var9 + "_" + var10 + ".png"));
+                  }
+               } catch (IOException var18) {
+               }
+            }
          }
 
       }

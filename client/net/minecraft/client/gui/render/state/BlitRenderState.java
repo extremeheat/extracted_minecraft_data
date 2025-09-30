@@ -30,11 +30,11 @@ public record BlitRenderState(RenderPipeline pipeline, TextureSetup textureSetup
       this.bounds = var14;
    }
 
-   public void buildVertices(VertexConsumer var1, float var2) {
-      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y0(), var2).setUv(this.u0(), this.v0()).setColor(this.color());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y1(), var2).setUv(this.u0(), this.v1()).setColor(this.color());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y1(), var2).setUv(this.u1(), this.v1()).setColor(this.color());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y0(), var2).setUv(this.u1(), this.v0()).setColor(this.color());
+   public void buildVertices(VertexConsumer var1) {
+      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y0()).setUv(this.u0(), this.v0()).setColor(this.color());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y1()).setUv(this.u0(), this.v1()).setColor(this.color());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y1()).setUv(this.u1(), this.v1()).setColor(this.color());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y0()).setUv(this.u1(), this.v0()).setColor(this.color());
    }
 
    @Nullable

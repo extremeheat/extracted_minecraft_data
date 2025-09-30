@@ -79,7 +79,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.resultSlots.clearContent();
-      if (!var1.level().isClientSide) {
+      if (!var1.level().isClientSide()) {
          this.clearContainer(var1, this.craftSlots);
       }
    }

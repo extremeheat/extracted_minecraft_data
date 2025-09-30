@@ -11,7 +11,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.reporting.SkinReportScreen;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.core.ClientAsset;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.apache.commons.lang3.StringUtils;
 
 public class SkinReport extends Report {
@@ -73,9 +74,18 @@ public class SkinReport extends Report {
             String var3 = ((ReportReason)Objects.requireNonNull((this.report).reason)).backendName();
             ReportedEntity var4 = new ReportedEntity((this.report).reportedProfileId);
             PlayerSkin var5 = (PlayerSkin)(this.report).skinGetter.get();
-            String var6 = var5.textureUrl();
-            AbuseReport var7 = AbuseReport.skin((this.report).comments, var3, var6, var4, (this.report).createdAt);
-            return Either.left(new Report.Result((this.report).reportId, ReportType.SKIN, var7));
+            ClientAsset.Texture var8 = var5.body();
+            String var10000;
+            if (var8 instanceof ClientAsset.DownloadedTexture) {
+               ClientAsset.DownloadedTexture var7 = (ClientAsset.DownloadedTexture)var8;
+               var10000 = var7.url();
+            } else {
+               var10000 = null;
+            }
+
+            String var6 = var10000;
+            AbuseReport var9 = AbuseReport.skin((this.report).comments, var3, var6, var4, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.SKIN, var9));
          }
       }
    }

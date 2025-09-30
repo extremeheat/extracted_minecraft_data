@@ -27,11 +27,11 @@ public record ColoredRectangleRenderState(RenderPipeline pipeline, TextureSetup 
       this.bounds = var11;
    }
 
-   public void buildVertices(VertexConsumer var1, float var2) {
-      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y0(), var2).setColor(this.col1());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y1(), var2).setColor(this.col2());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y1(), var2).setColor(this.col2());
-      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y0(), var2).setColor(this.col1());
+   public void buildVertices(VertexConsumer var1) {
+      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y0()).setColor(this.col1());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x0(), (float)this.y1()).setColor(this.col2());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y1()).setColor(this.col2());
+      var1.addVertexWith2DPose(this.pose(), (float)this.x1(), (float)this.y0()).setColor(this.col1());
    }
 
    @Nullable

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -68,13 +69,17 @@ public class BookSignScreen extends Screen {
       this.minecraft.getConnection().send(new ServerboundEditBookPacket(var1, this.pages, Optional.of(this.titleBox.getValue().trim())));
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.titleBox.isFocused() || this.titleBox.getValue().isEmpty() || var1 != 257 && var1 != 335) {
-         return super.keyPressed(var1, var2, var3);
-      } else {
+   public boolean isInGameUi() {
+      return true;
+   }
+
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.titleBox.isFocused() && !this.titleBox.getValue().isEmpty() && var1.isConfirmation()) {
          this.saveChanges();
          this.minecraft.setScreen((Screen)null);
          return true;
+      } else {
+         return super.keyPressed(var1);
       }
    }
 
@@ -90,7 +95,7 @@ public class BookSignScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
+      super.renderBackground(var1, var2, var3, var4);
       var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 }

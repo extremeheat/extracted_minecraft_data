@@ -1,12 +1,11 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.base.MoreObjects;
+import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -26,15 +25,15 @@ class ReportGameListener implements GameTestListener {
 
    private void handleRetry(GameTestInfo var1, GameTestRunner var2, boolean var3) {
       RetryOptions var4 = var1.retryOptions();
-      String var5 = String.format("[Run: %4d, Ok: %4d, Fail: %4d", this.attempts, this.successes, this.attempts - this.successes);
+      String var5 = String.format(Locale.ROOT, "[Run: %4d, Ok: %4d, Fail: %4d", this.attempts, this.successes, this.attempts - this.successes);
       if (!var4.unlimitedTries()) {
-         var5 = var5 + String.format(", Left: %4d", var4.numberOfTries() - this.attempts);
+         var5 = var5 + String.format(Locale.ROOT, ", Left: %4d", var4.numberOfTries() - this.attempts);
       }
 
       var5 = var5 + "]";
       String var10000 = String.valueOf(var1.id());
       String var6 = var10000 + " " + (var3 ? "passed" : "failed") + "! " + var1.getRunTime() + "ms";
-      String var7 = String.format("%-53s%s", var5, var6);
+      String var7 = String.format(Locale.ROOT, "%-53s%s", var5, var6);
       if (var3) {
          reportPassed(var1, var7);
       } else {
@@ -128,7 +127,7 @@ class ReportGameListener implements GameTestListener {
       say(var0.getLevel(), var0.isRequired() ? ChatFormatting.RED : ChatFormatting.YELLOW, var3);
       Throwable var4 = (Throwable)MoreObjects.firstNonNull(ExceptionUtils.getRootCause(var1), var1);
       if (var4 instanceof GameTestAssertPosException var5) {
-         showRedBox(var0.getLevel(), var5.getAbsolutePos(), var5.getMessageToShowAtBlock());
+         var0.getTestInstanceBlockEntity().markError(var5.getAbsolutePos(), var5.getMessageToShowAtBlock());
       }
 
       GlobalTestReporter.onTestFailed(var0);
@@ -143,9 +142,5 @@ class ReportGameListener implements GameTestListener {
 
    protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {
       var0.getPlayers((var0x) -> true).forEach((var2x) -> var2x.sendSystemMessage(Component.literal(var2).withStyle(var1)));
-   }
-
-   private static void showRedBox(ServerLevel var0, BlockPos var1, String var2) {
-      DebugPackets.sendGameTestAddMarker(var0, var1, var2, -2130771968, 2147483647);
    }
 }

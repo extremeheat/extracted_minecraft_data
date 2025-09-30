@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -22,5 +23,9 @@ public class PlainTextButton extends Button {
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Component var5 = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
       var1.drawString(this.font, var5, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
+      if (this.isHovered()) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
    }
 }

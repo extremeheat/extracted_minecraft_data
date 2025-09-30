@@ -3,20 +3,19 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BlockMarker extends TextureSheetParticle {
+public class BlockMarker extends SingleQuadParticle {
    BlockMarker(ClientLevel var1, double var2, double var4, double var6, BlockState var8) {
-      super(var1, var2, var4, var6);
-      this.setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(var8));
+      super(var1, var2, var4, var6, Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(var8));
       this.gravity = 0.0F;
       this.lifetime = 80;
       this.hasPhysics = false;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.TERRAIN_SHEET;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TERRAIN;
    }
 
    public float getQuadSize(float var1) {
@@ -28,13 +27,8 @@ public class BlockMarker extends TextureSheetParticle {
          super();
       }
 
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new BlockMarker(var2, var3, var5, var7, var1.getState());
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

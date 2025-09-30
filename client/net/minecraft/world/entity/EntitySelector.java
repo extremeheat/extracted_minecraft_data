@@ -44,7 +44,7 @@ public final class EntitySelector {
          if (!var3.isPushable()) {
             return false;
          } else {
-            if (var0.level().isClientSide) {
+            if (var0.level().isClientSide()) {
                if (!(var3 instanceof Player)) {
                   return false;
                }

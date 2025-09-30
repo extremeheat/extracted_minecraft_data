@@ -6,8 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeColor;
@@ -31,8 +30,8 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
       return (BannerPatternLayers)var1.get(DataComponents.BANNER_PATTERNS);
    }
 
-   public void render(@Nullable BannerPatternLayers var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, boolean var7) {
-      this.bannerRenderer.renderInHand(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY));
+   public void submit(@Nullable BannerPatternLayers var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
+      this.bannerRenderer.submitSpecial(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY), var8);
    }
 
    public void getExtents(Set<Vector3f> var1) {
@@ -57,7 +56,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          return new BannerSpecialRenderer(this.baseColor, new BannerRenderer(var1));
       }
    }

@@ -56,6 +56,10 @@ public interface DensityFunction {
       return DensityFunctions.map(this, DensityFunctions.Mapped.Type.QUARTER_NEGATIVE);
    }
 
+   default DensityFunction invert() {
+      return DensityFunctions.map(this, DensityFunctions.Mapped.Type.INVERT);
+   }
+
    default DensityFunction squeeze() {
       return DensityFunctions.map(this, DensityFunctions.Mapped.Type.SQUEEZE);
    }

@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.entity.state.VexRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class VexModel extends EntityModel<VexRenderState> implements ArmedModel {
+public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<VexRenderState> {
    private final ModelPart body;
    private final ModelPart rightArm;
    private final ModelPart leftArm;
@@ -90,14 +90,14 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel 
       }
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      boolean var3 = var1 == HumanoidArm.RIGHT;
-      ModelPart var4 = var3 ? this.rightArm : this.leftArm;
-      this.root.translateAndRotate(var2);
-      this.body.translateAndRotate(var2);
-      var4.translateAndRotate(var2);
-      var2.scale(0.55F, 0.55F, 0.55F);
-      this.offsetStackPosition(var2, var3);
+   public void translateToHand(VexRenderState var1, HumanoidArm var2, PoseStack var3) {
+      boolean var4 = var2 == HumanoidArm.RIGHT;
+      ModelPart var5 = var4 ? this.rightArm : this.leftArm;
+      this.root.translateAndRotate(var3);
+      this.body.translateAndRotate(var3);
+      var5.translateAndRotate(var3);
+      var3.scale(0.55F, 0.55F, 0.55F);
+      this.offsetStackPosition(var3, var4);
    }
 
    private void offsetStackPosition(PoseStack var1, boolean var2) {

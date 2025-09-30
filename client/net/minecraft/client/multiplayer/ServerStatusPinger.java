@@ -1,7 +1,6 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -36,6 +35,8 @@ import net.minecraft.network.protocol.status.ClientStatusPacketListener;
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import org.slf4j.Logger;
 
@@ -84,8 +85,15 @@ public class ServerStatusPinger {
                      if (!var1xx.sample().isEmpty()) {
                         ArrayList var2x = new ArrayList(var1xx.sample().size());
 
-                        for(GameProfile var4x : var1xx.sample()) {
-                           var2x.add(Component.literal(var4x.getName()));
+                        for(NameAndId var4x : var1xx.sample()) {
+                           MutableComponent var5;
+                           if (var4x.equals(MinecraftServer.ANONYMOUS_PLAYER_PROFILE)) {
+                              var5 = Component.translatable("multiplayer.status.anonymous_player");
+                           } else {
+                              var5 = Component.literal(var4x.name());
+                           }
+
+                           var2x.add(var5);
                         }
 
                         if (var1xx.sample().size() < var1xx.online()) {

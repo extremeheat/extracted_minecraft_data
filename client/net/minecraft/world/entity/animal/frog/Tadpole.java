@@ -3,12 +3,10 @@ package net.minecraft.world.entity.animal.frog;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -97,7 +95,7 @@ public class Tadpole extends AbstractFish {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.setAge(this.age + 1);
       }
 
@@ -138,11 +136,6 @@ public class Tadpole extends AbstractFish {
       }
    }
 
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
-   }
-
    public boolean fromBucket() {
       return true;
    }
@@ -152,7 +145,7 @@ public class Tadpole extends AbstractFish {
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putInt("Age", this.getAge())));
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> var1x.putInt("Age", this.getAge()));
    }
 
    public void loadFromBucketTag(CompoundTag var1) {

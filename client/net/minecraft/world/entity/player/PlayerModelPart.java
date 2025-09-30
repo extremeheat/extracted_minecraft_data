@@ -1,8 +1,10 @@
 package net.minecraft.world.entity.player;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringRepresentable;
 
-public enum PlayerModelPart {
+public enum PlayerModelPart implements StringRepresentable {
    CAPE(0, "cape"),
    JACKET(1, "jacket"),
    LEFT_SLEEVE(2, "left_sleeve"),
@@ -11,6 +13,7 @@ public enum PlayerModelPart {
    RIGHT_PANTS_LEG(5, "right_pants_leg"),
    HAT(6, "hat");
 
+   public static final Codec<PlayerModelPart> CODEC = StringRepresentable.<PlayerModelPart>fromEnum(PlayerModelPart::values);
    private final int bit;
    private final int mask;
    private final String id;
@@ -37,6 +40,10 @@ public enum PlayerModelPart {
 
    public Component getName() {
       return this.name;
+   }
+
+   public String getSerializedName() {
+      return this.id;
    }
 
    // $FF: synthetic method

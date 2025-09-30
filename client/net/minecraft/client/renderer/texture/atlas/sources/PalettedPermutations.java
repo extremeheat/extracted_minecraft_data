@@ -23,7 +23,6 @@ import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 
@@ -148,7 +147,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
          SpriteContents var3;
          try {
             NativeImage var2 = this.baseImage.get().mappedCopy((IntUnaryOperator)this.palette.get());
-            var3 = new SpriteContents(this.permutationLocation, new FrameSize(var2.getWidth(), var2.getHeight()), var2, ResourceMetadata.EMPTY);
+            var3 = new SpriteContents(this.permutationLocation, new FrameSize(var2.getWidth(), var2.getHeight()), var2);
             return var3;
          } catch (IllegalArgumentException | IOException var7) {
             PalettedPermutations.LOGGER.error("unable to apply palette to {}", this.permutationLocation, var7);

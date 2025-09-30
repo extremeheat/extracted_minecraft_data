@@ -8,55 +8,22 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.NbtPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class ContextNbtProvider implements NbtProvider {
-   private static final String BLOCK_ENTITY_ID = "block_entity";
-   private static final Getter BLOCK_ENTITY_PROVIDER = new Getter() {
-      public Tag get(LootContext var1) {
-         BlockEntity var2 = (BlockEntity)var1.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-         return var2 != null ? var2.saveWithFullMetadata((HolderLookup.Provider)var2.getLevel().registryAccess()) : null;
-      }
-
-      public String getId() {
-         return "block_entity";
-      }
-
-      public Set<ContextKey<?>> getReferencedContextParams() {
-         return Set.of(LootContextParams.BLOCK_ENTITY);
-      }
-   };
-   public static final ContextNbtProvider BLOCK_ENTITY;
-   private static final Codec<Getter> GETTER_CODEC;
-   public static final MapCodec<ContextNbtProvider> CODEC;
+   private static final ExtraCodecs.LateBoundIdMapper<String, Source<?>> SOURCES = new ExtraCodecs.LateBoundIdMapper<String, Source<?>>();
+   private static final Codec<Source<?>> GETTER_CODEC;
+   public static final MapCodec<ContextNbtProvider> MAP_CODEC;
    public static final Codec<ContextNbtProvider> INLINE_CODEC;
-   private final Getter getter;
+   private final Source<?> source;
 
-   private static Getter forEntity(final LootContext.EntityTarget var0) {
-      return new Getter() {
-         @Nullable
-         public Tag get(LootContext var1) {
-            Entity var2 = (Entity)var1.getOptionalParameter(var0.getParam());
-            return var2 != null ? NbtPredicate.getEntityTagToCompare(var2) : null;
-         }
-
-         public String getId() {
-            return var0.name();
-         }
-
-         public Set<ContextKey<?>> getReferencedContextParams() {
-            return Set.of(var0.getParam());
-         }
-      };
-   }
-
-   private ContextNbtProvider(Getter var1) {
+   private ContextNbtProvider(Source<?> var1) {
       super();
-      this.getter = var1;
+      this.source = var1;
    }
 
    public LootNbtProviderType getType() {
@@ -65,37 +32,63 @@ public class ContextNbtProvider implements NbtProvider {
 
    @Nullable
    public Tag get(LootContext var1) {
-      return this.getter.get(var1);
+      return this.source.get(var1);
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.getter.getReferencedContextParams();
+      return Set.of(this.source.contextParam());
    }
 
    public static NbtProvider forContextEntity(LootContext.EntityTarget var0) {
-      return new ContextNbtProvider(forEntity(var0));
+      return new ContextNbtProvider(new EntitySource(var0.getParam()));
    }
 
    static {
-      BLOCK_ENTITY = new ContextNbtProvider(BLOCK_ENTITY_PROVIDER);
-      GETTER_CODEC = Codec.STRING.xmap((var0) -> {
-         if (var0.equals("block_entity")) {
-            return BLOCK_ENTITY_PROVIDER;
-         } else {
-            LootContext.EntityTarget var1 = LootContext.EntityTarget.getByName(var0);
-            return forEntity(var1);
-         }
-      }, Getter::getId);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(GETTER_CODEC.fieldOf("target").forGetter((var0x) -> var0x.getter)).apply(var0, ContextNbtProvider::new));
-      INLINE_CODEC = GETTER_CODEC.xmap(ContextNbtProvider::new, (var0) -> var0.getter);
+      for(LootContext.EntityTarget var3 : LootContext.EntityTarget.values()) {
+         SOURCES.put(var3.getSerializedName(), new EntitySource(var3.getParam()));
+      }
+
+      for(LootContext.BlockEntityTarget var7 : LootContext.BlockEntityTarget.values()) {
+         SOURCES.put(var7.getSerializedName(), new BlockEntitySource(var7.getParam()));
+      }
+
+      GETTER_CODEC = SOURCES.codec(Codec.STRING);
+      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(GETTER_CODEC.fieldOf("target").forGetter((var0x) -> var0x.source)).apply(var0, ContextNbtProvider::new));
+      INLINE_CODEC = GETTER_CODEC.xmap(ContextNbtProvider::new, (var0) -> var0.source);
    }
 
-   interface Getter {
+   interface Source<T> {
+      ContextKey<? extends T> contextParam();
+
       @Nullable
-      Tag get(LootContext var1);
+      Tag get(T var1);
 
-      String getId();
+      @Nullable
+      default Tag get(LootContext var1) {
+         Object var2 = var1.getOptionalParameter(this.contextParam());
+         return var2 != null ? this.get(var2) : null;
+      }
+   }
 
-      Set<ContextKey<?>> getReferencedContextParams();
+   static record BlockEntitySource(ContextKey<? extends BlockEntity> contextParam) implements Source<BlockEntity> {
+      BlockEntitySource(ContextKey<? extends BlockEntity> var1) {
+         super();
+         this.contextParam = var1;
+      }
+
+      public Tag get(BlockEntity var1) {
+         return var1.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess());
+      }
+   }
+
+   static record EntitySource(ContextKey<? extends Entity> contextParam) implements Source<Entity> {
+      EntitySource(ContextKey<? extends Entity> var1) {
+         super();
+         this.contextParam = var1;
+      }
+
+      public Tag get(Entity var1) {
+         return NbtPredicate.getEntityTagToCompare(var1);
+      }
    }
 }

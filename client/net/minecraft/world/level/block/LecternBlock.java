@@ -19,7 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -71,9 +71,9 @@ public class LecternBlock extends BaseEntityBlock {
       ItemStack var3 = var1.getItemInHand();
       Player var4 = var1.getPlayer();
       boolean var5 = false;
-      if (!var2.isClientSide && var4 != null && var4.canUseGameMasterBlocks()) {
-         CustomData var6 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (var6.contains("Book")) {
+      if (!var2.isClientSide() && var4 != null && var4.canUseGameMasterBlocks()) {
+         TypedEntityData var6 = (TypedEntityData)var3.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (var6 != null && var6.contains("Book")) {
             var5 = true;
          }
       }
@@ -107,7 +107,7 @@ public class LecternBlock extends BaseEntityBlock {
 
    public static boolean tryPlaceBook(@Nullable LivingEntity var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
       if (!(Boolean)var3.getValue(HAS_BOOK)) {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             placeBook(var0, var1, var2, var3, var4);
          }
 
@@ -177,11 +177,11 @@ public class LecternBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       if ((Boolean)var1.getValue(HAS_BOOK)) {
-         BlockEntity var4 = var2.getBlockEntity(var3);
-         if (var4 instanceof LecternBlockEntity) {
-            return ((LecternBlockEntity)var4).getRedstoneSignal();
+         BlockEntity var5 = var2.getBlockEntity(var3);
+         if (var5 instanceof LecternBlockEntity) {
+            return ((LecternBlockEntity)var5).getRedstoneSignal();
          }
       }
 
@@ -200,7 +200,7 @@ public class LecternBlock extends BaseEntityBlock {
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if ((Boolean)var1.getValue(HAS_BOOK)) {
-         if (!var2.isClientSide) {
+         if (!var2.isClientSide()) {
             this.openScreen(var2, var3, var4);
          }
 

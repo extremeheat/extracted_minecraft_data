@@ -49,7 +49,7 @@ public class WolfVariants {
       ResourceLocation var4 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2);
       ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
       ResourceLocation var6 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
-      var0.register(var1, new WolfVariant(new WolfVariant.AssetInfo(new ClientAsset(var4), new ClientAsset(var5), new ClientAsset(var6)), var3));
+      var0.register(var1, new WolfVariant(new WolfVariant.AssetInfo(new ClientAsset.ResourceTexture(var4), new ClientAsset.ResourceTexture(var5), new ClientAsset.ResourceTexture(var6)), var3));
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {

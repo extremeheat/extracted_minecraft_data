@@ -56,7 +56,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -171,7 +170,7 @@ public class Zombie extends Monster {
 
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (this.level() != null && !this.level().isClientSide) {
+      if (this.level() != null && !this.level().isClientSide()) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
          var2.removeModifier(SPEED_MODIFIER_BABY_ID);
          if (var1) {
@@ -194,7 +193,7 @@ public class Zombie extends Monster {
    }
 
    public void tick() {
-      if (!this.level().isClientSide && this.isAlive() && !this.isNoAi()) {
+      if (!this.level().isClientSide() && this.isAlive() && !this.isNoAi()) {
          if (this.isUnderWaterConverting()) {
             --this.conversionTime;
             if (this.conversionTime < 0) {
@@ -288,7 +287,7 @@ public class Zombie extends Monster {
             var4 = (LivingEntity)var2.getEntity();
          }
 
-         if (var4 != null && var1.getDifficulty() == Difficulty.HARD && (double)this.random.nextFloat() < this.getAttributeValue(Attributes.SPAWN_REINFORCEMENTS_CHANCE) && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+         if (var4 != null && var1.getDifficulty() == Difficulty.HARD && (double)this.random.nextFloat() < this.getAttributeValue(Attributes.SPAWN_REINFORCEMENTS_CHANCE) && var1.isSpawningMonsters()) {
             int var5 = Mth.floor(this.getX());
             int var6 = Mth.floor(this.getY());
             int var7 = Mth.floor(this.getZ());
@@ -400,19 +399,19 @@ public class Zombie extends Monster {
 
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
-      boolean var3 = super.killedEntity(var1, var2);
-      if ((var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) && var2 instanceof Villager var4) {
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
+      boolean var4 = super.killedEntity(var1, var2, var3);
+      if ((var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) && var2 instanceof Villager var5) {
          if (var1.getDifficulty() != Difficulty.HARD && this.random.nextBoolean()) {
-            return var3;
+            return var4;
          }
 
-         if (this.convertVillagerToZombieVillager(var1, var4)) {
-            var3 = false;
+         if (this.convertVillagerToZombieVillager(var1, var5)) {
+            var4 = false;
          }
       }
 
-      return var3;
+      return var4;
    }
 
    public EntityDimensions getDefaultDimensions(Pose var1) {
@@ -449,7 +448,7 @@ public class Zombie extends Monster {
                   if (!var8.isEmpty()) {
                      Chicken var9 = (Chicken)var8.get(0);
                      var9.setChickenJockey(true);
-                     this.startRiding(var9);
+                     this.startRiding(var9, false, false);
                   }
                } else if ((double)var5.nextFloat() < 0.05) {
                   Chicken var12 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
@@ -457,7 +456,7 @@ public class Zombie extends Monster {
                      var12.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      var12.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
                      var12.setChickenJockey(true);
-                     this.startRiding(var12);
+                     this.startRiding(var12, false, false);
                      var1.addFreshEntity(var12);
                   }
                }
@@ -517,25 +516,6 @@ public class Zombie extends Monster {
 
    protected void randomizeReinforcementsChance() {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(this.random.nextDouble() * 0.10000000149011612);
-   }
-
-   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            ItemStack var6 = this.getSkull();
-            if (!var6.isEmpty()) {
-               var5.increaseDroppedSkulls();
-               this.spawnAtLocation(var1, var6);
-            }
-         }
-      }
-
-   }
-
-   protected ItemStack getSkull() {
-      return new ItemStack(Items.ZOMBIE_HEAD);
    }
 
    static {

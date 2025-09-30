@@ -7,11 +7,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -26,20 +23,19 @@ import org.lwjgl.system.MemoryUtil;
 
 @DontObfuscate
 public class GlStateManager {
-   private static final boolean ON_LINUX;
-   private static final Plot PLOT_TEXTURES;
-   private static int numTextures;
-   private static final Plot PLOT_BUFFERS;
-   private static int numBuffers;
-   private static final BlendState BLEND;
-   private static final DepthState DEPTH;
-   private static final CullState CULL;
-   private static final PolygonOffsetState POLY_OFFSET;
-   private static final ColorLogicState COLOR_LOGIC;
-   private static final ScissorState SCISSOR;
+   private static final Plot PLOT_TEXTURES = TracyClient.createPlot("GPU Textures");
+   private static int numTextures = 0;
+   private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
+   private static int numBuffers = 0;
+   private static final BlendState BLEND = new BlendState();
+   private static final DepthState DEPTH = new DepthState();
+   private static final CullState CULL = new CullState();
+   private static final PolygonOffsetState POLY_OFFSET = new PolygonOffsetState();
+   private static final ColorLogicState COLOR_LOGIC = new ColorLogicState();
+   private static final ScissorState SCISSOR = new ScissorState();
    private static int activeTexture;
-   private static final TextureState[] TEXTURES;
-   private static final ColorMask COLOR_MASK;
+   private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> new TextureState()).toArray((var0) -> new TextureState[var0]);
+   private static final ColorMask COLOR_MASK = new ColorMask();
    private static int readFbo;
    private static int writeFbo;
 
@@ -203,44 +199,9 @@ public class GlStateManager {
       return GL20.glGetUniformLocation(var0, var1);
    }
 
-   public static void _glUniform1(int var0, IntBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform1iv(var0, var1);
-   }
-
    public static void _glUniform1i(int var0, int var1) {
       RenderSystem.assertOnRenderThread();
       GL20.glUniform1i(var0, var1);
-   }
-
-   public static void _glUniform1(int var0, FloatBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform1fv(var0, var1);
-   }
-
-   public static void _glUniform2(int var0, FloatBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform2fv(var0, var1);
-   }
-
-   public static void _glUniform3(int var0, IntBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform3iv(var0, var1);
-   }
-
-   public static void _glUniform3(int var0, FloatBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform3fv(var0, var1);
-   }
-
-   public static void _glUniform4(int var0, FloatBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniform4fv(var0, var1);
-   }
-
-   public static void _glUniformMatrix4(int var0, FloatBuffer var1) {
-      RenderSystem.assertOnRenderThread();
-      GL20.glUniformMatrix4fv(var0, false, var1);
    }
 
    public static void _glBindAttribLocation(int var0, int var1, CharSequence var2) {
@@ -248,10 +209,14 @@ public class GlStateManager {
       GL20.glBindAttribLocation(var0, var1, var2);
    }
 
-   public static int _glGenBuffers() {
-      RenderSystem.assertOnRenderThread();
+   public static void incrementTrackedBuffers() {
       ++numBuffers;
       PLOT_BUFFERS.setValue((double)numBuffers);
+   }
+
+   public static int _glGenBuffers() {
+      RenderSystem.assertOnRenderThread();
+      incrementTrackedBuffers();
       return GL15.glGenBuffers();
    }
 
@@ -332,6 +297,14 @@ public class GlStateManager {
    public static void _glDeleteFramebuffers(int var0) {
       RenderSystem.assertOnRenderThread();
       GL30.glDeleteFramebuffers(var0);
+      if (readFbo == var0) {
+         readFbo = 0;
+      }
+
+      if (writeFbo == var0) {
+         writeFbo = 0;
+      }
+
    }
 
    public static int glGenFramebuffers() {
@@ -342,11 +315,6 @@ public class GlStateManager {
    public static void _glFramebufferTexture2D(int var0, int var1, int var2, int var3, int var4) {
       RenderSystem.assertOnRenderThread();
       GL30.glFramebufferTexture2D(var0, var1, var2, var3, var4);
-   }
-
-   public static void glActiveTexture(int var0) {
-      RenderSystem.assertOnRenderThread();
-      GL13.glActiveTexture(var0);
    }
 
    public static void glBlendFuncSeparate(int var0, int var1, int var2, int var3) {
@@ -422,7 +390,7 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThread();
       if (activeTexture != var0 - '\u84c0') {
          activeTexture = var0 - '\u84c0';
-         glActiveTexture(var0);
+         GL13.glActiveTexture(var0);
       }
 
    }
@@ -466,11 +434,7 @@ public class GlStateManager {
 
    }
 
-   public static int _getActiveTexture() {
-      return activeTexture + '\u84c0';
-   }
-
-   public static void _texImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, @Nullable IntBuffer var8) {
+   public static void _texImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, @Nullable ByteBuffer var8) {
       RenderSystem.assertOnRenderThread();
       GL11.glTexImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
@@ -480,7 +444,7 @@ public class GlStateManager {
       GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   public static void _texSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, IntBuffer var8) {
+   public static void _texSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, ByteBuffer var8) {
       RenderSystem.assertOnRenderThread();
       GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
    }
@@ -581,22 +545,6 @@ public class GlStateManager {
    public static void _glDeleteSync(long var0) {
       RenderSystem.assertOnRenderThread();
       GL32.glDeleteSync(var0);
-   }
-
-   static {
-      ON_LINUX = Util.getPlatform() == Util.OS.LINUX;
-      PLOT_TEXTURES = TracyClient.createPlot("GPU Textures");
-      numTextures = 0;
-      PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
-      numBuffers = 0;
-      BLEND = new BlendState();
-      DEPTH = new DepthState();
-      CULL = new CullState();
-      POLY_OFFSET = new PolygonOffsetState();
-      COLOR_LOGIC = new ColorLogicState();
-      SCISSOR = new ScissorState();
-      TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> new TextureState()).toArray((var0) -> new TextureState[var0]);
-      COLOR_MASK = new ColorMask();
    }
 
    static class TextureState {

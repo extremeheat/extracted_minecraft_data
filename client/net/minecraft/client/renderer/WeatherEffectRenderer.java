@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.state.WeatherRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -55,60 +55,50 @@ public class WeatherEffectRenderer {
 
    }
 
-   public void render(Level var1, MultiBufferSource var2, int var3, float var4, Vec3 var5) {
-      float var6 = var1.getRainLevel(var4);
-      if (!(var6 <= 0.0F)) {
-         int var7 = Minecraft.useFancyGraphics() ? 10 : 5;
-         ArrayList var8 = new ArrayList();
-         ArrayList var9 = new ArrayList();
-         this.collectColumnInstances(var1, var3, var4, var5, var7, var8, var9);
-         if (!var8.isEmpty() || !var9.isEmpty()) {
-            this.render(var2, var5, var7, var6, var8, var9);
-         }
+   public void extractRenderState(Level var1, int var2, float var3, Vec3 var4, WeatherRenderState var5) {
+      var5.intensity = var1.getRainLevel(var3);
+      if (!(var5.intensity <= 0.0F)) {
+         var5.radius = Minecraft.useFancyGraphics() ? 10 : 5;
+         int var6 = Mth.floor(var4.x);
+         int var7 = Mth.floor(var4.y);
+         int var8 = Mth.floor(var4.z);
+         BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
+         RandomSource var10 = RandomSource.create();
 
-      }
-   }
-
-   private void collectColumnInstances(Level var1, int var2, float var3, Vec3 var4, int var5, List<ColumnInstance> var6, List<ColumnInstance> var7) {
-      int var8 = Mth.floor(var4.x);
-      int var9 = Mth.floor(var4.y);
-      int var10 = Mth.floor(var4.z);
-      BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
-      RandomSource var12 = RandomSource.create();
-
-      for(int var13 = var10 - var5; var13 <= var10 + var5; ++var13) {
-         for(int var14 = var8 - var5; var14 <= var8 + var5; ++var14) {
-            int var15 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var14, var13);
-            int var16 = Math.max(var9 - var5, var15);
-            int var17 = Math.max(var9 + var5, var15);
-            if (var17 - var16 != 0) {
-               Biome.Precipitation var18 = this.getPrecipitationAt(var1, var11.set(var14, var9, var13));
-               if (var18 != Biome.Precipitation.NONE) {
-                  int var19 = var14 * var14 * 3121 + var14 * 45238971 ^ var13 * var13 * 418711 + var13 * 13761;
-                  var12.setSeed((long)var19);
-                  int var20 = Math.max(var9, var15);
-                  int var21 = LevelRenderer.getLightColor(var1, var11.set(var14, var20, var13));
-                  if (var18 == Biome.Precipitation.RAIN) {
-                     var6.add(this.createRainColumnInstance(var12, var2, var14, var16, var17, var13, var21, var3));
-                  } else if (var18 == Biome.Precipitation.SNOW) {
-                     var7.add(this.createSnowColumnInstance(var12, var2, var14, var16, var17, var13, var21, var3));
+         for(int var11 = var8 - var5.radius; var11 <= var8 + var5.radius; ++var11) {
+            for(int var12 = var6 - var5.radius; var12 <= var6 + var5.radius; ++var12) {
+               int var13 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var12, var11);
+               int var14 = Math.max(var7 - var5.radius, var13);
+               int var15 = Math.max(var7 + var5.radius, var13);
+               if (var15 - var14 != 0) {
+                  Biome.Precipitation var16 = this.getPrecipitationAt(var1, var9.set(var12, var7, var11));
+                  if (var16 != Biome.Precipitation.NONE) {
+                     int var17 = var12 * var12 * 3121 + var12 * 45238971 ^ var11 * var11 * 418711 + var11 * 13761;
+                     var10.setSeed((long)var17);
+                     int var18 = Math.max(var7, var13);
+                     int var19 = LevelRenderer.getLightColor(var1, var9.set(var12, var18, var11));
+                     if (var16 == Biome.Precipitation.RAIN) {
+                        var5.rainColumns.add(this.createRainColumnInstance(var10, var2, var12, var14, var15, var11, var19, var3));
+                     } else if (var16 == Biome.Precipitation.SNOW) {
+                        var5.snowColumns.add(this.createSnowColumnInstance(var10, var2, var12, var14, var15, var11, var19, var3));
+                     }
                   }
                }
             }
          }
-      }
 
+      }
    }
 
-   private void render(MultiBufferSource var1, Vec3 var2, int var3, float var4, List<ColumnInstance> var5, List<ColumnInstance> var6) {
-      if (!var5.isEmpty()) {
-         RenderType var7 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
-         this.renderInstances(var1.getBuffer(var7), var5, var2, 1.0F, var3, var4);
+   public void render(MultiBufferSource var1, Vec3 var2, WeatherRenderState var3) {
+      if (!var3.rainColumns.isEmpty()) {
+         RenderType var4 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
+         this.renderInstances(var1.getBuffer(var4), var3.rainColumns, var2, 1.0F, var3.radius, var3.intensity);
       }
 
-      if (!var6.isEmpty()) {
-         RenderType var8 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
-         this.renderInstances(var1.getBuffer(var8), var6, var2, 0.8F, var3, var4);
+      if (!var3.snowColumns.isEmpty()) {
+         RenderType var5 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
+         this.renderInstances(var1.getBuffer(var5), var3.snowColumns, var2, 0.8F, var3.radius, var3.intensity);
       }
 
    }
@@ -211,7 +201,7 @@ public class WeatherEffectRenderer {
       }
    }
 
-   static record ColumnInstance(int x, int z, int bottomY, int topY, float uOffset, float vOffset, int lightCoords) {
+   public static record ColumnInstance(int x, int z, int bottomY, int topY, float uOffset, float vOffset, int lightCoords) {
       final int x;
       final int z;
       final int bottomY;
@@ -220,7 +210,7 @@ public class WeatherEffectRenderer {
       final float vOffset;
       final int lightCoords;
 
-      ColumnInstance(int var1, int var2, int var3, int var4, float var5, float var6, int var7) {
+      public ColumnInstance(int var1, int var2, int var3, int var4, float var5, float var6, int var7) {
          super();
          this.x = var1;
          this.z = var2;

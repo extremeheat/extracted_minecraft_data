@@ -1,13 +1,14 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 
-public class CritParticle extends TextureSheetParticle {
-   CritParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+public class CritParticle extends SingleQuadParticle {
+   CritParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
+      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var14);
       this.friction = 0.7F;
       this.gravity = 0.5F;
       this.xd *= 0.10000000149011612;
@@ -16,10 +17,10 @@ public class CritParticle extends TextureSheetParticle {
       this.xd += var8 * 0.4;
       this.yd += var10 * 0.4;
       this.zd += var12 * 0.4;
-      float var14 = (float)(Math.random() * 0.30000001192092896 + 0.6000000238418579);
-      this.rCol = var14;
-      this.gCol = var14;
-      this.bCol = var14;
+      float var15 = (float)(Math.random() * 0.30000001192092896 + 0.6000000238418579);
+      this.rCol = var15;
+      this.gCol = var15;
+      this.bCol = var15;
       this.quadSize *= 0.75F;
       this.lifetime = Math.max((int)(6.0 / (Math.random() * 0.8 + 0.6)), 1);
       this.hasPhysics = false;
@@ -36,8 +37,8 @@ public class CritParticle extends TextureSheetParticle {
       this.bCol *= 0.9F;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -48,15 +49,9 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.pickSprite(this.sprite);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+         return var16;
       }
    }
 
@@ -68,17 +63,11 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.rCol *= 0.3F;
-         var15.gCol *= 0.8F;
-         var15.pickSprite(this.sprite);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite.get(var15));
+         var16.rCol *= 0.3F;
+         var16.gCol *= 0.8F;
+         return var16;
       }
    }
 
@@ -90,16 +79,10 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0, var13);
-         var15.setLifetime(20);
-         var15.pickSprite(this.sprite);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         CritParticle var16 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0, var13, this.sprite.get(var15));
+         var16.setLifetime(20);
+         return var16;
       }
    }
 }

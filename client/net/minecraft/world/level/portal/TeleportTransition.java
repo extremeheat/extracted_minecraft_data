@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 
 public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 deltaMovement, float yRot, float xRot, boolean missingRespawnBlock, boolean asPassenger, Set<Relative> relatives, PostTeleportTransition postTeleportTransition) {
@@ -21,10 +22,6 @@ public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 delta
 
    public TeleportTransition(ServerLevel var1, Vec3 var2, Vec3 var3, float var4, float var5, Set<Relative> var6, PostTeleportTransition var7) {
       this(var1, var2, var3, var4, var5, false, false, var6, var7);
-   }
-
-   public TeleportTransition(ServerLevel var1, Entity var2, PostTeleportTransition var3) {
-      this(var1, findAdjustedSharedSpawnPos(var1, var2), Vec3.ZERO, var1.getSharedSpawnAngle(), 0.0F, false, false, Set.of(), var3);
    }
 
    public TeleportTransition(ServerLevel var1, Vec3 var2, Vec3 var3, float var4, float var5, boolean var6, boolean var7, Set<Relative> var8, PostTeleportTransition var9) {
@@ -51,12 +48,20 @@ public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 delta
       var0.placePortalTicket(BlockPos.containing(var0.position()));
    }
 
-   public static TeleportTransition missingRespawnBlock(ServerLevel var0, Entity var1, PostTeleportTransition var2) {
-      return new TeleportTransition(var0, findAdjustedSharedSpawnPos(var0, var1), Vec3.ZERO, var0.getSharedSpawnAngle(), 0.0F, true, false, Set.of(), var2);
+   public static TeleportTransition createDefault(ServerPlayer var0, PostTeleportTransition var1) {
+      ServerLevel var2 = var0.level().getServer().findRespawnDimension();
+      LevelData.RespawnData var3 = var2.getRespawnData();
+      return new TeleportTransition(var2, findAdjustedSharedSpawnPos(var2, var0), Vec3.ZERO, var3.yaw(), var3.pitch(), false, false, Set.of(), var1);
+   }
+
+   public static TeleportTransition missingRespawnBlock(ServerPlayer var0, PostTeleportTransition var1) {
+      ServerLevel var2 = var0.level().getServer().findRespawnDimension();
+      LevelData.RespawnData var3 = var2.getRespawnData();
+      return new TeleportTransition(var2, findAdjustedSharedSpawnPos(var2, var0), Vec3.ZERO, var3.yaw(), var3.pitch(), true, false, Set.of(), var1);
    }
 
    private static Vec3 findAdjustedSharedSpawnPos(ServerLevel var0, Entity var1) {
-      return var1.adjustSpawnLocation(var0, var0.getSharedSpawnPos()).getBottomCenter();
+      return var1.adjustSpawnLocation(var0, var0.getRespawnData().pos()).getBottomCenter();
    }
 
    public TeleportTransition withRotation(float var1, float var2) {

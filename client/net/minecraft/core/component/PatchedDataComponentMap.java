@@ -85,6 +85,11 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    }
 
    @Nullable
+   public <T> T set(TypedDataComponent<T> var1) {
+      return (T)this.set(var1.type(), var1.value());
+   }
+
+   @Nullable
    public <T> T remove(DataComponentType<? extends T> var1) {
       this.ensureMapOwnership();
       Object var2 = this.prototype.get(var1);

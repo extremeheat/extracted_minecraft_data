@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,10 +19,11 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.FaviconTexture;
-import net.minecraft.client.gui.screens.LoadingDotsText;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -74,20 +76,25 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
    }
 
    private void refreshEntries() {
-      this.clearEntries();
-      this.onlineServers.forEach((var1) -> this.addEntry(var1));
-      this.addEntry(this.lanHeader);
-      this.networkServers.forEach((var1) -> this.addEntry(var1));
+      Entry var1 = (Entry)this.getSelected();
+      ArrayList var2 = new ArrayList(this.onlineServers);
+      var2.add(this.lanHeader);
+      var2.addAll(this.networkServers);
+      this.replaceEntries(var2);
+      if (var1 != null) {
+         for(Entry var4 : var2) {
+            if (var4.matches(var1)) {
+               this.setSelected(var4);
+               break;
+            }
+         }
+      }
+
    }
 
    public void setSelected(@Nullable Entry var1) {
       super.setSelected(var1);
       this.screen.onSelectedChange();
-   }
-
-   public boolean keyPressed(int var1, int var2, int var3) {
-      Entry var4 = (Entry)this.getSelected();
-      return var4 != null && var4.keyPressed(var1, var2, var3) || super.keyPressed(var1, var2, var3);
    }
 
    public void updateOnlineServers(ServerList var1) {
@@ -147,29 +154,35 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       public void close() {
       }
+
+      abstract boolean matches(Entry var1);
+
+      public abstract void join();
    }
 
    public static class LANHeader extends Entry {
       private final Minecraft minecraft = Minecraft.getInstance();
+      private final LoadingDotsWidget loadingDotsWidget;
 
       public LANHeader() {
          super();
+         this.loadingDotsWidget = new LoadingDotsWidget(this.minecraft.font, ServerSelectionList.SCANNING_LABEL);
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var10000 = var3 + var6 / 2;
-         Objects.requireNonNull(this.minecraft.font);
-         int var11 = var10000 - 9 / 2;
-         var1.drawString(this.minecraft.font, (Component)ServerSelectionList.SCANNING_LABEL, this.minecraft.screen.width / 2 - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, var11, -1);
-         String var12 = LoadingDotsText.get(Util.getMillis());
-         Font var10001 = this.minecraft.font;
-         int var10003 = this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2;
-         Objects.requireNonNull(this.minecraft.font);
-         var1.drawString(var10001, var12, var10003, var11 + 9, -8355712);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         this.loadingDotsWidget.setPosition(this.getContentXMiddle() - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, this.getContentY());
+         this.loadingDotsWidget.render(var1, var2, var3, var5);
       }
 
       public Component getNarration() {
          return ServerSelectionList.SCANNING_LABEL;
+      }
+
+      boolean matches(Entry var1) {
+         return var1 instanceof LANHeader;
+      }
+
+      public void join() {
       }
    }
 
@@ -180,7 +193,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final JoinMultiplayerScreen screen;
       protected final Minecraft minecraft;
       protected final LanServer serverData;
-      private long lastClickTime;
 
       protected NetworkServerEntry(JoinMultiplayerScreen var1, LanServer var2) {
          super();
@@ -189,29 +201,36 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.minecraft = Minecraft.getInstance();
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, -1);
-         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712);
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
+         var1.drawString(this.minecraft.font, this.serverData.getMotd(), this.getContentX() + 32 + 3, this.getContentY() + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, -13619152);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
          } else {
-            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, -13619152);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
          }
 
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         this.screen.setSelected(this);
-         if (Util.getMillis() - this.lastClickTime < 250L) {
-            this.screen.joinSelectedServer();
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         if (var2) {
+            this.join();
          }
 
-         this.lastClickTime = Util.getMillis();
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var2);
       }
 
-      public LanServer getServerData() {
-         return this.serverData;
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
+            this.join();
+            return true;
+         } else {
+            return super.keyPressed(var1);
+         }
+      }
+
+      public void join() {
+         this.screen.join(new ServerData(this.serverData.getMotd(), this.serverData.getAddress(), ServerData.Type.LAN));
       }
 
       public Component getNarration() {
@@ -220,6 +239,19 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       public Component getServerNarration() {
          return Component.empty().append(LAN_SERVER_HEADER).append(CommonComponents.SPACE).append(this.serverData.getMotd());
+      }
+
+      boolean matches(Entry var1) {
+         boolean var10000;
+         if (var1 instanceof NetworkServerEntry var2) {
+            if (var2.serverData == this.serverData) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 
@@ -235,7 +267,6 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final FaviconTexture icon;
       @Nullable
       private byte[] lastIconBytes;
-      private long lastClickTime;
       @Nullable
       private List<Component> onlinePlayersTooltip;
       @Nullable
@@ -252,7 +283,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.refreshStatus();
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          if (this.serverData.state() == ServerData.State.INITIAL) {
             this.serverData.setState(ServerData.State.PINGING);
             this.serverData.motd = CommonComponents.EMPTY;
@@ -276,91 +307,92 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             });
          }
 
-         var1.drawString(this.minecraft.font, (String)this.serverData.name, var4 + 32 + 3, var3 + 1, -1);
-         List var11 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
+         var1.drawString(this.minecraft.font, (String)this.serverData.name, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
+         List var6 = this.minecraft.font.split(this.serverData.motd, this.getContentWidth() - 32 - 2);
 
-         for(int var12 = 0; var12 < Math.min(var11.size(), 2); ++var12) {
+         for(int var7 = 0; var7 < Math.min(var6.size(), 2); ++var7) {
             Font var10001 = this.minecraft.font;
-            FormattedCharSequence var10002 = (FormattedCharSequence)var11.get(var12);
-            int var10003 = var4 + 32 + 3;
-            int var10004 = var3 + 12;
+            FormattedCharSequence var10002 = (FormattedCharSequence)var6.get(var7);
+            int var10003 = this.getContentX() + 32 + 3;
+            int var10004 = this.getContentY() + 12;
             Objects.requireNonNull(this.minecraft.font);
-            var1.drawString(var10001, var10002, var10003, var10004 + 9 * var12, -8355712);
+            var1.drawString(var10001, var10002, var10003, var10004 + 9 * var7, -8355712);
          }
 
-         this.drawIcon(var1, var4, var3, this.icon.textureLocation());
+         this.drawIcon(var1, this.getContentX(), this.getContentY(), this.icon.textureLocation());
+         int var15 = ServerSelectionList.this.children().indexOf(this);
          if (this.serverData.state() == ServerData.State.PINGING) {
-            int var19 = (int)(Util.getMillis() / 100L + (long)(var2 * 2) & 7L);
-            if (var19 > 4) {
-               var19 = 8 - var19;
+            int var8 = (int)(Util.getMillis() / 100L + (long)(var15 * 2) & 7L);
+            if (var8 > 4) {
+               var8 = 8 - var8;
             }
 
-            ResourceLocation var21;
-            switch (var19) {
-               case 1 -> var21 = ServerSelectionList.PINGING_2_SPRITE;
-               case 2 -> var21 = ServerSelectionList.PINGING_3_SPRITE;
-               case 3 -> var21 = ServerSelectionList.PINGING_4_SPRITE;
-               case 4 -> var21 = ServerSelectionList.PINGING_5_SPRITE;
-               default -> var21 = ServerSelectionList.PINGING_1_SPRITE;
+            ResourceLocation var17;
+            switch (var8) {
+               case 1 -> var17 = ServerSelectionList.PINGING_2_SPRITE;
+               case 2 -> var17 = ServerSelectionList.PINGING_3_SPRITE;
+               case 3 -> var17 = ServerSelectionList.PINGING_4_SPRITE;
+               case 4 -> var17 = ServerSelectionList.PINGING_5_SPRITE;
+               default -> var17 = ServerSelectionList.PINGING_1_SPRITE;
             }
 
-            this.statusIcon = var21;
+            this.statusIcon = var17;
          }
 
-         int var20 = var4 + var5 - 10 - 5;
+         int var16 = this.getContentRight() - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var20, var3, 10, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var16, this.getContentY(), 10, 8);
          }
 
-         byte[] var13 = this.serverData.getIconBytes();
-         if (!Arrays.equals(var13, this.lastIconBytes)) {
-            if (this.uploadServerIcon(var13)) {
-               this.lastIconBytes = var13;
+         byte[] var9 = this.serverData.getIconBytes();
+         if (!Arrays.equals(var9, this.lastIconBytes)) {
+            if (this.uploadServerIcon(var9)) {
+               this.lastIconBytes = var9;
             } else {
                this.serverData.setIconBytes((byte[])null);
                this.updateServerList();
             }
          }
 
-         Object var14 = this.serverData.state() == ServerData.State.INCOMPATIBLE ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
-         int var15 = this.minecraft.font.width((FormattedText)var14);
-         int var16 = var20 - var15 - 5;
-         var1.drawString(this.minecraft.font, (Component)var14, var16, var3 + 1, -8355712);
-         if (this.statusIconTooltip != null && var7 >= var20 && var7 <= var20 + 10 && var8 >= var3 && var8 <= var3 + 8) {
-            var1.setTooltipForNextFrame(this.statusIconTooltip, var7, var8);
-         } else if (this.onlinePlayersTooltip != null && var7 >= var16 && var7 <= var16 + var15 && var8 >= var3) {
-            int var22 = var3 - 1;
+         Object var10 = this.serverData.state() == ServerData.State.INCOMPATIBLE ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
+         int var11 = this.minecraft.font.width((FormattedText)var10);
+         int var12 = var16 - var11 - 5;
+         var1.drawString(this.minecraft.font, (Component)var10, var12, this.getContentY() + 1, -8355712);
+         if (this.statusIconTooltip != null && var2 >= var16 && var2 <= var16 + 10 && var3 >= this.getContentY() && var3 <= this.getContentY() + 8) {
+            var1.setTooltipForNextFrame(this.statusIconTooltip, var2, var3);
+         } else if (this.onlinePlayersTooltip != null && var2 >= var12 && var2 <= var12 + var11 && var3 >= this.getContentY()) {
+            int var18 = this.getContentY() - 1;
             Objects.requireNonNull(this.minecraft.font);
-            if (var8 <= var22 + 9) {
-               var1.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), var7, var8);
+            if (var3 <= var18 + 9) {
+               var1.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), var2, var3);
             }
          }
 
-         if ((Boolean)this.minecraft.options.touchscreen().get() || var9) {
-            var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
-            int var17 = var7 - var4;
-            int var18 = var8 - var3;
+         if ((Boolean)this.minecraft.options.touchscreen().get() || var4) {
+            var1.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
+            int var13 = var2 - this.getContentX();
+            int var14 = var3 - this.getContentY();
             if (this.canJoin()) {
-               if (var17 < 32 && var17 > 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+               if (var13 < 32 && var13 > 16) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
 
-            if (var2 > 0) {
-               if (var17 < 16 && var18 < 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+            if (var15 > 0) {
+               if (var13 < 16 && var14 < 16) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
 
-            if (var2 < this.screen.getServers().size() - 1) {
-               if (var17 < 16 && var18 > 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+            if (var15 < this.screen.getServers().size() - 1) {
+               if (var13 < 16 && var14 > 16) {
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
          }
@@ -430,60 +462,63 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          return true;
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (Screen.hasShiftDown()) {
-            ServerSelectionList var4 = this.screen.serverSelectionList;
-            int var5 = var4.children().indexOf(this);
-            if (var5 == -1) {
-               return true;
+      public boolean keyPressed(KeyEvent var1) {
+         if (var1.isSelection()) {
+            this.join();
+            return true;
+         } else {
+            if (var1.hasShiftDown()) {
+               ServerSelectionList var2 = this.screen.serverSelectionList;
+               int var3 = var2.children().indexOf(this);
+               if (var3 == -1) {
+                  return true;
+               }
+
+               if (var1.isDown() && var3 < this.screen.getServers().size() - 1 || var1.isUp() && var3 > 0) {
+                  this.swap(var3, var1.isDown() ? var3 + 1 : var3 - 1);
+                  return true;
+               }
             }
 
-            if (var1 == 264 && var5 < this.screen.getServers().size() - 1 || var1 == 265 && var5 > 0) {
-               this.swap(var5, var1 == 264 ? var5 + 1 : var5 - 1);
-               return true;
-            }
+            return super.keyPressed(var1);
          }
+      }
 
-         return super.keyPressed(var1, var2, var3);
+      public void join() {
+         this.screen.join(this.serverData);
       }
 
       private void swap(int var1, int var2) {
          this.screen.getServers().swap(var1, var2);
-         this.screen.serverSelectionList.updateOnlineServers(this.screen.getServers());
-         Entry var3 = (Entry)this.screen.serverSelectionList.children().get(var2);
-         this.screen.serverSelectionList.setSelected(var3);
-         ServerSelectionList.this.ensureVisible(var3);
+         this.screen.serverSelectionList.swap(var1, var2);
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         double var6 = var1 - (double)ServerSelectionList.this.getRowLeft();
-         double var8 = var3 - (double)ServerSelectionList.this.getRowTop(ServerSelectionList.this.children().indexOf(this));
-         if (var6 <= 32.0) {
-            if (var6 < 32.0 && var6 > 16.0 && this.canJoin()) {
-               this.screen.setSelected(this);
-               this.screen.joinSelectedServer();
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         double var3 = var1.x() - (double)this.getX();
+         double var5 = var1.y() - (double)this.getY();
+         if (var3 <= 32.0) {
+            if (var3 < 32.0 && var3 > 16.0 && this.canJoin()) {
+               this.join();
                return true;
             }
 
-            int var10 = this.screen.serverSelectionList.children().indexOf(this);
-            if (var6 < 16.0 && var8 < 16.0 && var10 > 0) {
-               this.swap(var10, var10 - 1);
+            int var7 = this.screen.serverSelectionList.children().indexOf(this);
+            if (var3 < 16.0 && var5 < 16.0 && var7 > 0) {
+               this.swap(var7, var7 - 1);
                return true;
             }
 
-            if (var6 < 16.0 && var8 > 16.0 && var10 < this.screen.getServers().size() - 1) {
-               this.swap(var10, var10 + 1);
+            if (var3 < 16.0 && var5 > 16.0 && var7 < this.screen.getServers().size() - 1) {
+               this.swap(var7, var7 + 1);
                return true;
             }
          }
 
-         this.screen.setSelected(this);
-         if (Util.getMillis() - this.lastClickTime < 250L) {
-            this.screen.joinSelectedServer();
+         if (var2) {
+            this.join();
          }
 
-         this.lastClickTime = Util.getMillis();
-         return super.mouseClicked(var1, var3, var5);
+         return super.mouseClicked(var1, var2);
       }
 
       public ServerData getServerData() {
@@ -527,6 +562,19 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       public void close() {
          this.icon.close();
+      }
+
+      boolean matches(Entry var1) {
+         boolean var10000;
+         if (var1 instanceof OnlineServerEntry var2) {
+            if (var2.serverData == this.serverData) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 }

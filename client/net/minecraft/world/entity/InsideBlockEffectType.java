@@ -11,6 +11,7 @@ public enum InsideBlockEffectType {
       }
 
    }),
+   CLEAR_FREEZE(Entity::clearFreeze),
    FIRE_IGNITE(BaseFireBlock::fireIgnite),
    LAVA_IGNITE(Entity::lavaIgnite),
    EXTINGUISH(Entity::clearFire);
@@ -27,6 +28,6 @@ public enum InsideBlockEffectType {
 
    // $FF: synthetic method
    private static InsideBlockEffectType[] $values() {
-      return new InsideBlockEffectType[]{FREEZE, FIRE_IGNITE, LAVA_IGNITE, EXTINGUISH};
+      return new InsideBlockEffectType[]{FREEZE, CLEAR_FREEZE, FIRE_IGNITE, LAVA_IGNITE, EXTINGUISH};
    }
 }

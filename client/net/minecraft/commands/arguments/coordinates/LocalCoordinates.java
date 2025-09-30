@@ -2,17 +2,13 @@ package net.minecraft.commands.arguments.coordinates;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class LocalCoordinates implements Coordinates {
+public record LocalCoordinates(double left, double up, double forwards) implements Coordinates {
    public static final char PREFIX_LOCAL_COORDINATE = '^';
-   private final double left;
-   private final double up;
-   private final double forwards;
 
    public LocalCoordinates(double var1, double var3, double var5) {
       super();
@@ -85,20 +81,5 @@ public class LocalCoordinates implements Coordinates {
          var0.skip();
          return var0.canRead() && var0.peek() != ' ' ? var0.readDouble() : 0.0;
       }
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof LocalCoordinates)) {
-         return false;
-      } else {
-         LocalCoordinates var2 = (LocalCoordinates)var1;
-         return this.left == var2.left && this.up == var2.up && this.forwards == var2.forwards;
-      }
-   }
-
-   public int hashCode() {
-      return Objects.hash(new Object[]{this.left, this.up, this.forwards});
    }
 }

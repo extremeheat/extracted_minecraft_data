@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
@@ -65,8 +66,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    protected void init() {
       super.init();
       this.beaconButtons.clear();
-      this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
-      this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
 
       for(int var1 = 0; var1 <= 2; ++var1) {
          int var2 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).size();
@@ -95,6 +94,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       BeaconUpgradePowerButton var13 = new BeaconUpgradePowerButton(this.leftPos + 167 + (var8 - 1) * 24 - var9 / 2, this.topPos + 47, var11);
       var13.visible = false;
       this.addBeaconButton(var13);
+      this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
+      this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
    }
 
    public void containerTick() {
@@ -193,7 +194,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          return Component.translatable(((MobEffect)var1.value()).getDescriptionId());
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          if (!this.isSelected()) {
             if (this.isPrimary) {
                BeaconScreen.this.primary = this.effect;
@@ -245,6 +246,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       protected BeaconSpriteScreenButton(int var1, int var2, ResourceLocation var3, Component var4) {
          super(var1, var2, var4);
+         this.setTooltip(Tooltip.create(var4));
          this.sprite = var3;
       }
 
@@ -258,7 +260,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          BeaconScreen.this.minecraft.getConnection().send(new ServerboundSetBeaconPacket(Optional.ofNullable(BeaconScreen.this.primary), Optional.ofNullable(BeaconScreen.this.secondary)));
          BeaconScreen.this.minecraft.player.closeContainer();
       }
@@ -273,7 +275,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
-      public void onPress() {
+      public void onPress(InputWithModifiers var1) {
          BeaconScreen.this.minecraft.player.closeContainer();
       }
 

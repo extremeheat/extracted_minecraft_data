@@ -33,7 +33,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
    boolean canReport(UUID var1);
 
    public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
-      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
+      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.AUTHLIB_GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
       private static final DateTimeFormatter TIME_FORMATTER;
 
       public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
@@ -55,12 +55,12 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       public Component toNarrationComponent() {
          Component var1 = this.toContentComponent();
          Component var2 = this.getTimeComponent();
-         return Component.translatable("gui.chatSelection.message.narrate", this.profile.getName(), var1, var2);
+         return Component.translatable("gui.chatSelection.message.narrate", this.profile.name(), var1, var2);
       }
 
       public Component toHeadingComponent() {
          Component var1 = this.getTimeComponent();
-         return Component.translatable("gui.chatSelection.heading", this.profile.getName(), var1);
+         return Component.translatable("gui.chatSelection.heading", this.profile.name(), var1);
       }
 
       private Component getTimeComponent() {
@@ -73,7 +73,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       }
 
       public UUID profileId() {
-         return this.profile.getId();
+         return this.profile.id();
       }
 
       public LoggedChatEvent.Type type() {

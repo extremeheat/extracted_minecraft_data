@@ -104,13 +104,9 @@ public class Phantom extends Mob implements Enemy {
       return this.getId() * 3;
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return true;
-   }
-
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          float var1 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount) * 7.448451F * 0.017453292F + 3.1415927F);
          float var2 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount + 1) * 7.448451F * 0.017453292F + 3.1415927F);
          if (var1 > 0.0F && var2 <= 0.0F) {

@@ -21,14 +21,15 @@ import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.data.DataSource;
+import net.minecraft.network.chat.contents.data.DataSources;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
 public class NbtContents implements ComponentContents {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSource.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new));
-   public static final ComponentContents.Type<NbtContents> TYPE;
+   public static final MapCodec<NbtContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSources.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new));
    private final boolean interpreting;
    private final Optional<Component> separator;
    private final String nbtPathPattern;
@@ -152,11 +153,7 @@ public class NbtContents implements ComponentContents {
       }
    }
 
-   public ComponentContents.Type<?> type() {
-      return TYPE;
-   }
-
-   static {
-      TYPE = new ComponentContents.Type<NbtContents>(CODEC, "nbt");
+   public MapCodec<NbtContents> codec() {
+      return MAP_CODEC;
    }
 }

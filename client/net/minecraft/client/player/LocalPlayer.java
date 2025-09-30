@@ -10,10 +10,8 @@ import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.DeathScreen;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
@@ -161,8 +159,8 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void heal(float var1) {
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      if (!super.startRiding(var1, var2)) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      if (!super.startRiding(var1, var2, var3)) {
          return false;
       } else {
          if (var1 instanceof AbstractMinecart) {
@@ -328,6 +326,11 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void onUpdateAbilities() {
       this.connection.send(new ServerboundPlayerAbilitiesPacket(this.getAbilities()));
+   }
+
+   public void setReducedDebugInfo(boolean var1) {
+      super.setReducedDebugInfo(var1);
+      this.minecraft.debugEntries.rebuildCurrentList();
    }
 
    public boolean isLocalPlayer() {
@@ -662,7 +665,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          --this.sprintTriggerTime;
       }
 
-      if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
+      if (!(this.minecraft.screen instanceof LevelLoadingScreen)) {
          this.handlePortalTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
          this.processPortalCooldown();
       }
@@ -697,7 +700,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             if (this.sprintTriggerTime > 0) {
                this.setSprinting(true);
             } else {
-               this.sprintTriggerTime = 7;
+               this.sprintTriggerTime = (Integer)this.minecraft.options.sprintWindow().get();
             }
          }
 
@@ -809,15 +812,11 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean shouldStopRunSprinting() {
-      return this.hasBlindness() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || !this.input.hasForwardImpulse() || !this.hasEnoughFoodToSprint() || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
+      return !this.isSprintingPossible(this.getAbilities().flying) || !this.input.hasForwardImpulse() || this.horizontalCollision && !this.minorHorizontalCollision;
    }
 
    private boolean shouldStopSwimSprinting() {
-      return this.hasBlindness() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || !this.isInWater() || !this.input.hasForwardImpulse() && !this.onGround() && !this.input.keyPresses.shift() || !this.hasEnoughFoodToSprint();
-   }
-
-   private boolean hasBlindness() {
-      return this.hasEffect(MobEffects.BLINDNESS);
+      return !this.isSprintingPossible(true) || !this.isInWater() || !this.input.hasForwardImpulse() && !this.onGround() && !this.input.keyPresses.shift();
    }
 
    public Portal.Transition getActivePortalLocalTransition() {
@@ -836,7 +835,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.oPortalEffectIntensity = this.portalEffectIntensity;
       float var2 = 0.0F;
       if (var1 && this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
-         if (this.minecraft.screen != null && !this.minecraft.screen.isPauseScreen() && !(this.minecraft.screen instanceof DeathScreen) && !(this.minecraft.screen instanceof WinScreen)) {
+         if (this.minecraft.screen != null && !this.minecraft.screen.isAllowedInPortal()) {
             if (this.minecraft.screen instanceof AbstractContainerScreen) {
                this.closeContainer();
             }
@@ -879,7 +878,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       float var7 = (float)(this.getX() - var3);
       float var8 = (float)(this.getZ() - var5);
       this.updateAutoJump(var7, var8);
-      this.walkDist += Mth.length(var7, var8) * 0.6F;
+      this.addWalkedDistance(Mth.length(var7, var8) * 0.6F);
    }
 
    public boolean isAutoJumpEnabled() {
@@ -1012,8 +1011,12 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.input.getMoveVector().lengthSquared() > 0.0F;
    }
 
+   private boolean isSprintingPossible(boolean var1) {
+      return !this.isMobilityRestricted() && this.hasEnoughFoodToSprint() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (var1 || !this.isInShallowWater());
+   }
+
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.input.hasForwardImpulse() && this.hasEnoughFoodToSprint() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater()) && (!this.isInWater() || this.isUnderWater());
+      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {

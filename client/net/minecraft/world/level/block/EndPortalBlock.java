@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.EndPlatformFeature;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -54,7 +55,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
       if (var4.canUsePortal(false)) {
-         if (!var2.isClientSide && var2.dimension() == Level.END && var4 instanceof ServerPlayer) {
+         if (!var2.isClientSide() && var2.dimension() == Level.END && var4 instanceof ServerPlayer) {
             ServerPlayer var6 = (ServerPlayer)var4;
             if (!var6.seenCredits) {
                var6.showEndCredits();
@@ -69,35 +70,40 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
 
    @Nullable
    public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
-      ResourceKey var4 = var1.dimension() == Level.END ? Level.OVERWORLD : Level.END;
-      ServerLevel var5 = var1.getServer().getLevel(var4);
-      if (var5 == null) {
+      LevelData.RespawnData var4 = var1.getRespawnData();
+      ResourceKey var5 = var1.dimension();
+      boolean var6 = var5 == Level.END;
+      ResourceKey var7 = var6 ? var4.dimension() : Level.END;
+      BlockPos var8 = var6 ? var4.pos() : ServerLevel.END_SPAWN_POINT;
+      ServerLevel var9 = var1.getServer().getLevel(var7);
+      if (var9 == null) {
          return null;
       } else {
-         boolean var6 = var4 == Level.END;
-         BlockPos var7 = var6 ? ServerLevel.END_SPAWN_POINT : var5.getSharedSpawnPos();
-         Vec3 var8 = var7.getBottomCenter();
-         float var9;
-         Set var10;
-         if (var6) {
-            EndPlatformFeature.createEndPlatform(var5, BlockPos.containing(var8).below(), true);
-            var9 = Direction.WEST.toYRot();
-            var10 = Relative.union(Relative.DELTA, Set.of(Relative.X_ROT));
+         Vec3 var10 = var8.getBottomCenter();
+         float var11;
+         float var12;
+         Set var13;
+         if (!var6) {
+            EndPlatformFeature.createEndPlatform(var9, BlockPos.containing(var10).below(), true);
+            var11 = Direction.WEST.toYRot();
+            var12 = 0.0F;
+            var13 = Relative.union(Relative.DELTA, Set.of(Relative.X_ROT));
             if (var2 instanceof ServerPlayer) {
-               var8 = var8.subtract(0.0, 1.0, 0.0);
+               var10 = var10.subtract(0.0, 1.0, 0.0);
             }
          } else {
-            var9 = var5.getSharedSpawnAngle();
-            var10 = Relative.union(Relative.DELTA, Relative.ROTATION);
+            var11 = var4.yaw();
+            var12 = var4.pitch();
+            var13 = Relative.union(Relative.DELTA, Relative.ROTATION);
             if (var2 instanceof ServerPlayer) {
-               ServerPlayer var11 = (ServerPlayer)var2;
-               return var11.findRespawnPositionAndUseSpawnBlock(false, TeleportTransition.DO_NOTHING);
+               ServerPlayer var14 = (ServerPlayer)var2;
+               return var14.findRespawnPositionAndUseSpawnBlock(false, TeleportTransition.DO_NOTHING);
             }
 
-            var8 = var2.adjustSpawnLocation(var5, var7).getBottomCenter();
+            var10 = var2.adjustSpawnLocation(var9, var8).getBottomCenter();
          }
 
-         return new TeleportTransition(var5, var8, Vec3.ZERO, var9, 0.0F, var10, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET));
+         return new TeleportTransition(var9, var10, Vec3.ZERO, var11, var12, var13, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET));
       }
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -11,6 +10,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanList;
 
 public class PardonCommand {
@@ -24,15 +24,15 @@ public class PardonCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon").requires(Commands.hasPermission(3))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getBans().getUserList(), var1)).executes((var0x) -> pardonPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))));
    }
 
-   private static int pardonPlayers(CommandSourceStack var0, Collection<GameProfile> var1) throws CommandSyntaxException {
+   private static int pardonPlayers(CommandSourceStack var0, Collection<NameAndId> var1) throws CommandSyntaxException {
       UserBanList var2 = var0.getServer().getPlayerList().getBans();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for(NameAndId var5 : var1) {
          if (var2.isBanned(var5)) {
             var2.remove(var5);
             ++var3;
-            var0.sendSuccess(() -> Component.translatable("commands.pardon.success", Component.literal(var5.getName())), true);
+            var0.sendSuccess(() -> Component.translatable("commands.pardon.success", Component.literal(var5.name())), true);
          }
       }
 

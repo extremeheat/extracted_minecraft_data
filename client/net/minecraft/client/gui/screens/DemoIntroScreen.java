@@ -51,10 +51,11 @@ public class DemoIntroScreen extends Screen {
       int var5 = (this.width - 248) / 2 + 10;
       int var6 = (this.height - 166) / 2 + 8;
       var1.drawString(this.font, this.title, var5, var6, -14737633, false);
-      var6 = this.movementMessage.renderLeftAlignedNoShadow(var1, var5, var6 + 12, 12, -11579569);
+      var6 = this.movementMessage.render(var1, MultiLineLabel.Align.LEFT, var5, var6 + 12, 12, false, -11579569);
       MultiLineLabel var10000 = this.durationMessage;
-      int var10003 = var6 + 20;
+      MultiLineLabel.Align var10002 = MultiLineLabel.Align.LEFT;
+      int var10004 = var6 + 20;
       Objects.requireNonNull(this.font);
-      var10000.renderLeftAlignedNoShadow(var1, var5, var10003, 9, -14737633);
+      var10000.render(var1, var10002, var5, var10004, 9, false, -14737633);
    }
 }

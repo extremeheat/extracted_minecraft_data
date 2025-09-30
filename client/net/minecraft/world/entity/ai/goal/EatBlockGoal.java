@@ -26,7 +26,7 @@ public class EatBlockGoal extends Goal {
    }
 
    public boolean canUse() {
-      if (this.mob.getRandom().nextInt(this.mob.isBaby() ? 50 : 1000) != 0) {
+      if (this.mob.getRandom().nextInt(this.adjustedTickDelay(this.mob.isBaby() ? 50 : 1000)) != 0) {
          return false;
       } else {
          BlockPos var1 = this.mob.blockPosition();

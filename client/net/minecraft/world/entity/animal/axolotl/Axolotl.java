@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -20,7 +19,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -193,7 +191,7 @@ public class Axolotl extends Animal implements Bucketable {
    protected void handleAirSupply(ServerLevel var1, int var2) {
       if (this.isAlive() && !this.isInWaterOrRain()) {
          this.setAirSupply(var2 - 1);
-         if (this.getAirSupply() == -20) {
+         if (this.shouldTakeDrowningDamage()) {
             this.setAirSupply(0);
             this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
          }
@@ -344,14 +342,14 @@ public class Axolotl extends Animal implements Bucketable {
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
       var1.copyFrom(DataComponents.AXOLOTL_VARIANT, this);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> {
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
          var1x.putInt("Age", this.getAge());
          Brain var2 = this.getBrain();
          if (var2.hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)) {
             var1x.putLong("HuntingCooldown", var2.getTimeUntilExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN));
          }
 
-      }));
+      });
    }
 
    public void loadFromBucketTag(CompoundTag var1) {
@@ -436,11 +434,6 @@ public class Axolotl extends Animal implements Bucketable {
 
    public Brain<Axolotl> getBrain() {
       return super.getBrain();
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    public void travel(Vec3 var1) {

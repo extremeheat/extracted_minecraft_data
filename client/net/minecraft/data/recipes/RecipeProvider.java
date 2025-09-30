@@ -168,6 +168,10 @@ public abstract class RecipeProvider {
       this.slabBuilder(var1, var2, Ingredient.of(var3)).unlockedBy(getHasName(var3), this.has(var3)).save(this.output);
    }
 
+   protected void shelf(ItemLike var1, ItemLike var2) {
+      this.shaped(RecipeCategory.DECORATIONS, var1, 6).define('#', var2).pattern("###").pattern("   ").pattern("###").group("shelf").unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
+   }
+
    protected RecipeBuilder slabBuilder(RecipeCategory var1, ItemLike var2, Ingredient var3) {
       return this.shaped(var1, var2, 6).define('#', var3).pattern("###");
    }
@@ -185,7 +189,7 @@ public abstract class RecipeProvider {
    }
 
    protected void hangingSign(ItemLike var1, ItemLike var2) {
-      this.shaped(RecipeCategory.DECORATIONS, var1, 6).group("hanging_sign").define('#', var2).define('X', Items.CHAIN).pattern("X X").pattern("###").pattern("###").unlockedBy("has_stripped_logs", this.has(var2)).save(this.output);
+      this.shaped(RecipeCategory.DECORATIONS, var1, 6).group("hanging_sign").define('#', var2).define('X', Items.IRON_CHAIN).pattern("X X").pattern("###").pattern("###").unlockedBy("has_stripped_logs", this.has(var2)).save(this.output);
    }
 
    protected void colorItemWithDye(List<Item> var1, List<Item> var2, String var3, RecipeCategory var4) {

@@ -33,7 +33,7 @@ public class GLX {
 
    public static int _getRefreshRate(Window var0) {
       RenderSystem.assertOnRenderThread();
-      long var1 = GLFW.glfwGetWindowMonitor(var0.getWindow());
+      long var1 = GLFW.glfwGetWindowMonitor(var0.handle());
       if (var1 == 0L) {
          var1 = GLFW.glfwGetPrimaryMonitor();
       }
@@ -78,7 +78,7 @@ public class GLX {
    }
 
    public static boolean _shouldClose(Window var0) {
-      return GLFW.glfwWindowShouldClose(var0.getWindow());
+      return GLFW.glfwWindowShouldClose(var0.handle());
    }
 
    public static String _getCpuInfo() {

@@ -1,15 +1,17 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ShulkerBulletModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -30,7 +32,7 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       return 15;
    }
 
-   public void render(ShulkerBulletRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ShulkerBulletRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       float var5 = var1.ageInTicks;
       var2.translate(0.0F, 0.15F, 0.0F);
@@ -38,14 +40,11 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet, Shulker
       var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.cos(var5 * 0.1F) * 180.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 0.15F) * 360.0F));
       var2.scale(-0.5F, -0.5F, 0.5F);
-      this.model.setupAnim(var1);
-      VertexConsumer var6 = var3.getBuffer(this.model.renderType(TEXTURE_LOCATION));
-      this.model.renderToBuffer(var2, var6, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1, var2, this.model.renderType(TEXTURE_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.scale(1.5F, 1.5F, 1.5F);
-      VertexConsumer var7 = var3.getBuffer(RENDER_TYPE);
-      this.model.renderToBuffer(var2, var7, var4, OverlayTexture.NO_OVERLAY, 654311423);
+      var3.order(1).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, OverlayTexture.NO_OVERLAY, 654311423, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    public ShulkerBulletRenderState createRenderState() {

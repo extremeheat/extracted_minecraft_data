@@ -318,7 +318,7 @@ public class MapItem extends Item {
    public InteractionResult useOn(UseOnContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       if (var2.is(BlockTags.BANNERS)) {
-         if (!var1.getLevel().isClientSide) {
+         if (!var1.getLevel().isClientSide()) {
             MapItemSavedData var3 = getSavedData(var1.getItemInHand(), var1.getLevel());
             if (var3 != null && !var3.toggleBanner(var1.getLevel(), var1.getClickedPos())) {
                return InteractionResult.FAIL;

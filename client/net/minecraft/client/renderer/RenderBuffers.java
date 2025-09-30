@@ -35,7 +35,7 @@ public class RenderBuffers {
          put(var1x, RenderType.waterMask());
       });
       this.bufferSource = MultiBufferSource.immediateWithBuffers(var2, new ByteBufferBuilder(786432));
-      this.outlineBufferSource = new OutlineBufferSource(this.bufferSource);
+      this.outlineBufferSource = new OutlineBufferSource();
       SequencedMap var3 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var0) -> ModelBakery.DESTROY_TYPES.forEach((var1) -> put(var0, var1)));
       this.crumblingBufferSource = MultiBufferSource.immediateWithBuffers(var3, new ByteBufferBuilder(0));
    }

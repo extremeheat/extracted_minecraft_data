@@ -37,14 +37,14 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
+import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.gui.render.state.BlitRenderState;
-import net.minecraft.client.gui.render.state.GlyphEffectRenderState;
 import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.gui.render.state.GuiItemRenderState;
@@ -55,6 +55,8 @@ import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
@@ -69,7 +71,7 @@ import org.slf4j.Logger;
 public class GuiRenderer implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final float MAX_GUI_Z = 10000.0F;
-   private static final float MIN_GUI_Z = 0.0F;
+   public static final float MIN_GUI_Z = 0.0F;
    private static final float GUI_Z_NEAR = 1000.0F;
    public static final int GUI_3D_Z_FAR = 1000;
    public static final int GUI_3D_Z_NEAR = -1000;
@@ -91,6 +93,8 @@ public class GuiRenderer implements AutoCloseable {
    private final CachedOrthoProjectionMatrixBuffer guiProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("gui", 1000.0F, 11000.0F, true);
    private final CachedOrthoProjectionMatrixBuffer itemsProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("items", -1000.0F, 1000.0F, true);
    private final MultiBufferSource.BufferSource bufferSource;
+   private final SubmitNodeCollector submitNodeCollector;
+   private final FeatureRenderDispatcher featureRenderDispatcher;
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
    @Nullable
    private GpuTexture itemsAtlas;
@@ -113,17 +117,19 @@ public class GuiRenderer implements AutoCloseable {
    @Nullable
    private BufferBuilder bufferBuilder = null;
 
-   public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, List<PictureInPictureRenderer<?>> var3) {
+   public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, SubmitNodeCollector var3, FeatureRenderDispatcher var4, List<PictureInPictureRenderer<?>> var5) {
       super();
       this.renderState = var1;
       this.bufferSource = var2;
-      ImmutableMap.Builder var4 = ImmutableMap.builder();
+      this.submitNodeCollector = var3;
+      this.featureRenderDispatcher = var4;
+      ImmutableMap.Builder var6 = ImmutableMap.builder();
 
-      for(PictureInPictureRenderer var6 : var3) {
-         var4.put(var6.getRenderStateClass(), var6);
+      for(PictureInPictureRenderer var8 : var5) {
+         var6.put(var8.getRenderStateClass(), var8);
       }
 
-      this.pictureInPictureRenderers = var4.buildOrThrow();
+      this.pictureInPictureRenderers = var6.buildOrThrow();
    }
 
    public void incrementFrameNumber() {
@@ -143,6 +149,11 @@ public class GuiRenderer implements AutoCloseable {
       this.renderState.reset();
       this.firstDrawIndexAfterBlur = 2147483647;
       this.clearUnusedOversizedItemRenderers();
+      if (SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER) {
+         RenderPipeline.updateSortKeySeed();
+         TextureSetup.updateSortKeySeed();
+      }
+
    }
 
    private void clearUnusedOversizedItemRenderers() {
@@ -229,22 +240,22 @@ public class GuiRenderer implements AutoCloseable {
 
    }
 
-   private void addElementToMesh(GuiElementRenderState var1, int var2) {
-      RenderPipeline var3 = var1.pipeline();
-      TextureSetup var4 = var1.textureSetup();
-      ScreenRectangle var5 = var1.scissorArea();
-      if (var3 != this.previousPipeline || this.scissorChanged(var5, this.previousScissorArea) || !var4.equals(this.previousTextureSetup)) {
+   private void addElementToMesh(GuiElementRenderState var1) {
+      RenderPipeline var2 = var1.pipeline();
+      TextureSetup var3 = var1.textureSetup();
+      ScreenRectangle var4 = var1.scissorArea();
+      if (var2 != this.previousPipeline || this.scissorChanged(var4, this.previousScissorArea) || !var3.equals(this.previousTextureSetup)) {
          if (this.bufferBuilder != null) {
             this.recordMesh(this.bufferBuilder, this.previousPipeline, this.previousTextureSetup, this.previousScissorArea);
          }
 
-         this.bufferBuilder = this.getBufferBuilder(var3);
-         this.previousPipeline = var3;
-         this.previousTextureSetup = var4;
-         this.previousScissorArea = var5;
+         this.bufferBuilder = this.getBufferBuilder(var2);
+         this.previousPipeline = var2;
+         this.previousTextureSetup = var3;
+         this.previousScissorArea = var4;
       }
 
-      var1.buildVertices(this.bufferBuilder, 0.0F + (float)var2);
+      var1.buildVertices(this.bufferBuilder);
    }
 
    private void prepareText() {
@@ -252,18 +263,16 @@ public class GuiRenderer implements AutoCloseable {
          final Matrix3x2f var2 = var1.pose;
          final ScreenRectangle var3 = var1.scissor;
          var1.ensurePrepared().visit(new Font.GlyphVisitor() {
-            public void acceptGlyph(BakedGlyph.GlyphInstance var1) {
-               if (var1.glyph().textureView() != null) {
-                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
-               }
-
+            public void acceptGlyph(TextRenderable var1) {
+               this.accept(var1);
             }
 
-            public void acceptEffect(BakedGlyph var1, BakedGlyph.Effect var2x) {
-               if (var1.textureView() != null) {
-                  GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphEffectRenderState(var2, var1, var2x, var3));
-               }
+            public void acceptEffect(TextRenderable var1) {
+               this.accept(var1);
+            }
 
+            private void accept(TextRenderable var1) {
+               GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(var2, var1, var3));
             }
          });
       });
@@ -371,7 +380,8 @@ public class GuiRenderer implements AutoCloseable {
       }
 
       RenderSystem.enableScissorForRenderTypeDraws(var3, this.itemsAtlas.getHeight(0) - var4 - var5, var5, var5);
-      var1.render(var2, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
+      var1.submit(var2, this.submitNodeCollector, 15728880, OverlayTexture.NO_OVERLAY, 0);
+      this.featureRenderDispatcher.renderAllFeatures();
       this.bufferSource.endBatch();
       RenderSystem.disableScissorForRenderTypeDraws();
       var2.popPose();
@@ -465,8 +475,11 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void recordMesh(BufferBuilder var1, RenderPipeline var2, TextureSetup var3, @Nullable ScreenRectangle var4) {
-      MeshData var5 = var1.buildOrThrow();
-      this.meshesToDraw.add(new MeshToDraw(var5, var2, var3, var4));
+      MeshData var5 = var1.build();
+      if (var5 != null) {
+         this.meshesToDraw.add(new MeshToDraw(var5, var2, var3, var4));
+      }
+
    }
 
    private void recordDraws() {
@@ -565,7 +578,7 @@ public class GuiRenderer implements AutoCloseable {
       return new BufferBuilder(this.byteBufferBuilder, var1.getVertexFormatMode(), var1.getVertexFormat());
    }
 
-   private boolean scissorChanged(@Nullable ScreenRectangle var1, @Nullable ScreenRectangle var2) {
+   private boolean scissorChanged(ScreenRectangle var1, @Nullable ScreenRectangle var2) {
       if (var1 == var2) {
          return false;
       } else if (var1 != null) {

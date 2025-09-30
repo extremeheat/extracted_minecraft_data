@@ -151,7 +151,7 @@ public class Ocelot extends Animal {
       ItemStack var3 = var1.getItemInHand(var2);
       if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(var3) && var1.distanceToSqr(this) < 9.0) {
          this.usePlayerItem(var1, var2, var3);
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             if (this.random.nextInt(3) == 0) {
                this.setTrusting(true);
                this.spawnTrustingParticles(true);

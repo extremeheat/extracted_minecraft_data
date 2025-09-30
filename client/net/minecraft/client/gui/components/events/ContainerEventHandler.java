@@ -17,6 +17,9 @@ import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.joml.Vector2i;
 
 public interface ContainerEventHandler extends GuiEventListener {
@@ -32,15 +35,15 @@ public interface ContainerEventHandler extends GuiEventListener {
       return Optional.empty();
    }
 
-   default boolean mouseClicked(double var1, double var3, int var5) {
-      Optional var6 = this.getChildAt(var1, var3);
-      if (var6.isEmpty()) {
+   default boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      Optional var3 = this.getChildAt(var1.x(), var1.y());
+      if (var3.isEmpty()) {
          return false;
       } else {
-         GuiEventListener var7 = (GuiEventListener)var6.get();
-         if (var7.mouseClicked(var1, var3, var5)) {
-            this.setFocused(var7);
-            if (var5 == 0) {
+         GuiEventListener var4 = (GuiEventListener)var3.get();
+         if (var4.mouseClicked(var1, var2) && var4.shouldTakeFocusAfterInteraction()) {
+            this.setFocused(var4);
+            if (var1.button() == 0) {
                this.setDragging(true);
             }
          }
@@ -49,19 +52,19 @@ public interface ContainerEventHandler extends GuiEventListener {
       }
    }
 
-   default boolean mouseReleased(double var1, double var3, int var5) {
-      if (var5 == 0 && this.isDragging()) {
+   default boolean mouseReleased(MouseButtonEvent var1) {
+      if (var1.button() == 0 && this.isDragging()) {
          this.setDragging(false);
          if (this.getFocused() != null) {
-            return this.getFocused().mouseReleased(var1, var3, var5);
+            return this.getFocused().mouseReleased(var1);
          }
       }
 
       return false;
    }
 
-   default boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      return this.getFocused() != null && this.isDragging() && var5 == 0 ? this.getFocused().mouseDragged(var1, var3, var5, var6, var8) : false;
+   default boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      return this.getFocused() != null && this.isDragging() && var1.button() == 0 ? this.getFocused().mouseDragged(var1, var2, var4) : false;
    }
 
    boolean isDragging();
@@ -72,16 +75,16 @@ public interface ContainerEventHandler extends GuiEventListener {
       return this.getChildAt(var1, var3).filter((var8) -> var8.mouseScrolled(var1, var3, var5, var7)).isPresent();
    }
 
-   default boolean keyPressed(int var1, int var2, int var3) {
-      return this.getFocused() != null && this.getFocused().keyPressed(var1, var2, var3);
+   default boolean keyPressed(KeyEvent var1) {
+      return this.getFocused() != null && this.getFocused().keyPressed(var1);
    }
 
-   default boolean keyReleased(int var1, int var2, int var3) {
-      return this.getFocused() != null && this.getFocused().keyReleased(var1, var2, var3);
+   default boolean keyReleased(KeyEvent var1) {
+      return this.getFocused() != null && this.getFocused().keyReleased(var1);
    }
 
-   default boolean charTyped(char var1, int var2) {
-      return this.getFocused() != null && this.getFocused().charTyped(var1, var2);
+   default boolean charTyped(CharacterEvent var1) {
+      return this.getFocused() != null && this.getFocused().charTyped(var1);
    }
 
    @Nullable

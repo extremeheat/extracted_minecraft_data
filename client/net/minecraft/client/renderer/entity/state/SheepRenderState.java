@@ -8,7 +8,7 @@ public class SheepRenderState extends LivingEntityRenderState {
    public float headEatAngleScale;
    public boolean isSheared;
    public DyeColor woolColor;
-   public int id;
+   public boolean isJebSheep;
 
    public SheepRenderState() {
       super();
@@ -16,10 +16,6 @@ public class SheepRenderState extends LivingEntityRenderState {
    }
 
    public int getWoolColor() {
-      return this.isJebSheep() ? ColorLerper.getLerpedColor(ColorLerper.Type.SHEEP, this.ageInTicks) : ColorLerper.Type.SHEEP.getColor(this.woolColor);
-   }
-
-   public boolean isJebSheep() {
-      return this.customName != null && "jeb_".equals(this.customName.getString());
+      return this.isJebSheep ? ColorLerper.getLerpedColor(ColorLerper.Type.SHEEP, this.ageInTicks) : ColorLerper.Type.SHEEP.getColor(this.woolColor);
    }
 }

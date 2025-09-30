@@ -3,6 +3,7 @@ package net.minecraft.world.inventory;
 import javax.annotation.Nullable;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
@@ -52,7 +53,7 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       return this.activeChest != null && !this.activeChest.stillValid(var1) ? false : super.stillValid(var1);
    }
 
-   public void startOpen(Player var1) {
+   public void startOpen(ContainerUser var1) {
       if (this.activeChest != null) {
          this.activeChest.startOpen(var1);
       }
@@ -60,7 +61,7 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       super.startOpen(var1);
    }
 
-   public void stopOpen(Player var1) {
+   public void stopOpen(ContainerUser var1) {
       if (this.activeChest != null) {
          this.activeChest.stopOpen(var1);
       }

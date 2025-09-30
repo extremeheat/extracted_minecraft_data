@@ -33,7 +33,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.GameTestTicker;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.Component;
@@ -41,7 +40,6 @@ import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
@@ -54,6 +52,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
@@ -186,27 +185,11 @@ public class Main {
             var33 = (WorldStem)Util.blockUntilDone((var6x) -> WorldLoader.load(var34, (var5x) -> {
                   Registry var6 = var5x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                   if (var43 != null) {
-                     LevelDataAndDimensions var12 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
-                     return new WorldLoader.DataLoadOutput(var12.worldData(), var12.dimensions().dimensionsRegistryAccess());
+                     LevelDataAndDimensions var7 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
+                     return new WorldLoader.DataLoadOutput(var7.worldData(), var7.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
-                     LevelSettings var7;
-                     WorldOptions var8;
-                     WorldDimensions var9;
-                     if (var18.has(var4)) {
-                        var7 = MinecraftServer.DEMO_SETTINGS;
-                        var8 = WorldOptions.DEMO_OPTIONS;
-                        var9 = WorldPresets.createNormalWorldDimensions(var5x.datapackWorldgen());
-                     } else {
-                        DedicatedServerProperties var10 = var21.getProperties();
-                        var7 = new LevelSettings(var10.levelName, var10.gamemode, var10.hardcore, var10.difficulty, false, new GameRules(var5x.dataConfiguration().enabledFeatures()), var5x.dataConfiguration());
-                        var8 = var18.has(var5) ? var10.worldOptions.withBonusChest(true) : var10.worldOptions;
-                        var9 = var10.createDimensions(var5x.datapackWorldgen());
-                     }
-
-                     WorldDimensions.Complete var13 = var9.bake(var6);
-                     Lifecycle var11 = var13.lifecycle().add(var5x.datapackWorldgen().allRegistriesLifecycle());
-                     return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, var8, var13.specialWorldProperty(), var11), var13.dimensionsRegistryAccess());
+                     return createNewWorldData(var21, var5x, var6, var18.has(var4), var18.has(var5));
                   }
                }, WorldStem::new, Util.backgroundExecutor(), var6x)).get();
          } catch (Exception var39) {
@@ -223,7 +206,7 @@ public class Main {
 
          var28.saveDataTag(var45, var35);
          final DedicatedServer var37 = (DedicatedServer)MinecraftServer.spin((var11x) -> {
-            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::createFromGameruleRadius);
+            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25);
             var12.setPort((Integer)var18.valueOf(var13));
             var12.setDemo(var18.has(var4));
             var12.setId((String)var18.valueOf(var14));
@@ -232,7 +215,6 @@ public class Main {
                var12.showGui();
             }
 
-            GameTestTicker.SINGLETON.startTicking();
             return var12;
          });
          Thread var38 = new Thread("Server Shutdown Thread") {
@@ -246,6 +228,26 @@ public class Main {
          LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
       }
 
+   }
+
+   private static WorldLoader.DataLoadOutput<WorldData> createNewWorldData(DedicatedServerSettings var0, WorldLoader.DataLoadContext var1, Registry<LevelStem> var2, boolean var3, boolean var4) {
+      LevelSettings var5;
+      WorldOptions var6;
+      WorldDimensions var7;
+      if (var3) {
+         var5 = MinecraftServer.DEMO_SETTINGS;
+         var6 = WorldOptions.DEMO_OPTIONS;
+         var7 = WorldPresets.createNormalWorldDimensions(var1.datapackWorldgen());
+      } else {
+         DedicatedServerProperties var8 = var0.getProperties();
+         var5 = new LevelSettings(var8.levelName, var8.gameMode.get(), var8.hardcore, var8.difficulty.get(), false, new GameRules(var1.dataConfiguration().enabledFeatures()), var1.dataConfiguration());
+         var6 = var4 ? var8.worldOptions.withBonusChest(true) : var8.worldOptions;
+         var7 = var8.createDimensions(var1.datapackWorldgen());
+      }
+
+      WorldDimensions.Complete var10 = var7.bake(var2);
+      Lifecycle var9 = var10.lifecycle().add(var1.datapackWorldgen().allRegistriesLifecycle());
+      return new WorldLoader.DataLoadOutput<WorldData>(new PrimaryLevelData(var5, var6, var10.specialWorldProperty(), var9), var10.dimensionsRegistryAccess());
    }
 
    private static void writePidFile(Path var0) {

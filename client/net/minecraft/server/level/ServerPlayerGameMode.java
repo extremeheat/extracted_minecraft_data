@@ -1,8 +1,10 @@
 package net.minecraft.server.level;
 
 import com.mojang.logging.LogUtils;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +14,9 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -27,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class ServerPlayerGameMode {
+   private static final double FLIGHT_DISABLE_RANGE = 1.0;
    private static final Logger LOGGER = LogUtils.getLogger();
    protected ServerLevel level;
    protected final ServerPlayer player;
@@ -56,7 +61,12 @@ public class ServerPlayerGameMode {
       if (var1 == this.gameModeForPlayer) {
          return false;
       } else {
-         this.setGameModeForPlayer(var1, this.previousGameModeForPlayer);
+         Abilities var2 = this.player.getAbilities();
+         this.setGameModeForPlayer(var1, this.gameModeForPlayer);
+         if (var2.flying && var1 != GameType.SPECTATOR && this.isInRangeOfGround()) {
+            var2.flying = false;
+         }
+
          this.player.onUpdateAbilities();
          this.level.getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
@@ -71,7 +81,13 @@ public class ServerPlayerGameMode {
    protected void setGameModeForPlayer(GameType var1, @Nullable GameType var2) {
       this.previousGameModeForPlayer = var2;
       this.gameModeForPlayer = var1;
-      var1.updatePlayerAbilities(this.player.getAbilities());
+      Abilities var3 = this.player.getAbilities();
+      var1.updatePlayerAbilities(var3);
+   }
+
+   private boolean isInRangeOfGround() {
+      List var1 = Entity.collectAllColliders(this.player, this.level, this.player.getBoundingBox());
+      return var1.isEmpty() && this.player.getAvailableSpaceBelow(1.0) < 1.0;
    }
 
    public GameType getGameModeForPlayer() {
@@ -130,6 +146,10 @@ public class ServerPlayerGameMode {
    }
 
    private void debugLogging(BlockPos var1, boolean var2, int var3, String var4) {
+      if (SharedConstants.DEBUG_BLOCK_BREAK) {
+         LOGGER.debug("Server ACK {} {} {} {}", new Object[]{var3, var1, var2, var4});
+      }
+
    }
 
    public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
@@ -244,6 +264,10 @@ public class ServerPlayerGameMode {
          } else {
             BlockState var4 = var3.playerWillDestroy(this.level, var1, var5, this.player);
             boolean var9 = this.level.removeBlock(var1, false);
+            if (SharedConstants.DEBUG_BLOCK_BREAK) {
+               LOGGER.info("server broke {} {} -> {}", new Object[]{var1, var4, this.level.getBlockState(var1)});
+            }
+
             if (var9) {
                var3.destroy(this.level, var1, var4);
             }

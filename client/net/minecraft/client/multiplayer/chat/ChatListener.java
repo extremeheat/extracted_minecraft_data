@@ -33,9 +33,22 @@ public class ChatListener {
    }
 
    public void tick() {
-      if (this.messageDelay != 0L) {
-         if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
-            for(Message var1 = (Message)this.delayedMessageQueue.poll(); var1 != null && !var1.accept(); var1 = (Message)this.delayedMessageQueue.poll()) {
+      if (this.minecraft.isPaused()) {
+         if (this.messageDelay > 0L) {
+            this.previousMessageTime += 50L;
+         }
+
+      } else {
+         if (this.messageDelay == 0L) {
+            if (!this.delayedMessageQueue.isEmpty()) {
+               this.flushQueue();
+            }
+         } else {
+            Message var1;
+            if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
+               do {
+                  var1 = (Message)this.delayedMessageQueue.poll();
+               } while(var1 != null && !var1.accept());
             }
          }
 
@@ -44,9 +57,8 @@ public class ChatListener {
 
    public void setMessageDelay(double var1) {
       long var3 = (long)(var1 * 1000.0);
-      if (var3 == 0L && this.messageDelay > 0L) {
-         this.delayedMessageQueue.forEach(Message::accept);
-         this.delayedMessageQueue.clear();
+      if (var3 == 0L && this.messageDelay > 0L && !this.minecraft.isPaused()) {
+         this.flushQueue();
       }
 
       this.messageDelay = var3;
@@ -60,9 +72,10 @@ public class ChatListener {
       return (long)this.delayedMessageQueue.size();
    }
 
-   public void clearQueue() {
+   public void flushQueue() {
       this.delayedMessageQueue.forEach(Message::accept);
       this.delayedMessageQueue.clear();
+      this.previousMessageTime = 0L;
    }
 
    public boolean removeFromDelayedMessageQueue(MessageSignature var1) {
@@ -148,7 +161,7 @@ public class ChatListener {
             }
          }
 
-         this.logPlayerMessage(var2, var1, var4, var7);
+         this.logPlayerMessage(var2, var4, var7);
          this.previousMessageTime = Util.getMillis();
          return true;
       } else {
@@ -164,9 +177,9 @@ public class ChatListener {
       return this.isSenderLocalPlayer(var1.sender()) ? ChatTrustLevel.SECURE : ChatTrustLevel.evaluate(var1, var2, var3);
    }
 
-   private void logPlayerMessage(PlayerChatMessage var1, ChatType.Bound var2, GameProfile var3, ChatTrustLevel var4) {
-      ChatLog var5 = this.minecraft.getReportingContext().chatLog();
-      var5.push(LoggedChatMessage.player(var3, var1, var4));
+   private void logPlayerMessage(PlayerChatMessage var1, GameProfile var2, ChatTrustLevel var3) {
+      ChatLog var4 = this.minecraft.getReportingContext().chatLog();
+      var4.push(LoggedChatMessage.player(var2, var1, var3));
    }
 
    private void logSystemMessage(Component var1, Instant var2) {
@@ -196,7 +209,7 @@ public class ChatListener {
 
    private boolean isSenderLocalPlayer(UUID var1) {
       if (this.minecraft.isLocalServer() && this.minecraft.player != null) {
-         UUID var2 = this.minecraft.player.getGameProfile().getId();
+         UUID var2 = this.minecraft.player.getGameProfile().id();
          return var2.equals(var1);
       } else {
          return false;

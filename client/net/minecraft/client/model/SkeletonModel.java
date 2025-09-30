@@ -52,12 +52,12 @@ public class SkeletonModel<S extends SkeletonRenderState> extends HumanoidModel<
 
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      this.root().translateAndRotate(var2);
-      float var3 = var1 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
-      ModelPart var4 = this.getArm(var1);
-      var4.x += var3;
-      var4.translateAndRotate(var2);
-      var4.x -= var3;
+   public void translateToHand(SkeletonRenderState var1, HumanoidArm var2, PoseStack var3) {
+      this.root().translateAndRotate(var3);
+      float var4 = var2 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
+      ModelPart var5 = this.getArm(var2);
+      var5.x += var4;
+      var5.translateAndRotate(var3);
+      var5.x -= var4;
    }
 }

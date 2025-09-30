@@ -43,7 +43,7 @@ public abstract class AbstractCandleBlock extends Block {
    }
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      if (!var1.isClientSide && var4.isOnFire() && this.canBeLit(var2)) {
+      if (!var1.isClientSide() && var4.isOnFire() && this.canBeLit(var2)) {
          setLit(var1, var2, var3.getBlockPos(), true);
       }
 

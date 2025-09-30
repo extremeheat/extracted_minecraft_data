@@ -1,14 +1,14 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
-public class GustParticle extends TextureSheetParticle {
+public class GustParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
    protected GustParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8) {
-      super(var1, var2, var4, var6);
+      super(var1, var2, var4, var6, var8.first());
       this.sprites = var8;
       this.setSpriteFromAge(var8);
       this.lifetime = 12 + this.random.nextInt(4);
@@ -16,8 +16,8 @@ public class GustParticle extends TextureSheetParticle {
       this.setSize(1.0F, 1.0F);
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.OPAQUE;
    }
 
    public int getLightColor(float var1) {
@@ -40,13 +40,8 @@ public class GustParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new GustParticle(var2, var3, var5, var7, this.sprites);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -58,15 +53,10 @@ public class GustParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         GustParticle var15 = new GustParticle(var2, var3, var5, var7, this.sprites);
-         ((Particle)var15).scale(0.15F);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         GustParticle var16 = new GustParticle(var2, var3, var5, var7, this.sprites);
+         ((Particle)var16).scale(0.15F);
+         return var16;
       }
    }
 }

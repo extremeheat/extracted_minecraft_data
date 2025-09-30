@@ -74,7 +74,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
          if (this.ticksSinceReachedGoal > 0) {
             Vec3 var5 = this.removerMob.getDeltaMovement();
             this.removerMob.setDeltaMovement(var5.x, 0.3, var5.z);
-            if (!var1.isClientSide) {
+            if (!var1.isClientSide()) {
                double var6 = 0.08;
                ((ServerLevel)var1).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EGG)), (double)var3.getX() + 0.5, (double)var3.getY() + 0.7, (double)var3.getZ() + 0.5, 3, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, 0.15000000596046448);
             }
@@ -90,7 +90,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
          if (this.ticksSinceReachedGoal > 60) {
             var1.removeBlock(var3, false);
-            if (!var1.isClientSide) {
+            if (!var1.isClientSide()) {
                for(int var13 = 0; var13 < 20; ++var13) {
                   double var14 = var4.nextGaussian() * 0.02;
                   double var8 = var4.nextGaussian() * 0.02;

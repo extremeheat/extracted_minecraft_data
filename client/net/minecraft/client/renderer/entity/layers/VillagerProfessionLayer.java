@@ -11,7 +11,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.Util;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.VillagerLikeModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerDataHolderRenderState;
@@ -38,14 +38,18 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
    private final Object2ObjectMap<ResourceKey<VillagerProfession>, VillagerMetadataSection.Hat> professionHatCache = new Object2ObjectOpenHashMap();
    private final ResourceManager resourceManager;
    private final String path;
+   private final M noHatModel;
+   private final M noHatBabyModel;
 
-   public VillagerProfessionLayer(RenderLayerParent<S, M> var1, ResourceManager var2, String var3) {
+   public VillagerProfessionLayer(RenderLayerParent<S, M> var1, ResourceManager var2, String var3, M var4, M var5) {
       super(var1);
       this.resourceManager = var2;
       this.path = var3;
+      this.noHatModel = var4;
+      this.noHatBabyModel = var5;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
       if (!var4.isInvisible) {
          VillagerData var7 = ((VillagerDataHolderRenderState)var4).getVillagerData();
          if (var7 != null) {
@@ -54,16 +58,16 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
             VillagerMetadataSection.Hat var10 = this.getHatData(this.typeHatCache, "type", var8);
             VillagerMetadataSection.Hat var11 = this.getHatData(this.professionHatCache, "profession", var9);
             EntityModel var12 = this.getParentModel();
-            ((VillagerLikeModel)var12).hatVisible(var11 == VillagerMetadataSection.Hat.NONE || var11 == VillagerMetadataSection.Hat.PARTIAL && var10 != VillagerMetadataSection.Hat.FULL);
             ResourceLocation var13 = this.getResourceLocation("type", var8);
-            renderColoredCutoutModel(var12, var13, var1, var2, var3, var4, -1);
-            ((VillagerLikeModel)var12).hatVisible(true);
+            boolean var14 = var11 == VillagerMetadataSection.Hat.NONE || var11 == VillagerMetadataSection.Hat.PARTIAL && var10 != VillagerMetadataSection.Hat.FULL;
+            EntityModel var15 = var4.isBaby ? this.noHatBabyModel : this.noHatModel;
+            renderColoredCutoutModel(var14 ? var12 : var15, var13, var1, var2, var3, var4, -1, 1);
             if (!var9.is(VillagerProfession.NONE) && !var4.isBaby) {
-               ResourceLocation var14 = this.getResourceLocation("profession", var9);
-               renderColoredCutoutModel(var12, var14, var1, var2, var3, var4, -1);
+               ResourceLocation var16 = this.getResourceLocation("profession", var9);
+               renderColoredCutoutModel(var12, var16, var1, var2, var3, var4, -1, 2);
                if (!var9.is(VillagerProfession.NITWIT)) {
-                  ResourceLocation var15 = this.getResourceLocation("profession_level", (ResourceLocation)LEVEL_LOCATIONS.get(Mth.clamp(var7.level(), 1, LEVEL_LOCATIONS.size())));
-                  renderColoredCutoutModel(var12, var15, var1, var2, var3, var4, -1);
+                  ResourceLocation var17 = this.getResourceLocation("profession_level", (ResourceLocation)LEVEL_LOCATIONS.get(Mth.clamp(var7.level(), 1, LEVEL_LOCATIONS.size())));
+                  renderColoredCutoutModel(var12, var17, var1, var2, var3, var4, -1, 3);
                }
             }
 

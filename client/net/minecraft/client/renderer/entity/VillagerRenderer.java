@@ -18,8 +18,8 @@ public class VillagerRenderer extends AgeableMobRenderer<Villager, VillagerRende
 
    public VillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER)), new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), CUSTOM_HEAD_TRANSFORMS));
-      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "villager"));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache(), CUSTOM_HEAD_TRANSFORMS));
+      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "villager", new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_NO_HAT)), new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))));
       this.addLayer(new CrossedArmsItemLayer(this));
    }
 

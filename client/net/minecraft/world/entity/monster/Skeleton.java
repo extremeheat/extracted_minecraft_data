@@ -4,14 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -46,7 +44,7 @@ public class Skeleton extends AbstractSkeleton {
    }
 
    public void tick() {
-      if (!this.level().isClientSide && this.isAlive() && !this.isNoAi()) {
+      if (!this.level().isClientSide() && this.isAlive() && !this.isNoAi()) {
          if (this.isInPowderSnow) {
             if (this.isFreezeConverting()) {
                --this.conversionTime;
@@ -117,18 +115,6 @@ public class Skeleton extends AbstractSkeleton {
 
    SoundEvent getStepSound() {
       return SoundEvents.SKELETON_STEP;
-   }
-
-   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var2.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var1, Items.SKELETON_SKULL);
-         }
-      }
-
    }
 
    static {

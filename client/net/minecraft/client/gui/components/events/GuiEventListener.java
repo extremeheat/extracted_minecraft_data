@@ -6,22 +6,23 @@ import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 
 public interface GuiEventListener extends TabOrderedElement {
-   long DOUBLE_CLICK_THRESHOLD_MS = 250L;
-
    default void mouseMoved(double var1, double var3) {
    }
 
-   default boolean mouseClicked(double var1, double var3, int var5) {
+   default boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       return false;
    }
 
-   default boolean mouseReleased(double var1, double var3, int var5) {
+   default boolean mouseReleased(MouseButtonEvent var1) {
       return false;
    }
 
-   default boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+   default boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
       return false;
    }
 
@@ -29,15 +30,15 @@ public interface GuiEventListener extends TabOrderedElement {
       return false;
    }
 
-   default boolean keyPressed(int var1, int var2, int var3) {
+   default boolean keyPressed(KeyEvent var1) {
       return false;
    }
 
-   default boolean keyReleased(int var1, int var2, int var3) {
+   default boolean keyReleased(KeyEvent var1) {
       return false;
    }
 
-   default boolean charTyped(char var1, int var2) {
+   default boolean charTyped(CharacterEvent var1) {
       return false;
    }
 
@@ -53,6 +54,10 @@ public interface GuiEventListener extends TabOrderedElement {
    void setFocused(boolean var1);
 
    boolean isFocused();
+
+   default boolean shouldTakeFocusAfterInteraction() {
+      return true;
+   }
 
    @Nullable
    default ComponentPath getCurrentFocusPath() {

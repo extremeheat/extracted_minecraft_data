@@ -35,8 +35,9 @@ public class SkullModel extends SkullModelBase {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void setupAnim(float var1, float var2, float var3) {
-      this.head.yRot = var2 * 0.017453292F;
-      this.head.xRot = var3 * 0.017453292F;
+   public void setupAnim(SkullModelBase.State var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
    }
 }

@@ -8,7 +8,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 
-public class ChestModel extends Model {
+public class ChestModel extends Model<Float> {
    private static final String BOTTOM = "bottom";
    private static final String LID = "lid";
    private static final String LOCK = "lock";
@@ -48,7 +48,8 @@ public class ChestModel extends Model {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void setupAnim(float var1) {
+   public void setupAnim(Float var1) {
+      super.setupAnim(var1);
       this.lid.xRot = -(var1 * 1.5707964F);
       this.lock.xRot = this.lid.xRot;
    }

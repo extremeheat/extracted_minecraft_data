@@ -54,7 +54,7 @@ public class ShulkerBullet extends Projectile {
       this.setOwner(var2);
       Vec3 var5 = var2.getBoundingBox().getCenter();
       this.snapTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
-      this.finalTarget = new EntityReference<Entity>(var3);
+      this.finalTarget = EntityReference.of(var3);
       this.currentMoveDirection = Direction.UP;
       this.selectNextMoveDirection(var4, var3);
    }
@@ -185,9 +185,9 @@ public class ShulkerBullet extends Projectile {
 
    public void tick() {
       super.tick();
-      Entity var1 = !this.level().isClientSide() ? (Entity)EntityReference.get(this.finalTarget, this.level(), Entity.class) : null;
+      Entity var1 = !this.level().isClientSide() ? EntityReference.getEntity(this.finalTarget, this.level()) : null;
       HitResult var2 = null;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (var1 == null) {
             this.finalTarget = null;
          }
@@ -217,7 +217,7 @@ public class ShulkerBullet extends Projectile {
       }
 
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var7.x, this.getY() - var7.y + 0.15, this.getZ() - var7.z, 0.0, 0.0, 0.0);
       } else if (var1 != null) {
          if (this.flightSteps > 0) {
@@ -318,9 +318,6 @@ public class ShulkerBullet extends Projectile {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      double var2 = var1.getXa();
-      double var4 = var1.getYa();
-      double var6 = var1.getZa();
-      this.setDeltaMovement(var2, var4, var6);
+      this.setDeltaMovement(var1.getMovement());
    }
 }

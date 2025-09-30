@@ -121,7 +121,7 @@ public class Guardian extends Monster {
    public LivingEntity getActiveAttackTarget() {
       if (!this.hasActiveAttackTarget()) {
          return null;
-      } else if (this.level().isClientSide) {
+      } else if (this.level().isClientSide()) {
          if (this.clientSideCachedAttackTarget != null) {
             return this.clientSideCachedAttackTarget;
          } else {
@@ -173,7 +173,7 @@ public class Guardian extends Monster {
 
    public void aiStep() {
       if (this.isAlive()) {
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             this.clientSideTailAnimationO = this.clientSideTailAnimation;
             if (!this.isInWater()) {
                this.clientSideTailAnimationSpeed = 2.0F;

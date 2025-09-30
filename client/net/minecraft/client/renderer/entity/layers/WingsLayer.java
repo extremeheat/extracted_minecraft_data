@@ -6,15 +6,15 @@ import net.minecraft.client.model.ElytraModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 
@@ -30,7 +30,7 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
       this.equipmentRenderer = var3;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
       ItemStack var7 = var4.chestEquipment;
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
       if (var8 != null && !var8.assetId().isEmpty()) {
@@ -38,22 +38,21 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
          ElytraModel var10 = var4.isBaby ? this.elytraBabyModel : this.elytraModel;
          var1.pushPose();
          var1.translate(0.0F, 0.0F, 0.125F);
-         var10.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var7, var1, var2, var3, var9);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var4, var7, var1, var2, var3, var9, var4.outlineColor, 0);
          var1.popPose();
       }
    }
 
    @Nullable
    private static ResourceLocation getPlayerElytraTexture(HumanoidRenderState var0) {
-      if (var0 instanceof PlayerRenderState var1) {
+      if (var0 instanceof AvatarRenderState var1) {
          PlayerSkin var2 = var1.skin;
-         if (var2.elytraTexture() != null) {
-            return var2.elytraTexture();
+         if (var2.elytra() != null) {
+            return var2.elytra().texturePath();
          }
 
-         if (var2.capeTexture() != null && var1.showCape) {
-            return var2.capeTexture();
+         if (var2.cape() != null && var1.showCape) {
+            return var2.cape().texturePath();
          }
       }
 

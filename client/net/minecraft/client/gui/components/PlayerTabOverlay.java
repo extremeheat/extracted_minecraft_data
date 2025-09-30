@@ -18,7 +18,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
@@ -53,7 +53,7 @@ public class PlayerTabOverlay {
    private static final ResourceLocation HEART_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/full");
    private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking");
    private static final ResourceLocation HEART_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/half");
-   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((var0) -> -var0.getTabListOrder()).thenComparingInt((var0) -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0).thenComparing((var0) -> (String)Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, "")).thenComparing((var0) -> var0.getProfile().getName(), String::compareToIgnoreCase);
+   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((var0) -> -var0.getTabListOrder()).thenComparingInt((var0) -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0).thenComparing((var0) -> (String)Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, "")).thenComparing((var0) -> var0.getProfile().name(), String::compareToIgnoreCase);
    public static final int MAX_ROWS_PER_COL = 20;
    private final Minecraft minecraft;
    private final Gui gui;
@@ -71,7 +71,7 @@ public class PlayerTabOverlay {
    }
 
    public Component getNameForDisplay(PlayerInfo var1) {
-      return var1.getTabListDisplayName() != null ? this.decorateName(var1, var1.getTabListDisplayName().copy()) : this.decorateName(var1, PlayerTeam.formatNameForTeam(var1.getTeam(), Component.literal(var1.getProfile().getName())));
+      return var1.getTabListDisplayName() != null ? this.decorateName(var1, var1.getTabListDisplayName().copy()) : this.decorateName(var1, PlayerTeam.formatNameForTeam(var1.getTeam(), Component.literal(var1.getProfile().name())));
    }
 
    private Component decorateName(PlayerInfo var1, MutableComponent var2) {
@@ -126,7 +126,7 @@ public class PlayerTabOverlay {
       }
 
       if (!this.healthStates.isEmpty()) {
-         Set var32 = (Set)var5.stream().map((var0) -> var0.getProfile().getId()).collect(Collectors.toSet());
+         Set var32 = (Set)var5.stream().map((var0) -> var0.getProfile().id()).collect(Collectors.toSet());
          this.healthStates.keySet().removeIf((var1x) -> !var32.contains(var1x));
       }
 
@@ -204,9 +204,9 @@ public class PlayerTabOverlay {
             ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var48);
             GameProfile var29 = var27.getProfile();
             if (var36) {
-               Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
-               boolean var31 = var30 != null && LivingEntityRenderer.isEntityUpsideDown(var30);
-               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var27.showHat(), var31, -1);
+               Player var30 = this.minecraft.level.getPlayerByUUID(var29.id());
+               boolean var31 = var30 != null && AvatarRenderer.isPlayerUpsideDown(var30);
+               PlayerFaceRenderer.draw(var1, var27.getSkin().body().texturePath(), var25, var26, 8, var27.showHat(), var31, -1);
                var25 += 9;
             }
 
@@ -215,7 +215,7 @@ public class PlayerTabOverlay {
                int var53 = var25 + var8 + 1;
                int var54 = var53 + var37;
                if (var54 - var53 > 5) {
-                  this.renderTablistScore(var4, var26, var28, var53, var54, var29.getId(), var1);
+                  this.renderTablistScore(var4, var26, var28, var53, var54, var29.id(), var1);
                }
             }
 

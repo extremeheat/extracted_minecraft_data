@@ -18,6 +18,9 @@ public class Vec3 implements Position {
    public static final Codec<Vec3> CODEC;
    public static final StreamCodec<ByteBuf, Vec3> STREAM_CODEC;
    public static final Vec3 ZERO;
+   public static final Vec3 X_AXIS;
+   public static final Vec3 Y_AXIS;
+   public static final Vec3 Z_AXIS;
    public final double x;
    public final double y;
    public final double z;
@@ -320,5 +323,8 @@ public class Vec3 implements Position {
          }
       };
       ZERO = new Vec3(0.0, 0.0, 0.0);
+      X_AXIS = new Vec3(1.0, 0.0, 0.0);
+      Y_AXIS = new Vec3(0.0, 1.0, 0.0);
+      Z_AXIS = new Vec3(0.0, 0.0, 1.0);
    }
 }

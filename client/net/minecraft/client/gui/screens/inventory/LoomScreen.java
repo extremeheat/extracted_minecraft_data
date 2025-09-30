@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -22,7 +24,9 @@ import net.minecraft.world.inventory.LoomMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
@@ -47,7 +51,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final float BANNER_PATTERN_TEXTURE_SIZE = 64.0F;
    private static final float BANNER_PATTERN_WIDTH = 21.0F;
    private static final float BANNER_PATTERN_HEIGHT = 40.0F;
-   private ModelPart flag;
+   private BannerFlagModel flag;
    @Nullable
    private BannerPatternLayers resultBannerPatterns;
    private ItemStack bannerStack;
@@ -70,7 +74,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
    protected void init() {
       super.init();
-      this.flag = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER_FLAG).getChild("flag");
+      ModelPart var1 = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER_FLAG);
+      this.flag = new BannerFlagModel(var1);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -115,34 +120,38 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
 
       if (this.displayPatterns) {
-         int var25 = var5 + 60;
-         int var26 = var6 + 13;
-         List var27 = (this.menu).getSelectablePatterns();
+         int var26 = var5 + 60;
+         int var27 = var6 + 13;
+         List var28 = (this.menu).getSelectablePatterns();
 
          label64:
          for(int var16 = 0; var16 < 4; ++var16) {
             for(int var17 = 0; var17 < 4; ++var17) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
-               if (var19 >= var27.size()) {
+               if (var19 >= var28.size()) {
                   break label64;
                }
 
-               int var20 = var25 + var17 * 14;
-               int var21 = var26 + var16 * 14;
-               boolean var22 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
-               ResourceLocation var23;
+               int var20 = var26 + var17 * 14;
+               int var21 = var27 + var16 * 14;
+               Holder var22 = (Holder)var28.get(var19);
+               boolean var23 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
+               ResourceLocation var24;
                if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
-                  var23 = PATTERN_SELECTED_SPRITE;
-               } else if (var22) {
-                  var23 = PATTERN_HIGHLIGHTED_SPRITE;
+                  var24 = PATTERN_SELECTED_SPRITE;
+               } else if (var23) {
+                  var24 = PATTERN_HIGHLIGHTED_SPRITE;
+                  DyeColor var25 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
+                  String var10001 = ((BannerPattern)var22.value()).translationKey();
+                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var25.getName()), var3, var4);
                } else {
-                  var23 = PATTERN_SPRITE;
+                  var24 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var23, var20, var21, 14, 14);
-               TextureAtlasSprite var24 = Sheets.getBannerMaterial((Holder)var27.get(var19)).sprite();
-               this.renderBannerOnButton(var1, var20, var21, var24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var24, var20, var21, 14, 14);
+               TextureAtlasSprite var29 = var1.getSprite(Sheets.getBannerMaterial(var22));
+               this.renderBannerOnButton(var1, var20, var21, var29);
             }
          }
       }
@@ -165,47 +174,47 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       var1.pose().popMatrix();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
       this.scrolling = false;
       if (this.displayPatterns) {
-         int var6 = this.leftPos + 60;
-         int var7 = this.topPos + 13;
+         int var3 = this.leftPos + 60;
+         int var4 = this.topPos + 13;
 
-         for(int var8 = 0; var8 < 4; ++var8) {
-            for(int var9 = 0; var9 < 4; ++var9) {
-               double var10 = var1 - (double)(var6 + var9 * 14);
-               double var12 = var3 - (double)(var7 + var8 * 14);
-               int var14 = var8 + this.startRow;
-               int var15 = var14 * 4 + var9;
-               if (var10 >= 0.0 && var12 >= 0.0 && var10 < 14.0 && var12 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var15)) {
+         for(int var5 = 0; var5 < 4; ++var5) {
+            for(int var6 = 0; var6 < 4; ++var6) {
+               double var7 = var1.x() - (double)(var3 + var6 * 14);
+               double var9 = var1.y() - (double)(var4 + var5 * 14);
+               int var11 = var5 + this.startRow;
+               int var12 = var11 * 4 + var6;
+               if (var7 >= 0.0 && var9 >= 0.0 && var7 < 14.0 && var9 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var12)) {
                   Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var15);
+                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var12);
                   return true;
                }
             }
          }
 
-         var6 = this.leftPos + 119;
-         var7 = this.topPos + 9;
-         if (var1 >= (double)var6 && var1 < (double)(var6 + 12) && var3 >= (double)var7 && var3 < (double)(var7 + 56)) {
+         var3 = this.leftPos + 119;
+         var4 = this.topPos + 9;
+         if (var1.x() >= (double)var3 && var1.x() < (double)(var3 + 12) && var1.y() >= (double)var4 && var1.y() < (double)(var4 + 56)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var2);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      int var10 = this.totalRowCount() - 4;
-      if (this.scrolling && this.displayPatterns && var10 > 0) {
-         int var11 = this.topPos + 13;
-         int var12 = var11 + 56;
-         this.scrollOffs = ((float)var3 - (float)var11 - 7.5F) / ((float)(var12 - var11) - 15.0F);
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+      int var6 = this.totalRowCount() - 4;
+      if (this.scrolling && this.displayPatterns && var6 > 0) {
+         int var7 = this.topPos + 13;
+         int var8 = var7 + 56;
+         this.scrollOffs = ((float)var1.y() - (float)var7 - 7.5F) / ((float)(var8 - var7) - 15.0F);
          this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
-         this.startRow = Math.max((int)((double)(this.scrollOffs * (float)var10) + 0.5), 0);
+         this.startRow = Math.max((int)((double)(this.scrollOffs * (float)var6) + 0.5), 0);
          return true;
       } else {
-         return super.mouseDragged(var1, var3, var5, var6, var8);
+         return super.mouseDragged(var1, var2, var4);
       }
    }
 
@@ -224,7 +233,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
    }
 
-   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7) {
+   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6) {
       return var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
    }
 

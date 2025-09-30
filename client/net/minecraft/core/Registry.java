@@ -122,11 +122,11 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return var2;
    }
 
-   static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceKey<T> var1, T var2) {
+   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, ResourceKey<R> var1, T var2) {
       return ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
    }
 
-   static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceLocation var1, T var2) {
+   static <R, T extends R> Holder.Reference<T> registerForHolder(Registry<R> var0, ResourceLocation var1, T var2) {
       return registerForHolder(var0, ResourceKey.create(var0.key(), var1), var2);
    }
 
@@ -142,10 +142,6 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
 
    default Iterable<Holder<T>> getTagOrEmpty(TagKey<T> var1) {
       return (Iterable)DataFixUtils.orElse(this.get(var1), List.of());
-   }
-
-   default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
-      return this.get(var1).flatMap((var1x) -> var1x.getRandomElement(var2));
    }
 
    Stream<HolderSet.Named<T>> getTags();

@@ -11,13 +11,14 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T> implements ArmedModel, HeadedModel {
+public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T> implements ArmedModel<T>, HeadedModel {
    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.0F, 0.0F, 2.0F, 2.0F, 24.0F, Set.of("head"));
    public static final float OVERLAY_SCALE = 0.25F;
    public static final float HAT_OVERLAY_SCALE = 0.5F;
@@ -65,6 +66,30 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       var3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(-1.9F, 12.0F + var1, 0.0F));
       var3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(1.9F, 12.0F + var1, 0.0F));
       return var2;
+   }
+
+   public static ArmorModelSet<MeshDefinition> createArmorMeshSet(CubeDeformation var0, CubeDeformation var1) {
+      return createArmorMeshSet(HumanoidModel::createBaseArmorMesh, var0, var1);
+   }
+
+   protected static ArmorModelSet<MeshDefinition> createArmorMeshSet(Function<CubeDeformation, MeshDefinition> var0, CubeDeformation var1, CubeDeformation var2) {
+      MeshDefinition var3 = (MeshDefinition)var0.apply(var2);
+      var3.getRoot().retainPartsAndChildren(Set.of("head"));
+      MeshDefinition var4 = (MeshDefinition)var0.apply(var2);
+      var4.getRoot().retainExactParts(Set.of("body", "left_arm", "right_arm"));
+      MeshDefinition var5 = (MeshDefinition)var0.apply(var1);
+      var5.getRoot().retainExactParts(Set.of("left_leg", "right_leg", "body"));
+      MeshDefinition var6 = (MeshDefinition)var0.apply(var2);
+      var6.getRoot().retainExactParts(Set.of("left_leg", "right_leg"));
+      return new ArmorModelSet<MeshDefinition>(var3, var4, var5, var6);
+   }
+
+   private static MeshDefinition createBaseArmorMesh(CubeDeformation var0) {
+      MeshDefinition var1 = createMesh(var0, 0.0F);
+      PartDefinition var2 = var1.getRoot();
+      var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(-1.9F, 12.0F, 0.0F));
+      var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(-0.1F)), PartPose.offset(1.9F, 12.0F, 0.0F));
+      return var1;
    }
 
    public void setupAnim(T var1) {
@@ -321,15 +346,6 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       return -65.0F * var1 + var1 * var1;
    }
 
-   public void copyPropertiesTo(HumanoidModel<T> var1) {
-      var1.head.copyFrom(this.head);
-      var1.body.copyFrom(this.body);
-      var1.rightArm.copyFrom(this.rightArm);
-      var1.leftArm.copyFrom(this.leftArm);
-      var1.rightLeg.copyFrom(this.rightLeg);
-      var1.leftLeg.copyFrom(this.leftLeg);
-   }
-
    public void setAllVisible(boolean var1) {
       this.head.visible = var1;
       this.hat.visible = var1;
@@ -340,9 +356,9 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       this.leftLeg.visible = var1;
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      this.root.translateAndRotate(var2);
-      this.getArm(var1).translateAndRotate(var2);
+   public void translateToHand(HumanoidRenderState var1, HumanoidArm var2, PoseStack var3) {
+      this.root.translateAndRotate(var3);
+      this.getArm(var2).translateAndRotate(var3);
    }
 
    protected ModelPart getArm(HumanoidArm var1) {

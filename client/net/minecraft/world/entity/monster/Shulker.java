@@ -158,7 +158,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
    public void tick() {
       super.tick();
-      if (!this.level().isClientSide && !this.isPassenger() && !this.canStayAt(this.blockPosition(), this.getAttachFace())) {
+      if (!this.level().isClientSide() && !this.isPassenger() && !this.canStayAt(this.blockPosition(), this.getAttachFace())) {
          this.findNewAttachment();
       }
 
@@ -166,7 +166,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          this.onPeekAmountChange();
       }
 
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.clientSideTeleportInterpolation > 0) {
             --this.clientSideTeleportInterpolation;
          } else {
@@ -240,19 +240,19 @@ public class Shulker extends AbstractGolem implements Enemy {
       return var10.move(var4.x, var4.y, var4.z);
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
       if (this.level().isClientSide()) {
          this.clientOldAttachPosition = null;
          this.clientSideTeleportInterpolation = 0;
       }
 
       this.setAttachFace(Direction.DOWN);
-      return super.startRiding(var1, var2);
+      return super.startRiding(var1, var2, var3);
    }
 
    public void stopRiding() {
       super.stopRiding();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.clientOldAttachPosition = this.blockPosition();
       }
 
@@ -297,7 +297,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          if (!var8.equals(var7)) {
             this.entityData.set(DATA_PEEK_ID, (byte)0);
             this.hasImpulse = true;
-            if (this.level().isClientSide && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
+            if (this.level().isClientSide() && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
                this.clientOldAttachPosition = var7;
                this.clientSideTeleportInterpolation = 6;
                this.xOld = this.getX();
@@ -446,7 +446,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    void setRawPeekAmount(int var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER_ID);
          if (var1 == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);

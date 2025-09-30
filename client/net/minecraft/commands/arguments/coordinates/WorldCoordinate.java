@@ -5,12 +5,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.network.chat.Component;
 
-public class WorldCoordinate {
+public record WorldCoordinate(boolean relative, double value) {
    private static final char PREFIX_RELATIVE = '~';
    public static final SimpleCommandExceptionType ERROR_EXPECTED_DOUBLE = new SimpleCommandExceptionType(Component.translatable("argument.pos.missing.double"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_INT = new SimpleCommandExceptionType(Component.translatable("argument.pos.missing.int"));
-   private final boolean relative;
-   private final double value;
 
    public WorldCoordinate(boolean var1, double var2) {
       super();
@@ -71,28 +69,6 @@ public class WorldCoordinate {
          var1 = false;
       }
 
-      return var1;
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof WorldCoordinate)) {
-         return false;
-      } else {
-         WorldCoordinate var2 = (WorldCoordinate)var1;
-         if (this.relative != var2.relative) {
-            return false;
-         } else {
-            return Double.compare(var2.value, this.value) == 0;
-         }
-      }
-   }
-
-   public int hashCode() {
-      int var1 = this.relative ? 1 : 0;
-      long var2 = Double.doubleToLongBits(this.value);
-      var1 = 31 * var1 + (int)(var2 ^ var2 >>> 32);
       return var1;
    }
 

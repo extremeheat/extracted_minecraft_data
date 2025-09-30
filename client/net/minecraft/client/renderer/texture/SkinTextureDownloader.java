@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -13,9 +14,10 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
@@ -25,95 +27,102 @@ public class SkinTextureDownloader {
    private static final int SKIN_WIDTH = 64;
    private static final int SKIN_HEIGHT = 64;
    private static final int LEGACY_SKIN_HEIGHT = 32;
+   private final Proxy proxy;
+   private final TextureManager textureManager;
+   private final Executor mainThreadExecutor;
 
-   public SkinTextureDownloader() {
+   public SkinTextureDownloader(Proxy var1, TextureManager var2, Executor var3) {
       super();
+      this.proxy = var1;
+      this.textureManager = var2;
+      this.mainThreadExecutor = var3;
    }
 
-   public static CompletableFuture<ResourceLocation> downloadAndRegisterSkin(ResourceLocation var0, Path var1, String var2, boolean var3) {
+   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(ResourceLocation var1, Path var2, String var3, boolean var4) {
+      ClientAsset.DownloadedTexture var5 = new ClientAsset.DownloadedTexture(var1, var3);
       return CompletableFuture.supplyAsync(() -> {
-         NativeImage var3x;
+         NativeImage var4x;
          try {
-            var3x = downloadSkin(var1, var2);
-         } catch (IOException var5) {
-            throw new UncheckedIOException(var5);
+            var4x = this.downloadSkin(var2, var5.url());
+         } catch (IOException var6) {
+            throw new UncheckedIOException(var6);
          }
 
-         return var3 ? processLegacySkin(var3x, var2) : var3x;
-      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((var1x) -> registerTextureInManager(var0, var1x));
+         return var4 ? processLegacySkin(var4x, var5.url()) : var4x;
+      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((var2x) -> this.registerTextureInManager(var5, var2x));
    }
 
-   private static NativeImage downloadSkin(Path var0, String var1) throws IOException {
-      if (Files.isRegularFile(var0, new LinkOption[0])) {
-         LOGGER.debug("Loading HTTP texture from local cache ({})", var0);
-         InputStream var16 = Files.newInputStream(var0);
+   private NativeImage downloadSkin(Path var1, String var2) throws IOException {
+      if (Files.isRegularFile(var1, new LinkOption[0])) {
+         LOGGER.debug("Loading HTTP texture from local cache ({})", var1);
+         InputStream var17 = Files.newInputStream(var1);
 
-         NativeImage var17;
+         NativeImage var18;
          try {
-            var17 = NativeImage.read(var16);
-         } catch (Throwable var14) {
-            if (var16 != null) {
+            var18 = NativeImage.read(var17);
+         } catch (Throwable var15) {
+            if (var17 != null) {
                try {
-                  var16.close();
-               } catch (Throwable var12) {
-                  var14.addSuppressed(var12);
+                  var17.close();
+               } catch (Throwable var13) {
+                  var15.addSuppressed(var13);
                }
             }
 
-            throw var14;
+            throw var15;
          }
 
-         if (var16 != null) {
-            var16.close();
+         if (var17 != null) {
+            var17.close();
          }
 
-         return var17;
+         return var18;
       } else {
-         HttpURLConnection var2 = null;
-         LOGGER.debug("Downloading HTTP texture from {} to {}", var1, var0);
-         URI var3 = URI.create(var1);
+         HttpURLConnection var3 = null;
+         LOGGER.debug("Downloading HTTP texture from {} to {}", var2, var1);
+         URI var4 = URI.create(var2);
 
-         NativeImage var6;
+         NativeImage var7;
          try {
-            var2 = (HttpURLConnection)var3.toURL().openConnection(Minecraft.getInstance().getProxy());
-            var2.setDoInput(true);
-            var2.setDoOutput(false);
-            var2.connect();
-            int var4 = var2.getResponseCode();
-            if (var4 / 100 != 2) {
-               String var10002 = String.valueOf(var3);
-               throw new IOException("Failed to open " + var10002 + ", HTTP error code: " + var4);
+            var3 = (HttpURLConnection)var4.toURL().openConnection(this.proxy);
+            var3.setDoInput(true);
+            var3.setDoOutput(false);
+            var3.connect();
+            int var5 = var3.getResponseCode();
+            if (var5 / 100 != 2) {
+               String var10002 = String.valueOf(var4);
+               throw new IOException("Failed to open " + var10002 + ", HTTP error code: " + var5);
             }
 
-            byte[] var5 = var2.getInputStream().readAllBytes();
+            byte[] var6 = var3.getInputStream().readAllBytes();
 
             try {
-               FileUtil.createDirectoriesSafe(var0.getParent());
-               Files.write(var0, var5, new OpenOption[0]);
-            } catch (IOException var13) {
-               LOGGER.warn("Failed to cache texture {} in {}", var1, var0);
+               FileUtil.createDirectoriesSafe(var1.getParent());
+               Files.write(var1, var6, new OpenOption[0]);
+            } catch (IOException var14) {
+               LOGGER.warn("Failed to cache texture {} in {}", var2, var1);
             }
 
-            var6 = NativeImage.read(var5);
+            var7 = NativeImage.read(var6);
          } finally {
-            if (var2 != null) {
-               var2.disconnect();
+            if (var3 != null) {
+               var3.disconnect();
             }
 
          }
 
-         return var6;
+         return var7;
       }
    }
 
-   private static CompletableFuture<ResourceLocation> registerTextureInManager(ResourceLocation var0, NativeImage var1) {
-      Minecraft var2 = Minecraft.getInstance();
+   private CompletableFuture<ClientAsset.Texture> registerTextureInManager(ClientAsset.Texture var1, NativeImage var2) {
       return CompletableFuture.supplyAsync(() -> {
-         Objects.requireNonNull(var0);
-         DynamicTexture var3 = new DynamicTexture(var0::toString, var1);
-         var2.getTextureManager().register(var0, var3);
-         return var0;
-      }, var2);
+         ResourceLocation var10002 = var1.texturePath();
+         Objects.requireNonNull(var10002);
+         DynamicTexture var3 = new DynamicTexture(var10002::toString, var2);
+         this.textureManager.register(var1.texturePath(), var3);
+         return var1;
+      }, this.mainThreadExecutor);
    }
 
    private static NativeImage processLegacySkin(NativeImage var0, String var1) {

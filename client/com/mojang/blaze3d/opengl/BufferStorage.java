@@ -34,24 +34,24 @@ public abstract class BufferStorage {
 
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4) {
          int var5 = var1.createBuffer();
-         var1.bufferData(var5, (long)var4, GlConst.bufferUsageToGlEnum(var3));
+         var1.bufferData(var5, (long)var4, var3);
          return new GlBuffer(var2, var1, var3, var4, var5, (ByteBuffer)null);
       }
 
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4) {
          int var5 = var1.createBuffer();
          int var6 = var4.remaining();
-         var1.bufferData(var5, var4, GlConst.bufferUsageToGlEnum(var3));
+         var1.bufferData(var5, var4, var3);
          return new GlBuffer(var2, var1, var3, var6, var5, (ByteBuffer)null);
       }
 
       public GlBuffer.GlMappedView mapBuffer(DirectStateAccess var1, GlBuffer var2, int var3, int var4, int var5) {
          GlStateManager.clearGlErrors();
-         ByteBuffer var6 = var1.mapBufferRange(var2.handle, var3, var4, var5);
+         ByteBuffer var6 = var1.mapBufferRange(var2.handle, var3, var4, var5, var2.usage());
          if (var6 == null) {
             throw new IllegalStateException("Can't map buffer, opengl error " + GlStateManager._getError());
          } else {
-            return new GlBuffer.GlMappedView(() -> var1.unmapBuffer(var2.handle), var2, var6);
+            return new GlBuffer.GlMappedView(() -> var1.unmapBuffer(var2.handle, var2.usage()), var2, var6);
          }
       }
    }
@@ -63,7 +63,7 @@ public abstract class BufferStorage {
 
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4) {
          int var5 = var1.createBuffer();
-         var1.bufferStorage(var5, (long)var4, GlConst.bufferUsageToGlFlag(var3));
+         var1.bufferStorage(var5, (long)var4, var3);
          ByteBuffer var6 = this.tryMapBufferPersistent(var1, var3, var5, var4);
          return new GlBuffer(var2, var1, var3, var4, var5, var6);
       }
@@ -71,7 +71,7 @@ public abstract class BufferStorage {
       public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4) {
          int var5 = var1.createBuffer();
          int var6 = var4.remaining();
-         var1.bufferStorage(var5, var4, GlConst.bufferUsageToGlFlag(var3));
+         var1.bufferStorage(var5, var4, var3);
          ByteBuffer var7 = this.tryMapBufferPersistent(var1, var3, var5, var6);
          return new GlBuffer(var2, var1, var3, var6, var5, var7);
       }
@@ -90,7 +90,7 @@ public abstract class BufferStorage {
          ByteBuffer var5;
          if (var6 != 0) {
             GlStateManager.clearGlErrors();
-            var5 = var1.mapBufferRange(var3, 0, var4, var6 | 64);
+            var5 = var1.mapBufferRange(var3, 0, var4, var6 | 64, var2);
             if (var5 == null) {
                throw new IllegalStateException("Can't persistently map buffer, opengl error " + GlStateManager._getError());
             }
@@ -107,7 +107,7 @@ public abstract class BufferStorage {
          } else {
             return new GlBuffer.GlMappedView(() -> {
                if ((var5 & 2) != 0) {
-                  var1.flushMappedBufferRange(var2.handle, var3, var4);
+                  var1.flushMappedBufferRange(var2.handle, var3, var4, var2.usage());
                }
 
             }, var2, MemoryUtil.memSlice(var2.persistentBuffer, var3, var4));

@@ -26,7 +26,7 @@ public class DebugStickItem extends Item {
    }
 
    public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
-      if (!var3.isClientSide && var5 instanceof Player var6) {
+      if (!var3.isClientSide() && var5 instanceof Player var6) {
          this.handleInteraction(var6, var2, var3, var4, false, var1);
       }
 
@@ -36,7 +36,7 @@ public class DebugStickItem extends Item {
    public InteractionResult useOn(UseOnContext var1) {
       Player var2 = var1.getPlayer();
       Level var3 = var1.getLevel();
-      if (!var3.isClientSide && var2 != null) {
+      if (!var3.isClientSide() && var2 != null) {
          BlockPos var4 = var1.getClickedPos();
          if (!this.handleInteraction(var2, var3.getBlockState(var4), var3, var4, true, var1.getItemInHand())) {
             return InteractionResult.FAIL;

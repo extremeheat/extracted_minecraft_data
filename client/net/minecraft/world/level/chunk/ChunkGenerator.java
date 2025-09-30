@@ -38,7 +38,6 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
@@ -66,6 +65,7 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -121,68 +121,72 @@ public abstract class ChunkGenerator {
 
    @Nullable
    public Pair<BlockPos, Holder<Structure>> findNearestMapStructure(ServerLevel var1, HolderSet<Structure> var2, BlockPos var3, int var4, boolean var5) {
-      ChunkGeneratorStructureState var6 = var1.getChunkSource().getGeneratorState();
-      Object2ObjectArrayMap var7 = new Object2ObjectArrayMap();
-
-      for(Holder var9 : var2) {
-         for(StructurePlacement var11 : var6.getPlacementsForStructure(var9)) {
-            ((Set)var7.computeIfAbsent(var11, (var0) -> new ObjectArraySet())).add(var9);
-         }
-      }
-
-      if (var7.isEmpty()) {
+      if (SharedConstants.DEBUG_DISABLE_FEATURES) {
          return null;
       } else {
-         Pair var23 = null;
-         double var24 = 1.7976931348623157E308;
-         StructureManager var25 = var1.structureManager();
-         ArrayList var12 = new ArrayList(var7.size());
+         ChunkGeneratorStructureState var6 = var1.getChunkSource().getGeneratorState();
+         Object2ObjectArrayMap var7 = new Object2ObjectArrayMap();
 
-         for(Map.Entry var14 : var7.entrySet()) {
-            StructurePlacement var15 = (StructurePlacement)var14.getKey();
-            if (var15 instanceof ConcentricRingsStructurePlacement) {
-               ConcentricRingsStructurePlacement var16 = (ConcentricRingsStructurePlacement)var15;
-               Pair var17 = this.getNearestGeneratedStructure((Set)var14.getValue(), var1, var25, var3, var5, var16);
-               if (var17 != null) {
-                  BlockPos var18 = (BlockPos)var17.getFirst();
-                  double var19 = var3.distSqr(var18);
-                  if (var19 < var24) {
-                     var24 = var19;
-                     var23 = var17;
-                  }
-               }
-            } else if (var15 instanceof RandomSpreadStructurePlacement) {
-               var12.add(var14);
+         for(Holder var9 : var2) {
+            for(StructurePlacement var11 : var6.getPlacementsForStructure(var9)) {
+               ((Set)var7.computeIfAbsent(var11, (var0) -> new ObjectArraySet())).add(var9);
             }
          }
 
-         if (!var12.isEmpty()) {
-            int var26 = SectionPos.blockToSectionCoord(var3.getX());
-            int var27 = SectionPos.blockToSectionCoord(var3.getZ());
+         if (var7.isEmpty()) {
+            return null;
+         } else {
+            Pair var23 = null;
+            double var24 = 1.7976931348623157E308;
+            StructureManager var25 = var1.structureManager();
+            ArrayList var12 = new ArrayList(var7.size());
 
-            for(int var28 = 0; var28 <= var4; ++var28) {
-               boolean var29 = false;
-
-               for(Map.Entry var31 : var12) {
-                  RandomSpreadStructurePlacement var32 = (RandomSpreadStructurePlacement)var31.getKey();
-                  Pair var20 = getNearestGeneratedStructure((Set)var31.getValue(), var1, var25, var26, var27, var28, var5, var6.getLevelSeed(), var32);
-                  if (var20 != null) {
-                     var29 = true;
-                     double var21 = var3.distSqr((Vec3i)var20.getFirst());
-                     if (var21 < var24) {
-                        var24 = var21;
-                        var23 = var20;
+            for(Map.Entry var14 : var7.entrySet()) {
+               StructurePlacement var15 = (StructurePlacement)var14.getKey();
+               if (var15 instanceof ConcentricRingsStructurePlacement) {
+                  ConcentricRingsStructurePlacement var16 = (ConcentricRingsStructurePlacement)var15;
+                  Pair var17 = this.getNearestGeneratedStructure((Set)var14.getValue(), var1, var25, var3, var5, var16);
+                  if (var17 != null) {
+                     BlockPos var18 = (BlockPos)var17.getFirst();
+                     double var19 = var3.distSqr(var18);
+                     if (var19 < var24) {
+                        var24 = var19;
+                        var23 = var17;
                      }
                   }
-               }
-
-               if (var29) {
-                  return var23;
+               } else if (var15 instanceof RandomSpreadStructurePlacement) {
+                  var12.add(var14);
                }
             }
-         }
 
-         return var23;
+            if (!var12.isEmpty()) {
+               int var26 = SectionPos.blockToSectionCoord(var3.getX());
+               int var27 = SectionPos.blockToSectionCoord(var3.getZ());
+
+               for(int var28 = 0; var28 <= var4; ++var28) {
+                  boolean var29 = false;
+
+                  for(Map.Entry var31 : var12) {
+                     RandomSpreadStructurePlacement var32 = (RandomSpreadStructurePlacement)var31.getKey();
+                     Pair var20 = getNearestGeneratedStructure((Set)var31.getValue(), var1, var25, var26, var27, var28, var5, var6.getLevelSeed(), var32);
+                     if (var20 != null) {
+                        var29 = true;
+                        double var21 = var3.distSqr((Vec3i)var20.getFirst());
+                        if (var21 < var24) {
+                           var24 = var21;
+                           var23 = var20;
+                        }
+                     }
+                  }
+
+                  if (var29) {
+                     return var23;
+                  }
+               }
+            }
+
+            return var23;
+         }
       }
    }
 
@@ -362,6 +366,10 @@ public abstract class ChunkGenerator {
             }
 
             var1.setCurrentlyGenerating((Supplier)null);
+            if (SharedConstants.DEBUG_FEATURE_COUNT) {
+               FeatureCountTracker.chunkDecorated(var1.getLevel());
+            }
+
          } catch (Exception var31) {
             CrashReport var16 = CrashReport.forThrowable(var31, "Biome decoration");
             var16.addCategory("Generation").setDetail("CenterX", var4.x).setDetail("CenterZ", var4.z).setDetail("Decoration Seed", var11);
@@ -419,59 +427,61 @@ public abstract class ChunkGenerator {
    }
 
    public void createStructures(RegistryAccess var1, ChunkGeneratorStructureState var2, StructureManager var3, ChunkAccess var4, StructureTemplateManager var5, ResourceKey<Level> var6) {
-      ChunkPos var7 = var4.getPos();
-      SectionPos var8 = SectionPos.bottomOf(var4);
-      RandomState var9 = var2.randomState();
-      var2.possibleStructureSets().forEach((var10) -> {
-         StructurePlacement var11 = ((StructureSet)var10.value()).placement();
-         List var12 = ((StructureSet)var10.value()).structures();
+      if (!SharedConstants.DEBUG_DISABLE_STRUCTURES) {
+         ChunkPos var7 = var4.getPos();
+         SectionPos var8 = SectionPos.bottomOf(var4);
+         RandomState var9 = var2.randomState();
+         var2.possibleStructureSets().forEach((var10) -> {
+            StructurePlacement var11 = ((StructureSet)var10.value()).placement();
+            List var12 = ((StructureSet)var10.value()).structures();
 
-         for(StructureSet.StructureSelectionEntry var14 : var12) {
-            StructureStart var15 = var3.getStartForStructure(var8, (Structure)var14.structure().value(), var4);
-            if (var15 != null && var15.isValid()) {
-               return;
-            }
-         }
-
-         if (var11.isStructureChunk(var2, var7.x, var7.z)) {
-            if (var12.size() == 1) {
-               this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var12.get(0), var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6);
-            } else {
-               ArrayList var20 = new ArrayList(var12.size());
-               var20.addAll(var12);
-               WorldgenRandom var21 = new WorldgenRandom(new LegacyRandomSource(0L));
-               var21.setLargeFeatureSeed(var2.getLevelSeed(), var7.x, var7.z);
-               int var22 = 0;
-
-               for(StructureSet.StructureSelectionEntry var17 : var20) {
-                  var22 += var17.weight();
+            for(StructureSet.StructureSelectionEntry var14 : var12) {
+               StructureStart var15 = var3.getStartForStructure(var8, (Structure)var14.structure().value(), var4);
+               if (var15 != null && var15.isValid()) {
+                  return;
                }
+            }
 
-               while(!var20.isEmpty()) {
-                  int var23 = var21.nextInt(var22);
-                  int var24 = 0;
+            if (var11.isStructureChunk(var2, var7.x, var7.z)) {
+               if (var12.size() == 1) {
+                  this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var12.get(0), var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6);
+               } else {
+                  ArrayList var20 = new ArrayList(var12.size());
+                  var20.addAll(var12);
+                  WorldgenRandom var21 = new WorldgenRandom(new LegacyRandomSource(0L));
+                  var21.setLargeFeatureSeed(var2.getLevelSeed(), var7.x, var7.z);
+                  int var22 = 0;
 
-                  for(StructureSet.StructureSelectionEntry var19 : var20) {
-                     var23 -= var19.weight();
-                     if (var23 < 0) {
-                        break;
+                  for(StructureSet.StructureSelectionEntry var17 : var20) {
+                     var22 += var17.weight();
+                  }
+
+                  while(!var20.isEmpty()) {
+                     int var23 = var21.nextInt(var22);
+                     int var24 = 0;
+
+                     for(StructureSet.StructureSelectionEntry var19 : var20) {
+                        var23 -= var19.weight();
+                        if (var23 < 0) {
+                           break;
+                        }
+
+                        ++var24;
                      }
 
-                     ++var24;
+                     StructureSet.StructureSelectionEntry var25 = (StructureSet.StructureSelectionEntry)var20.get(var24);
+                     if (this.tryGenerateStructure(var25, var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6)) {
+                        return;
+                     }
+
+                     var20.remove(var24);
+                     var22 -= var25.weight();
                   }
 
-                  StructureSet.StructureSelectionEntry var25 = (StructureSet.StructureSelectionEntry)var20.get(var24);
-                  if (this.tryGenerateStructure(var25, var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6)) {
-                     return;
-                  }
-
-                  var20.remove(var24);
-                  var22 -= var25.weight();
                }
-
             }
-         }
-      });
+         });
+      }
    }
 
    private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry var1, StructureManager var2, RegistryAccess var3, RandomState var4, StructureTemplateManager var5, long var6, ChunkAccess var8, ChunkPos var9, SectionPos var10, ResourceKey<Level> var11) {
@@ -511,7 +521,6 @@ public abstract class ChunkGenerator {
                try {
                   if (var16.isValid() && var16.getBoundingBox().intersects(var8, var9, var8 + 15, var9 + 15)) {
                      var2.addReferenceForStructure(var10, var16.getStructure(), var13, var3);
-                     DebugPackets.sendStructurePacket(var1, var16);
                   }
                } catch (Exception var21) {
                   CrashReport var18 = CrashReport.forThrowable(var21, "Generating structure reference");

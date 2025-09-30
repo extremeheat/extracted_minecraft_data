@@ -12,6 +12,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -164,8 +165,8 @@ public class RecipeButton extends AbstractWidget {
       return 25;
    }
 
-   protected boolean isValidClickButton(int var1) {
-      return var1 == 0 || var1 == 1;
+   protected boolean isValidClickButton(MouseButtonInfo var1) {
+      return var1.button() == 0 || var1.button() == 1;
    }
 
    static record ResolvedEntry(RecipeDisplayId id, List<ItemStack> displayItems) {

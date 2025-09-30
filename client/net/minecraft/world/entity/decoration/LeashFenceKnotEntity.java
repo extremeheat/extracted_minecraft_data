@@ -62,7 +62,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return InteractionResult.SUCCESS;
       } else {
          if (var1.getItemInHand(var2).is(Items.SHEARS)) {

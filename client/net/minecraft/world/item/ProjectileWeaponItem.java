@@ -52,7 +52,7 @@ public abstract class ProjectileWeaponItem extends Item {
             float var16 = var12 + var13 * (float)((var14 + 1) / 2) * var11;
             var13 = -var13;
             Projectile.spawnProjectile(this.createProjectile(var1, var2, var4, var15, var8), var1, var15, (var7x) -> this.shootProjectile(var2, var7x, var14, var6, var7, var16, var9));
-            var4.hurtAndBreak(this.getDurabilityUse(var15), var2, LivingEntity.getSlotForHand(var3));
+            var4.hurtAndBreak(this.getDurabilityUse(var15), var2, var3.asEquipmentSlot());
             if (var4.isEmpty()) {
                break;
             }

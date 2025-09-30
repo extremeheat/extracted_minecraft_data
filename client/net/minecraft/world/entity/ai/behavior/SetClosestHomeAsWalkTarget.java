@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -58,7 +57,7 @@ public class SetClosestHomeAsWalkTarget {
                         Optional var15 = var8.getType(var14);
                         if (var15.isPresent()) {
                            var3x.set(new WalkTarget(var14, var0, 1));
-                           DebugPackets.sendPoiTicketCountPacket(var4x, var14);
+                           var4x.debugSynchronizers().updatePoi(var14);
                         }
                      } else if (var10.getValue() < 5) {
                         var1.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < var2.getValue());

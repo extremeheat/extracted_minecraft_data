@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -39,20 +40,24 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) && var2.getMaxLocalRawBrightness(var3) > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock() && this.slightlyMelt(var1, var2, var3)) {
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+      if (var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) {
+         int var5 = var2.dimension() == Level.END ? var2.getBrightness(LightLayer.BLOCK, var3) : var2.getMaxLocalRawBrightness(var3);
+         if (var5 > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock() && this.slightlyMelt(var1, var2, var3)) {
+            BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-         for(Direction var9 : Direction.values()) {
-            var5.setWithOffset(var3, (Direction)var9);
-            BlockState var10 = var2.getBlockState(var5);
-            if (var10.is(this) && !this.slightlyMelt(var10, var2, var5)) {
-               var2.scheduleTick(var5, this, Mth.nextInt(var4, 20, 40));
+            for(Direction var10 : Direction.values()) {
+               var6.setWithOffset(var3, (Direction)var10);
+               BlockState var11 = var2.getBlockState(var6);
+               if (var11.is(this) && !this.slightlyMelt(var11, var2, var6)) {
+                  var2.scheduleTick(var6, this, Mth.nextInt(var4, 20, 40));
+               }
             }
-         }
 
-      } else {
-         var2.scheduleTick(var3, this, Mth.nextInt(var4, 20, 40));
+            return;
+         }
       }
+
+      var2.scheduleTick(var3, this, Mth.nextInt(var4, 20, 40));
    }
 
    private boolean slightlyMelt(BlockState var1, Level var2, BlockPos var3) {

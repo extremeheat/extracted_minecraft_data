@@ -6,11 +6,12 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.TropicalFishModelA;
 import net.minecraft.client.model.TropicalFishModelB;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.TropicalFishPatternLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TropicalFishRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.TropicalFish;
@@ -50,7 +51,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
       var2.patternColor = var1.getPatternColor().getTextureDiffuseColor();
    }
 
-   public void render(TropicalFishRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(TropicalFishRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       EntityModel var10001;
       switch (var1.pattern.base()) {
          case SMALL -> var10001 = this.modelA;
@@ -59,7 +60,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
       }
 
       this.model = var10001;
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected int getModelTint(TropicalFishRenderState var1) {

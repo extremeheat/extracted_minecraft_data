@@ -9,10 +9,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class BlockPositionSource implements PositionSource {
-   public static final MapCodec<BlockPositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter((var0x) -> var0x.pos)).apply(var0, BlockPositionSource::new));
+public record BlockPositionSource(BlockPos pos) implements PositionSource {
+   public static final MapCodec<BlockPositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(BlockPositionSource::pos)).apply(var0, BlockPositionSource::new));
    public static final StreamCodec<ByteBuf, BlockPositionSource> STREAM_CODEC;
-   private final BlockPos pos;
 
    public BlockPositionSource(BlockPos var1) {
       super();
@@ -28,7 +27,7 @@ public class BlockPositionSource implements PositionSource {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, (var0) -> var0.pos, BlockPositionSource::new);
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, BlockPositionSource::pos, BlockPositionSource::new);
    }
 
    public static class Type implements PositionSourceType<BlockPositionSource> {

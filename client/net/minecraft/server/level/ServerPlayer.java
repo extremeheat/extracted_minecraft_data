@@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -28,7 +30,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -39,6 +40,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -46,6 +48,7 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -95,6 +98,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
@@ -109,8 +113,9 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
+import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
@@ -130,14 +135,15 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -187,13 +193,16 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.slf4j.Logger;
@@ -265,6 +274,9 @@ public class ServerPlayer extends Player {
    private Vec3 lastKnownClientMovement;
    private Input lastClientInput;
    private final Set<ThrownEnderpearl> enderPearls;
+   private long timeEntitySatOnShoulder;
+   private CompoundTag shoulderEntityLeft;
+   private CompoundTag shoulderEntityRight;
    private final ContainerSynchronizer containerSynchronizer;
    private final ContainerListener containerListener;
    @Nullable
@@ -272,6 +284,7 @@ public class ServerPlayer extends Player {
    @Nullable
    public final Object object;
    private final CommandSource commandSource;
+   private Set<DebugSubscription<?>> requestedDebugSubscriptions;
    private int containerCounter;
    public boolean wonGame;
 
@@ -291,6 +304,8 @@ public class ServerPlayer extends Player {
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
+      this.shoulderEntityLeft = new CompoundTag();
+      this.shoulderEntityRight = new CompoundTag();
       this.containerSynchronizer = new ContainerSynchronizer() {
          private final LoadingCache<TypedDataComponent<?>, Integer> cache = CacheBuilder.newBuilder().maximumSize(256L).build(new CacheLoader<TypedDataComponent<?>, Integer>() {
             private final DynamicOps<HashCode> registryHashOps;
@@ -374,10 +389,12 @@ public class ServerPlayer extends Player {
             ServerPlayer.this.sendSystemMessage(var1);
          }
       };
+      this.requestedDebugSubscriptions = Set.of();
+      this.server = var1;
       this.textFilter = var1.createTextFilterForPlayer(this);
       this.gameMode = var1.createGameModeForPlayer(this);
+      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer((GameType)null), (GameType)null);
       this.recipeBook = new ServerRecipeBook((var1x, var2x) -> var1.getRecipeManager().listDisplaysForRecipe(var1x, var2x));
-      this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
       this.updateOptions(var4);
@@ -385,69 +402,11 @@ public class ServerPlayer extends Player {
    }
 
    public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
-      AABB var3 = this.getDimensions(Pose.STANDING).makeBoundingBox(Vec3.ZERO);
-      BlockPos var4 = var2;
-      if (var1.dimensionType().hasSkyLight() && var1.getServer().getWorldData().getGameType() != GameType.ADVENTURE) {
-         int var5 = Math.max(0, this.server.getSpawnRadius(var1));
-         int var6 = Mth.floor(var1.getWorldBorder().getDistanceToBorder((double)var2.getX(), (double)var2.getZ()));
-         if (var6 < var5) {
-            var5 = var6;
-         }
-
-         if (var6 <= 1) {
-            var5 = 1;
-         }
-
-         long var7 = (long)(var5 * 2 + 1);
-         long var9 = var7 * var7;
-         int var11 = var9 > 2147483647L ? 2147483647 : (int)var9;
-         int var12 = this.getCoprime(var11);
-         int var13 = RandomSource.create().nextInt(var11);
-
-         for(int var14 = 0; var14 < var11; ++var14) {
-            int var15 = (var13 + var12 * var14) % var11;
-            int var16 = var15 % (var5 * 2 + 1);
-            int var17 = var15 / (var5 * 2 + 1);
-            int var18 = var2.getX() + var16 - var5;
-            int var19 = var2.getZ() + var17 - var5;
-
-            try {
-               var4 = PlayerRespawnLogic.getOverworldRespawnPos(var1, var18, var19);
-               if (var4 != null && this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter()))) {
-                  return var4;
-               }
-            } catch (Exception var25) {
-               CrashReport var23 = CrashReport.forThrowable(var25, "Searching for spawn");
-               CrashReportCategory var24 = var23.addCategory("Spawn Lookup");
-               Objects.requireNonNull(var2);
-               var24.setDetail("Origin", var2::toString);
-               var24.setDetail("Radius", (CrashReportDetail)(() -> Integer.toString(var5)));
-               var24.setDetail("Candidate", (CrashReportDetail)(() -> "[" + var18 + "," + var19 + "]"));
-               var24.setDetail("Progress", (CrashReportDetail)(() -> var14 + " out of " + var11));
-               throw new ReportedException(var23);
-            }
-         }
-
-         var4 = var2;
-      }
-
-      while(!this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter())) && var4.getY() < var1.getMaxY()) {
-         var4 = var4.above();
-      }
-
-      while(this.noCollisionNoLiquid(var1, var3.move(var4.below().getBottomCenter())) && var4.getY() > var1.getMinY() + 1) {
-         var4 = var4.below();
-      }
-
-      return var4;
-   }
-
-   private boolean noCollisionNoLiquid(ServerLevel var1, AABB var2) {
-      return var1.noCollision(this, var2, true);
-   }
-
-   private int getCoprime(int var1) {
-      return var1 <= 16 ? var1 - 1 : 17;
+      CompletableFuture var3 = PlayerSpawnFinder.findSpawn(var1, var2);
+      MinecraftServer var10000 = this.server;
+      Objects.requireNonNull(var3);
+      var10000.managedBlock(var3::isDone);
+      return BlockPos.containing((Position)var3.join());
    }
 
    protected void readAdditionalSaveData(ValueInput var1) {
@@ -463,6 +422,9 @@ public class ServerPlayer extends Player {
       this.respawnConfig = (RespawnConfig)var1.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse((Object)null);
       this.spawnExtraParticlesOnFall = var1.getBooleanOr("spawn_extra_particles_on_fall", false);
       this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
+      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
+      this.setShoulderEntityLeft((CompoundTag)var1.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
+      this.setShoulderEntityRight((CompoundTag)var1.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
    }
 
    protected void addAdditionalSaveData(ValueOutput var1) {
@@ -478,6 +440,14 @@ public class ServerPlayer extends Player {
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       var1.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
       this.saveEnderPearls(var1);
+      if (!this.getShoulderEntityLeft().isEmpty()) {
+         var1.store("ShoulderEntityLeft", CompoundTag.CODEC, this.getShoulderEntityLeft());
+      }
+
+      if (!this.getShoulderEntityRight().isEmpty()) {
+         var1.store("ShoulderEntityRight", CompoundTag.CODEC, this.getShoulderEntityRight());
+      }
+
    }
 
    private void saveParentVehicle(ValueOutput var1) {
@@ -499,11 +469,11 @@ public class ServerPlayer extends Player {
          if (var4 != null) {
             UUID var5 = (UUID)((ValueInput)var2.get()).read("Attach", UUIDUtil.CODEC).orElse((Object)null);
             if (var4.getUUID().equals(var5)) {
-               this.startRiding(var4, true);
+               this.startRiding(var4, true, false);
             } else {
                for(Entity var7 : var4.getIndirectPassengers()) {
                   if (var7.getUUID().equals(var5)) {
-                     this.startRiding(var7, true);
+                     this.startRiding(var7, true, false);
                      break;
                   }
                }
@@ -682,6 +652,25 @@ public class ServerPlayer extends Player {
       try {
          if (!this.isSpectator() || !this.touchingUnloadedChunk()) {
             super.tick();
+            if (!this.containerMenu.stillValid(this)) {
+               this.closeContainer();
+               this.containerMenu = this.inventoryMenu;
+            }
+
+            this.foodData.tick(this);
+            this.awardStat(Stats.PLAY_TIME);
+            this.awardStat(Stats.TOTAL_WORLD_TIME);
+            if (this.isAlive()) {
+               this.awardStat(Stats.TIME_SINCE_DEATH);
+            }
+
+            if (this.isDiscrete()) {
+               this.awardStat(Stats.CROUCH_TIME);
+            }
+
+            if (!this.isSleeping()) {
+               this.awardStat(Stats.TIME_SINCE_REST);
+            }
          }
 
          for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
@@ -777,6 +766,75 @@ public class ServerPlayer extends Player {
 
    }
 
+   public void handleShoulderEntities() {
+      this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
+      this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
+      if (this.fallDistance > 0.5 || this.isInWater() || this.getAbilities().flying || this.isSleeping() || this.isInPowderSnow) {
+         this.removeEntitiesOnShoulder();
+      }
+
+   }
+
+   private void playShoulderEntityAmbientSound(CompoundTag var1) {
+      if (!var1.isEmpty() && !var1.getBooleanOr("Silent", false)) {
+         if (this.random.nextInt(200) == 0) {
+            EntityType var2 = (EntityType)var1.read("id", EntityType.CODEC).orElse((Object)null);
+            if (var2 == EntityType.PARROT && !Parrot.imitateNearbyMobs(this.level(), this)) {
+               this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level(), this.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.random));
+            }
+         }
+
+      }
+   }
+
+   public boolean setEntityOnShoulder(CompoundTag var1) {
+      if (!this.isPassenger() && this.onGround() && !this.isInWater() && !this.isInPowderSnow) {
+         if (this.getShoulderEntityLeft().isEmpty()) {
+            this.setShoulderEntityLeft(var1);
+            this.timeEntitySatOnShoulder = this.level().getGameTime();
+            return true;
+         } else if (this.getShoulderEntityRight().isEmpty()) {
+            this.setShoulderEntityRight(var1);
+            this.timeEntitySatOnShoulder = this.level().getGameTime();
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   protected void removeEntitiesOnShoulder() {
+      if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
+         this.respawnEntityOnShoulder(this.getShoulderEntityLeft());
+         this.setShoulderEntityLeft(new CompoundTag());
+         this.respawnEntityOnShoulder(this.getShoulderEntityRight());
+         this.setShoulderEntityRight(new CompoundTag());
+      }
+
+   }
+
+   private void respawnEntityOnShoulder(CompoundTag var1) {
+      ServerLevel var3 = this.level();
+      if (var3 instanceof ServerLevel) {
+         ServerLevel var2 = var3;
+         if (!var1.isEmpty()) {
+            try (ProblemReporter.ScopedCollector var8 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+               EntityType.create(TagValueInput.create(var8.forChild(() -> ".shoulder"), var2.registryAccess(), var1), var2, EntitySpawnReason.LOAD).ifPresent((var2x) -> {
+                  if (var2x instanceof TamableAnimal var3) {
+                     var3.setOwner(this);
+                  }
+
+                  var2x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
+                  var2.addWithUUID(var2x);
+               });
+            }
+         }
+      }
+
+   }
+
    public void resetFallDistance() {
       if (this.getHealth() > 0.0F && this.startingToFallPosition != null) {
          CriteriaTriggers.FALL_FROM_HEIGHT.trigger(this, this.startingToFallPosition);
@@ -812,7 +870,7 @@ public class ServerPlayer extends Player {
    }
 
    private void updateScoreForCriteria(ObjectiveCriteria var1, int var2) {
-      this.getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.set(var2));
+      this.level().getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.set(var2));
    }
 
    public void die(DamageSource var1) {
@@ -850,7 +908,7 @@ public class ServerPlayer extends Player {
          this.dropAllDeathLoot(this.level(), var1);
       }
 
-      this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
+      this.level().getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
       LivingEntity var5 = this.getKillCredit();
       if (var5 != null) {
          this.awardStat(Stats.ENTITY_KILLED_BY.get(var5.getType()));
@@ -878,10 +936,11 @@ public class ServerPlayer extends Player {
    public void awardKillScore(Entity var1, DamageSource var2) {
       if (var1 != this) {
          super.awardKillScore(var1, var2);
-         this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
+         ServerScoreboard var3 = this.level().getScoreboard();
+         ((Scoreboard)var3).forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
          if (var1 instanceof Player) {
             this.awardStat(Stats.PLAYER_KILLS);
-            this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, this, ScoreAccess::increment);
+            ((Scoreboard)var3).forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, this, ScoreAccess::increment);
          } else {
             this.awardStat(Stats.MOB_KILLS);
          }
@@ -893,11 +952,12 @@ public class ServerPlayer extends Player {
    }
 
    private void handleTeamKill(ScoreHolder var1, ScoreHolder var2, ObjectiveCriteria[] var3) {
-      PlayerTeam var4 = this.getScoreboard().getPlayersTeam(var2.getScoreboardName());
-      if (var4 != null) {
-         int var5 = var4.getColor().getId();
-         if (var5 >= 0 && var5 < var3.length) {
-            this.getScoreboard().forAllObjectives(var3[var5], var1, ScoreAccess::increment);
+      ServerScoreboard var4 = this.level().getScoreboard();
+      PlayerTeam var5 = ((Scoreboard)var4).getPlayersTeam(var2.getScoreboardName());
+      if (var5 != null) {
+         int var6 = var5.getColor().getId();
+         if (var6 >= 0 && var6 < var3.length) {
+            ((Scoreboard)var4).forAllObjectives(var3[var6], var1, ScoreAccess::increment);
          }
       }
 
@@ -945,12 +1005,12 @@ public class ServerPlayer extends Player {
          Optional var5 = findRespawnAndUseSpawnBlock(var4, var3, var1);
          if (var5.isPresent()) {
             RespawnPosAngle var6 = (RespawnPosAngle)var5.get();
-            return new TeleportTransition(var4, var6.position(), Vec3.ZERO, var6.yaw(), 0.0F, var2);
+            return new TeleportTransition(var4, var6.position(), Vec3.ZERO, var6.yaw(), var6.pitch(), var2);
          } else {
-            return TeleportTransition.missingRespawnBlock(this.server.overworld(), this, var2);
+            return TeleportTransition.missingRespawnBlock(this, var2);
          }
       } else {
-         return new TeleportTransition(this.server.overworld(), this, var2);
+         return TeleportTransition.createDefault(this, var2);
       }
    }
 
@@ -972,27 +1032,29 @@ public class ServerPlayer extends Player {
    }
 
    private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(ServerLevel var0, RespawnConfig var1, boolean var2) {
-      BlockPos var3 = var1.pos;
-      float var4 = var1.angle;
-      boolean var5 = var1.forced;
-      BlockState var6 = var0.getBlockState(var3);
-      Block var7 = var6.getBlock();
-      if (var7 instanceof RespawnAnchorBlock && (var5 || (Integer)var6.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
-         Optional var11 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var3);
-         if (!var5 && var2 && var11.isPresent()) {
-            var0.setBlock(var3, (BlockState)var6.setValue(RespawnAnchorBlock.CHARGE, (Integer)var6.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
+      LevelData.RespawnData var3 = var1.respawnData;
+      BlockPos var4 = var3.pos();
+      float var5 = var3.yaw();
+      float var6 = var3.pitch();
+      boolean var7 = var1.forced;
+      BlockState var8 = var0.getBlockState(var4);
+      Block var9 = var8.getBlock();
+      if (var9 instanceof RespawnAnchorBlock && (var7 || (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
+         Optional var13 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var4);
+         if (!var7 && var2 && var13.isPresent()) {
+            var0.setBlock(var4, (BlockState)var8.setValue(RespawnAnchorBlock.CHARGE, (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
          }
 
-         return var11.map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var3));
-      } else if (var7 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var3, (Direction)var6.getValue(BedBlock.FACING), var4).map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var3));
-      } else if (!var5) {
+         return var13.map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
+      } else if (var9 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
+         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var4, (Direction)var8.getValue(BedBlock.FACING), var5).map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
+      } else if (!var7) {
          return Optional.empty();
       } else {
-         boolean var8 = var7.isPossibleToRespawnInThis(var6);
-         BlockState var9 = var0.getBlockState(var3.above());
-         boolean var10 = var9.getBlock().isPossibleToRespawnInThis(var9);
-         return var8 && var10 ? Optional.of(new RespawnPosAngle(new Vec3((double)var3.getX() + 0.5, (double)var3.getY() + 0.1, (double)var3.getZ() + 0.5), var4)) : Optional.empty();
+         boolean var10 = var9.isPossibleToRespawnInThis(var8);
+         BlockState var11 = var0.getBlockState(var4.above());
+         boolean var12 = var11.getBlock().isPossibleToRespawnInThis(var11);
+         return var10 && var12 ? Optional.of(new RespawnPosAngle(new Vec3((double)var4.getX() + 0.5, (double)var4.getY() + 0.1, (double)var4.getZ() + 0.5), var5, var6)) : Optional.empty();
       }
    }
 
@@ -1066,8 +1128,9 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void forceSetRotation(float var1, float var2) {
-      this.connection.send(new ClientboundPlayerRotationPacket(var1, var2));
+   public void forceSetRotation(float var1, boolean var2, float var3, boolean var4) {
+      super.forceSetRotation(var1, var2, var3, var4);
+      this.connection.send(new ClientboundPlayerRotationPacket(var1, var2, var3, var4));
    }
 
    private void triggerDimensionChangeTriggers(ServerLevel var1) {
@@ -1107,7 +1170,7 @@ public class ServerPlayer extends Player {
          } else if (this.bedBlocked(var1, var2)) {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
          } else {
-            this.setRespawnPosition(new RespawnConfig(this.level().dimension(), var1, this.getYRot(), false), true);
+            this.setRespawnPosition(new RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), var1, this.getYRot(), this.getXRot()), false), true);
             if (this.level().isBrightOutside()) {
                return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
             } else {
@@ -1159,7 +1222,7 @@ public class ServerPlayer extends Player {
 
    public void stopSleepInBed(boolean var1, boolean var2) {
       if (this.isSleeping()) {
-         this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(this, 2));
+         this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(this, 2));
       }
 
       super.stopSleepInBed(var1, var2);
@@ -1371,12 +1434,12 @@ public class ServerPlayer extends Player {
 
    public void awardStat(Stat<?> var1, int var2) {
       this.stats.increment(this, var1, var2);
-      this.getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.add(var2));
+      this.level().getScoreboard().forAllObjectives(var1, this, (var1x) -> var1x.add(var2));
    }
 
    public void resetStat(Stat<?> var1) {
       this.stats.setValue(this, var1, 0);
-      this.getScoreboard().forAllObjectives(var1, this, ScoreAccess::reset);
+      this.level().getScoreboard().forAllObjectives(var1, this, ScoreAccess::reset);
    }
 
    public int awardRecipes(Collection<RecipeHolder<?>> var1) {
@@ -1495,6 +1558,7 @@ public class ServerPlayer extends Player {
       this.seenCredits = var1.seenCredits;
       this.enteredNetherPosition = var1.enteredNetherPosition;
       this.chunkTrackingView = var1.chunkTrackingView;
+      this.requestedDebugSubscriptions = var1.requestedDebugSubscriptions;
       this.setShoulderEntityLeft(var1.getShoulderEntityLeft());
       this.setShoulderEntityRight(var1.getShoulderEntityRight());
       this.setLastDeathLocation(var1.getLastDeathLocation());
@@ -1561,11 +1625,11 @@ public class ServerPlayer extends Player {
    }
 
    public void crit(Entity var1) {
-      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 4));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(var1, 4));
    }
 
    public void magicCrit(Entity var1) {
-      this.level().getChunkSource().broadcastAndSend(this, new ClientboundAnimatePacket(var1, 5));
+      this.level().getChunkSource().sendToTrackingPlayersAndSelf(this, new ClientboundAnimatePacket(var1, 5));
    }
 
    public void onUpdateAbilities() {
@@ -1612,7 +1676,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getName().getString(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
    }
 
    public void sendSystemMessage(Component var1) {
@@ -1693,7 +1757,7 @@ public class ServerPlayer extends Player {
    }
 
    public int getPermissionLevel() {
-      return this.server.getProfilePermissions(this.getGameProfile());
+      return this.server.getProfilePermissions(this.nameAndId());
    }
 
    public void resetLastActionTime() {
@@ -1848,8 +1912,8 @@ public class ServerPlayer extends Player {
    }
 
    @Nullable
-   private static GameType readPlayerMode(@Nullable ValueInput var0, String var1) {
-      return var0 != null ? (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null) : null;
+   private static GameType readPlayerMode(ValueInput var0, String var1) {
+      return (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null);
    }
 
    private GameType calculateGameModeForNewPlayer(@Nullable GameType var1) {
@@ -1859,10 +1923,6 @@ public class ServerPlayer extends Player {
       } else {
          return var1 != null ? var1 : this.server.getDefaultGameType();
       }
-   }
-
-   public void loadGameTypes(@Nullable ValueInput var1) {
-      this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(var1, "playerGameType")), readPlayerMode(var1, "previousPlayerGameType"));
    }
 
    private void storeGameTypes(ValueOutput var1) {
@@ -1941,13 +2001,13 @@ public class ServerPlayer extends Player {
       this.connection.send(new ClientboundHurtAnimationPacket(this));
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      if (super.startRiding(var1, var2)) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      if (super.startRiding(var1, var2, var3)) {
          var1.positionRider(this);
          this.connection.teleport(new PositionMoveRotation(this.position(), Vec3.ZERO, 0.0F, 0.0F), Relative.ROTATION);
          if (var1 instanceof LivingEntity) {
-            LivingEntity var3 = (LivingEntity)var1;
-            this.server.getPlayerList().sendActiveEffects(var3, this.connection);
+            LivingEntity var4 = (LivingEntity)var1;
+            this.server.getPlayerList().sendActiveEffects(var4, this.connection);
          }
 
          this.connection.send(new ClientboundSetPassengersPacket(var1));
@@ -2033,6 +2093,24 @@ public class ServerPlayer extends Player {
       return this.enderPearls;
    }
 
+   public CompoundTag getShoulderEntityLeft() {
+      return this.shoulderEntityLeft;
+   }
+
+   protected void setShoulderEntityLeft(CompoundTag var1) {
+      this.shoulderEntityLeft = var1;
+      this.setShoulderParrotLeft(extractParrotVariant(var1));
+   }
+
+   public CompoundTag getShoulderEntityRight() {
+      return this.shoulderEntityRight;
+   }
+
+   protected void setShoulderEntityRight(CompoundTag var1) {
+      this.shoulderEntityRight = var1;
+      this.setShoulderParrotRight(extractParrotVariant(var1));
+   }
+
    public long registerAndUpdateEnderPearlTicket(ThrownEnderpearl var1) {
       Level var3 = var1.level();
       if (var3 instanceof ServerLevel var2) {
@@ -2048,6 +2126,14 @@ public class ServerPlayer extends Player {
    public static long placeEnderPearlTicket(ServerLevel var0, ChunkPos var1) {
       var0.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, var1, 2);
       return TicketType.ENDER_PEARL.timeout();
+   }
+
+   public void requestDebugSubscriptions(Set<DebugSubscription<?>> var1) {
+      this.requestedDebugSubscriptions = Set.copyOf(var1);
+   }
+
+   public Set<DebugSubscription<?>> debugSubscriptions() {
+      return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
    }
 
    // $FF: synthetic method
@@ -2068,15 +2154,16 @@ public class ServerPlayer extends Player {
       WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("waypoint_transmit_range_crouch"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
    }
 
-   static record RespawnPosAngle(Vec3 position, float yaw) {
-      RespawnPosAngle(Vec3 var1, float var2) {
+   static record RespawnPosAngle(Vec3 position, float yaw, float pitch) {
+      RespawnPosAngle(Vec3 var1, float var2, float var3) {
          super();
          this.position = var1;
          this.yaw = var2;
+         this.pitch = var3;
       }
 
-      public static RespawnPosAngle of(Vec3 var0, BlockPos var1) {
-         return new RespawnPosAngle(var0, calculateLookAtYaw(var0, var1));
+      public static RespawnPosAngle of(Vec3 var0, BlockPos var1, float var2) {
+         return new RespawnPosAngle(var0, calculateLookAtYaw(var0, var1), var2);
       }
 
       private static float calculateLookAtYaw(Vec3 var0, BlockPos var1) {
@@ -2085,26 +2172,35 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public static record RespawnConfig(ResourceKey<Level> dimension, BlockPos pos, float angle, boolean forced) {
-      final BlockPos pos;
-      final float angle;
+   public static record RespawnConfig(LevelData.RespawnData respawnData, boolean forced) {
+      final LevelData.RespawnData respawnData;
       final boolean forced;
-      public static final Codec<RespawnConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.optionalFieldOf("dimension", Level.OVERWORLD).forGetter(RespawnConfig::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(RespawnConfig::pos), Codec.FLOAT.optionalFieldOf("angle", 0.0F).forGetter(RespawnConfig::angle), Codec.BOOL.optionalFieldOf("forced", false).forGetter(RespawnConfig::forced)).apply(var0, RespawnConfig::new));
+      public static final Codec<RespawnConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LevelData.RespawnData.MAP_CODEC.forGetter(RespawnConfig::respawnData), Codec.BOOL.optionalFieldOf("forced", false).forGetter(RespawnConfig::forced)).apply(var0, RespawnConfig::new));
 
-      public RespawnConfig(ResourceKey<Level> var1, BlockPos var2, float var3, boolean var4) {
+      public RespawnConfig(LevelData.RespawnData var1, boolean var2) {
          super();
-         this.dimension = var1;
-         this.pos = var2;
-         this.angle = var3;
-         this.forced = var4;
+         this.respawnData = var1;
+         this.forced = var2;
       }
 
       static ResourceKey<Level> getDimensionOrDefault(@Nullable RespawnConfig var0) {
-         return var0 != null ? var0.dimension() : Level.OVERWORLD;
+         return var0 != null ? var0.respawnData().dimension() : Level.OVERWORLD;
       }
 
       public boolean isSamePosition(@Nullable RespawnConfig var1) {
-         return var1 != null && this.dimension == var1.dimension && this.pos.equals(var1.pos);
+         return var1 != null && this.respawnData.globalPos().equals(var1.respawnData.globalPos());
+      }
+   }
+
+   public static record SavedPosition(Optional<ResourceKey<Level>> dimension, Optional<Vec3> position, Optional<Vec2> rotation) {
+      public static final MapCodec<SavedPosition> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.optionalFieldOf("Dimension").forGetter(SavedPosition::dimension), Vec3.CODEC.optionalFieldOf("Pos").forGetter(SavedPosition::position), Vec2.CODEC.optionalFieldOf("Rotation").forGetter(SavedPosition::rotation)).apply(var0, SavedPosition::new));
+      public static final SavedPosition EMPTY = new SavedPosition(Optional.empty(), Optional.empty(), Optional.empty());
+
+      public SavedPosition(Optional<ResourceKey<Level>> var1, Optional<Vec3> var2, Optional<Vec2> var3) {
+         super();
+         this.dimension = var1;
+         this.position = var2;
+         this.rotation = var3;
       }
    }
 }

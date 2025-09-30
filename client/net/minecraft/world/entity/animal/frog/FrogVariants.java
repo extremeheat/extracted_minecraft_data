@@ -34,6 +34,6 @@ public interface FrogVariants {
    }
 
    private static void register(BootstrapContext<FrogVariant> var0, ResourceKey<FrogVariant> var1, String var2, SpawnPrioritySelectors var3) {
-      var0.register(var1, new FrogVariant(new ClientAsset(ResourceLocation.withDefaultNamespace(var2)), var3));
+      var0.register(var1, new FrogVariant(new ClientAsset.ResourceTexture(ResourceLocation.withDefaultNamespace(var2)), var3));
    }
 }

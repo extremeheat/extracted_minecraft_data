@@ -15,7 +15,6 @@ import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import org.slf4j.Logger;
@@ -94,7 +93,7 @@ public record Unstitcher(ResourceLocation resource, List<Region> regions, double
             int var10 = Mth.floor(this.region.height * var5);
             NativeImage var11 = new NativeImage(NativeImage.Format.RGBA, var9, var10, false);
             var2.copyRect(var11, var7, var8, 0, 0, var9, var10, false, false);
-            SpriteContents var12 = new SpriteContents(this.region.sprite, new FrameSize(var9, var10), var11, ResourceMetadata.EMPTY);
+            SpriteContents var12 = new SpriteContents(this.region.sprite, new FrameSize(var9, var10), var11);
             return var12;
          } catch (Exception var16) {
             Unstitcher.LOGGER.error("Failed to unstitch region {}", this.region.sprite, var16);

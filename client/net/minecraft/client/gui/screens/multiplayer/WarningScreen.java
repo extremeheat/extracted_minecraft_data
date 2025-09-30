@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.gui.components.FocusableTextWidget;
+import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
@@ -21,7 +21,7 @@ public abstract class WarningScreen extends Screen {
    @Nullable
    protected Checkbox stopShowing;
    @Nullable
-   private FocusableTextWidget messageWidget;
+   private FittingMultiLineTextWidget messageWidget;
    private final FrameLayout layout;
 
    protected WarningScreen(Component var1, Component var2, Component var3) {
@@ -42,8 +42,7 @@ public abstract class WarningScreen extends Screen {
       LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.vertical().spacing(8));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.getTitle(), this.font));
-      this.messageWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width - 100, this.message, this.font, 12), (Consumer)((var0) -> var0.padding(12)));
-      this.messageWidget.setCentered(false);
+      this.messageWidget = (FittingMultiLineTextWidget)var1.addChild(new FittingMultiLineTextWidget(0, 0, this.width - 100, this.height - 100, this.message, this.font), (Consumer)((var0) -> var0.padding(12)));
       LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.vertical().spacing(8));
       var2.defaultCellSetting().alignHorizontallyCenter();
       if (this.check != null) {
@@ -59,7 +58,9 @@ public abstract class WarningScreen extends Screen {
 
    protected void repositionElements() {
       if (this.messageWidget != null) {
-         this.messageWidget.setMaxWidth(this.width - 100);
+         this.messageWidget.setWidth(this.width - 100);
+         this.messageWidget.setHeight(this.height - 100);
+         this.messageWidget.minimizeHeight();
       }
 
       this.layout.arrangeElements();

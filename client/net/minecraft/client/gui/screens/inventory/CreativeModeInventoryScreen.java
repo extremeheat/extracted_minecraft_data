@@ -19,6 +19,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
@@ -339,15 +342,15 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   public boolean charTyped(char var1, int var2) {
+   public boolean charTyped(CharacterEvent var1) {
       if (this.ignoreTextInput) {
          return false;
       } else if (selectedTab.getType() != CreativeModeTab.Type.SEARCH) {
          return false;
       } else {
-         String var3 = this.searchBox.getValue();
-         if (this.searchBox.charTyped(var1, var2)) {
-            if (!Objects.equals(var3, this.searchBox.getValue())) {
+         String var2 = this.searchBox.getValue();
+         if (this.searchBox.charTyped(var1)) {
+            if (!Objects.equals(var2, this.searchBox.getValue())) {
                this.refreshSearchResults();
             }
 
@@ -358,40 +361,40 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
+   public boolean keyPressed(KeyEvent var1) {
       this.ignoreTextInput = false;
       if (selectedTab.getType() != CreativeModeTab.Type.SEARCH) {
-         if (this.minecraft.options.keyChat.matches(var1, var2)) {
+         if (this.minecraft.options.keyChat.matches(var1)) {
             this.ignoreTextInput = true;
             this.selectTab(CreativeModeTabs.searchTab());
             return true;
          } else {
-            return super.keyPressed(var1, var2, var3);
+            return super.keyPressed(var1);
          }
       } else {
-         boolean var4 = !this.isCreativeSlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
-         boolean var5 = InputConstants.getKey(var1, var2).getNumericKeyValue().isPresent();
-         if (var4 && var5 && this.checkHotbarKeyPressed(var1, var2)) {
+         boolean var2 = !this.isCreativeSlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
+         boolean var3 = InputConstants.getKey(var1).getNumericKeyValue().isPresent();
+         if (var2 && var3 && this.checkHotbarKeyPressed(var1)) {
             this.ignoreTextInput = true;
             return true;
          } else {
-            String var6 = this.searchBox.getValue();
-            if (this.searchBox.keyPressed(var1, var2, var3)) {
-               if (!Objects.equals(var6, this.searchBox.getValue())) {
+            String var4 = this.searchBox.getValue();
+            if (this.searchBox.keyPressed(var1)) {
+               if (!Objects.equals(var4, this.searchBox.getValue())) {
                   this.refreshSearchResults();
                }
 
                return true;
             } else {
-               return this.searchBox.isFocused() && this.searchBox.isVisible() && var1 != 256 ? true : super.keyPressed(var1, var2, var3);
+               return this.searchBox.isFocused() && this.searchBox.isVisible() && !var1.isEscape() ? true : super.keyPressed(var1);
             }
          }
       }
    }
 
-   public boolean keyReleased(int var1, int var2, int var3) {
+   public boolean keyReleased(KeyEvent var1) {
       this.ignoreTextInput = false;
-      return super.keyReleased(var1, var2, var3);
+      return super.keyReleased(var1);
    }
 
    private void refreshSearchResults() {
@@ -445,41 +448,41 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (var5 == 0) {
-         double var6 = var1 - (double)this.leftPos;
-         double var8 = var3 - (double)this.topPos;
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (var1.button() == 0) {
+         double var3 = var1.x() - (double)this.leftPos;
+         double var5 = var1.y() - (double)this.topPos;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
-            if (this.checkTabClicked(var11, var6, var8)) {
+         for(CreativeModeTab var8 : CreativeModeTabs.tabs()) {
+            if (this.checkTabClicked(var8, var3, var5)) {
                return true;
             }
          }
 
-         if (selectedTab.getType() != CreativeModeTab.Type.INVENTORY && this.insideScrollbar(var1, var3)) {
+         if (selectedTab.getType() != CreativeModeTab.Type.INVENTORY && this.insideScrollbar(var1.x(), var1.y())) {
             this.scrolling = this.canScroll();
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var2);
    }
 
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      if (var5 == 0) {
-         double var6 = var1 - (double)this.leftPos;
-         double var8 = var3 - (double)this.topPos;
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      if (var1.button() == 0) {
+         double var2 = var1.x() - (double)this.leftPos;
+         double var4 = var1.y() - (double)this.topPos;
          this.scrolling = false;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
-            if (this.checkTabClicked(var11, var6, var8)) {
-               this.selectTab(var11);
+         for(CreativeModeTab var7 : CreativeModeTabs.tabs()) {
+            if (this.checkTabClicked(var7, var2, var4)) {
+               this.selectTab(var7);
                return true;
             }
          }
       }
 
-      return super.mouseReleased(var1, var3, var5);
+      return super.mouseReleased(var1);
    }
 
    private boolean canScroll() {
@@ -597,9 +600,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7) {
-      boolean var8 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
-      this.hasClickedOutside = var8 && !this.checkTabClicked(selectedTab, var1, var3);
+   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6) {
+      boolean var7 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
+      this.hasClickedOutside = var7 && !this.checkTabClicked(selectedTab, var1, var3);
       return this.hasClickedOutside;
    }
 
@@ -613,16 +616,16 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       return var1 >= (double)var7 && var3 >= (double)var8 && var1 < (double)var9 && var3 < (double)var10;
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
       if (this.scrolling) {
-         int var10 = this.topPos + 18;
-         int var11 = var10 + 112;
-         this.scrollOffs = ((float)var3 - (float)var10 - 7.5F) / ((float)(var11 - var10) - 15.0F);
+         int var6 = this.topPos + 18;
+         int var7 = var6 + 112;
+         this.scrollOffs = ((float)var1.y() - (float)var6 - 7.5F) / ((float)(var7 - var6) - 15.0F);
          this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
          ((ItemPickerMenu)this.menu).scrollTo(this.scrollOffs);
          return true;
       } else {
-         return super.mouseDragged(var1, var3, var5, var6, var8);
+         return super.mouseDragged(var1, var2, var4);
       }
    }
 

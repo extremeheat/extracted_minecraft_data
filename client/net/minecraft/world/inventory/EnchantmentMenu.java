@@ -176,7 +176,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return true;
          }
       } else {
-         String var10000 = String.valueOf(var1.getName());
+         String var10000 = var1.getPlainTextName();
          Util.logAndPauseIfInIde(var10000 + " pressed invalid button id: " + var2);
          return false;
       }

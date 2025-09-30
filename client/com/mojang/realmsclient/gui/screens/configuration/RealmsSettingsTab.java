@@ -64,7 +64,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       Objects.requireNonNull(var1.getFont());
       EqualSpacingLayout var6 = new EqualSpacingLayout(0, 0, 212, 9, EqualSpacingLayout.Orientation.HORIZONTAL);
       Objects.requireNonNull(var1.getFont());
-      this.selectedRegionStringWidget = (StringWidget)var6.addChild((new StringWidget(192, 9, Component.empty(), var1.getFont())).alignLeft());
+      this.selectedRegionStringWidget = (StringWidget)var6.addChild(new StringWidget(192, 9, Component.empty(), var1.getFont()));
       this.selectedRegionImageWidget = (ImageWidget)var6.addChild(ImageWidget.sprite(10, 8, ServiceQuality.UNKNOWN.getIcon()));
       var5.addChild(var6);
       var5.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.region_preference"), (var1x) -> this.openPreferenceSelector()).bounds(0, 0, 212, 20).build());

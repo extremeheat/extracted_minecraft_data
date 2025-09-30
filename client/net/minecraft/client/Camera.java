@@ -44,7 +44,6 @@ public class Camera implements TrackedWaypoint.Camera {
    private float eyeHeight;
    private float eyeHeightOld;
    private float partialTickTime;
-   public static final float FOG_DISTANCE_SCALE = 0.083333336F;
 
    public Camera() {
       super();

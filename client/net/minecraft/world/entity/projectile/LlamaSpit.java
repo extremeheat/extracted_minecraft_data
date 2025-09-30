@@ -72,7 +72,7 @@ public class LlamaSpit extends Projectile {
 
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.discard();
       }
 
@@ -83,15 +83,13 @@ public class LlamaSpit extends Projectile {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      double var2 = var1.getXa();
-      double var4 = var1.getYa();
-      double var6 = var1.getZa();
+      Vec3 var2 = var1.getMovement();
 
-      for(int var8 = 0; var8 < 7; ++var8) {
-         double var9 = 0.4 + 0.1 * (double)var8;
-         this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), var2 * var9, var4, var6 * var9);
+      for(int var3 = 0; var3 < 7; ++var3) {
+         double var4 = 0.4 + 0.1 * (double)var3;
+         this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), var2.x * var4, var2.y, var2.z * var4);
       }
 
-      this.setDeltaMovement(var2, var4, var6);
+      this.setDeltaMovement(var2);
    }
 }

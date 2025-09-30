@@ -33,8 +33,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.WaterAnimal;
-import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -203,7 +201,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          ++this.outOfControlTicks;
       }
 
-      if (!this.level().isClientSide && this.outOfControlTicks >= 60.0F) {
+      if (!this.level().isClientSide() && this.outOfControlTicks >= 60.0F) {
          this.ejectPassengers();
       }
 
@@ -223,7 +221,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          }
 
          this.floatBoat();
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             this.controlBoat();
             this.level().sendPacketToServer(new ServerboundPaddleBoatPacket(this.getPaddleState(0), this.getPaddleState(1)));
          }
@@ -258,11 +256,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
       List var8 = this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
       if (!var8.isEmpty()) {
-         boolean var9 = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
+         boolean var9 = !this.level().isClientSide() && !(this.getControllingPassenger() instanceof Player);
 
          for(Entity var11 : var8) {
             if (!var11.hasPassenger(this)) {
-               if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !(var11 instanceof WaterAnimal) && !(var11 instanceof Player) && !(var11 instanceof Creaking)) {
+               if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !var11.getType().is(EntityTypeTags.CANNOT_BE_PUSHED_ONTO_BOATS)) {
                   var11.startRiding(this);
                } else {
                   this.push(var11);
@@ -274,7 +272,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    private void tickBubbleColumn() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          int var1 = this.getBubbleTime();
          if (var1 > 0) {
             this.bubbleMultiplier += 0.05F;
@@ -672,12 +670,12 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       if (var3 != InteractionResult.PASS) {
          return var3;
       } else {
-         return (InteractionResult)(var1.isSecondaryUseActive() || !(this.outOfControlTicks < 60.0F) || !this.level().isClientSide && !var1.startRiding(this) ? InteractionResult.PASS : InteractionResult.SUCCESS);
+         return (InteractionResult)(var1.isSecondaryUseActive() || !(this.outOfControlTicks < 60.0F) || !this.level().isClientSide() && !var1.startRiding(this) ? InteractionResult.PASS : InteractionResult.SUCCESS);
       }
    }
 
    public void remove(Entity.RemovalReason var1) {
-      if (!this.level().isClientSide && var1.shouldDestroy() && this.isLeashed()) {
+      if (!this.level().isClientSide() && var1.shouldDestroy() && this.isLeashed()) {
          this.dropLeash();
       }
 

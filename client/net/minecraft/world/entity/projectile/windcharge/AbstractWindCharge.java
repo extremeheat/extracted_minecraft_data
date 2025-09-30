@@ -98,7 +98,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          Vec3i var2 = var1.getDirection().getUnitVec3i();
          Vec3 var3 = Vec3.atLowerCornerOf(var2).multiply(0.25, 0.25, 0.25);
          Vec3 var4 = var1.getLocation().add(var3);
@@ -110,7 +110,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.discard();
       }
 
@@ -138,7 +138,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
    }
 
    public void tick() {
-      if (!this.level().isClientSide && this.getBlockY() > this.level().getMaxY() + 30) {
+      if (!this.level().isClientSide() && this.getBlockY() > this.level().getMaxY() + 30) {
          this.explode(this.position());
          this.discard();
       } else {

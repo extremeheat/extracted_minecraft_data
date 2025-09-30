@@ -1,7 +1,6 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
+import java.util.Set;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.animation.definitions.WardenAnimation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -28,10 +27,6 @@ public class WardenModel extends EntityModel<WardenRenderState> {
    protected final ModelPart rightArm;
    protected final ModelPart rightLeg;
    protected final ModelPart rightRibcage;
-   private final List<ModelPart> tendrilsLayerModelParts;
-   private final List<ModelPart> heartLayerModelParts;
-   private final List<ModelPart> bioluminescentLayerModelParts;
-   private final List<ModelPart> pulsatingSpotsLayerModelParts;
    private final KeyframeAnimation attackAnimation;
    private final KeyframeAnimation sonicBoomAnimation;
    private final KeyframeAnimation diggingAnimation;
@@ -52,10 +47,6 @@ public class WardenModel extends EntityModel<WardenRenderState> {
       this.leftTendril = this.head.getChild("left_tendril");
       this.rightRibcage = this.body.getChild("right_ribcage");
       this.leftRibcage = this.body.getChild("left_ribcage");
-      this.tendrilsLayerModelParts = ImmutableList.of(this.leftTendril, this.rightTendril);
-      this.heartLayerModelParts = ImmutableList.of(this.body);
-      this.bioluminescentLayerModelParts = ImmutableList.of(this.head, this.leftArm, this.rightArm, this.leftLeg, this.rightLeg);
-      this.pulsatingSpotsLayerModelParts = ImmutableList.of(this.body, this.head, this.leftArm, this.rightArm, this.leftLeg, this.rightLeg);
       this.attackAnimation = WardenAnimation.WARDEN_ATTACK.bake(var1);
       this.sonicBoomAnimation = WardenAnimation.WARDEN_SONIC_BOOM.bake(var1);
       this.diggingAnimation = WardenAnimation.WARDEN_DIG.bake(var1);
@@ -79,6 +70,34 @@ public class WardenModel extends EntityModel<WardenRenderState> {
       var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(76, 48).addBox(-3.1F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(-5.9F, -13.0F, 0.0F));
       var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(76, 76).addBox(-2.9F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(5.9F, -13.0F, 0.0F));
       return LayerDefinition.create(var0, 128, 128);
+   }
+
+   public static LayerDefinition createTendrilsLayer() {
+      return createBodyLayer().apply((var0) -> {
+         var0.getRoot().retainExactParts(Set.of("left_tendril", "right_tendril"));
+         return var0;
+      });
+   }
+
+   public static LayerDefinition createHeartLayer() {
+      return createBodyLayer().apply((var0) -> {
+         var0.getRoot().retainExactParts(Set.of("body"));
+         return var0;
+      });
+   }
+
+   public static LayerDefinition createBioluminescentLayer() {
+      return createBodyLayer().apply((var0) -> {
+         var0.getRoot().retainExactParts(Set.of("head", "left_arm", "right_arm", "left_leg", "right_leg"));
+         return var0;
+      });
+   }
+
+   public static LayerDefinition createPulsatingSpotsLayer() {
+      return createBodyLayer().apply((var0) -> {
+         var0.getRoot().retainExactParts(Set.of("body", "head", "left_arm", "right_arm", "left_leg", "right_leg"));
+         return var0;
+      });
    }
 
    public void setupAnim(WardenRenderState var1) {
@@ -150,21 +169,5 @@ public class WardenModel extends EntityModel<WardenRenderState> {
       float var3 = var1.tendrilAnimation * (float)(Math.cos((double)var2 * 2.25) * 3.141592653589793 * 0.10000000149011612);
       this.leftTendril.xRot = var3;
       this.rightTendril.xRot = -var3;
-   }
-
-   public List<ModelPart> getTendrilsLayerModelParts(WardenRenderState var1) {
-      return this.tendrilsLayerModelParts;
-   }
-
-   public List<ModelPart> getHeartLayerModelParts(WardenRenderState var1) {
-      return this.heartLayerModelParts;
-   }
-
-   public List<ModelPart> getBioluminescentLayerModelParts(WardenRenderState var1) {
-      return this.bioluminescentLayerModelParts;
-   }
-
-   public List<ModelPart> getPulsatingSpotsLayerModelParts(WardenRenderState var1) {
-      return this.pulsatingSpotsLayerModelParts;
    }
 }

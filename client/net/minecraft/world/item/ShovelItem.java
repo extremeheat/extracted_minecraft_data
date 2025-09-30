@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -50,11 +49,11 @@ public class ShovelItem extends Item {
          }
 
          if (var7 != null) {
-            if (!var2.isClientSide) {
+            if (!var2.isClientSide()) {
                var2.setBlock(var3, var7, 11);
                var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var7));
                if (var5 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var1.getHand()));
+                  var1.getItemInHand().hurtAndBreak(1, var5, (EquipmentSlot)var1.getHand().asEquipmentSlot());
                }
             }
 

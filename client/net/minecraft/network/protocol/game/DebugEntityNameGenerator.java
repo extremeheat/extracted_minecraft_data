@@ -17,7 +17,7 @@ public class DebugEntityNameGenerator {
 
    public static String getEntityName(Entity var0) {
       if (var0 instanceof Player) {
-         return var0.getName().getString();
+         return var0.getPlainTextName();
       } else {
          Component var1 = var0.getCustomName();
          return var1 != null ? var1.getString() : getEntityName(var0.getUUID());

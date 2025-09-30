@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
@@ -156,16 +157,20 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      switch (var1) {
+   public boolean isInGameUi() {
+      return true;
+   }
+
+   public boolean keyPressed(KeyEvent var1) {
+      switch (var1.key()) {
          case 266:
-            this.backButton.onPress();
+            this.backButton.onPress(var1);
             return true;
          case 267:
-            this.forwardButton.onPress();
+            this.forwardButton.onPress(var1);
             return true;
          default:
-            return super.keyPressed(var1, var2, var3);
+            return super.keyPressed(var1);
       }
    }
 
@@ -178,7 +183,7 @@ public class BookEditScreen extends Screen {
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
+      super.renderBackground(var1, var2, var3, var4);
       var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 }

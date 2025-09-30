@@ -103,7 +103,7 @@ public class TntBlock extends Block {
             var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
             Item var9 = var1.getItem();
             if (var1.is(Items.FLINT_AND_STEEL)) {
-               var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
+               var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
             } else {
                var1.consume(1, var5);
             }

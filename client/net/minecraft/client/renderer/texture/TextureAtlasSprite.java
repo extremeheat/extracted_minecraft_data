@@ -4,13 +4,11 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SpriteCoordinateExpander;
-import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 
 public class TextureAtlasSprite {
    private final ResourceLocation atlasLocation;
    private final SpriteContents contents;
-   private final boolean animated;
    final int x;
    final int y;
    private final float u0;
@@ -22,7 +20,6 @@ public class TextureAtlasSprite {
       super();
       this.atlasLocation = var1;
       this.contents = var2;
-      this.animated = var2.metadata().getSection(AnimationMetadataSection.TYPE).isPresent();
       this.x = var5;
       this.y = var6;
       this.u0 = (float)var5 / (float)var3;
@@ -49,10 +46,6 @@ public class TextureAtlasSprite {
 
    public SpriteContents contents() {
       return this.contents;
-   }
-
-   public boolean isAnimated() {
-      return this.animated;
    }
 
    @Nullable

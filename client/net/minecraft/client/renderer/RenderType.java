@@ -17,9 +17,10 @@ import java.util.OptionalInt;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.blockentity.TheEndPortalRenderer;
+import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public abstract class RenderType extends RenderStateShard {
@@ -78,12 +79,8 @@ public abstract class RenderType extends RenderStateShard {
    private static final CompositeRenderType DEBUG_TRIANGLE_FAN;
    private static final CompositeRenderType DEBUG_STRUCTURE_QUADS;
    private static final CompositeRenderType DEBUG_SECTION_QUADS;
-   private static final Function<ResourceLocation, RenderType> OPAQUE_PARTICLE;
-   private static final Function<ResourceLocation, RenderType> TRANSLUCENT_PARTICLE;
    private static final Function<ResourceLocation, RenderType> WEATHER_DEPTH_WRITE;
    private static final Function<ResourceLocation, RenderType> WEATHER_NO_DEPTH_WRITE;
-   private static final RenderType SUNRISE_SUNSET;
-   private static final Function<ResourceLocation, RenderType> CELESTIAL;
    private static final Function<ResourceLocation, RenderType> BLOCK_SCREEN_EFFECT;
    private static final Function<ResourceLocation, RenderType> FIRE_SCREEN_EFFECT;
    private final int bufferSize;
@@ -331,28 +328,12 @@ public abstract class RenderType extends RenderStateShard {
       return DEBUG_SECTION_QUADS;
    }
 
-   public static RenderType opaqueParticle(ResourceLocation var0) {
-      return (RenderType)OPAQUE_PARTICLE.apply(var0);
-   }
-
-   public static RenderType translucentParticle(ResourceLocation var0) {
-      return (RenderType)TRANSLUCENT_PARTICLE.apply(var0);
-   }
-
    private static Function<ResourceLocation, RenderType> createWeather(RenderPipeline var0) {
       return Util.memoize((Function)((var1) -> create("weather", 1536, false, false, var0, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var1, false)).setOutputState(WEATHER_TARGET).setLightmapState(LIGHTMAP).createCompositeState(false))));
    }
 
    public static RenderType weather(ResourceLocation var0, boolean var1) {
       return (RenderType)(var1 ? WEATHER_DEPTH_WRITE : WEATHER_NO_DEPTH_WRITE).apply(var0);
-   }
-
-   public static RenderType sunriseSunset() {
-      return SUNRISE_SUNSET;
-   }
-
-   public static RenderType celestial(ResourceLocation var0) {
-      return (RenderType)CELESTIAL.apply(var0);
    }
 
    public static RenderType blockScreenEffect(ResourceLocation var0) {
@@ -395,6 +376,8 @@ public abstract class RenderType extends RenderStateShard {
    public boolean isOutline() {
       return false;
    }
+
+   public abstract RenderPipeline pipeline();
 
    public boolean affectsCrumbling() {
       return this.affectsCrumbling;
@@ -503,8 +486,8 @@ public abstract class RenderType extends RenderStateShard {
       DRAGON_RAYS = create("dragon_rays", 1536, false, false, RenderPipelines.DRAGON_RAYS, RenderType.CompositeState.builder().createCompositeState(false));
       DRAGON_RAYS_DEPTH = create("dragon_rays_depth", 1536, false, false, RenderPipelines.DRAGON_RAYS_DEPTH, RenderType.CompositeState.builder().createCompositeState(false));
       TRIPWIRE = create("tripwire", 1536, true, true, RenderPipelines.TRIPWIRE, RenderType.CompositeState.builder().setLightmapState(LIGHTMAP).setTextureState(BLOCK_SHEET_MIPPED).setOutputState(WEATHER_TARGET).createCompositeState(true));
-      END_PORTAL = create("end_portal", 1536, false, false, RenderPipelines.END_PORTAL, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(TheEndPortalRenderer.END_SKY_LOCATION, false).add(TheEndPortalRenderer.END_PORTAL_LOCATION, false).build()).createCompositeState(false));
-      END_GATEWAY = create("end_gateway", 1536, false, false, RenderPipelines.END_GATEWAY, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(TheEndPortalRenderer.END_SKY_LOCATION, false).add(TheEndPortalRenderer.END_PORTAL_LOCATION, false).build()).createCompositeState(false));
+      END_PORTAL = create("end_portal", 1536, false, false, RenderPipelines.END_PORTAL, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(AbstractEndPortalRenderer.END_SKY_LOCATION, false).add(AbstractEndPortalRenderer.END_PORTAL_LOCATION, false).build()).createCompositeState(false));
+      END_GATEWAY = create("end_gateway", 1536, false, false, RenderPipelines.END_GATEWAY, RenderType.CompositeState.builder().setTextureState(RenderStateShard.MultiTextureStateShard.builder().add(AbstractEndPortalRenderer.END_SKY_LOCATION, false).add(AbstractEndPortalRenderer.END_PORTAL_LOCATION, false).build()).createCompositeState(false));
       LINES = create("lines", 1536, RenderPipelines.LINES, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty())).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       SECONDARY_BLOCK_OUTLINE = create("secondary_block_outline", 1536, RenderPipelines.SECONDARY_BLOCK_OUTLINE, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(7.0))).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       LINE_STRIP = create("line_strip", 1536, RenderPipelines.LINE_STRIP, RenderType.CompositeState.builder().setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty())).setLayeringState(VIEW_OFFSET_Z_LAYERING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
@@ -514,12 +497,8 @@ public abstract class RenderType extends RenderStateShard {
       DEBUG_TRIANGLE_FAN = create("debug_triangle_fan", 1536, false, true, RenderPipelines.DEBUG_TRIANGLE_FAN, RenderType.CompositeState.builder().createCompositeState(false));
       DEBUG_STRUCTURE_QUADS = create("debug_structure_quads", 1536, false, true, RenderPipelines.DEBUG_STRUCTURE_QUADS, RenderType.CompositeState.builder().createCompositeState(false));
       DEBUG_SECTION_QUADS = create("debug_section_quads", 1536, false, true, RenderPipelines.DEBUG_SECTION_QUADS, RenderType.CompositeState.builder().setLayeringState(VIEW_OFFSET_Z_LAYERING).createCompositeState(false));
-      OPAQUE_PARTICLE = Util.memoize((Function)((var0) -> create("opaque_particle", 1536, false, false, RenderPipelines.OPAQUE_PARTICLE, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).setLightmapState(LIGHTMAP).createCompositeState(false))));
-      TRANSLUCENT_PARTICLE = Util.memoize((Function)((var0) -> create("translucent_particle", 1536, false, false, RenderPipelines.TRANSLUCENT_PARTICLE, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).setOutputState(PARTICLES_TARGET).setLightmapState(LIGHTMAP).createCompositeState(false))));
       WEATHER_DEPTH_WRITE = createWeather(RenderPipelines.WEATHER_DEPTH_WRITE);
       WEATHER_NO_DEPTH_WRITE = createWeather(RenderPipelines.WEATHER_NO_DEPTH_WRITE);
-      SUNRISE_SUNSET = create("sunrise_sunset", 1536, false, false, RenderPipelines.SUNRISE_SUNSET, RenderType.CompositeState.builder().createCompositeState(false));
-      CELESTIAL = Util.memoize((Function)((var0) -> create("celestial", 1536, false, false, RenderPipelines.CELESTIAL, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
       BLOCK_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("block_screen_effect", 1536, false, false, RenderPipelines.BLOCK_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
       FIRE_SCREEN_EFFECT = Util.memoize((Function)((var0) -> create("fire_screen_effect", 1536, false, false, RenderPipelines.FIRE_SCREEN_EFFECT, RenderType.CompositeState.builder().setTextureState(new RenderStateShard.TextureStateShard(var0, false)).createCompositeState(false))));
    }
@@ -664,9 +643,13 @@ public abstract class RenderType extends RenderStateShard {
          return this.renderPipeline.getVertexFormatMode();
       }
 
+      public RenderPipeline pipeline() {
+         return this.renderPipeline;
+      }
+
       public void draw(MeshData var1) {
          this.setupRenderState();
-         GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+         GpuBufferSlice var2 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
          MeshData var3 = var1;
 
          try {

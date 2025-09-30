@@ -68,9 +68,10 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.lines.title, this.width / 2, 80, -1);
       MultiLineLabel var10000 = this.line2Split;
-      int var10002 = this.width / 2;
+      MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
+      int var10003 = this.width / 2;
       Objects.requireNonNull(this.minecraft.font);
-      var10000.renderCentered(var1, var10002, 100, 9, -2142128);
+      var10000.render(var1, var10002, var10003, 100, 9, true, -2142128);
    }
 
    static record ErrorMessage(Component title, Component detail) {

@@ -28,7 +28,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       ServerLevel var3 = var1.level();
       if (!var3.isClientSide()) {
          BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-         this.setSuccess(tryShearBeehive(var3, var4) || tryShearEntity(var3, var4, var2));
+         this.setSuccess(tryShearBeehive(var3, var2, var4) || tryShearEntity(var3, var4, var2));
          if (this.isSuccess()) {
             var2.hurtAndBreak(1, var3, (ServerPlayer)null, (var0) -> {
             });
@@ -38,15 +38,15 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       return var2;
    }
 
-   private static boolean tryShearBeehive(ServerLevel var0, BlockPos var1) {
-      BlockState var2 = var0.getBlockState(var1);
-      if (var2.is(BlockTags.BEEHIVES, (var0x) -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock)) {
-         int var3 = (Integer)var2.getValue(BeehiveBlock.HONEY_LEVEL);
-         if (var3 >= 5) {
-            var0.playSound((Entity)null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
-            BeehiveBlock.dropHoneycomb(var0, var1);
-            ((BeehiveBlock)var2.getBlock()).releaseBeesAndResetHoneyLevel(var0, var2, var1, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
-            var0.gameEvent((Entity)null, GameEvent.SHEAR, var1);
+   private static boolean tryShearBeehive(ServerLevel var0, ItemStack var1, BlockPos var2) {
+      BlockState var3 = var0.getBlockState(var2);
+      if (var3.is(BlockTags.BEEHIVES, (var0x) -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock)) {
+         int var4 = (Integer)var3.getValue(BeehiveBlock.HONEY_LEVEL);
+         if (var4 >= 5) {
+            var0.playSound((Entity)null, var2, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+            BeehiveBlock.dropHoneycomb(var0, var1, var3, var0.getBlockEntity(var2), (Entity)null, var2);
+            ((BeehiveBlock)var3.getBlock()).releaseBeesAndResetHoneyLevel(var0, var3, var2, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
+            var0.gameEvent((Entity)null, GameEvent.SHEAR, var2);
             return true;
          }
       }

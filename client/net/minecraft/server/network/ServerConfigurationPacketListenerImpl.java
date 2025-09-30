@@ -3,42 +3,48 @@ package net.minecraft.server.network;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
 import net.minecraft.network.protocol.configuration.ServerConfigurationPacketListener;
+import net.minecraft.network.protocol.configuration.ServerboundAcceptCodeOfConductPacket;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.level.ClientInformation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.config.JoinWorldTask;
+import net.minecraft.server.network.config.PrepareSpawnTask;
+import net.minecraft.server.network.config.ServerCodeOfConductConfigurationTask;
 import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
 public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketListenerImpl implements ServerConfigurationPacketListener, TickablePacketListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component DISCONNECT_REASON_INVALID_DATA = Component.translatable("multiplayer.disconnect.invalid_player_data");
+   private static final Component DISCONNECT_REASON_CONFIGURATION_ERROR = Component.translatable("multiplayer.disconnect.configuration_error");
    private final GameProfile gameProfile;
    private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue();
    @Nullable
@@ -46,6 +52,8 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    private ClientInformation clientInformation;
    @Nullable
    private SynchronizeRegistriesTask synchronizeRegistriesTask;
+   @Nullable
+   private PrepareSpawnTask prepareSpawnTask;
 
    public ServerConfigurationPacketListenerImpl(MinecraftServer var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -58,7 +66,12 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void onDisconnect(DisconnectionDetails var1) {
-      LOGGER.info("{} lost connection: {}", this.gameProfile, var1.reason().getString());
+      LOGGER.info("{} ({}) lost connection: {}", new Object[]{this.gameProfile.name(), this.gameProfile.id(), var1.reason().getString()});
+      if (this.prepareSpawnTask != null) {
+         this.prepareSpawnTask.close();
+         this.prepareSpawnTask = null;
+      }
+
       super.onDisconnect(var1);
    }
 
@@ -79,17 +92,34 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var3, var2);
       this.configurationTasks.add(this.synchronizeRegistriesTask);
       this.addOptionalTasks();
-      this.configurationTasks.add(new JoinWorldTask());
-      this.startNextTask();
+      this.returnToWorld();
    }
 
    public void returnToWorld() {
+      this.prepareSpawnTask = new PrepareSpawnTask(this.server, new NameAndId(this.gameProfile));
+      this.configurationTasks.add(this.prepareSpawnTask);
       this.configurationTasks.add(new JoinWorldTask());
       this.startNextTask();
    }
 
    private void addOptionalTasks() {
-      this.server.getServerResourcePack().ifPresent((var1) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
+      Map var1 = this.server.getCodeOfConducts();
+      if (!var1.isEmpty()) {
+         this.configurationTasks.add(new ServerCodeOfConductConfigurationTask(() -> {
+            String var2 = (String)var1.get(this.clientInformation.language().toLowerCase(Locale.ROOT));
+            if (var2 == null) {
+               var2 = (String)var1.get("en_us");
+            }
+
+            if (var2 == null) {
+               var2 = (String)var1.values().iterator().next();
+            }
+
+            return var2;
+         }));
+      }
+
+      this.server.getServerResourcePack().ifPresent((var1x) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1x)));
    }
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
@@ -105,7 +135,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    public void handleSelectKnownPacks(ServerboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       if (this.synchronizeRegistriesTask == null) {
          throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
       } else {
@@ -114,36 +144,54 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       }
    }
 
+   public void handleAcceptCodeOfConduct(ServerboundAcceptCodeOfConductPacket var1) {
+      this.finishCurrentTask(ServerCodeOfConductConfigurationTask.TYPE);
+   }
+
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.server.packetProcessor());
       this.finishCurrentTask(JoinWorldTask.TYPE);
       this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
 
       try {
          PlayerList var2 = this.server.getPlayerList();
-         if (var2.getPlayer(this.gameProfile.getId()) != null) {
+         if (var2.getPlayer(this.gameProfile.id()) != null) {
             this.disconnect(PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
             return;
          }
 
-         Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), this.gameProfile);
+         Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
          if (var3 != null) {
             this.disconnect(var3);
             return;
          }
 
-         ServerPlayer var4 = new ServerPlayer(this.server, this.server.overworld(), this.gameProfile, this.clientInformation);
-         var2.placeNewPlayer(this.connection, var4, this.createCookie(this.clientInformation));
-      } catch (Exception var5) {
-         LOGGER.error("Couldn't place player in world", var5);
-         this.connection.send(new ClientboundDisconnectPacket(DISCONNECT_REASON_INVALID_DATA));
-         this.connection.disconnect(DISCONNECT_REASON_INVALID_DATA);
+         ((PrepareSpawnTask)Objects.requireNonNull(this.prepareSpawnTask)).spawnPlayer(this.connection, this.createCookie(this.clientInformation));
+      } catch (Exception var4) {
+         LOGGER.error("Couldn't place player in world", var4);
+         this.disconnect(DISCONNECT_REASON_INVALID_DATA);
       }
 
    }
 
    public void tick() {
       this.keepConnectionAlive();
+      ConfigurationTask var1 = this.currentTask;
+      if (var1 != null) {
+         try {
+            if (var1.tick()) {
+               this.finishCurrentTask(var1.type());
+            }
+         } catch (Exception var3) {
+            LOGGER.error("Failed to tick configuration task {}", var1.type(), var3);
+            this.disconnect(DISCONNECT_REASON_CONFIGURATION_ERROR);
+         }
+      }
+
+      if (this.prepareSpawnTask != null) {
+         this.prepareSpawnTask.keepAlive();
+      }
+
    }
 
    private void startNextTask() {
@@ -153,7 +201,13 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
          ConfigurationTask var1 = (ConfigurationTask)this.configurationTasks.poll();
          if (var1 != null) {
             this.currentTask = var1;
-            var1.start(this::send);
+
+            try {
+               var1.start(this::send);
+            } catch (Exception var3) {
+               LOGGER.error("Failed to start configuration task {}", var1.type(), var3);
+               this.disconnect(DISCONNECT_REASON_CONFIGURATION_ERROR);
+            }
          }
 
       }

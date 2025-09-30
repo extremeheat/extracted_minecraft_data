@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
@@ -77,7 +76,7 @@ public class AcquirePoi {
                         var6.set(GlobalPos.of(var7.dimension(), var17));
                         var4.ifPresent((var2) -> var7.broadcastEntityEvent(var8x, var2));
                         var9.clear();
-                        DebugPackets.sendPoiTicketCountPacket(var7, var17);
+                        var7.debugSynchronizers().updatePoi(var17);
                      });
                   } else {
                      for(Pair var16 : var13) {

@@ -81,7 +81,7 @@ public class TripWireBlock extends Block {
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
+      if (!var1.isClientSide() && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
          var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 260);
          var1.gameEvent(var4, GameEvent.SHEAR, var2);
       }
@@ -114,7 +114,7 @@ public class TripWireBlock extends Block {
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          if (!(Boolean)var1.getValue(POWERED)) {
             this.checkPressed(var2, var3, List.of(var4));
          }

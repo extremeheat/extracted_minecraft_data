@@ -143,10 +143,10 @@ public abstract class AbstractArrow extends Projectile {
       this.life = 0;
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      super.lerpMotion(var1, var3, var5);
+   public void lerpMotion(Vec3 var1) {
+      super.lerpMotion(var1);
       this.life = 0;
-      if (this.isInGround() && Mth.lengthSquared(var1, var3, var5) > 0.0) {
+      if (this.isInGround() && var1.lengthSqr() > 0.0) {
          this.setInGround(false);
       }
 
@@ -202,7 +202,7 @@ public abstract class AbstractArrow extends Projectile {
             this.applyEffectsFromBlocks();
          }
 
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             this.setSharedFlagOnFire(this.getRemainingFireTicks() > 0);
          }
 
@@ -230,6 +230,7 @@ public abstract class AbstractArrow extends Projectile {
          float var12 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
          this.setXRot(lerpRotation(this.getXRot(), var12));
          this.setYRot(lerpRotation(this.getYRot(), var11));
+         this.checkLeftOwner();
          if (var1) {
             BlockHitResult var13 = this.level().clipIncludingBorder(new ClipContext(var9, var9.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             this.stepMoveAndHit(var13);
@@ -430,7 +431,7 @@ public abstract class AbstractArrow extends Projectile {
 
          if (var2 instanceof LivingEntity) {
             LivingEntity var11 = (LivingEntity)var2;
-            if (!this.level().isClientSide && this.getPierceLevel() <= 0) {
+            if (!this.level().isClientSide() && this.getPierceLevel() <= 0) {
                var11.setArrowCount(var11.getArrowCount() + 1);
             }
 
@@ -453,7 +454,7 @@ public abstract class AbstractArrow extends Projectile {
                this.piercedAndKilledEntities.add(var11);
             }
 
-            if (!this.level().isClientSide && var6 instanceof ServerPlayer) {
+            if (!this.level().isClientSide() && var6 instanceof ServerPlayer) {
                ServerPlayer var20 = (ServerPlayer)var6;
                if (this.piercedAndKilledEntities != null) {
                   CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, this.piercedAndKilledEntities, this.firedFromWeapon);
@@ -469,7 +470,7 @@ public abstract class AbstractArrow extends Projectile {
          }
       } else {
          var2.setRemainingFireTicks(var10);
-         this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+         this.deflect(ProjectileDeflection.REVERSE, var2, this.owner, false);
          this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
          Level var21 = this.level();
          if (var21 instanceof ServerLevel) {
@@ -550,6 +551,7 @@ public abstract class AbstractArrow extends Projectile {
       EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> this.firedFromWeapon = null);
    }
 
+   @Nullable
    public ItemStack getWeaponItem() {
       return this.firedFromWeapon;
    }
@@ -650,7 +652,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    public void playerTouch(Player var1) {
-      if (!this.level().isClientSide && (this.isInGround() || this.isNoPhysics()) && this.shakeTime <= 0) {
+      if (!this.level().isClientSide() && (this.isInGround() || this.isNoPhysics()) && this.shakeTime <= 0) {
          if (this.tryPickup(var1)) {
             var1.take(this, 1);
             this.discard();
@@ -743,7 +745,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    public boolean isNoPhysics() {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          return this.noPhysics;
       } else {
          return ((Byte)this.entityData.get(ID_FLAGS) & 2) != 0;

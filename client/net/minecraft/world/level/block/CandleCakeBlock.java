@@ -104,7 +104,7 @@ public class CandleCakeBlock extends AbstractCandleBlock {
       return var2.getBlockState(var3.below()).isSolid();
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return CakeBlock.FULL_CAKE_SIGNAL;
    }
 

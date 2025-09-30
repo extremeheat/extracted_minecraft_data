@@ -4,6 +4,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
@@ -49,8 +50,8 @@ public class MinecartChest extends AbstractMinecartContainer {
       return ChestMenu.threeRows(var1, var2, this);
    }
 
-   public void stopOpen(Player var1) {
-      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1));
+   public void stopOpen(ContainerUser var1) {
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1.getLivingEntity()));
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {

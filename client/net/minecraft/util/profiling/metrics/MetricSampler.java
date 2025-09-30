@@ -44,7 +44,11 @@ public class MetricSampler {
    }
 
    public static <T> MetricSamplerBuilder<T> builder(String var0, MetricCategory var1, ToDoubleFunction<T> var2, T var3) {
-      return new MetricSamplerBuilder<T>(var0, var1, var2, var3);
+      if (var2 == null) {
+         throw new IllegalStateException();
+      } else {
+         return new MetricSamplerBuilder<T>(var0, var1, var2, var3);
+      }
    }
 
    public void onStartTick() {

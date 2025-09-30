@@ -35,8 +35,13 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GlyphSource;
+import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
+import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -53,27 +58,39 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    public static final ResourceLocation MISSING_FONT = ResourceLocation.withDefaultNamespace("missing");
    private static final FileToIdConverter FONT_DEFINITIONS = FileToIdConverter.json("font");
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-   private final FontSet missingFontSet;
+   final FontSet missingFontSet;
    private final List<GlyphProvider> providersToClose = new ArrayList();
    private final Map<ResourceLocation, FontSet> fontSets = new HashMap();
    private final TextureManager textureManager;
-   @Nullable
-   private volatile FontSet lastFontSetCache;
+   private final CachedFontProvider anyGlyphs = new CachedFontProvider(false);
+   private final CachedFontProvider nonFishyGlyphs = new CachedFontProvider(true);
+   private final AtlasManager atlasManager;
+   private final Map<ResourceLocation, AtlasGlyphProvider> atlasProviders = new HashMap();
+   final PlayerGlyphProvider playerProvider;
 
-   public FontManager(TextureManager var1) {
+   public FontManager(TextureManager var1, AtlasManager var2, PlayerSkinRenderCache var3) {
       super();
       this.textureManager = var1;
-      this.missingFontSet = (FontSet)Util.make(new FontSet(var1, MISSING_FONT), (var0) -> var0.reload(List.of(createFallbackProvider()), Set.of()));
+      this.atlasManager = var2;
+      this.missingFontSet = this.createFontSet(MISSING_FONT, List.of(createFallbackProvider()), Set.of());
+      this.playerProvider = new PlayerGlyphProvider(var3);
+   }
+
+   private FontSet createFontSet(ResourceLocation var1, List<GlyphProvider.Conditional> var2, Set<FontOption> var3) {
+      GlyphStitcher var4 = new GlyphStitcher(this.textureManager, var1);
+      FontSet var5 = new FontSet(var4);
+      var5.reload(var2, var3);
+      return var5;
    }
 
    private static GlyphProvider.Conditional createFallbackProvider() {
       return new GlyphProvider.Conditional(new AllMissingGlyphProvider(), FontOption.Filter.ALWAYS_PASS);
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var10000 = this.prepare(var2, var3);
-      Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> this.apply(var1x, Profiler.get()), var4);
+   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
+      CompletableFuture var10000 = this.prepare(var1.resourceManager(), var2);
+      Objects.requireNonNull(var3);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var1x) -> this.apply(var1x, Profiler.get()), var4);
    }
 
    private CompletableFuture<Preparation> prepare(ResourceManager var1, Executor var2) {
@@ -170,22 +187,22 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
    private void apply(Preparation var1, ProfilerFiller var2) {
       var2.push("closing");
-      this.lastFontSetCache = null;
+      this.anyGlyphs.invalidate();
+      this.nonFishyGlyphs.invalidate();
       this.fontSets.values().forEach(FontSet::close);
       this.fontSets.clear();
       this.providersToClose.forEach(GlyphProvider::close);
       this.providersToClose.clear();
       Set var3 = getFontOptions(Minecraft.getInstance().options);
       var2.popPush("reloading");
-      var1.fontSets().forEach((var2x, var3x) -> {
-         FontSet var4 = new FontSet(this.textureManager, var2x);
-         var4.reload(Lists.reverse(var3x), var3);
-         this.fontSets.put(var2x, var4);
-      });
+      var1.fontSets().forEach((var2x, var3x) -> this.fontSets.put(var2x, this.createFontSet(var2x, Lists.reverse(var3x), var3)));
       this.providersToClose.addAll(var1.allProviders);
       var2.pop();
       if (!this.fontSets.containsKey(Minecraft.DEFAULT_FONT)) {
          throw new IllegalStateException("Default font failed to load");
+      } else {
+         this.atlasProviders.clear();
+         this.atlasManager.forEach((var1x, var2x) -> this.atlasProviders.put(var1x, new AtlasGlyphProvider(var2x)));
       }
    }
 
@@ -238,29 +255,25 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    }
 
    public Font createFont() {
-      return new Font(this::getFontSetCached, false);
+      return new Font(this.anyGlyphs);
    }
 
    public Font createFontFilterFishy() {
-      return new Font(this::getFontSetCached, true);
+      return new Font(this.nonFishyGlyphs);
    }
 
-   private FontSet getFontSetRaw(ResourceLocation var1) {
+   FontSet getFontSetRaw(ResourceLocation var1) {
       return (FontSet)this.fontSets.getOrDefault(var1, this.missingFontSet);
    }
 
-   private FontSet getFontSetCached(ResourceLocation var1) {
-      FontSet var2 = this.lastFontSetCache;
-      if (var2 != null && var1.equals(var2.name())) {
-         return var2;
-      } else {
-         FontSet var3 = this.getFontSetRaw(var1);
-         this.lastFontSetCache = var3;
-         return var3;
-      }
+   GlyphSource getSpriteFont(FontDescription.AtlasSprite var1) {
+      AtlasGlyphProvider var2 = (AtlasGlyphProvider)this.atlasProviders.get(var1.atlasId());
+      return var2 == null ? this.missingFontSet.source(false) : var2.sourceForSprite(var1.spriteId());
    }
 
    public void close() {
+      this.anyGlyphs.close();
+      this.nonFishyGlyphs.close();
       this.fontSets.values().forEach(FontSet::close);
       this.providersToClose.forEach(GlyphProvider::close);
       this.missingFontSet.close();
@@ -374,6 +387,88 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> var1) {
          super();
          this.providers = var1;
+      }
+   }
+
+   class CachedFontProvider implements Font.Provider, AutoCloseable {
+      private final boolean nonFishyOnly;
+      @Nullable
+      private volatile CachedEntry lastEntry;
+      @Nullable
+      private volatile EffectGlyph whiteGlyph;
+
+      CachedFontProvider(final boolean var2) {
+         super();
+         this.nonFishyOnly = var2;
+      }
+
+      public void invalidate() {
+         this.lastEntry = null;
+         this.whiteGlyph = null;
+      }
+
+      public void close() {
+         this.invalidate();
+      }
+
+      private GlyphSource getGlyphSource(FontDescription var1) {
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         GlyphSource var10000;
+         //$FF: var3->value
+         //0->net/minecraft/network/chat/FontDescription$Resource
+         //1->net/minecraft/network/chat/FontDescription$AtlasSprite
+         //2->net/minecraft/network/chat/FontDescription$PlayerSprite
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               FontDescription.Resource var4 = (FontDescription.Resource)var1;
+               var10000 = FontManager.this.getFontSetRaw(var4.id()).source(this.nonFishyOnly);
+               break;
+            case 1:
+               FontDescription.AtlasSprite var5 = (FontDescription.AtlasSprite)var1;
+               var10000 = FontManager.this.getSpriteFont(var5);
+               break;
+            case 2:
+               FontDescription.PlayerSprite var6 = (FontDescription.PlayerSprite)var1;
+               var10000 = FontManager.this.playerProvider.sourceForPlayer(var6);
+               break;
+            default:
+               var10000 = FontManager.this.missingFontSet.source(this.nonFishyOnly);
+         }
+
+         return var10000;
+      }
+
+      public GlyphSource glyphs(FontDescription var1) {
+         CachedEntry var2 = this.lastEntry;
+         if (var2 != null && var1.equals(var2.description)) {
+            return var2.source;
+         } else {
+            GlyphSource var3 = this.getGlyphSource(var1);
+            this.lastEntry = new CachedEntry(var1, var3);
+            return var3;
+         }
+      }
+
+      public EffectGlyph effect() {
+         EffectGlyph var1 = this.whiteGlyph;
+         if (var1 == null) {
+            var1 = FontManager.this.getFontSetRaw(FontDescription.DEFAULT.id()).whiteGlyph();
+            this.whiteGlyph = var1;
+         }
+
+         return var1;
+      }
+
+      static record CachedEntry(FontDescription description, GlyphSource source) {
+         final FontDescription description;
+         final GlyphSource source;
+
+         CachedEntry(FontDescription var1, GlyphSource var2) {
+            super();
+            this.description = var1;
+            this.source = var2;
+         }
       }
    }
 }

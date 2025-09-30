@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
@@ -274,7 +275,7 @@ public class StructureTemplate {
                         if (var21.nbt != null) {
                            BlockEntity var25 = var1.getBlockEntity(var22);
                            if (var25 != null) {
-                              if (var25 instanceof RandomizableContainer) {
+                              if (!SharedConstants.DEBUG_STRUCTURE_EDIT_MODE && var25 instanceof RandomizableContainer) {
                                  var21.nbt.putLong("LootTableSeed", var5.nextLong());
                               }
 
@@ -441,8 +442,10 @@ public class StructureTemplate {
                float var6 = var5x.rotate(var4);
                var6 += var5x.mirror(var3) - var5x.getYRot();
                var5x.snapTo(var14.x, var14.y, var14.z, var6, var5x.getXRot());
-               if (var7 && var5x instanceof Mob) {
-                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var14)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+               var5x.setYBodyRot(var6);
+               var5x.setYHeadRot(var6);
+               if (var7 && var5x instanceof Mob var7x) {
+                  var7x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var14)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                }
 
                var1.addFreshEntityWithPassengers(var5x);

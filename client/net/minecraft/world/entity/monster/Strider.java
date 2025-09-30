@@ -103,7 +103,7 @@ public class Strider extends Animal implements ItemSteerable {
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_BOOST_TIME.equals(var1) && this.level().isClientSide) {
+      if (DATA_BOOST_TIME.equals(var1) && this.level().isClientSide()) {
          this.steering.onSynced();
       }
 
@@ -327,6 +327,7 @@ public class Strider extends Animal implements ItemSteerable {
       return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.17499999701976776);
    }
 
+   @Nullable
    protected SoundEvent getAmbientSound() {
       return !this.isPanicking() && !this.isBeingTempted() ? SoundEvents.STRIDER_AMBIENT : null;
    }
@@ -375,7 +376,7 @@ public class Strider extends Animal implements ItemSteerable {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       boolean var3 = this.isFood(var1.getItemInHand(var2));
       if (!var3 && this.isSaddled() && !this.isVehicle() && !var1.isSecondaryUseActive()) {
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             var1.startRiding(this);
          }
 
@@ -430,7 +431,7 @@ public class Strider extends Animal implements ItemSteerable {
    private SpawnGroupData spawnJockey(ServerLevelAccessor var1, DifficultyInstance var2, Mob var3, @Nullable SpawnGroupData var4) {
       var3.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
       var3.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, var4);
-      var3.startRiding(this, true);
+      var3.startRiding(this, true, false);
       return new AgeableMob.AgeableMobGroupData(0.0F);
    }
 

@@ -18,6 +18,7 @@ public final class ItemTags {
    public static final TagKey<Item> WOODEN_FENCES = bind("wooden_fences");
    public static final TagKey<Item> FENCE_GATES = bind("fence_gates");
    public static final TagKey<Item> WOODEN_PRESSURE_PLATES = bind("wooden_pressure_plates");
+   public static final TagKey<Item> WOODEN_SHELVES = bind("wooden_shelves");
    public static final TagKey<Item> DOORS = bind("doors");
    public static final TagKey<Item> SAPLINGS = bind("saplings");
    public static final TagKey<Item> BAMBOO_BLOCKS = bind("bamboo_blocks");
@@ -64,6 +65,13 @@ public final class ItemTags {
    public static final TagKey<Item> TERRACOTTA = bind("terracotta");
    public static final TagKey<Item> COMPLETES_FIND_TREE_TUTORIAL = bind("completes_find_tree_tutorial");
    public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");
+   public static final TagKey<Item> COPPER_CHESTS = bind("copper_chests");
+   public static final TagKey<Item> LIGHTNING_RODS = bind("lightning_rods");
+   public static final TagKey<Item> COPPER_GOLEM_STATUES = bind("copper_golem_statues");
+   public static final TagKey<Item> COPPER = bind("copper");
+   public static final TagKey<Item> CHAINS = bind("chains");
+   public static final TagKey<Item> LANTERNS = bind("lanterns");
+   public static final TagKey<Item> BARS = bind("bars");
    public static final TagKey<Item> SIGNS = bind("signs");
    public static final TagKey<Item> HANGING_SIGNS = bind("hanging_signs");
    public static final TagKey<Item> BEE_FOOD = bind("bee_food");
@@ -119,11 +127,13 @@ public final class ItemTags {
    public static final TagKey<Item> BEACON_PAYMENT_ITEMS = bind("beacon_payment_items");
    public static final TagKey<Item> WOODEN_TOOL_MATERIALS = bind("wooden_tool_materials");
    public static final TagKey<Item> STONE_TOOL_MATERIALS = bind("stone_tool_materials");
+   public static final TagKey<Item> COPPER_TOOL_MATERIALS = bind("copper_tool_materials");
    public static final TagKey<Item> IRON_TOOL_MATERIALS = bind("iron_tool_materials");
    public static final TagKey<Item> GOLD_TOOL_MATERIALS = bind("gold_tool_materials");
    public static final TagKey<Item> DIAMOND_TOOL_MATERIALS = bind("diamond_tool_materials");
    public static final TagKey<Item> NETHERITE_TOOL_MATERIALS = bind("netherite_tool_materials");
    public static final TagKey<Item> REPAIRS_LEATHER_ARMOR = bind("repairs_leather_armor");
+   public static final TagKey<Item> REPAIRS_COPPER_ARMOR = bind("repairs_copper_armor");
    public static final TagKey<Item> REPAIRS_CHAIN_ARMOR = bind("repairs_chain_armor");
    public static final TagKey<Item> REPAIRS_IRON_ARMOR = bind("repairs_iron_armor");
    public static final TagKey<Item> REPAIRS_GOLD_ARMOR = bind("repairs_gold_armor");
@@ -163,6 +173,7 @@ public final class ItemTags {
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");
    public static final TagKey<Item> PILLAGER_PREFERRED_WEAPONS = bind("pillager_preferred_weapons");
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
+   public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

@@ -308,6 +308,6 @@ public class VegetationPlacements {
       PlacementUtils.register(var0, TREES_JUNGLE, var58, treePlacement(PlacementUtils.countExtra(50, 0.1F, 1)));
       PlacementUtils.register(var0, BAMBOO_VEGETATION, var59, treePlacement(PlacementUtils.countExtra(30, 0.1F, 1)));
       PlacementUtils.register(var0, MUSHROOM_ISLAND_VEGETATION, var60, InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP, BiomeFilter.biome());
-      PlacementUtils.register(var0, TREES_MANGROVE, var61, CountPlacement.of(25), InSquarePlacement.spread(), SurfaceWaterDepthFilter.forMaxDepth(5), PlacementUtils.HEIGHTMAP_OCEAN_FLOOR, BiomeFilter.biome(), BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(Blocks.MANGROVE_PROPAGULE.defaultBlockState(), BlockPos.ZERO)));
+      PlacementUtils.register(var0, TREES_MANGROVE, var61, CountPlacement.of(25), InSquarePlacement.spread(), SurfaceWaterDepthFilter.forMaxDepth(5), PlacementUtils.HEIGHTMAP_OCEAN_FLOOR, BiomeFilter.biome());
    }
 }

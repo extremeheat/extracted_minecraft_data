@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.Util;
@@ -44,11 +45,17 @@ import net.minecraft.server.dialog.body.DialogBody;
 import net.minecraft.server.dialog.body.DialogBodyTypes;
 import net.minecraft.server.dialog.input.InputControl;
 import net.minecraft.server.dialog.input.InputControlTypes;
+import net.minecraft.server.jsonrpc.IncomingRpcMethod;
+import net.minecraft.server.jsonrpc.IncomingRpcMethods;
+import net.minecraft.server.jsonrpc.OutgoingRpcMethod;
+import net.minecraft.server.jsonrpc.OutgoingRpcMethods;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.debug.DebugSubscription;
+import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.valueproviders.FloatProviderType;
 import net.minecraft.util.valueproviders.IntProviderType;
 import net.minecraft.world.effect.MobEffect;
@@ -142,7 +149,6 @@ import net.minecraft.world.level.storage.loot.providers.number.LootNumberProvide
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
 import net.minecraft.world.level.storage.loot.providers.score.ScoreboardNameProviders;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
 public class BuiltInRegistries {
@@ -154,6 +160,7 @@ public class BuiltInRegistries {
    public static final DefaultedRegistry<Fluid> FLUID;
    public static final Registry<MobEffect> MOB_EFFECT;
    public static final DefaultedRegistry<Block> BLOCK;
+   public static final Registry<DebugSubscription<?>> DEBUG_SUBSCRIPTION;
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE;
    public static final DefaultedRegistry<Item> ITEM;
    public static final Registry<Potion> POTION;
@@ -228,6 +235,8 @@ public class BuiltInRegistries {
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<TicketType> TICKET_TYPE;
+   public static final Registry<IncomingRpcMethod> INCOMING_RPC_METHOD;
+   public static final Registry<OutgoingRpcMethod<?, ?>> OUTGOING_RPC_METHOD;
    public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
    public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
    public static final Registry<MapCodec<? extends SpawnCondition>> SPAWN_CONDITION_TYPE;
@@ -300,7 +309,7 @@ public class BuiltInRegistries {
 
          if (var1 instanceof DefaultedRegistry) {
             ResourceLocation var2 = ((DefaultedRegistry)var1).getDefaultKey();
-            Validate.notNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2), new Object[0]);
+            Objects.requireNonNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2));
          }
 
       });
@@ -321,6 +330,7 @@ public class BuiltInRegistries {
       FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> Fluids.EMPTY);
       MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
       BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> Blocks.AIR);
+      DEBUG_SUBSCRIPTION = registerSimple(Registries.DEBUG_SUBSCRIPTION, DebugSubscriptions::bootstrap);
       ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> EntityType.PIG);
       ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> Items.AIR);
       POTION = registerSimple(Registries.POTION, Potions::bootstrap);
@@ -395,6 +405,8 @@ public class BuiltInRegistries {
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
       TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
+      INCOMING_RPC_METHOD = registerSimple(Registries.INCOMING_RPC_METHOD, IncomingRpcMethods::bootstrap);
+      OUTGOING_RPC_METHOD = registerSimple(Registries.OUTGOING_RPC_METHOD, (var0) -> OutgoingRpcMethods.SERVER_STARTED);
       TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
       TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
       SPAWN_CONDITION_TYPE = registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);

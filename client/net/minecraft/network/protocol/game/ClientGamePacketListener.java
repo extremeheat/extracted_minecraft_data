@@ -242,4 +242,14 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
    void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1);
 
    void handleWaypoint(ClientboundTrackedWaypointPacket var1);
+
+   void handleDebugChunkValue(ClientboundDebugChunkValuePacket var1);
+
+   void handleDebugBlockValue(ClientboundDebugBlockValuePacket var1);
+
+   void handleDebugEntityValue(ClientboundDebugEntityValuePacket var1);
+
+   void handleDebugEvent(ClientboundDebugEventPacket var1);
+
+   void handleGameTestHighlightPos(ClientboundGameTestHighlightPosPacket var1);
 }

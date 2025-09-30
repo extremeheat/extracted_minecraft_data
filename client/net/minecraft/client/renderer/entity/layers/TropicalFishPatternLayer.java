@@ -2,11 +2,12 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.TropicalFishModelA;
 import net.minecraft.client.model.TropicalFishModelB;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.TropicalFishRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +35,7 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFishRenderStat
       this.modelB = new TropicalFishModelB(var2.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE_PATTERN));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, TropicalFishRenderState var4, float var5, float var6) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, TropicalFishRenderState var4, float var5, float var6) {
       TropicalFish.Pattern var7 = var4.pattern;
       Object var10000;
       switch (var7.base()) {
@@ -62,6 +63,6 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFishRenderStat
       }
 
       ResourceLocation var9 = var10;
-      coloredCutoutModelCopyLayerRender((EntityModel)var8, var9, var1, var2, var3, var4, var4.patternColor);
+      coloredCutoutModelCopyLayerRender((Model)var8, var9, var1, var2, var3, var4, var4.patternColor, 1);
    }
 }

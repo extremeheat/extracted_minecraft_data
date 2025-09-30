@@ -1,10 +1,13 @@
 package net.minecraft.core;
 
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongConsumer;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -28,6 +31,7 @@ public class SectionPos extends Vec3i {
    private static final int RELATIVE_X_SHIFT = 8;
    private static final int RELATIVE_Y_SHIFT = 0;
    private static final int RELATIVE_Z_SHIFT = 4;
+   public static final StreamCodec<ByteBuf, SectionPos> STREAM_CODEC;
 
    SectionPos(int var1, int var2, int var3) {
       super(var1, var2, var3);
@@ -289,5 +293,9 @@ public class SectionPos extends Vec3i {
    // $FF: synthetic method
    public Vec3i offset(final int var1, final int var2, final int var3) {
       return this.offset(var1, var2, var3);
+   }
+
+   static {
+      STREAM_CODEC = ByteBufCodecs.LONG.map(SectionPos::of, SectionPos::asLong);
    }
 }

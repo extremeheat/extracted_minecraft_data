@@ -17,8 +17,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -246,11 +247,11 @@ public class PresetFlatWorldScreen extends Screen {
          PresetFlatWorldScreen.this.updateButtonValidity(var1 != null);
       }
 
-      public boolean keyPressed(int var1, int var2, int var3) {
-         if (super.keyPressed(var1, var2, var3)) {
+      public boolean keyPressed(KeyEvent var1) {
+         if (super.keyPressed(var1)) {
             return true;
          } else {
-            if (CommonInputs.selected(var1) && this.getSelected() != null) {
+            if (var1.isSelection() && this.getSelected() != null) {
                ((Entry)this.getSelected()).select();
             }
 
@@ -269,14 +270,14 @@ public class PresetFlatWorldScreen extends Screen {
             this.name = (Component)var2.unwrapKey().map((var0) -> Component.translatable(var0.location().toLanguageKey("flat_world_preset"))).orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            this.blitSlot(var1, var4, var3, (Item)this.preset.displayItem().value());
-            var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, var4 + 18 + 5, var3 + 6, -1);
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            this.blitSlot(var1, this.getContentX(), this.getContentY(), (Item)this.preset.displayItem().value());
+            var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, this.getContentX() + 18 + 5, this.getContentY() + 6, -1);
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             this.select();
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var2);
          }
 
          void select() {

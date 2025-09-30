@@ -20,7 +20,7 @@ public class LookAndFollowTradingPlayerSink extends Behavior<Villager> {
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
       Player var3 = var2.getTradingPlayer();
-      return var2.isAlive() && var3 != null && !var2.isInWater() && !var2.hurtMarked && var2.distanceToSqr(var3) <= 16.0 && var3.containerMenu != null;
+      return var2.isAlive() && var3 != null && !var2.isInWater() && !var2.hurtMarked && var2.distanceToSqr(var3) <= 16.0;
    }
 
    protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {

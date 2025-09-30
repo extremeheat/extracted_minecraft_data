@@ -9,6 +9,8 @@ public abstract class DisplayEntityRenderState extends EntityRenderState {
    public float interpolationProgress;
    public float entityYRot;
    public float entityXRot;
+   public float cameraYRot;
+   public float cameraXRot;
 
    public DisplayEntityRenderState() {
       super();

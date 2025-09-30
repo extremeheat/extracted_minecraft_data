@@ -175,22 +175,26 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static Dynamic<?> fixDisplay(ItemStackData var0, Dynamic<?> var1, int var2) {
-      var0.setComponent("minecraft:custom_name", var1.get("Name"));
-      var0.setComponent("minecraft:lore", var1.get("Lore"));
-      Optional var3 = var1.get("color").asNumber().result().map(Number::intValue);
-      boolean var4 = (var2 & 64) != 0;
-      if (var3.isPresent() || var4) {
-         Dynamic var5 = var1.emptyMap().set("rgb", var1.createInt((Integer)var3.orElse(10511680)));
-         if (var4) {
-            var5 = var5.set("show_in_tooltip", var1.createBoolean(false));
-         }
-
-         var0.setComponent("minecraft:dyed_color", var5);
+      var1.get("Name").result().filter(LegacyComponentDataFixUtils::isStrictlyValidJson).ifPresent((var1x) -> var0.setComponent("minecraft:custom_name", var1x));
+      OptionalDynamic var3 = var1.get("Lore");
+      if (var3.result().isPresent()) {
+         var0.setComponent("minecraft:lore", var1.createList(var1.get("Lore").asStream().filter(LegacyComponentDataFixUtils::isStrictlyValidJson)));
       }
 
-      Optional var6 = var1.get("LocName").asString().result();
-      if (var6.isPresent()) {
-         var0.setComponent("minecraft:item_name", LegacyComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var6.get()));
+      Optional var4 = var1.get("color").asNumber().result().map(Number::intValue);
+      boolean var5 = (var2 & 64) != 0;
+      if (var4.isPresent() || var5) {
+         Dynamic var6 = var1.emptyMap().set("rgb", var1.createInt((Integer)var4.orElse(10511680)));
+         if (var5) {
+            var6 = var6.set("show_in_tooltip", var1.createBoolean(false));
+         }
+
+         var0.setComponent("minecraft:dyed_color", var6);
+      }
+
+      Optional var7 = var1.get("LocName").asString().result();
+      if (var7.isPresent()) {
+         var0.setComponent("minecraft:item_name", LegacyComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var7.get()));
       }
 
       if (var0.is("minecraft:filled_map")) {
@@ -275,7 +279,7 @@ public class ItemStackComponentizationFix extends DataFix {
 
    private static void fixEnchantments(ItemStackData var0, Dynamic<?> var1, String var2, String var3, boolean var4) {
       OptionalDynamic var5 = var0.removeTag(var2);
-      List var6 = var5.asList(Function.identity()).stream().flatMap((var0x) -> parseEnchantment(var0x).stream()).toList();
+      List var6 = var5.asList(Function.identity()).stream().flatMap((var0x) -> parseEnchantment(var0x).stream()).filter((var0x) -> (Integer)var0x.getSecond() > 0).toList();
       if (!var6.isEmpty() || var4) {
          Dynamic var7 = var1.emptyMap();
          Dynamic var8 = var1.emptyMap();

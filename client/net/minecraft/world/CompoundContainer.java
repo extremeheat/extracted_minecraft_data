@@ -1,5 +1,6 @@
 package net.minecraft.world;
 
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -59,12 +60,12 @@ public class CompoundContainer implements Container {
       return this.container1.stillValid(var1) && this.container2.stillValid(var1);
    }
 
-   public void startOpen(Player var1) {
+   public void startOpen(ContainerUser var1) {
       this.container1.startOpen(var1);
       this.container2.startOpen(var1);
    }
 
-   public void stopOpen(Player var1) {
+   public void stopOpen(ContainerUser var1) {
       this.container1.stopOpen(var1);
       this.container2.stopOpen(var1);
    }

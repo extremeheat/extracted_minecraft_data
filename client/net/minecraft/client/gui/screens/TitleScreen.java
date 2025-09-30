@@ -26,6 +26,7 @@ import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
@@ -129,7 +130,7 @@ public class TitleScreen extends Screen {
 
    private int createTestWorldButton(int var1, int var2) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1x) -> CreateWorldScreen.testWorld(this.minecraft, this)).bounds(this.width / 2 - 100, var1 += var2, 200, 20).build());
+         this.addRenderableWidget(Button.builder(Component.literal("Create Test World"), (var1x) -> CreateWorldScreen.testWorld(this.minecraft, () -> this.minecraft.setScreen(this))).bounds(this.width / 2 - 100, var1 += var2, 200, 20).build());
       }
 
       return var1;
@@ -249,11 +250,11 @@ public class TitleScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      if (super.mouseClicked(var1, var2)) {
          return true;
       } else {
-         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
+         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var2);
       }
    }
 
@@ -283,5 +284,9 @@ public class TitleScreen extends Screen {
       }
 
       this.minecraft.setScreen(this);
+   }
+
+   public boolean canInterruptWithAnotherScreen() {
+      return true;
    }
 }

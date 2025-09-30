@@ -46,8 +46,8 @@ public class DragonEggBlock extends FallingBlock {
 
       for(int var5 = 0; var5 < 1000; ++var5) {
          BlockPos var6 = var3.offset(var2.random.nextInt(16) - var2.random.nextInt(16), var2.random.nextInt(8) - var2.random.nextInt(8), var2.random.nextInt(16) - var2.random.nextInt(16));
-         if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6)) {
-            if (var2.isClientSide) {
+         if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6) && !var2.isOutsideBuildHeight(var6)) {
+            if (var2.isClientSide()) {
                for(int var7 = 0; var7 < 128; ++var7) {
                   double var8 = var2.random.nextDouble();
                   float var10 = (var2.random.nextFloat() - 0.5F) * 0.2F;

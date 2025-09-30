@@ -29,7 +29,7 @@ public class KnowledgeBookItem extends Item {
       if (var5.isEmpty()) {
          return InteractionResult.FAIL;
       } else {
-         if (!var1.isClientSide) {
+         if (!var1.isClientSide()) {
             RecipeManager var6 = var1.getServer().getRecipeManager();
             ArrayList var7 = new ArrayList(var5.size());
 

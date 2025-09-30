@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction8;
@@ -59,9 +60,7 @@ public class Blender {
    }
 
    public static Blender of(@Nullable WorldGenRegion var0) {
-      if (var0 == null) {
-         return EMPTY;
-      } else {
+      if (!SharedConstants.DEBUG_DISABLE_BLENDING && var0 != null) {
          ChunkPos var1 = var0.getCenter();
          if (!var0.isOldChunkAround(var1, HEIGHT_BLENDING_RANGE_CHUNKS)) {
             return EMPTY;
@@ -92,6 +91,8 @@ public class Blender {
                return new Blender(var2, var3);
             }
          }
+      } else {
+         return EMPTY;
       }
    }
 
@@ -99,6 +100,10 @@ public class Blender {
       super();
       this.heightAndBiomeBlendingData = var1;
       this.densityBlendingData = var2;
+   }
+
+   public boolean isEmpty() {
+      return this.heightAndBiomeBlendingData.isEmpty() && this.densityBlendingData.isEmpty();
    }
 
    public BlendingOutput blendOffsetAndFactor(int var1, int var2) {
@@ -235,44 +240,46 @@ public class Blender {
    }
 
    public static void generateBorderTicks(WorldGenRegion var0, ChunkAccess var1) {
-      ChunkPos var2 = var1.getPos();
-      boolean var3 = var1.isOldNoiseGeneration();
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
-      BlockPos var5 = new BlockPos(var2.getMinBlockX(), 0, var2.getMinBlockZ());
-      BlendingData var6 = var1.getBlendingData();
-      if (var6 != null) {
-         int var7 = var6.getAreaWithOldGeneration().getMinY();
-         int var8 = var6.getAreaWithOldGeneration().getMaxY();
-         if (var3) {
-            for(int var9 = 0; var9 < 16; ++var9) {
-               for(int var10 = 0; var10 < 16; ++var10) {
-                  generateBorderTick(var1, var4.setWithOffset(var5, var9, var7 - 1, var10));
-                  generateBorderTick(var1, var4.setWithOffset(var5, var9, var7, var10));
-                  generateBorderTick(var1, var4.setWithOffset(var5, var9, var8, var10));
-                  generateBorderTick(var1, var4.setWithOffset(var5, var9, var8 + 1, var10));
+      if (!SharedConstants.DEBUG_DISABLE_BLENDING) {
+         ChunkPos var2 = var1.getPos();
+         boolean var3 = var1.isOldNoiseGeneration();
+         BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
+         BlockPos var5 = new BlockPos(var2.getMinBlockX(), 0, var2.getMinBlockZ());
+         BlendingData var6 = var1.getBlendingData();
+         if (var6 != null) {
+            int var7 = var6.getAreaWithOldGeneration().getMinY();
+            int var8 = var6.getAreaWithOldGeneration().getMaxY();
+            if (var3) {
+               for(int var9 = 0; var9 < 16; ++var9) {
+                  for(int var10 = 0; var10 < 16; ++var10) {
+                     generateBorderTick(var1, var4.setWithOffset(var5, var9, var7 - 1, var10));
+                     generateBorderTick(var1, var4.setWithOffset(var5, var9, var7, var10));
+                     generateBorderTick(var1, var4.setWithOffset(var5, var9, var8, var10));
+                     generateBorderTick(var1, var4.setWithOffset(var5, var9, var8 + 1, var10));
+                  }
                }
             }
-         }
 
-         for(Direction var20 : Direction.Plane.HORIZONTAL) {
-            if (var0.getChunk(var2.x + var20.getStepX(), var2.z + var20.getStepZ()).isOldNoiseGeneration() != var3) {
-               int var11 = var20 == Direction.EAST ? 15 : 0;
-               int var12 = var20 == Direction.WEST ? 0 : 15;
-               int var13 = var20 == Direction.SOUTH ? 15 : 0;
-               int var14 = var20 == Direction.NORTH ? 0 : 15;
+            for(Direction var20 : Direction.Plane.HORIZONTAL) {
+               if (var0.getChunk(var2.x + var20.getStepX(), var2.z + var20.getStepZ()).isOldNoiseGeneration() != var3) {
+                  int var11 = var20 == Direction.EAST ? 15 : 0;
+                  int var12 = var20 == Direction.WEST ? 0 : 15;
+                  int var13 = var20 == Direction.SOUTH ? 15 : 0;
+                  int var14 = var20 == Direction.NORTH ? 0 : 15;
 
-               for(int var15 = var11; var15 <= var12; ++var15) {
-                  for(int var16 = var13; var16 <= var14; ++var16) {
-                     int var17 = Math.min(var8, var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var15, var16)) + 1;
+                  for(int var15 = var11; var15 <= var12; ++var15) {
+                     for(int var16 = var13; var16 <= var14; ++var16) {
+                        int var17 = Math.min(var8, var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var15, var16)) + 1;
 
-                     for(int var18 = var7; var18 < var17; ++var18) {
-                        generateBorderTick(var1, var4.setWithOffset(var5, var15, var18, var16));
+                        for(int var18 = var7; var18 < var17; ++var18) {
+                           generateBorderTick(var1, var4.setWithOffset(var5, var15, var18, var16));
+                        }
                      }
                   }
                }
             }
-         }
 
+         }
       }
    }
 
@@ -290,28 +297,30 @@ public class Blender {
    }
 
    public static void addAroundOldChunksCarvingMaskFilter(WorldGenLevel var0, ProtoChunk var1) {
-      ChunkPos var2 = var1.getPos();
-      ImmutableMap.Builder var3 = ImmutableMap.builder();
+      if (!SharedConstants.DEBUG_DISABLE_BLENDING) {
+         ChunkPos var2 = var1.getPos();
+         ImmutableMap.Builder var3 = ImmutableMap.builder();
 
-      for(Direction8 var7 : Direction8.values()) {
-         int var8 = var2.x + var7.getStepX();
-         int var9 = var2.z + var7.getStepZ();
-         BlendingData var10 = var0.getChunk(var8, var9).getBlendingData();
-         if (var10 != null) {
-            var3.put(var7, var10);
+         for(Direction8 var7 : Direction8.values()) {
+            int var8 = var2.x + var7.getStepX();
+            int var9 = var2.z + var7.getStepZ();
+            BlendingData var10 = var0.getChunk(var8, var9).getBlendingData();
+            if (var10 != null) {
+               var3.put(var7, var10);
+            }
          }
-      }
 
-      ImmutableMap var11 = var3.build();
-      if (var1.isOldNoiseGeneration() || !var11.isEmpty()) {
-         DistanceGetter var12 = makeOldChunkDistanceGetter(var1.getBlendingData(), var11);
-         CarvingMask.Mask var13 = (var1x, var2x, var3x) -> {
-            double var4 = (double)var1x + 0.5 + SHIFT_NOISE.getValue((double)var1x, (double)var2x, (double)var3x) * 4.0;
-            double var6 = (double)var2x + 0.5 + SHIFT_NOISE.getValue((double)var2x, (double)var3x, (double)var1x) * 4.0;
-            double var8 = (double)var3x + 0.5 + SHIFT_NOISE.getValue((double)var3x, (double)var1x, (double)var2x) * 4.0;
-            return var12.getDistance(var4, var6, var8) < 4.0;
-         };
-         var1.getOrCreateCarvingMask().setAdditionalMask(var13);
+         ImmutableMap var11 = var3.build();
+         if (var1.isOldNoiseGeneration() || !var11.isEmpty()) {
+            DistanceGetter var12 = makeOldChunkDistanceGetter(var1.getBlendingData(), var11);
+            CarvingMask.Mask var13 = (var1x, var2x, var3x) -> {
+               double var4 = (double)var1x + 0.5 + SHIFT_NOISE.getValue((double)var1x, (double)var2x, (double)var3x) * 4.0;
+               double var6 = (double)var2x + 0.5 + SHIFT_NOISE.getValue((double)var2x, (double)var3x, (double)var1x) * 4.0;
+               double var8 = (double)var3x + 0.5 + SHIFT_NOISE.getValue((double)var3x, (double)var1x, (double)var2x) * 4.0;
+               return var12.getDistance(var4, var6, var8) < 4.0;
+            };
+            var1.getOrCreateCarvingMask().setAdditionalMask(var13);
+         }
       }
    }
 

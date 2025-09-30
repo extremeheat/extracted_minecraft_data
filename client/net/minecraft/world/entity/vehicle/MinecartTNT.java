@@ -62,7 +62,7 @@ public class MinecartTNT extends AbstractMinecart {
       if (this.horizontalCollision) {
          double var1 = this.getDeltaMovement().horizontalDistanceSqr();
          if (var1 >= 0.009999999776482582) {
-            this.explode(var1);
+            this.explode(this.ignitionSource, var1);
          }
       }
 
@@ -101,10 +101,6 @@ public class MinecartTNT extends AbstractMinecart {
       return new ItemStack(Items.TNT_MINECART);
    }
 
-   protected void explode(double var1) {
-      this.explode((DamageSource)null, var1);
-   }
-
    protected void explode(@Nullable DamageSource var1, double var2) {
       Level var5 = this.level();
       if (var5 instanceof ServerLevel var4) {
@@ -122,7 +118,7 @@ public class MinecartTNT extends AbstractMinecart {
    public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
       if (var1 >= 3.0) {
          double var5 = var1 / 10.0;
-         this.explode(var5 * var5);
+         this.explode(this.ignitionSource, var5 * var5);
       }
 
       return super.causeFallDamage(var1, var3, var4);
@@ -153,7 +149,7 @@ public class MinecartTNT extends AbstractMinecart {
       }
 
       this.fuse = 80;
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (var1 != null && this.ignitionSource == null) {
             this.ignitionSource = this.damageSources().explosion(this, var1.getEntity());
          }

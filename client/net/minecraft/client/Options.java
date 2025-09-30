@@ -45,11 +45,13 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.client.sounds.SoundPreviewHandler;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
@@ -80,9 +82,7 @@ public class Options {
    static final Gson GSON = new Gson();
    private static final TypeToken<List<String>> LIST_OF_STRINGS_TYPE = new TypeToken<List<String>>() {
    };
-   public static final int RENDER_DISTANCE_TINY = 2;
    public static final int RENDER_DISTANCE_SHORT = 4;
-   public static final int RENDER_DISTANCE_NORMAL = 8;
    public static final int RENDER_DISTANCE_FAR = 12;
    public static final int RENDER_DISTANCE_REALLY_FAR = 16;
    public static final int RENDER_DISTANCE_EXTREME = 32;
@@ -154,6 +154,8 @@ public class Options {
    private final OptionInstance<Integer> biomeBlendRadius;
    private final OptionInstance<Double> mouseWheelSensitivity;
    private final OptionInstance<Boolean> rawMouseInput;
+   private static final Component ALLOW_CURSOR_CHANGES_TOOLTIP;
+   private final OptionInstance<Boolean> allowCursorChanges;
    public int glDebugVerbosity;
    private final OptionInstance<Boolean> autoJump;
    private static final Component ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART;
@@ -167,6 +169,7 @@ public class Options {
    private final OptionInstance<Boolean> entityShadows;
    private final OptionInstance<Boolean> forceUnicodeFont;
    private final OptionInstance<Boolean> japaneseGlyphVariants;
+   private final OptionInstance<Boolean> invertXMouse;
    private final OptionInstance<Boolean> invertYMouse;
    private final OptionInstance<Boolean> discreteMouseScroll;
    private static final Component REALMS_NOTIFICATIONS_TOOLTIP;
@@ -175,6 +178,7 @@ public class Options {
    private final OptionInstance<Boolean> allowServerListing;
    private final OptionInstance<Boolean> reducedDebugInfo;
    private final Map<SoundSource, OptionInstance<Double>> soundSourceVolumes;
+   private static final Component CLOSED_CAPTIONS_TOOLTIP;
    private final OptionInstance<Boolean> showSubtitles;
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_ON;
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF;
@@ -183,16 +187,22 @@ public class Options {
    private final OptionInstance<Boolean> touchscreen;
    private final OptionInstance<Boolean> fullscreen;
    private final OptionInstance<Boolean> bobView;
-   private static final Component MOVEMENT_TOGGLE;
-   private static final Component MOVEMENT_HOLD;
+   private static final Component KEY_TOGGLE;
+   private static final Component KEY_HOLD;
    private final OptionInstance<Boolean> toggleCrouch;
    private final OptionInstance<Boolean> toggleSprint;
+   private final OptionInstance<Boolean> toggleAttack;
+   private final OptionInstance<Boolean> toggleUse;
+   private static final Component SPRINT_WINDOW_TOOLTIP;
+   private final OptionInstance<Integer> sprintWindow;
    public boolean skipMultiplayerWarning;
    private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES;
    private final OptionInstance<Boolean> hideMatchedNames;
    private final OptionInstance<Boolean> showAutosaveIndicator;
    private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE;
    private final OptionInstance<Boolean> onlyShowSecureChat;
+   private static final Component CHAT_TOOLTIP_SAVE_DRAFTS;
+   private final OptionInstance<Boolean> saveChatDrafts;
    public final KeyMapping keyUp;
    public final KeyMapping keyLeft;
    public final KeyMapping keyDown;
@@ -214,12 +224,13 @@ public class Options {
    public final KeyMapping keyTogglePerspective;
    public final KeyMapping keySmoothCamera;
    public final KeyMapping keyFullscreen;
-   public final KeyMapping keySpectatorOutlines;
    public final KeyMapping keyAdvancements;
    public final KeyMapping keyQuickActions;
    public final KeyMapping[] keyHotbarSlots;
    public final KeyMapping keySaveHotbarActivator;
    public final KeyMapping keyLoadHotbarActivator;
+   public final KeyMapping keySpectatorOutlines;
+   public final KeyMapping keySpectatorHotbar;
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
    private final File optionsFile;
@@ -432,6 +443,10 @@ public class Options {
       return this.rawMouseInput;
    }
 
+   public OptionInstance<Boolean> allowCursorChanges() {
+      return this.allowCursorChanges;
+   }
+
    public OptionInstance<Boolean> autoJump() {
       return this.autoJump;
    }
@@ -489,7 +504,11 @@ public class Options {
       return this.japaneseGlyphVariants;
    }
 
-   public OptionInstance<Boolean> invertYMouse() {
+   public OptionInstance<Boolean> invertMouseX() {
+      return this.invertXMouse;
+   }
+
+   public OptionInstance<Boolean> invertMouseY() {
       return this.invertYMouse;
    }
 
@@ -522,7 +541,15 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue()));
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
+         Minecraft var2x = Minecraft.getInstance();
+         SoundManager var3 = var2x.getSoundManager();
+         var3.updateSourceVolume(var2);
+         if (var2x.level == null) {
+            SoundPreviewHandler.preview(var3, var2, var1x.floatValue());
+         }
+
+      });
    }
 
    public OptionInstance<Boolean> showSubtitles() {
@@ -557,6 +584,18 @@ public class Options {
       return this.toggleSprint;
    }
 
+   public OptionInstance<Boolean> toggleAttack() {
+      return this.toggleAttack;
+   }
+
+   public OptionInstance<Boolean> toggleUse() {
+      return this.toggleUse;
+   }
+
+   public OptionInstance<Integer> sprintWindow() {
+      return this.sprintWindow;
+   }
+
    public OptionInstance<Boolean> hideMatchedNames() {
       return this.hideMatchedNames;
    }
@@ -567,6 +606,10 @@ public class Options {
 
    public OptionInstance<Boolean> onlyShowSecureChat() {
       return this.onlyShowSecureChat;
+   }
+
+   public OptionInstance<Boolean> saveChatDrafts() {
+      return this.saveChatDrafts;
    }
 
    public OptionInstance<Integer> fov() {
@@ -727,7 +770,7 @@ public class Options {
 
       });
       this.highContrastBlockOutline = OptionInstance.createBoolean("options.accessibility.high_contrast_block_outline", OptionInstance.cachedConstantTooltip(HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP), false);
-      this.narratorHotkey = OptionInstance.createBoolean("options.accessibility.narrator_hotkey", OptionInstance.cachedConstantTooltip(Minecraft.ON_OSX ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip") : Component.translatable("options.accessibility.narrator_hotkey.tooltip")), true);
+      this.narratorHotkey = OptionInstance.createBoolean("options.accessibility.narrator_hotkey", OptionInstance.cachedConstantTooltip(InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip") : Component.translatable("options.accessibility.narrator_hotkey.tooltip")), true);
       this.pauseOnLostFocus = true;
       this.modelParts = EnumSet.allOf(PlayerModelPart.class);
       this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
@@ -759,6 +802,13 @@ public class Options {
          }
 
       });
+      this.allowCursorChanges = OptionInstance.createBoolean("options.allowCursorChanges", OptionInstance.cachedConstantTooltip(ALLOW_CURSOR_CHANGES_TOOLTIP), true, (var0) -> {
+         Window var1 = Minecraft.getInstance().getWindow();
+         if (var1 != null) {
+            var1.setAllowCursorChanges(var0);
+         }
+
+      });
       this.glDebugVerbosity = 1;
       this.autoJump = OptionInstance.createBoolean("options.autoJump", false);
       this.rotateWithMinecart = OptionInstance.createBoolean("options.rotateWithMinecart", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART), false);
@@ -776,14 +826,15 @@ public class Options {
       this.entityShadows = OptionInstance.createBoolean("options.entityShadows", true);
       this.forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, (var0) -> updateFontOptions());
       this.japaneseGlyphVariants = OptionInstance.createBoolean("options.japaneseGlyphVariants", OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")), japaneseGlyphVariantsDefault(), (var0) -> updateFontOptions());
-      this.invertYMouse = OptionInstance.createBoolean("options.invertMouse", false);
+      this.invertXMouse = OptionInstance.createBoolean("options.invertMouseX", false);
+      this.invertYMouse = OptionInstance.createBoolean("options.invertMouseY", false);
       this.discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
       this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (var0) -> {
       });
-      this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", false);
+      this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (var0) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
       this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (var1x) -> this.createSoundSliderOptionInstance("soundCategory." + var1x.getName(), var1x));
-      this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", false);
+      this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", OptionInstance.cachedConstantTooltip(CLOSED_CAPTIONS_TOOLTIP), false);
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (var0) -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
          SoundManager var1 = Minecraft.getInstance().getSoundManager();
          var1.reload();
@@ -801,45 +852,63 @@ public class Options {
 
       });
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
-      this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? MOVEMENT_TOGGLE : MOVEMENT_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
       });
-      this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? MOVEMENT_TOGGLE : MOVEMENT_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      this.toggleSprint = new OptionInstance<Boolean>("key.sprint", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      });
+      this.toggleAttack = new OptionInstance<Boolean>("key.attack", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      });
+      this.toggleUse = new OptionInstance<Boolean>("key.use", OptionInstance.noTooltip(), (var0, var1x) -> var1x ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (var0) -> {
+      });
+      this.sprintWindow = new OptionInstance<Integer>("options.sprintWindow", OptionInstance.cachedConstantTooltip(SPRINT_WINDOW_TOOLTIP), (var0, var1x) -> var1x == 0 ? genericValueLabel(var0, Component.translatable("options.off")) : genericValueLabel(var0, Component.translatable("options.value", var1x)), new OptionInstance.IntRange(0, 10), 7, (var0) -> {
       });
       this.hideMatchedNames = OptionInstance.createBoolean("options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true);
       this.showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
       this.onlyShowSecureChat = OptionInstance.createBoolean("options.onlyShowSecureChat", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_ONLY_SHOW_SECURE), false);
-      this.keyUp = new KeyMapping("key.forward", 87, "key.categories.movement");
-      this.keyLeft = new KeyMapping("key.left", 65, "key.categories.movement");
-      this.keyDown = new KeyMapping("key.back", 83, "key.categories.movement");
-      this.keyRight = new KeyMapping("key.right", 68, "key.categories.movement");
-      this.keyJump = new KeyMapping("key.jump", 32, "key.categories.movement");
+      this.saveChatDrafts = OptionInstance.createBoolean("options.chat.drafts", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_SAVE_DRAFTS), false);
+      this.keyUp = new KeyMapping("key.forward", 87, KeyMapping.Category.MOVEMENT);
+      this.keyLeft = new KeyMapping("key.left", 65, KeyMapping.Category.MOVEMENT);
+      this.keyDown = new KeyMapping("key.back", 83, KeyMapping.Category.MOVEMENT);
+      this.keyRight = new KeyMapping("key.right", 68, KeyMapping.Category.MOVEMENT);
+      this.keyJump = new KeyMapping("key.jump", 32, KeyMapping.Category.MOVEMENT);
+      KeyMapping.Category var10005 = KeyMapping.Category.MOVEMENT;
       OptionInstance var10006 = this.toggleCrouch;
       Objects.requireNonNull(var10006);
-      this.keyShift = new ToggleKeyMapping("key.sneak", 340, "key.categories.movement", var10006::get);
+      this.keyShift = new ToggleKeyMapping("key.sneak", 340, var10005, var10006::get, true);
+      var10005 = KeyMapping.Category.MOVEMENT;
       var10006 = this.toggleSprint;
       Objects.requireNonNull(var10006);
-      this.keySprint = new ToggleKeyMapping("key.sprint", 341, "key.categories.movement", var10006::get);
-      this.keyInventory = new KeyMapping("key.inventory", 69, "key.categories.inventory");
-      this.keySwapOffhand = new KeyMapping("key.swapOffhand", 70, "key.categories.inventory");
-      this.keyDrop = new KeyMapping("key.drop", 81, "key.categories.inventory");
-      this.keyUse = new KeyMapping("key.use", InputConstants.Type.MOUSE, 1, "key.categories.gameplay");
-      this.keyAttack = new KeyMapping("key.attack", InputConstants.Type.MOUSE, 0, "key.categories.gameplay");
-      this.keyPickItem = new KeyMapping("key.pickItem", InputConstants.Type.MOUSE, 2, "key.categories.gameplay");
-      this.keyChat = new KeyMapping("key.chat", 84, "key.categories.multiplayer");
-      this.keyPlayerList = new KeyMapping("key.playerlist", 258, "key.categories.multiplayer");
-      this.keyCommand = new KeyMapping("key.command", 47, "key.categories.multiplayer");
-      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 80, "key.categories.multiplayer");
-      this.keyScreenshot = new KeyMapping("key.screenshot", 291, "key.categories.misc");
-      this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, "key.categories.misc");
-      this.keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
-      this.keyFullscreen = new KeyMapping("key.fullscreen", 300, "key.categories.misc");
-      this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
-      this.keyAdvancements = new KeyMapping("key.advancements", 76, "key.categories.misc");
-      this.keyQuickActions = new KeyMapping("key.quickActions", 71, "key.categories.misc");
-      this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, "key.categories.inventory"), new KeyMapping("key.hotbar.2", 50, "key.categories.inventory"), new KeyMapping("key.hotbar.3", 51, "key.categories.inventory"), new KeyMapping("key.hotbar.4", 52, "key.categories.inventory"), new KeyMapping("key.hotbar.5", 53, "key.categories.inventory"), new KeyMapping("key.hotbar.6", 54, "key.categories.inventory"), new KeyMapping("key.hotbar.7", 55, "key.categories.inventory"), new KeyMapping("key.hotbar.8", 56, "key.categories.inventory"), new KeyMapping("key.hotbar.9", 57, "key.categories.inventory")};
-      this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, "key.categories.creative");
-      this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, "key.categories.creative");
-      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions}, this.keyHotbarSlots);
+      this.keySprint = new ToggleKeyMapping("key.sprint", 341, var10005, var10006::get, true);
+      this.keyInventory = new KeyMapping("key.inventory", 69, KeyMapping.Category.INVENTORY);
+      this.keySwapOffhand = new KeyMapping("key.swapOffhand", 70, KeyMapping.Category.INVENTORY);
+      this.keyDrop = new KeyMapping("key.drop", 81, KeyMapping.Category.INVENTORY);
+      InputConstants.Type var10004 = InputConstants.Type.MOUSE;
+      KeyMapping.Category var7 = KeyMapping.Category.GAMEPLAY;
+      OptionInstance var10007 = this.toggleUse;
+      Objects.requireNonNull(var10007);
+      this.keyUse = new ToggleKeyMapping("key.use", var10004, 1, var7, var10007::get, false);
+      var10004 = InputConstants.Type.MOUSE;
+      var7 = KeyMapping.Category.GAMEPLAY;
+      var10007 = this.toggleAttack;
+      Objects.requireNonNull(var10007);
+      this.keyAttack = new ToggleKeyMapping("key.attack", var10004, 0, var7, var10007::get, true);
+      this.keyPickItem = new KeyMapping("key.pickItem", InputConstants.Type.MOUSE, 2, KeyMapping.Category.GAMEPLAY);
+      this.keyChat = new KeyMapping("key.chat", 84, KeyMapping.Category.MULTIPLAYER);
+      this.keyPlayerList = new KeyMapping("key.playerlist", 258, KeyMapping.Category.MULTIPLAYER);
+      this.keyCommand = new KeyMapping("key.command", 47, KeyMapping.Category.MULTIPLAYER);
+      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 80, KeyMapping.Category.MULTIPLAYER);
+      this.keyScreenshot = new KeyMapping("key.screenshot", 291, KeyMapping.Category.MISC);
+      this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, KeyMapping.Category.MISC);
+      this.keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+      this.keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
+      this.keyAdvancements = new KeyMapping("key.advancements", 76, KeyMapping.Category.MISC);
+      this.keyQuickActions = new KeyMapping("key.quickActions", 71, KeyMapping.Category.MISC);
+      this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.2", 50, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.3", 51, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.4", 52, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.5", 53, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.6", 54, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.7", 55, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.8", 56, KeyMapping.Category.INVENTORY), new KeyMapping("key.hotbar.9", 57, KeyMapping.Category.INVENTORY)};
+      this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, KeyMapping.Category.CREATIVE);
+      this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, KeyMapping.Category.CREATIVE);
+      this.keySpectatorOutlines = new KeyMapping("key.spectatorOutlines", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.SPECTATOR);
+      this.keySpectatorHotbar = new KeyMapping("key.spectatorHotbar", InputConstants.Type.MOUSE, 2, KeyMapping.Category.SPECTATOR);
+      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions}, this.keyHotbarSlots);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -918,7 +987,7 @@ public class Options {
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
       this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var0) -> Minecraft.getInstance().levelRenderer.needsUpdate());
-      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(5, var3 ? 32 : 16, false), 12, (var0) -> {
+      this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var0) -> {
       });
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
@@ -978,6 +1047,7 @@ public class Options {
       var1.process("chatLinks", this.chatLinks);
       var1.process("chatLinksPrompt", this.chatLinksPrompt);
       var1.process("discrete_mouse_scroll", this.discreteMouseScroll);
+      var1.process("invertXMouse", this.invertXMouse);
       var1.process("invertYMouse", this.invertYMouse);
       var1.process("realmsNotifications", this.realmsNotifications);
       var1.process("showSubtitles", this.showSubtitles);
@@ -986,6 +1056,9 @@ public class Options {
       var1.process("bobView", this.bobView);
       var1.process("toggleCrouch", this.toggleCrouch);
       var1.process("toggleSprint", this.toggleSprint);
+      var1.process("toggleAttack", this.toggleAttack);
+      var1.process("toggleUse", this.toggleUse);
+      var1.process("sprintWindow", this.sprintWindow);
       var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
       var1.process("hideLightningFlashes", this.hideLightningFlash);
       var1.process("hideSplashTexts", this.hideSplashTexts);
@@ -1028,6 +1101,7 @@ public class Options {
       this.tutorialStep = (TutorialSteps)var1.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
       var1.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
       var1.process("rawMouseInput", this.rawMouseInput);
+      var1.process("allowCursorChanges", this.allowCursorChanges);
       this.glDebugVerbosity = var1.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = var1.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
       var1.process("hideMatchedNames", this.hideMatchedNames);
@@ -1036,6 +1110,7 @@ public class Options {
       var1.process("showAutosaveIndicator", this.showAutosaveIndicator);
       var1.process("allowServerListing", this.allowServerListing);
       var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
+      var1.process("saveChatDrafts", this.saveChatDrafts);
       var1.process("panoramaScrollSpeed", this.panoramaSpeed);
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
@@ -1229,11 +1304,7 @@ public class Options {
                }
 
                public <T> void process(String var1x, OptionInstance<T> var2) {
-                  var2.codec().encodeStart(JsonOps.INSTANCE, var2.get()).ifError((var1xx) -> {
-                     Logger var10000 = Options.LOGGER;
-                     String var10001 = String.valueOf(var2);
-                     var10000.error("Error saving option " + var10001 + ": " + String.valueOf(var1xx));
-                  }).ifSuccess((var3) -> {
+                  var2.codec().encodeStart(JsonOps.INSTANCE, var2.get()).ifError((var1xx) -> Options.LOGGER.error("Error saving option {}: {}", var2, var1xx.message())).ifSuccess((var3) -> {
                      this.writePrefix(var1x);
                      var1.println(Options.GSON.toJson(var3));
                   });
@@ -1446,15 +1517,19 @@ public class Options {
       ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
       HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP = Component.translatable("options.accessibility.high_contrast_block_outline.tooltip");
       ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
+      ALLOW_CURSOR_CHANGES_TOOLTIP = Component.translatable("options.allowCursorChanges.tooltip");
       ACCESSIBILITY_TOOLTIP_ROTATE_WITH_MINECART = Component.translatable("options.rotateWithMinecart.tooltip");
       REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
       ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
+      CLOSED_CAPTIONS_TOOLTIP = Component.translatable("options.showSubtitles.tooltip");
       DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
       DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
-      MOVEMENT_TOGGLE = Component.translatable("options.key.toggle");
-      MOVEMENT_HOLD = Component.translatable("options.key.hold");
+      KEY_TOGGLE = Component.translatable("options.key.toggle");
+      KEY_HOLD = Component.translatable("options.key.hold");
+      SPRINT_WINDOW_TOOLTIP = Component.translatable("options.sprintWindow.tooltip");
       CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
       CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
+      CHAT_TOOLTIP_SAVE_DRAFTS = Component.translatable("options.chat.drafts.tooltip");
       TELEMETRY_TOOLTIP = Component.translatable("options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all"));
       ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
       ACCESSIBILITY_TOOLTIP_FOV_EFFECT = Component.translatable("options.fovEffectScale.tooltip");

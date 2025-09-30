@@ -41,8 +41,8 @@ public class VersionCommand {
       var10002[1] = "0x" + var10005;
       var0.accept(Component.translatable("commands.version.protocol", var10002));
       var0.accept(Component.translatable("commands.version.build_time", Component.translationArg(var1.buildTime())));
-      var0.accept(Component.translatable("commands.version.pack.resource", var1.packVersion(PackType.CLIENT_RESOURCES)));
-      var0.accept(Component.translatable("commands.version.pack.data", var1.packVersion(PackType.SERVER_DATA)));
+      var0.accept(Component.translatable("commands.version.pack.resource", var1.packVersion(PackType.CLIENT_RESOURCES).toString()));
+      var0.accept(Component.translatable("commands.version.pack.data", var1.packVersion(PackType.SERVER_DATA).toString()));
       var0.accept(var1.stable() ? STABLE : UNSTABLE);
    }
 }

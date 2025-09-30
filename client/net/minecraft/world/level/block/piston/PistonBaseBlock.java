@@ -69,14 +69,14 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          this.checkIfExtend(var1, var2, var3);
       }
 
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          this.checkIfExtend(var2, var3, var1);
       }
 
@@ -84,7 +84,7 @@ public class PistonBaseBlock extends DirectionalBlock {
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
-         if (!var2.isClientSide && var2.getBlockEntity(var3) == null) {
+         if (!var2.isClientSide() && var2.getBlockEntity(var3) == null) {
             this.checkIfExtend(var2, var3, var1);
          }
 
@@ -146,7 +146,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       Direction var6 = (Direction)var1.getValue(FACING);
       BlockState var7 = (BlockState)var1.setValue(EXTENDED, true);
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          boolean var8 = this.getNeighborSignal(var2, var3, var6);
          if (var8 && (var4 == 1 || var4 == 2)) {
             var2.setBlock(var3, var7, 2);

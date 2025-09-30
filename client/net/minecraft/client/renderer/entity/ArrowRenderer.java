@@ -1,13 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ArrowModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ArrowRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -21,15 +22,13 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
       this.model = new ArrowModel(var1.bakeLayer(ModelLayers.ARROW));
    }
 
-   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
-      VertexConsumer var5 = var3.getBuffer(RenderType.entityCutout(this.getTextureLocation(var1)));
-      this.model.setupAnim(var1);
-      this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1, var2, RenderType.entityCutout(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected abstract ResourceLocation getTextureLocation(S var1);

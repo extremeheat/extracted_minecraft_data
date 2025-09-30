@@ -53,7 +53,7 @@ public class JigsawPlacement {
       super();
    }
 
-   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, int var7, PoolAliasLookup var8, DimensionPadding var9, LiquidSettings var10) {
+   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, JigsawStructure.MaxDistance var7, PoolAliasLookup var8, DimensionPadding var9, LiquidSettings var10) {
       RegistryAccess var11 = var0.registryAccess();
       ChunkGenerator var12 = var0.chunkGenerator();
       StructureTemplateManager var13 = var0.structureTemplateManager();
@@ -98,7 +98,7 @@ public class JigsawPlacement {
                ArrayList var18 = Lists.newArrayList();
                var18.add(var23);
                if (var3 > 0) {
-                  AABB var19 = new AABB((double)(var25 - var7), (double)Math.max(var29 - var7, var14.getMinY() + var9.bottom()), (double)(var26 - var7), (double)(var25 + var7 + 1), (double)Math.min(var29 + var7 + 1, var14.getMaxY() + 1 - var9.top()), (double)(var26 + var7 + 1));
+                  AABB var19 = new AABB((double)(var25 - var7.horizontal()), (double)Math.max(var29 - var7.vertical(), var14.getMinY() + var9.bottom()), (double)(var26 - var7.horizontal()), (double)(var25 + var7.horizontal() + 1), (double)Math.min(var29 + var7.vertical() + 1, var14.getMaxY() + 1 - var9.top()), (double)(var26 + var7.horizontal() + 1));
                   VoxelShape var20 = Shapes.join(Shapes.create(var19), Shapes.create(AABB.of(var24)), BooleanOp.ONLY_FIRST);
                   addPieces(var0.randomState(), var3, var5, var12, var13, var14, var15, var16, var23, var18, var20, var8, var10);
                   Objects.requireNonNull(var17x);
@@ -146,7 +146,7 @@ public class JigsawPlacement {
       StructureManager var8 = var0.structureManager();
       RandomSource var9 = var0.getRandom();
       Structure.GenerationContext var10 = new Structure.GenerationContext(var0.registryAccess(), var6, var6.getBiomeSource(), var0.getChunkSource().randomState(), var7, var0.getSeed(), new ChunkPos(var4), var0, (var0x) -> true);
-      Optional var11 = addPieces(var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), 128, PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
+      Optional var11 = addPieces(var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), new JigsawStructure.MaxDistance(128), PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING, JigsawStructure.DEFAULT_LIQUID_SETTINGS);
       if (var11.isPresent()) {
          StructurePiecesBuilder var12 = ((Structure.GenerationStub)var11.get()).getPiecesBuilder();
 

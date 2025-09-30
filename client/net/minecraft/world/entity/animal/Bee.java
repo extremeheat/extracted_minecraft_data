@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -28,6 +27,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.debug.DebugBeeInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -334,7 +336,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    public static boolean isNightOrRaining(Level var0) {
-      return var0.dimensionType().hasSkyLight() && (var0.isDarkOutside() || var0.isRaining());
+      return var0.dimensionType().hasSkyLight() && var0.dimension() != Level.END && (var0.isDarkOutside() || var0.isRaining());
    }
 
    public void setStayOutOfHiveCountdown(int var1) {
@@ -436,11 +438,6 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       return this.goalSelector;
    }
 
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendBeeInfo(this);
-   }
-
    int getCropsGrownSincePollination() {
       return this.numCropsGrownSincePollination;
    }
@@ -455,7 +452,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          if (this.stayOutOfHiveCountdown > 0) {
             --this.stayOutOfHiveCountdown;
          }
@@ -569,7 +566,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                MobEffectInstance var8 = var5.getBeeInteractionEffect();
                if (var8 != null) {
                   this.usePlayerItem(var1, var2, var3);
-                  if (!this.level().isClientSide) {
+                  if (!this.level().isClientSide()) {
                      this.addEffect(var8);
                   }
 
@@ -663,6 +660,11 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       } else {
          return false;
       }
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      super.registerDebugValues(var1, var2);
+      var2.register(DebugSubscriptions.BEES, () -> new DebugBeeInfo(Optional.ofNullable(this.getHivePos()), Optional.ofNullable(this.getSavedFlowerPos()), this.getTravellingTicks(), this.getBlacklistedHives()));
    }
 
    // $FF: synthetic method

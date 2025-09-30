@@ -10,8 +10,11 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import java.net.Proxy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
@@ -33,10 +36,13 @@ import net.minecraft.server.Services;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.LoggerChunkProgressListener;
+import net.minecraft.server.level.progress.LoggingLevelLoadListener;
+import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.players.GameProfileCache;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.players.ProfileResolver;
+import net.minecraft.server.players.UserNameToIdResolver;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
@@ -53,6 +59,7 @@ import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import org.slf4j.Logger;
@@ -101,13 +108,13 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Optional<String> var5, boolean var6) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggerChunkProgressListener::createFromGameruleRadius);
+      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
       this.testSelection = var5;
       this.verify = var6;
    }
 
    public boolean initServer() {
-      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, 1) {
+      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {
       });
       this.loadLevel();
       ServerLevel var1 = this.overworld();
@@ -226,7 +233,7 @@ public class GameTestServer extends MinecraftServer {
 
    private void startTests(ServerLevel var1) {
       BlockPos var2 = new BlockPos(var1.random.nextIntBetweenInclusive(-14999992, 14999992), -59, var1.random.nextIntBetweenInclusive(-14999992, 14999992));
-      var1.setDefaultSpawnPos(var2, 0.0F);
+      var1.setRespawnData(LevelData.RespawnData.of(var1.dimension(), var2, 0.0F, 0.0F));
       GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8, false)).build();
       List var4 = var3.getTestInfos();
       this.testTracker = new MultipleTestTracker(var4);
@@ -244,7 +251,7 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public int getOperatorUserPermissionLevel() {
+   public int operatorUserPermissionLevel() {
       return 0;
    }
 
@@ -272,6 +279,10 @@ public class GameTestServer extends MinecraftServer {
       return true;
    }
 
+   public boolean isSpawnerBlockEnabled() {
+      return true;
+   }
+
    public boolean isPublished() {
       return false;
    }
@@ -280,13 +291,57 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public boolean isSingleplayerOwner(GameProfile var1) {
+   public boolean isSingleplayerOwner(NameAndId var1) {
       return false;
    }
 
+   public int getMaxPlayers() {
+      return 1;
+   }
+
    static {
-      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, (GameProfileCache)null);
+      NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, new MockUserNameToIdResolver(), new MockProfileResolver());
       ENABLED_FEATURES = FeatureFlags.REGISTRY.allFlags().subtract(FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS));
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
+   }
+
+   static class MockUserNameToIdResolver implements UserNameToIdResolver {
+      private final Set<NameAndId> savedIds = new HashSet();
+
+      MockUserNameToIdResolver() {
+         super();
+      }
+
+      public void add(NameAndId var1) {
+         this.savedIds.add(var1);
+      }
+
+      public Optional<NameAndId> get(String var1) {
+         return this.savedIds.stream().filter((var1x) -> var1x.name().equals(var1)).findFirst().or(() -> Optional.of(NameAndId.createOffline(var1)));
+      }
+
+      public Optional<NameAndId> get(UUID var1) {
+         return this.savedIds.stream().filter((var1x) -> var1x.id().equals(var1)).findFirst();
+      }
+
+      public void resolveOfflineUsers(boolean var1) {
+      }
+
+      public void save() {
+      }
+   }
+
+   static class MockProfileResolver implements ProfileResolver {
+      MockProfileResolver() {
+         super();
+      }
+
+      public Optional<GameProfile> fetchByName(String var1) {
+         return Optional.empty();
+      }
+
+      public Optional<GameProfile> fetchById(UUID var1) {
+         return Optional.empty();
+      }
    }
 }

@@ -2,7 +2,7 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 
-public class SimpleAnimatedParticle extends TextureSheetParticle {
+public abstract class SimpleAnimatedParticle extends SingleQuadParticle {
    protected final SpriteSet sprites;
    private float fadeR;
    private float fadeG;
@@ -10,7 +10,7 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
    private boolean hasFade;
 
    protected SimpleAnimatedParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8, float var9) {
-      super(var1, var2, var4, var6);
+      super(var1, var2, var4, var6, var8.first());
       this.friction = 0.91F;
       this.gravity = var9;
       this.sprites = var8;
@@ -31,8 +31,8 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
       this.hasFade = true;
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
    public void tick() {

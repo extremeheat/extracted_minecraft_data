@@ -14,7 +14,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -23,12 +22,13 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
 import net.minecraft.client.gui.contextualbar.ExperienceBarRenderer;
 import net.minecraft.client.gui.contextualbar.JumpableVehicleBarRenderer;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
@@ -169,6 +169,8 @@ public class Gui {
    private long lastHealthTime;
    private long healthBlinkTime;
    private int lastBubblePopSoundPlayed;
+   @Nullable
+   private Runnable deferredSubtitles;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
    private Pair<ContextualInfo, ContextualBarRenderer> contextualInfoBar;
@@ -197,7 +199,7 @@ public class Gui {
    }
 
    public void render(GuiGraphics var1, DeltaTracker var2) {
-      if (this.minecraft.screen == null || !(this.minecraft.screen instanceof ReceivingLevelScreen)) {
+      if (!(this.minecraft.screen instanceof LevelLoadingScreen)) {
          if (!this.minecraft.options.hideGui) {
             this.renderCameraOverlays(var1, var2);
             this.renderCrosshair(var1, var2);
@@ -210,13 +212,14 @@ public class Gui {
          this.renderSleepOverlay(var1, var2);
          if (!this.minecraft.options.hideGui) {
             this.renderDemoOverlay(var1, var2);
-            this.renderDebugOverlay(var1, var2);
             this.renderScoreboardSidebar(var1, var2);
             this.renderOverlayMessage(var1, var2);
             this.renderTitle(var1, var2);
             this.renderChat(var1, var2);
             this.renderTabList(var1, var2);
-            this.renderSubtitleOverlay(var1, var2);
+            this.renderSubtitleOverlay(var1, this.minecraft.screen == null || this.minecraft.screen.isInGameUi());
+         } else if (this.minecraft.screen != null && this.minecraft.screen.isInGameUi()) {
+            this.renderSubtitleOverlay(var1, true);
          }
 
       }
@@ -226,16 +229,26 @@ public class Gui {
       this.bossOverlay.render(var1);
    }
 
-   private void renderDebugOverlay(GuiGraphics var1, DeltaTracker var2) {
-      if (this.debugOverlay.showDebugScreen()) {
-         var1.nextStratum();
-         this.debugOverlay.render(var1);
+   public void renderDebugOverlay(GuiGraphics var1) {
+      this.debugOverlay.render(var1);
+   }
+
+   private void renderSubtitleOverlay(GuiGraphics var1, boolean var2) {
+      if (var2) {
+         this.deferredSubtitles = () -> this.subtitleOverlay.render(var1);
+      } else {
+         this.deferredSubtitles = null;
+         this.subtitleOverlay.render(var1);
       }
 
    }
 
-   private void renderSubtitleOverlay(GuiGraphics var1, DeltaTracker var2) {
-      this.subtitleOverlay.render(var1);
+   public void renderDeferredSubtitles() {
+      if (this.deferredSubtitles != null) {
+         this.deferredSubtitles.run();
+         this.deferredSubtitles = null;
+      }
+
    }
 
    private void renderCameraOverlays(GuiGraphics var1, DeltaTracker var2) {
@@ -415,7 +428,7 @@ public class Gui {
       Options var3 = this.minecraft.options;
       if (var3.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
-            if (!this.shouldRenderDebugCrosshair()) {
+            if (!this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
                var1.nextStratum();
                boolean var4 = true;
                var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
@@ -441,10 +454,6 @@ public class Gui {
 
          }
       }
-   }
-
-   public boolean shouldRenderDebugCrosshair() {
-      return this.debugOverlay.showDebugScreen() && this.minecraft.options.getCameraType() == CameraType.FIRST_PERSON && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)this.minecraft.options.reducedDebugInfo().get();
    }
 
    private boolean canRenderCrosshairForSpectator(@Nullable HitResult var1) {

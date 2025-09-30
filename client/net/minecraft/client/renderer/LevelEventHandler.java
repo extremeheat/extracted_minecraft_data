@@ -5,17 +5,20 @@ import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.Particle;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -47,15 +50,13 @@ import net.minecraft.world.phys.Vec3;
 
 public class LevelEventHandler {
    private final Minecraft minecraft;
-   private final Level level;
-   private final LevelRenderer levelRenderer;
+   private final ClientLevel level;
    private final Map<BlockPos, SoundInstance> playingJukeboxSongs = new HashMap();
 
-   public LevelEventHandler(Minecraft var1, Level var2, LevelRenderer var3) {
+   public LevelEventHandler(Minecraft var1, ClientLevel var2) {
       super();
       this.minecraft = var1;
       this.level = var2;
-      this.levelRenderer = var3;
    }
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
@@ -257,26 +258,23 @@ public class LevelEventHandler {
             Vec3 var23 = Vec3.atBottomCenterOf(var2);
 
             for(int var25 = 0; var25 < 8; ++var25) {
-               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)), var23.x, var23.y, var23.z, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)), var23.x, var23.y, var23.z, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
             }
 
             float var26 = (float)(var3 >> 16 & 255) / 255.0F;
             float var33 = (float)(var3 >> 8 & 255) / 255.0F;
             float var42 = (float)(var3 >> 0 & 255) / 255.0F;
-            SimpleParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
+            ParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
 
             for(int var53 = 0; var53 < 100; ++var53) {
                double var61 = var4.nextDouble() * 4.0;
                double var72 = var4.nextDouble() * 3.141592653589793 * 2.0;
                double var80 = Math.cos(var72) * var61;
                double var84 = 0.01 + var4.nextDouble() * 0.5;
-               double var85 = Math.sin(var72) * var61;
-               Particle var21 = this.levelRenderer.addParticleInternal(var47, var47.getType().getOverrideLimiter(), var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var85 * 0.1, var80, var84, var85);
-               if (var21 != null) {
-                  float var22 = 0.75F + var4.nextFloat() * 0.25F;
-                  var21.setColor(var26 * var22, var33 * var22, var42 * var22);
-                  var21.setPower((float)var61);
-               }
+               double var19 = Math.sin(var72) * var61;
+               float var21 = 0.75F + var4.nextFloat() * 0.25F;
+               SpellParticleOption var22 = SpellParticleOption.create(var47, var26 * var21, var33 * var21, var42 * var21, (float)var61);
+               this.level.addParticle(var22, var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var19 * 0.1, var80, var84, var19);
             }
 
             this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
@@ -287,12 +285,12 @@ public class LevelEventHandler {
             double var46 = (double)var2.getZ() + 0.5;
 
             for(int var59 = 0; var59 < 8; ++var59) {
-               this.levelRenderer.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
             }
 
             for(double var60 = 0.0; var60 < 6.283185307179586; var60 += 0.15707963267948966) {
-               this.levelRenderer.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -5.0, 0.0, Math.sin(var60) * -5.0);
-               this.levelRenderer.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -7.0, 0.0, Math.sin(var60) * -7.0);
+               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -5.0, 0.0, Math.sin(var60) * -5.0);
+               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -7.0, 0.0, Math.sin(var60) * -7.0);
             }
             break;
          case 2004:
@@ -311,10 +309,7 @@ public class LevelEventHandler {
                double var71 = (double)(Mth.cos(var67) * var58);
                double var79 = 0.01 + var4.nextDouble() * 0.5;
                double var83 = (double)(Mth.sin(var67) * var58);
-               Particle var19 = this.levelRenderer.addParticleInternal(ParticleTypes.DRAGON_BREATH, false, (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
-               if (var19 != null) {
-                  var19.setPower(var58);
-               }
+               this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
             }
 
             if (var3 == 1) {
@@ -342,7 +337,7 @@ public class LevelEventHandler {
             ParticleUtils.spawnSmashAttackParticles(this.level, var2, var3);
             break;
          case 3000:
-            this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, true, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+            this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             this.level.playLocalSound(var2, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
             break;
          case 3001:
@@ -498,7 +493,7 @@ public class LevelEventHandler {
          double var18 = (double)var6 * var10 + var3.nextGaussian() * 0.01;
          double var20 = (double)var7 * var10 + var3.nextGaussian() * 0.01;
          double var22 = (double)var8 * var10 + var3.nextGaussian() * 0.01;
-         this.levelRenderer.addParticle(var4, var12, var14, var16, var18, var20, var22);
+         this.level.addParticle(var4, var12, var14, var16, var18, var20, var22);
       }
 
    }

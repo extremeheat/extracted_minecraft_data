@@ -8,15 +8,13 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends HumanoidModel<S> implements VillagerLikeModel {
-   private final ModelPart hatRim;
-
+public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends HumanoidModel<S> implements VillagerLikeModel<S> {
    public ZombieVillagerModel(ModelPart var1) {
       super(var1);
-      this.hatRim = this.hat.getChild("hat_rim");
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -33,7 +31,18 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public static LayerDefinition createArmorLayer(CubeDeformation var0) {
+   public static LayerDefinition createNoHatLayer() {
+      return createBodyLayer().apply((var0) -> {
+         var0.getRoot().clearChild("head").clearRecursively();
+         return var0;
+      });
+   }
+
+   public static ArmorModelSet<LayerDefinition> createArmorLayerSet(CubeDeformation var0, CubeDeformation var1) {
+      return createArmorMeshSet(ZombieVillagerModel::createBaseArmorMesh, var0, var1).<LayerDefinition>map((var0x) -> LayerDefinition.create(var0x, 64, 32));
+   }
+
+   private static MeshDefinition createBaseArmorMesh(CubeDeformation var0) {
       MeshDefinition var1 = HumanoidModel.createMesh(var0, 0.0F);
       PartDefinition var2 = var1.getRoot();
       PartDefinition var3 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.ZERO);
@@ -41,7 +50,7 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
       var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.1F)), PartPose.offset(-2.0F, 12.0F, 0.0F));
       var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.1F)), PartPose.offset(2.0F, 12.0F, 0.0F));
       var3.getChild("hat").addOrReplaceChild("hat_rim", CubeListBuilder.create(), PartPose.ZERO);
-      return LayerDefinition.create(var1, 64, 32);
+      return var1;
    }
 
    public void setupAnim(S var1) {
@@ -50,13 +59,7 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
       AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var2, var1.ageInTicks);
    }
 
-   public void hatVisible(boolean var1) {
-      this.head.visible = var1;
-      this.hat.visible = var1;
-      this.hatRim.visible = var1;
-   }
-
-   public void translateToArms(PoseStack var1) {
-      this.translateToHand(HumanoidArm.RIGHT, var1);
+   public void translateToArms(ZombieVillagerRenderState var1, PoseStack var2) {
+      this.translateToHand(var1, HumanoidArm.RIGHT, var2);
    }
 }

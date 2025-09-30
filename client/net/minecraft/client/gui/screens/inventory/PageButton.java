@@ -42,4 +42,8 @@ public class PageButton extends Button {
       }
 
    }
+
+   public boolean shouldTakeFocusAfterInteraction() {
+      return false;
+   }
 }

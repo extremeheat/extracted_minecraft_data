@@ -55,6 +55,7 @@ import net.minecraft.data.tags.VanillaItemTagsProvider;
 import net.minecraft.data.tags.WorldPresetTagsProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.obfuscate.DontObfuscate;
+import net.minecraft.server.jsonrpc.dataprovider.JsonRpcApiSchema;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
@@ -133,6 +134,7 @@ public class Main {
       var11.addProvider(RegistryDumpReport::new);
       var11.addProvider(PacketReport::new);
       var11.addProvider(DatapackStructureReport::new);
+      var11.addProvider(JsonRpcApiSchema::new);
       CompletableFuture var17 = TradeRebalanceRegistries.createLookup(var14);
       CompletableFuture var12 = var17.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
       DataGenerator.PackGenerator var13 = var0.getBuiltinDatapack(var2, "trade_rebalance");

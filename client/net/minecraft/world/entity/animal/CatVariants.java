@@ -51,6 +51,6 @@ public interface CatVariants {
    }
 
    private static void register(BootstrapContext<CatVariant> var0, ResourceKey<CatVariant> var1, String var2, SpawnPrioritySelectors var3) {
-      var0.register(var1, new CatVariant(new ClientAsset(ResourceLocation.withDefaultNamespace(var2)), var3));
+      var0.register(var1, new CatVariant(new ClientAsset.ResourceTexture(ResourceLocation.withDefaultNamespace(var2)), var3));
    }
 }

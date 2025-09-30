@@ -275,14 +275,14 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide && this.isWet && !this.isShaking && !this.isPathFinding() && this.onGround()) {
+      if (!this.level().isClientSide() && this.isWet && !this.isShaking && !this.isPathFinding() && this.onGround()) {
          this.isShaking = true;
          this.shakeAnim = 0.0F;
          this.shakeAnimO = 0.0F;
          this.level().broadcastEntityEvent(this, (byte)8);
       }
 
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
 
@@ -300,7 +300,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
          if (this.isInWaterOrRain()) {
             this.isWet = true;
-            if (this.isShaking && !this.level().isClientSide) {
+            if (this.isShaking && !this.level().isClientSide()) {
                this.level().broadcastEntityEvent(this, (byte)56);
                this.cancelShake();
             }
@@ -461,7 +461,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                }
             }
          }
-      } else if (!this.level().isClientSide && var3.is(Items.BONE) && !this.isAngry()) {
+      } else if (!this.level().isClientSide() && var3.is(Items.BONE) && !this.isAngry()) {
          var3.consume(1, var1);
          this.tryToTame(var1);
          return InteractionResult.SUCCESS_SERVER;

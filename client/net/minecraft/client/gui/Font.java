@@ -7,20 +7,19 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.StringSplitter;
-import net.minecraft.client.gui.font.FontSet;
+import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
+import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
@@ -36,20 +35,18 @@ public class Font {
    public static final float SHADOW_DEPTH = 0.03F;
    public static final int NO_SHADOW = 0;
    public final int lineHeight = 9;
-   public final RandomSource random = RandomSource.create();
-   private final Function<ResourceLocation, FontSet> fonts;
-   final boolean filterFishyGlyphs;
+   private final RandomSource random = RandomSource.create();
+   final Provider provider;
    private final StringSplitter splitter;
 
-   public Font(Function<ResourceLocation, FontSet> var1, boolean var2) {
+   public Font(Provider var1) {
       super();
-      this.fonts = var1;
-      this.filterFishyGlyphs = var2;
-      this.splitter = new StringSplitter((var1x, var2x) -> this.getFontSet(var2x.getFont()).getGlyphInfo(var1x, this.filterFishyGlyphs).getAdvance(var2x.isBold()));
+      this.provider = var1;
+      this.splitter = new StringSplitter((var1x, var2) -> this.getGlyphSource(var2.getFont()).getGlyph(var1x).info().getAdvance(var2.isBold()));
    }
 
-   FontSet getFontSet(ResourceLocation var1) {
-      return (FontSet)this.fonts.apply(var1);
+   private GlyphSource getGlyphSource(FontDescription var1) {
+      return this.provider.glyphs(var1);
    }
 
    public String bidirectionalShaping(String var1) {
@@ -86,12 +83,11 @@ public class Font {
                float[] var12 = new float[]{var2};
                var1.accept((var7x, var8x, var9x) -> {
                   boolean var10x = var8x.isBold();
-                  FontSet var11x = this.getFontSet(var8x.getFont());
-                  GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
-                  var9.x = var12[0] + (float)var10 * var12x.getShadowOffset();
-                  var9.y = var3 + (float)var11 * var12x.getShadowOffset();
-                  var12[0] += var12x.getAdvance(var10x);
-                  return var9.accept(var7x, var8x.withColor(var5), var9x);
+                  BakedGlyph var11x = this.getGlyph(var9x, var8x);
+                  var9.x = var12[0] + (float)var10 * var11x.info().getShadowOffset();
+                  var9.y = var3 + (float)var11 * var11x.info().getShadowOffset();
+                  var12[0] += var11x.info().getAdvance(var10x);
+                  return var9.accept(var7x, var8x.withColor(var5), var11x);
                });
             }
          }
@@ -99,13 +95,24 @@ public class Font {
 
       GlyphVisitor var15 = Font.GlyphVisitor.forMultiBufferSource(var7, var6, Font.DisplayMode.NORMAL, var8);
 
-      for(BakedGlyph.GlyphInstance var18 : var9.glyphs) {
+      for(TextRenderable var18 : var9.glyphs) {
          var15.acceptGlyph(var18);
       }
 
       PreparedTextBuilder var17 = new PreparedTextBuilder(var2, var3, var4, false);
       var1.accept(var17);
       var17.visit(Font.GlyphVisitor.forMultiBufferSource(var7, var6, Font.DisplayMode.POLYGON_OFFSET, var8));
+   }
+
+   BakedGlyph getGlyph(int var1, Style var2) {
+      GlyphSource var3 = this.getGlyphSource(var2.getFont());
+      BakedGlyph var4 = var3.getGlyph(var1);
+      if (var2.isObfuscated() && var1 != 32) {
+         int var5 = Mth.ceil(var4.info().getAdvance(false));
+         var4 = var3.getRandomGlyph(this.random, var5);
+      }
+
+      return var4;
    }
 
    public PreparedText prepareText(String var1, float var2, float var3, int var4, boolean var5, int var6) {
@@ -200,9 +207,9 @@ public class Font {
       private float backgroundTop;
       private float backgroundRight;
       private float backgroundBottom;
-      final List<BakedGlyph.GlyphInstance> glyphs;
+      final List<TextRenderable> glyphs;
       @Nullable
-      private List<BakedGlyph.Effect> effects;
+      private List<TextRenderable> effects;
 
       public PreparedTextBuilder(final float var2, final float var3, final int var4, final boolean var5) {
          this(var2, var3, var4, 0, var5);
@@ -244,12 +251,12 @@ public class Font {
          }
       }
 
-      private void addGlyph(BakedGlyph.GlyphInstance var1) {
+      private void addGlyph(TextRenderable var1) {
          this.glyphs.add(var1);
          this.markSize(var1.left(), var1.top(), var1.right(), var1.bottom());
       }
 
-      private void addEffect(BakedGlyph.Effect var1) {
+      private void addEffect(TextRenderable var1) {
          if (this.effects == null) {
             this.effects = new ArrayList();
          }
@@ -259,53 +266,50 @@ public class Font {
       }
 
       public boolean accept(int var1, Style var2, int var3) {
-         FontSet var4 = Font.this.getFontSet(var2.getFont());
-         GlyphInfo var5 = var4.getGlyphInfo(var3, Font.this.filterFishyGlyphs);
-         BakedGlyph var6 = var2.isObfuscated() && var3 != 32 ? var4.getRandomGlyph(var5) : var4.getGlyph(var3);
-         boolean var7 = var2.isBold();
-         TextColor var8 = var2.getColor();
-         int var9 = this.getTextColor(var8);
-         int var10 = this.getShadowColor(var2, var9);
-         float var11 = var5.getAdvance(var7);
-         float var12 = var1 == 0 ? this.x - 1.0F : this.x;
-         float var13 = var5.getShadowOffset();
-         if (!(var6 instanceof EmptyGlyph)) {
-            float var14 = var7 ? var5.getBoldOffset() : 0.0F;
-            this.addGlyph(new BakedGlyph.GlyphInstance(this.x, this.y, var9, var10, var6, var2, var14, var13));
+         BakedGlyph var4 = Font.this.getGlyph(var3, var2);
+         return this.accept(var1, var2, var4);
+      }
+
+      public boolean accept(int var1, Style var2, BakedGlyph var3) {
+         GlyphInfo var4 = var3.info();
+         boolean var5 = var2.isBold();
+         TextColor var6 = var2.getColor();
+         int var7 = this.getTextColor(var6);
+         int var8 = this.getShadowColor(var2, var7);
+         float var9 = var4.getAdvance(var5);
+         float var10 = var1 == 0 ? this.x - 1.0F : this.x;
+         float var11 = var4.getShadowOffset();
+         float var12 = var5 ? var4.getBoldOffset() : 0.0F;
+         TextRenderable var13 = var3.createGlyph(this.x, this.y, var7, var8, var2, var12, var11);
+         if (var13 != null) {
+            this.addGlyph(var13);
          }
 
-         this.markBackground(this.x, this.y, var11);
+         this.markBackground(this.x, this.y, var9);
          if (var2.isStrikethrough()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F - 1.0F, this.x + var11, this.y + 4.5F, 0.01F, var9, var10, var13));
+            this.addEffect(Font.this.provider.effect().createEffect(var10, this.y + 4.5F - 1.0F, this.x + var9, this.y + 4.5F, 0.01F, var7, var8, var11));
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F - 1.0F, this.x + var11, this.y + 9.0F, 0.01F, var9, var10, var13));
+            this.addEffect(Font.this.provider.effect().createEffect(var10, this.y + 9.0F - 1.0F, this.x + var9, this.y + 9.0F, 0.01F, var7, var8, var11));
          }
 
-         this.x += var11;
+         this.x += var9;
          return true;
       }
 
       public void visit(GlyphVisitor var1) {
-         BakedGlyph var2 = null;
          if (ARGB.alpha(this.backgroundColor) != 0) {
-            BakedGlyph.Effect var3 = new BakedGlyph.Effect(this.backgroundLeft, this.backgroundTop, this.backgroundRight, this.backgroundBottom, -0.01F, this.backgroundColor);
-            var2 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
-            var1.acceptEffect(var2, var3);
+            var1.acceptEffect(Font.this.provider.effect().createEffect(this.backgroundLeft, this.backgroundTop, this.backgroundRight, this.backgroundBottom, -0.01F, this.backgroundColor, 0, 0.0F));
          }
 
-         for(BakedGlyph.GlyphInstance var4 : this.glyphs) {
-            var1.acceptGlyph(var4);
+         for(TextRenderable var3 : this.glyphs) {
+            var1.acceptGlyph(var3);
          }
 
          if (this.effects != null) {
-            if (var2 == null) {
-               var2 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
-            }
-
-            for(BakedGlyph.Effect var7 : this.effects) {
-               var1.acceptEffect(var2, var7);
+            for(TextRenderable var5 : this.effects) {
+               var1.acceptEffect(var5);
             }
          }
 
@@ -349,22 +353,24 @@ public class Font {
    public interface GlyphVisitor {
       static GlyphVisitor forMultiBufferSource(final MultiBufferSource var0, final Matrix4f var1, final DisplayMode var2, final int var3) {
          return new GlyphVisitor() {
-            public void acceptGlyph(BakedGlyph.GlyphInstance var1x) {
-               BakedGlyph var2x = var1x.glyph();
-               VertexConsumer var3x = var0.getBuffer(var2x.renderType(var2));
-               var2x.renderChar(var1x, var1, var3x, var3, false);
+            public void acceptGlyph(TextRenderable var1x) {
+               this.render(var1x);
             }
 
-            public void acceptEffect(BakedGlyph var1x, BakedGlyph.Effect var2x) {
-               VertexConsumer var3x = var0.getBuffer(var1x.renderType(var2));
-               var1x.renderEffect(var2x, var1, var3x, var3, false);
+            public void acceptEffect(TextRenderable var1x) {
+               this.render(var1x);
+            }
+
+            private void render(TextRenderable var1x) {
+               VertexConsumer var2x = var0.getBuffer(var1x.renderType(var2));
+               var1x.render(var1, var2x, var3, false);
             }
          };
       }
 
-      void acceptGlyph(BakedGlyph.GlyphInstance var1);
+      void acceptGlyph(TextRenderable var1);
 
-      void acceptEffect(BakedGlyph var1, BakedGlyph.Effect var2);
+      void acceptEffect(TextRenderable var1);
    }
 
    public interface PreparedText {
@@ -372,5 +378,11 @@ public class Font {
 
       @Nullable
       ScreenRectangle bounds();
+   }
+
+   public interface Provider {
+      GlyphSource glyphs(FontDescription var1);
+
+      EffectGlyph effect();
    }
 }

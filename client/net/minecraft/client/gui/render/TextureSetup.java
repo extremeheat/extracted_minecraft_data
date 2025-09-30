@@ -2,6 +2,7 @@ package net.minecraft.client.gui.render;
 
 import com.mojang.blaze3d.textures.GpuTextureView;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 
 public record TextureSetup(@Nullable GpuTextureView texure0, @Nullable GpuTextureView texure1, @Nullable GpuTextureView texure2) {
@@ -32,7 +33,7 @@ public record TextureSetup(@Nullable GpuTextureView texure0, @Nullable GpuTextur
    }
 
    public int getSortKey() {
-      return this.hashCode();
+      return SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER ? this.hashCode() * (sortKeySeed + 1) : this.hashCode();
    }
 
    public static void updateSortKeySeed() {

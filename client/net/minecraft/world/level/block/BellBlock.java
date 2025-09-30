@@ -133,7 +133,7 @@ public class BellBlock extends BaseEntityBlock {
 
    public boolean attemptToRing(@Nullable Entity var1, Level var2, BlockPos var3, @Nullable Direction var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
-      if (!var2.isClientSide && var5 instanceof BellBlockEntity) {
+      if (!var2.isClientSide() && var5 instanceof BellBlockEntity) {
          if (var4 == null) {
             var4 = (Direction)var2.getBlockState(var3).getValue(FACING);
          }
@@ -255,7 +255,7 @@ public class BellBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.BELL, var1.isClientSide ? BellBlockEntity::clientTick : BellBlockEntity::serverTick);
+      return createTickerHelper(var3, BlockEntityType.BELL, var1.isClientSide() ? BellBlockEntity::clientTick : BellBlockEntity::serverTick);
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {

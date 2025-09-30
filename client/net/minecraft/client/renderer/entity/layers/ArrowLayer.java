@@ -6,14 +6,15 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.TippableArrowRenderer;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.ArrowRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 
-public class ArrowLayer<M extends PlayerModel> extends StuckInBodyLayer<M> {
-   public ArrowLayer(LivingEntityRenderer<?, PlayerRenderState, M> var1, EntityRendererProvider.Context var2) {
-      super(var1, new ArrowModel(var2.bakeLayer(ModelLayers.ARROW)), TippableArrowRenderer.NORMAL_ARROW_LOCATION, StuckInBodyLayer.PlacementStyle.IN_CUBE);
+public class ArrowLayer<M extends PlayerModel> extends StuckInBodyLayer<M, ArrowRenderState> {
+   public ArrowLayer(LivingEntityRenderer<?, AvatarRenderState, M> var1, EntityRendererProvider.Context var2) {
+      super(var1, new ArrowModel(var2.bakeLayer(ModelLayers.ARROW)), new ArrowRenderState(), TippableArrowRenderer.NORMAL_ARROW_LOCATION, StuckInBodyLayer.PlacementStyle.IN_CUBE);
    }
 
-   protected int numStuck(PlayerRenderState var1) {
+   protected int numStuck(AvatarRenderState var1) {
       return var1.arrowCount;
    }
 }

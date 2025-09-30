@@ -72,7 +72,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
+      if (var2.isClientSide()) {
          return InteractionResult.SUCCESS_SERVER;
       } else {
          if (var1.getValue(PART) != BedPart.HEAD) {
@@ -160,7 +160,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.preventsBlockDrops()) {
+      if (!var1.isClientSide() && var4.preventsBlockDrops()) {
          BedPart var5 = (BedPart)var3.getValue(PART);
          if (var5 == BedPart.FOOT) {
             BlockPos var6 = var2.relative(getNeighbourDirection(var5, (Direction)var3.getValue(FACING)));
@@ -266,7 +266,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       super.setPlacedBy(var1, var2, var3, var4, var5);
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          BlockPos var6 = var2.relative((Direction)var3.getValue(FACING));
          var1.setBlock(var6, (BlockState)var3.setValue(PART, BedPart.HEAD), 3);
          var1.updateNeighborsAt(var2, Blocks.AIR);

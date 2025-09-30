@@ -40,6 +40,7 @@ public class EntitySelector {
    private final boolean includesEntities;
    private final boolean worldLimited;
    private final List<Predicate<Entity>> contextFreePredicates;
+   @Nullable
    private final MinMaxBounds.Doubles range;
    private final Function<Vec3, Vec3> position;
    @Nullable
@@ -53,7 +54,7 @@ public class EntitySelector {
    private final EntityTypeTest<Entity, ?> type;
    private final boolean usesSelector;
 
-   public EntitySelector(int var1, boolean var2, boolean var3, List<Predicate<Entity>> var4, MinMaxBounds.Doubles var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
+   public EntitySelector(int var1, boolean var2, boolean var3, List<Predicate<Entity>> var4, @Nullable MinMaxBounds.Doubles var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
       super();
       this.maxResults = var1;
       this.includesEntities = var2;
@@ -228,7 +229,7 @@ public class EntitySelector {
    private Predicate<Entity> getPredicate(Vec3 var1, @Nullable AABB var2, @Nullable FeatureFlagSet var3) {
       boolean var4 = var3 != null;
       boolean var5 = var2 != null;
-      boolean var6 = !this.range.isAny();
+      boolean var6 = this.range != null;
       int var7 = (var4 ? 1 : 0) + (var5 ? 1 : 0) + (var6 ? 1 : 0);
       Object var8;
       if (var7 == 0) {

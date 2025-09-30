@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.AABB;
 
 public class CatSpawner implements CustomSpawner {
@@ -26,28 +25,26 @@ public class CatSpawner implements CustomSpawner {
       super();
    }
 
-   public void tick(ServerLevel var1, boolean var2, boolean var3) {
-      if (var3 && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-         --this.nextTick;
-         if (this.nextTick <= 0) {
-            this.nextTick = 1200;
-            ServerPlayer var4 = var1.getRandomPlayer();
-            if (var4 != null) {
-               RandomSource var5 = var1.random;
-               int var6 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
-               int var7 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
-               BlockPos var8 = ((Player)var4).blockPosition().offset(var6, 0, var7);
-               boolean var9 = true;
-               if (var1.hasChunksAt(var8.getX() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getZ() + 10)) {
-                  if (SpawnPlacements.isSpawnPositionOk(EntityType.CAT, var1, var8)) {
-                     if (var1.isCloseToVillage(var8, 2)) {
-                        this.spawnInVillage(var1, var8);
-                     } else if (var1.structureManager().getStructureWithPieceAt(var8, StructureTags.CATS_SPAWN_IN).isValid()) {
-                        this.spawnInHut(var1, var8);
-                     }
+   public void tick(ServerLevel var1, boolean var2) {
+      --this.nextTick;
+      if (this.nextTick <= 0) {
+         this.nextTick = 1200;
+         ServerPlayer var3 = var1.getRandomPlayer();
+         if (var3 != null) {
+            RandomSource var4 = var1.random;
+            int var5 = (8 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
+            int var6 = (8 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
+            BlockPos var7 = ((Player)var3).blockPosition().offset(var5, 0, var6);
+            boolean var8 = true;
+            if (var1.hasChunksAt(var7.getX() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getZ() + 10)) {
+               if (SpawnPlacements.isSpawnPositionOk(EntityType.CAT, var1, var7)) {
+                  if (var1.isCloseToVillage(var7, 2)) {
+                     this.spawnInVillage(var1, var7);
+                  } else if (var1.structureManager().getStructureWithPieceAt(var7, StructureTags.CATS_SPAWN_IN).isValid()) {
+                     this.spawnInHut(var1, var7);
                   }
-
                }
+
             }
          }
       }

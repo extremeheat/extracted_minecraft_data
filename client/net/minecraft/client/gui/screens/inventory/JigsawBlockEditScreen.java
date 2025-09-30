@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundJigsawGeneratePacket;
@@ -138,10 +139,6 @@ public class JigsawBlockEditScreen extends Screen {
       this.setInitialFocus(this.poolEdit);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
-   }
-
    public static boolean isValidResourceLocation(String var0) {
       return ResourceLocation.tryParse(var0) != null;
    }
@@ -150,6 +147,10 @@ public class JigsawBlockEditScreen extends Screen {
       boolean var1 = isValidResourceLocation(this.nameEdit.getValue()) && isValidResourceLocation(this.targetEdit.getValue()) && isValidResourceLocation(this.poolEdit.getValue());
       this.doneButton.active = var1;
       this.generateButton.active = var1;
+   }
+
+   public boolean isInGameUi() {
+      return true;
    }
 
    public void resize(Minecraft var1, int var2, int var3) {
@@ -173,14 +174,14 @@ public class JigsawBlockEditScreen extends Screen {
       this.placementPriorityEdit.setValue(var9);
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (super.keyPressed(var1, var2, var3)) {
+   public boolean keyPressed(KeyEvent var1) {
+      if (super.keyPressed(var1)) {
          return true;
-      } else if (!this.doneButton.active || var1 != 257 && var1 != 335) {
-         return false;
-      } else {
+      } else if (this.doneButton.active && var1.isConfirmation()) {
          this.onDone();
          return true;
+      } else {
+         return false;
       }
    }
 

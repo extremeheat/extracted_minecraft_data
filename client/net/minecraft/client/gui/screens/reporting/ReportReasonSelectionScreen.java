@@ -15,6 +15,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.network.chat.CommonComponents;
@@ -84,7 +85,7 @@ public class ReportReasonSelectionScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.fill(this.descriptionLeft(), this.descriptionTop(), this.descriptionRight(), this.descriptionBottom(), -16777216);
-      var1.renderOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
+      var1.submitOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
       var1.drawString(this.font, (Component)REASON_DESCRIPTION, this.descriptionLeft() + 4, this.descriptionTop() + 4, -1);
       ReasonSelectionList.Entry var5 = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
       if (var5 != null) {
@@ -168,20 +169,22 @@ public class ReportReasonSelectionScreen extends Screen {
             this.reason = var2;
          }
 
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            int var11 = var4 + 1;
+         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+            int var6 = this.getContentX() + 1;
+            int var10000 = this.getContentY();
+            int var10001 = this.getContentHeight();
             Objects.requireNonNull(ReportReasonSelectionScreen.this.font);
-            int var12 = var3 + (var6 - 9) / 2 + 1;
-            var1.drawString(ReportReasonSelectionScreen.this.font, (Component)this.reason.title(), var11, var12, -1);
+            int var7 = var10000 + (var10001 - 9) / 2 + 1;
+            var1.drawString(ReportReasonSelectionScreen.this.font, (Component)this.reason.title(), var6, var7, -1);
          }
 
          public Component getNarration() {
             return Component.translatable("gui.abuseReport.reason.narration", this.reason.title(), this.reason.description());
          }
 
-         public boolean mouseClicked(double var1, double var3, int var5) {
+         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             ReasonSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var3, var5);
+            return super.mouseClicked(var1, var2);
          }
 
          public ReportReason getReason() {

@@ -89,7 +89,7 @@ public abstract class BaseSpawner {
    }
 
    public void serverTick(ServerLevel var1, BlockPos var2) {
-      if (this.isNearPlayer(var1, var2)) {
+      if (this.isNearPlayer(var1, var2) && var1.getServer().isSpawnerBlockEnabled()) {
          if (this.spawnDelay == -1) {
             this.delay(var1, var2);
          }
@@ -237,7 +237,7 @@ public abstract class BaseSpawner {
 
    public boolean onEventTriggered(Level var1, int var2) {
       if (var2 == 1) {
-         if (var1.isClientSide) {
+         if (var1.isClientSide()) {
             this.spawnDelay = this.minSpawnDelay;
          }
 
@@ -266,7 +266,7 @@ public abstract class BaseSpawner {
       return this.spin;
    }
 
-   public double getoSpin() {
+   public double getOSpin() {
       return this.oSpin;
    }
 }

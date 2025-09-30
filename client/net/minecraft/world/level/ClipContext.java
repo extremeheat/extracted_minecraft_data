@@ -2,14 +2,18 @@ package net.minecraft.world.level;
 
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -53,7 +57,29 @@ public class ClipContext {
       COLLIDER(BlockBehaviour.BlockStateBase::getCollisionShape),
       OUTLINE(BlockBehaviour.BlockStateBase::getShape),
       VISUAL(BlockBehaviour.BlockStateBase::getVisualShape),
-      FALLDAMAGE_RESETTING((var0, var1, var2, var3) -> var0.is(BlockTags.FALL_DAMAGE_RESETTING) ? Shapes.block() : Shapes.empty());
+      FALLDAMAGE_RESETTING((var0, var1, var2, var3) -> {
+         if (var0.is(BlockTags.FALL_DAMAGE_RESETTING)) {
+            return Shapes.block();
+         } else {
+            if (var3 instanceof EntityCollisionContext) {
+               EntityCollisionContext var4 = (EntityCollisionContext)var3;
+               if (var4.getEntity() != null && var4.getEntity().getType() == EntityType.PLAYER) {
+                  if (var0.is(Blocks.END_GATEWAY) || var0.is(Blocks.END_PORTAL)) {
+                     return Shapes.block();
+                  }
+
+                  if (var1 instanceof ServerLevel) {
+                     ServerLevel var5 = (ServerLevel)var1;
+                     if (var0.is(Blocks.NETHER_PORTAL) && var5.getGameRules().getInt(GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY) == 0) {
+                        return Shapes.block();
+                     }
+                  }
+               }
+            }
+
+            return Shapes.empty();
+         }
+      });
 
       private final ShapeGetter shapeGetter;
 

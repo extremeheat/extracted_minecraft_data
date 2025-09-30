@@ -9,9 +9,9 @@ import com.mojang.realmsclient.gui.screens.RealmsParentalConsentScreen;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
@@ -39,21 +39,24 @@ public class RealmsAvailability {
    }
 
    private static CompletableFuture<Result> check() {
-      User var0 = Minecraft.getInstance().getUser();
-      return var0.getType() != User.Type.MSA ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)) : CompletableFuture.supplyAsync(() -> {
-         RealmsClient var0 = RealmsClient.getOrCreate();
+      if (Minecraft.getInstance().isOfflineDeveloperMode()) {
+         return CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR));
+      } else {
+         return SharedConstants.DEBUG_BYPASS_REALMS_VERSION_CHECK ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.SUCCESS)) : CompletableFuture.supplyAsync(() -> {
+            RealmsClient var0 = RealmsClient.getOrCreate();
 
-         try {
-            if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
-               return new Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
-            } else {
-               return !var0.hasParentalConsent() ? new Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT) : new Result(RealmsAvailability.Type.SUCCESS);
+            try {
+               if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
+                  return new Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
+               } else {
+                  return !var0.hasParentalConsent() ? new Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT) : new Result(RealmsAvailability.Type.SUCCESS);
+               }
+            } catch (RealmsServiceException var2) {
+               LOGGER.error("Couldn't connect to realms", var2);
+               return var2.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(var2);
             }
-         } catch (RealmsServiceException var2) {
-            LOGGER.error("Couldn't connect to realms", var2);
-            return var2.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(var2);
-         }
-      }, Util.ioPool());
+         }, Util.ioPool());
+      }
    }
 
    public static record Result(Type type, @Nullable RealmsServiceException exception) {

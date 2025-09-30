@@ -111,7 +111,7 @@ public abstract class BiomeSource implements BiomeResolver {
       int var16 = var8 ? 0 : var12;
 
       for(int var17 = var16; var17 <= var12; var17 += var5) {
-         for(int var18 = SharedConstants.debugGenerateSquareTerrainWithoutNoise ? 0 : -var17; var18 <= var17; var18 += var5) {
+         for(int var18 = !SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && !SharedConstants.debugGenerateSquareTerrainWithoutNoise ? -var17 : 0; var18 <= var17; var18 += var5) {
             boolean var19 = Math.abs(var18) == var17;
 
             for(int var20 = -var17; var20 <= var17; var20 += var5) {

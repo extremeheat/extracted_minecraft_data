@@ -2,8 +2,8 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class PlayerFaceRenderer {
    public static final int SKIN_HEAD_U = 8;
@@ -26,7 +26,7 @@ public class PlayerFaceRenderer {
    }
 
    public static void draw(GuiGraphics var0, PlayerSkin var1, int var2, int var3, int var4, int var5) {
-      draw(var0, var1.texture(), var2, var3, var4, true, false, var5);
+      draw(var0, var1.body().texturePath(), var2, var3, var4, true, false, var5);
    }
 
    public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, boolean var6, int var7) {

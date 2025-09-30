@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import java.util.Objects;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.slf4j.Logger;
 
-public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
+public class ChiseledBookShelfBlockEntity extends BlockEntity implements ListBackedContainer {
    public static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_LAST_INTERACTED_SLOT = -1;
@@ -67,29 +66,17 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       var1.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
 
-   public int count() {
-      return (int)this.items.stream().filter(Predicate.not(ItemStack::isEmpty)).count();
+   public int getMaxStackSize() {
+      return 1;
    }
 
-   public void clearContent() {
-      this.items.clear();
-   }
-
-   public int getContainerSize() {
-      return 6;
-   }
-
-   public boolean isEmpty() {
-      return this.items.stream().allMatch(ItemStack::isEmpty);
-   }
-
-   public ItemStack getItem(int var1) {
-      return this.items.get(var1);
+   public boolean acceptsItemType(ItemStack var1) {
+      return var1.is(ItemTags.BOOKSHELF_BOOKS);
    }
 
    public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = (ItemStack)Objects.requireNonNullElse(this.items.get(var1), ItemStack.EMPTY);
-      this.items.set(var1, ItemStack.EMPTY);
+      ItemStack var3 = (ItemStack)Objects.requireNonNullElse((ItemStack)this.getItems().get(var1), ItemStack.EMPTY);
+      this.getItems().set(var1, ItemStack.EMPTY);
       if (!var3.isEmpty()) {
          this.updateState(var1);
       }
@@ -97,16 +84,12 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       return var3;
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return this.removeItem(var1, 1);
-   }
-
    public void setItem(int var1, ItemStack var2) {
-      if (var2.is(ItemTags.BOOKSHELF_BOOKS)) {
-         this.items.set(var1, var2);
+      if (this.acceptsItemType(var2)) {
+         this.getItems().set(var1, var2);
          this.updateState(var1);
       } else if (var2.isEmpty()) {
-         this.removeItem(var1, 1);
+         this.removeItem(var1, this.getMaxStackSize());
       }
 
    }
@@ -121,16 +104,12 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       });
    }
 
-   public int getMaxStackSize() {
-      return 1;
+   public NonNullList<ItemStack> getItems() {
+      return this.items;
    }
 
    public boolean stillValid(Player var1) {
       return Container.stillValidBlockEntity(this, var1);
-   }
-
-   public boolean canPlaceItem(int var1, ItemStack var2) {
-      return var2.is(ItemTags.BOOKSHELF_BOOKS) && this.getItem(var1).isEmpty() && var2.getCount() == this.getMaxStackSize();
    }
 
    public int getLastInteractedSlot() {

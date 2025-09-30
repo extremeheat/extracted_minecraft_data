@@ -255,7 +255,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    public void finalTick() {
-      if (this.level != null && (this.progressO < 1.0F || this.level.isClientSide)) {
+      if (this.level != null && (this.progressO < 1.0F || this.level.isClientSide())) {
          this.progress = 1.0F;
          this.progressO = this.progress;
          this.level.removeBlockEntity(this.worldPosition);
@@ -287,7 +287,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
       var3.lastTicked = var0.getGameTime();
       var3.progressO = var3.progress;
       if (var3.progressO >= 1.0F) {
-         if (var0.isClientSide && var3.deathTicks < 5) {
+         if (var0.isClientSide() && var3.deathTicks < 5) {
             ++var3.deathTicks;
          } else {
             var0.removeBlockEntity(var1);

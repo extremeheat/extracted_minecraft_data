@@ -21,6 +21,7 @@ public class RealmsInviteScreen extends RealmsScreen {
    private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name").withColor(-6250336);
    private static final Component INVITING_PLAYER_TEXT = Component.translatable("mco.configure.world.players.inviting").withColor(-6250336);
    private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error").withColor(-65536);
+   private static final Component DUPLICATE_PLAYER_TEXT = Component.translatable("mco.configure.world.players.invite.duplicate").withColor(-65536);
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    @Nullable
    private EditBox profileName;
@@ -65,6 +66,8 @@ public class RealmsInviteScreen extends RealmsScreen {
       if (this.inviteButton != null && this.profileName != null) {
          if (StringUtil.isBlank(this.profileName.getValue())) {
             this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
+         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.getName().equalsIgnoreCase(this.profileName.getValue()))) {
+            this.showMessage(DUPLICATE_PLAYER_TEXT);
          } else {
             long var1 = this.serverData.id;
             String var3 = this.profileName.getValue().trim();

@@ -1,13 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.LlamaSpitModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LlamaSpitRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.LlamaSpit;
@@ -22,16 +23,14 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRender
       this.model = new LlamaSpitModel(var1.bakeLayer(ModelLayers.LLAMA_SPIT));
    }
 
-   public void render(LlamaSpitRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(LlamaSpitRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.0F, 0.15F, 0.0F);
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
-      this.model.setupAnim(var1);
-      VertexConsumer var5 = var3.getBuffer(this.model.renderType(LLAMA_SPIT_LOCATION));
-      this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
+      var3.submitModel(this.model, var1, var2, this.model.renderType(LLAMA_SPIT_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    public LlamaSpitRenderState createRenderState() {

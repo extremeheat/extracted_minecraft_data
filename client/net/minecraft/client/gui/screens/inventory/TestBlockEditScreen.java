@@ -58,6 +58,10 @@ public class TestBlockEditScreen extends Screen {
       return false;
    }
 
+   public boolean isInGameUi() {
+      return true;
+   }
+
    private void onDone() {
       this.message = this.messageEdit.getValue();
       this.minecraft.getConnection().send(new ServerboundSetTestBlockPacket(this.position, this.mode, this.message));
@@ -75,10 +79,6 @@ public class TestBlockEditScreen extends Screen {
    private void updateMode(TestBlockMode var1) {
       this.mode = var1;
       this.messageEdit.visible = var1 != TestBlockMode.START;
-   }
-
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
    }
 
    static {

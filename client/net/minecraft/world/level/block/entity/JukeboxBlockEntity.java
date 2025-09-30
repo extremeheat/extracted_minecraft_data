@@ -48,7 +48,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    }
 
    public void popOutTheItem() {
-      if (this.level != null && !this.level.isClientSide) {
+      if (this.level != null && !this.level.isClientSide()) {
          BlockPos var1 = this.getBlockPos();
          ItemStack var2 = this.getTheItem();
          if (!var2.isEmpty()) {
@@ -114,6 +114,12 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
          this.jukeboxSongPlayer.stop(this.level, this.getBlockState());
       }
 
+   }
+
+   public void setRemoved() {
+      super.setRemoved();
+      this.level.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, this.getBlockPos(), GameEvent.Context.of(this.getBlockState()));
+      this.level.levelEvent(1011, this.getBlockPos(), 0);
    }
 
    public int getMaxStackSize() {

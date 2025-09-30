@@ -2,10 +2,11 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.OminousItemSpawner;
@@ -33,7 +34,7 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
       var2.extractItemGroupRenderState(var1, var4, this.itemModelResolver);
    }
 
-   public void render(ItemClusterRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ItemClusterRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       if (!var1.item.isEmpty()) {
          var2.pushPose();
          if (var1.ageInTicks <= 50.0F) {
@@ -43,7 +44,7 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
 
          float var6 = Mth.wrapDegrees(var1.ageInTicks * 40.0F);
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var6));
-         ItemEntityRenderer.renderMultipleFromCount(var2, var3, 15728880, var1, this.random);
+         ItemEntityRenderer.submitMultipleFromCount(var2, var3, 15728880, var1, this.random);
          var2.popPose();
       }
    }

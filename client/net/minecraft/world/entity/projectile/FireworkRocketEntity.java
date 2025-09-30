@@ -159,7 +159,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       }
 
       ++this.life;
-      if (this.level().isClientSide && this.life % 2 < 2) {
+      if (this.level().isClientSide() && this.life % 2 < 2) {
          this.level().addParticle(ParticleTypes.FIREWORK, this.getX(), this.getY(), this.getZ(), this.random.nextGaussian() * 0.05, -this.getDeltaMovement().y * 0.5, this.random.nextGaussian() * 0.05);
       }
 
@@ -253,7 +253,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 == 17 && this.level().isClientSide) {
+      if (var1 == 17 && this.level().isClientSide()) {
          Vec3 var2 = this.getDeltaMovement();
          this.level().createFireworks(this.getX(), this.getY(), this.getZ(), var2.x, var2.y, var2.z, this.getExplosions());
       }

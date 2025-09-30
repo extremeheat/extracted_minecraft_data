@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
@@ -179,30 +179,37 @@ public class MultilineTextField {
       this.seekCursor(Whence.ABSOLUTE, var7.beginIndex + var8);
    }
 
-   public boolean keyPressed(int var1) {
-      this.selecting = Screen.hasShiftDown();
-      if (Screen.isSelectAll(var1)) {
+   public void selectWordAtCursor() {
+      StringView var1 = this.getPreviousWord();
+      this.seekCursor(Whence.ABSOLUTE, var1.beginIndex);
+      this.setSelecting(true);
+      this.seekCursor(Whence.ABSOLUTE, var1.endIndex);
+   }
+
+   public boolean keyPressed(KeyEvent var1) {
+      this.selecting = var1.hasShiftDown();
+      if (var1.isSelectAll()) {
          this.cursor = this.value.length();
          this.selectCursor = 0;
          return true;
-      } else if (Screen.isCopy(var1)) {
+      } else if (var1.isCopy()) {
          Minecraft.getInstance().keyboardHandler.setClipboard(this.getSelectedText());
          return true;
-      } else if (Screen.isPaste(var1)) {
+      } else if (var1.isPaste()) {
          this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
          return true;
-      } else if (Screen.isCut(var1)) {
+      } else if (var1.isCut()) {
          Minecraft.getInstance().keyboardHandler.setClipboard(this.getSelectedText());
          this.insertText("");
          return true;
       } else {
-         switch (var1) {
+         switch (var1.key()) {
             case 257:
             case 335:
                this.insertText("\n");
                return true;
             case 259:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   StringView var5 = this.getPreviousWord();
                   this.deleteText(var5.beginIndex - this.cursor);
                } else {
@@ -211,7 +218,7 @@ public class MultilineTextField {
 
                return true;
             case 261:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   StringView var4 = this.getNextWord();
                   this.deleteText(var4.beginIndex - this.cursor);
                } else {
@@ -220,7 +227,7 @@ public class MultilineTextField {
 
                return true;
             case 262:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   StringView var3 = this.getNextWord();
                   this.seekCursor(Whence.ABSOLUTE, var3.beginIndex);
                } else {
@@ -229,7 +236,7 @@ public class MultilineTextField {
 
                return true;
             case 263:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   StringView var2 = this.getPreviousWord();
                   this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
                } else {
@@ -238,13 +245,13 @@ public class MultilineTextField {
 
                return true;
             case 264:
-               if (!Screen.hasControlDown()) {
+               if (!var1.hasControlDown()) {
                   this.seekCursorLine(1);
                }
 
                return true;
             case 265:
-               if (!Screen.hasControlDown()) {
+               if (!var1.hasControlDown()) {
                   this.seekCursorLine(-1);
                }
 
@@ -256,7 +263,7 @@ public class MultilineTextField {
                this.seekCursor(Whence.END, 0);
                return true;
             case 268:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   this.seekCursor(Whence.ABSOLUTE, 0);
                } else {
                   this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().beginIndex);
@@ -264,7 +271,7 @@ public class MultilineTextField {
 
                return true;
             case 269:
-               if (Screen.hasControlDown()) {
+               if (var1.hasControlDown()) {
                   this.seekCursor(Whence.END, 0);
                } else {
                   this.seekCursor(Whence.ABSOLUTE, this.getCursorLineView().endIndex);

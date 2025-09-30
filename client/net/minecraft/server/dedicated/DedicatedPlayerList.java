@@ -1,11 +1,11 @@
 package net.minecraft.server.dedicated;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import org.slf4j.Logger;
@@ -14,11 +14,9 @@ public class DedicatedPlayerList extends PlayerList {
    private static final Logger LOGGER = LogUtils.getLogger();
 
    public DedicatedPlayerList(DedicatedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
-      super(var1, var2, var3, var1.getProperties().maxPlayers);
-      DedicatedServerProperties var4 = var1.getProperties();
-      this.setViewDistance(var4.viewDistance);
-      this.setSimulationDistance(var4.simulationDistance);
-      super.setUsingWhiteList((Boolean)var4.whiteList.get());
+      super(var1, var2, var3, var1.notificationManager());
+      this.setViewDistance(var1.viewDistance());
+      this.setSimulationDistance(var1.simulationDistance());
       this.loadUserBanList();
       this.saveUserBanList();
       this.loadIpBanList();
@@ -30,21 +28,6 @@ public class DedicatedPlayerList extends PlayerList {
          this.saveWhiteList();
       }
 
-   }
-
-   public void setUsingWhiteList(boolean var1) {
-      super.setUsingWhiteList(var1);
-      this.getServer().storeUsingWhiteList(var1);
-   }
-
-   public void op(GameProfile var1) {
-      super.op(var1);
-      this.saveOps();
-   }
-
-   public void deop(GameProfile var1) {
-      super.deop(var1);
-      this.saveOps();
    }
 
    public void reloadWhiteList() {
@@ -123,7 +106,7 @@ public class DedicatedPlayerList extends PlayerList {
 
    }
 
-   public boolean isWhiteListed(GameProfile var1) {
+   public boolean isWhiteListed(NameAndId var1) {
       return !this.isUsingWhitelist() || this.isOp(var1) || this.getWhiteList().isWhiteListed(var1);
    }
 
@@ -131,7 +114,7 @@ public class DedicatedPlayerList extends PlayerList {
       return (DedicatedServer)super.getServer();
    }
 
-   public boolean canBypassPlayerLimit(GameProfile var1) {
+   public boolean canBypassPlayerLimit(NameAndId var1) {
       return this.getOps().canBypassPlayerLimit(var1);
    }
 

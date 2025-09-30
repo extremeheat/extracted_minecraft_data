@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.piglin;
 import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -119,11 +118,6 @@ public abstract class AbstractPiglin extends Monster {
          super.playAmbientSound();
       }
 
-   }
-
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
    }
 
    protected abstract void playConvertedSound();

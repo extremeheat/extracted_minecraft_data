@@ -12,7 +12,6 @@ import org.joml.Vector3f;
 public class KeyframeAnimation {
    private final AnimationDefinition definition;
    private final List<Entry> entries;
-   private final Vector3f scratchVector = new Vector3f();
 
    private KeyframeAnimation(AnimationDefinition var1, List<Entry> var2) {
       super();
@@ -60,9 +59,10 @@ public class KeyframeAnimation {
 
    public void apply(long var1, float var3) {
       float var4 = this.getElapsedSeconds(var1);
+      Vector3f var5 = new Vector3f();
 
-      for(Entry var6 : this.entries) {
-         var6.apply(var4, var3, this.scratchVector);
+      for(Entry var7 : this.entries) {
+         var7.apply(var4, var3, var5);
       }
 
    }

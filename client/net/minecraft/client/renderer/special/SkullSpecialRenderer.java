@@ -9,10 +9,10 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.SkullModelBase;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -31,15 +31,18 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       this.renderType = var3;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
-      SkullBlockRenderer.renderSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType);
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
+      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {
       PoseStack var2 = new PoseStack();
       var2.translate(0.5F, 0.0F, 0.5F);
       var2.scale(-1.0F, -1.0F, 1.0F);
-      this.model.setupAnim(this.animation, 180.0F, 0.0F);
+      SkullModelBase.State var3 = new SkullModelBase.State();
+      var3.animationPos = this.animation;
+      var3.yRot = 180.0F;
+      this.model.setupAnim(var3);
       this.model.root().getExtentsForGui(var2, var1);
    }
 
@@ -62,8 +65,8 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       }
 
       @Nullable
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         SkullModelBase var2 = SkullBlockRenderer.createModel(var1, this.kind);
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         SkullModelBase var2 = SkullBlockRenderer.createModel(var1.entityModelSet(), this.kind);
          ResourceLocation var3 = (ResourceLocation)this.textureOverride.map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/entity/" + var0x + ".png"))).orElse((Object)null);
          if (var2 == null) {
             return null;

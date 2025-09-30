@@ -13,7 +13,7 @@ public class SignEditScreen extends AbstractSignEditScreen {
    public static final float MAGIC_TEXT_SCALE = 0.9765628F;
    private static final Vector3f TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
    @Nullable
-   private Model signModel;
+   private Model.Simple signModel;
 
    public SignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
       super(var1, var2, var3);

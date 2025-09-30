@@ -18,9 +18,8 @@ public class GameTestAssertPosException extends GameTestAssertException {
       return Component.translatable("test.error.position", this.message, this.absolutePos.getX(), this.absolutePos.getY(), this.absolutePos.getZ(), this.relativePos.getX(), this.relativePos.getY(), this.relativePos.getZ(), this.tick);
    }
 
-   @Nullable
-   public String getMessageToShowAtBlock() {
-      return super.getMessage();
+   public Component getMessageToShowAtBlock() {
+      return this.message;
    }
 
    @Nullable

@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 
@@ -15,6 +16,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    protected final String source;
    @Nullable
    protected final Date expires;
+   @Nullable
    protected final String reason;
 
    public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
@@ -22,7 +24,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       this.created = var2 == null ? new Date() : var2;
       this.source = var3 == null ? "(Unknown)" : var3;
       this.expires = var4;
-      this.reason = var5 == null ? "Banned by an operator." : var5;
+      this.reason = var5;
    }
 
    protected BanListEntry(@Nullable T var1, JsonObject var2) {
@@ -46,7 +48,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       }
 
       this.expires = var4;
-      this.reason = var2.has("reason") ? var2.get("reason").getAsString() : "Banned by an operator.";
+      this.reason = var2.has("reason") ? var2.get("reason").getAsString() : null;
    }
 
    public Date getCreated() {
@@ -62,8 +64,14 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       return this.expires;
    }
 
+   @Nullable
    public String getReason() {
       return this.reason;
+   }
+
+   public Component getReasonMessage() {
+      String var1 = this.getReason();
+      return var1 == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(var1);
    }
 
    public abstract Component getDisplayName();
@@ -77,6 +85,17 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       var1.addProperty("source", this.source);
       var1.addProperty("expires", this.expires == null ? "forever" : DATE_FORMAT.format(this.expires));
       var1.addProperty("reason", this.reason);
+   }
+
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else if (var1 != null && this.getClass() == var1.getClass()) {
+         BanListEntry var2 = (BanListEntry)var1;
+         return Objects.equals(this.source, var2.source) && Objects.equals(this.expires, var2.expires) && Objects.equals(this.reason, var2.reason) && Objects.equals(this.getUser(), var2.getUser());
+      } else {
+         return false;
+      }
    }
 
    static {

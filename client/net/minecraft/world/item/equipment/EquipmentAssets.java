@@ -10,6 +10,7 @@ import net.minecraft.world.item.DyeColor;
 public interface EquipmentAssets {
    ResourceKey<? extends Registry<EquipmentAsset>> ROOT_ID = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("equipment_asset"));
    ResourceKey<EquipmentAsset> LEATHER = createId("leather");
+   ResourceKey<EquipmentAsset> COPPER = createId("copper");
    ResourceKey<EquipmentAsset> CHAINMAIL = createId("chainmail");
    ResourceKey<EquipmentAsset> IRON = createId("iron");
    ResourceKey<EquipmentAsset> GOLD = createId("gold");

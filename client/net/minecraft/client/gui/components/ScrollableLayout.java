@@ -107,7 +107,7 @@ public class ScrollableLayout implements Layout {
          }
 
          var1.disableScissor();
-         this.renderScrollbar(var1);
+         this.renderScrollbar(var1, var2, var3);
       }
 
       protected void updateWidgetNarration(NarrationElementOutput var1) {

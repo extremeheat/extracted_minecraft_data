@@ -107,7 +107,7 @@ public class BellBlockEntity extends BlockEntity {
          this.nearbyEntities = this.level.getEntitiesOfClass(LivingEntity.class, var2);
       }
 
-      if (!this.level.isClientSide) {
+      if (!this.level.isClientSide()) {
          for(LivingEntity var3 : this.nearbyEntities) {
             if (var3.isAlive() && !var3.isRemoved() && var1.closerToCenterThan(var3.position(), 32.0)) {
                var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debug.DebugValueAccess;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -25,79 +27,81 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      LevelRenderer var9 = this.minecraft.levelRenderer;
-      if (this.minecraft.sectionPath || this.minecraft.sectionVisibility) {
-         SectionOcclusionGraph var10 = var9.getSectionOcclusionGraph();
-         ObjectListIterator var11 = var9.getVisibleSections().iterator();
+   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
+      LevelRenderer var11 = this.minecraft.levelRenderer;
+      boolean var12 = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_PATHS);
+      boolean var13 = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
+      if (var12 || var13) {
+         SectionOcclusionGraph var14 = var11.getSectionOcclusionGraph();
+         ObjectListIterator var15 = var11.getVisibleSections().iterator();
 
-         while(var11.hasNext()) {
-            SectionRenderDispatcher.RenderSection var12 = (SectionRenderDispatcher.RenderSection)var11.next();
-            SectionOcclusionGraph.Node var13 = var10.getNode(var12);
-            if (var13 != null) {
-               BlockPos var14 = var12.getRenderOrigin();
+         while(var15.hasNext()) {
+            SectionRenderDispatcher.RenderSection var16 = (SectionRenderDispatcher.RenderSection)var15.next();
+            SectionOcclusionGraph.Node var17 = var14.getNode(var16);
+            if (var17 != null) {
+               BlockPos var18 = var16.getRenderOrigin();
                var1.pushPose();
-               var1.translate((double)var14.getX() - var3, (double)var14.getY() - var5, (double)var14.getZ() - var7);
-               Matrix4f var15 = var1.last().pose();
-               if (this.minecraft.sectionPath) {
-                  VertexConsumer var16 = var2.getBuffer(RenderType.lines());
-                  int var17 = var13.step == 0 ? 0 : Mth.hsvToRgb((float)var13.step / 50.0F, 0.9F, 0.9F);
-                  int var18 = var17 >> 16 & 255;
-                  int var19 = var17 >> 8 & 255;
-                  int var20 = var17 & 255;
+               var1.translate((double)var18.getX() - var3, (double)var18.getY() - var5, (double)var18.getZ() - var7);
+               Matrix4f var19 = var1.last().pose();
+               if (var12) {
+                  VertexConsumer var20 = var2.getBuffer(RenderType.lines());
+                  int var21 = var17.step == 0 ? 0 : Mth.hsvToRgb((float)var17.step / 50.0F, 0.9F, 0.9F);
+                  int var22 = var21 >> 16 & 255;
+                  int var23 = var21 >> 8 & 255;
+                  int var24 = var21 & 255;
 
-                  for(int var21 = 0; var21 < DIRECTIONS.length; ++var21) {
-                     if (var13.hasSourceDirection(var21)) {
-                        Direction var22 = DIRECTIONS[var21];
-                        var16.addVertex(var15, 8.0F, 8.0F, 8.0F).setColor(var18, var19, var20, 255).setNormal((float)var22.getStepX(), (float)var22.getStepY(), (float)var22.getStepZ());
-                        var16.addVertex(var15, (float)(8 - 16 * var22.getStepX()), (float)(8 - 16 * var22.getStepY()), (float)(8 - 16 * var22.getStepZ())).setColor(var18, var19, var20, 255).setNormal((float)var22.getStepX(), (float)var22.getStepY(), (float)var22.getStepZ());
+                  for(int var25 = 0; var25 < DIRECTIONS.length; ++var25) {
+                     if (var17.hasSourceDirection(var25)) {
+                        Direction var26 = DIRECTIONS[var25];
+                        var20.addVertex(var19, 8.0F, 8.0F, 8.0F).setColor(var22, var23, var24, 255).setNormal((float)var26.getStepX(), (float)var26.getStepY(), (float)var26.getStepZ());
+                        var20.addVertex(var19, (float)(8 - 16 * var26.getStepX()), (float)(8 - 16 * var26.getStepY()), (float)(8 - 16 * var26.getStepZ())).setColor(var22, var23, var24, 255).setNormal((float)var26.getStepX(), (float)var26.getStepY(), (float)var26.getStepZ());
                      }
                   }
                }
 
-               if (this.minecraft.sectionVisibility && var12.getSectionMesh().hasRenderableLayers()) {
-                  VertexConsumer var32 = var2.getBuffer(RenderType.lines());
-                  int var33 = 0;
+               if (var13 && var16.getSectionMesh().hasRenderableLayers()) {
+                  VertexConsumer var36 = var2.getBuffer(RenderType.lines());
+                  int var37 = 0;
 
-                  for(Direction var40 : DIRECTIONS) {
-                     for(Direction var25 : DIRECTIONS) {
-                        boolean var26 = var12.getSectionMesh().facesCanSeeEachother(var40, var25);
-                        if (!var26) {
-                           ++var33;
-                           var32.addVertex(var15, (float)(8 + 8 * var40.getStepX()), (float)(8 + 8 * var40.getStepY()), (float)(8 + 8 * var40.getStepZ())).setColor(255, 0, 0, 255).setNormal((float)var40.getStepX(), (float)var40.getStepY(), (float)var40.getStepZ());
-                           var32.addVertex(var15, (float)(8 + 8 * var25.getStepX()), (float)(8 + 8 * var25.getStepY()), (float)(8 + 8 * var25.getStepZ())).setColor(255, 0, 0, 255).setNormal((float)var25.getStepX(), (float)var25.getStepY(), (float)var25.getStepZ());
+                  for(Direction var44 : DIRECTIONS) {
+                     for(Direction var29 : DIRECTIONS) {
+                        boolean var30 = var16.getSectionMesh().facesCanSeeEachother(var44, var29);
+                        if (!var30) {
+                           ++var37;
+                           var36.addVertex(var19, (float)(8 + 8 * var44.getStepX()), (float)(8 + 8 * var44.getStepY()), (float)(8 + 8 * var44.getStepZ())).setColor(255, 0, 0, 255).setNormal((float)var44.getStepX(), (float)var44.getStepY(), (float)var44.getStepZ());
+                           var36.addVertex(var19, (float)(8 + 8 * var29.getStepX()), (float)(8 + 8 * var29.getStepY()), (float)(8 + 8 * var29.getStepZ())).setColor(255, 0, 0, 255).setNormal((float)var29.getStepX(), (float)var29.getStepY(), (float)var29.getStepZ());
                         }
                      }
                   }
 
-                  if (var33 > 0) {
-                     VertexConsumer var35 = var2.getBuffer(RenderType.debugQuads());
-                     float var37 = 0.5F;
-                     float var39 = 0.2F;
-                     var35.addVertex(var15, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
-                     var35.addVertex(var15, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                  if (var37 > 0) {
+                     VertexConsumer var39 = var2.getBuffer(RenderType.debugQuads());
+                     float var41 = 0.5F;
+                     float var43 = 0.2F;
+                     var39.addVertex(var19, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 15.5F, 0.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 15.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 15.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
+                     var39.addVertex(var19, 0.5F, 0.5F, 15.5F).setColor(0.9F, 0.9F, 0.0F, 0.2F);
                   }
                }
 
@@ -106,44 +110,44 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
          }
       }
 
-      Frustum var27 = var9.getCapturedFrustum();
-      if (var27 != null) {
+      Frustum var31 = var11.getCapturedFrustum();
+      if (var31 != null) {
          var1.pushPose();
-         var1.translate((float)(var27.getCamX() - var3), (float)(var27.getCamY() - var5), (float)(var27.getCamZ() - var7));
-         Matrix4f var28 = var1.last().pose();
-         Vector4f[] var29 = var27.getFrustumPoints();
-         VertexConsumer var30 = var2.getBuffer(RenderType.debugQuads());
-         this.addFrustumQuad(var30, var28, var29, 0, 1, 2, 3, 0, 1, 1);
-         this.addFrustumQuad(var30, var28, var29, 4, 5, 6, 7, 1, 0, 0);
-         this.addFrustumQuad(var30, var28, var29, 0, 1, 5, 4, 1, 1, 0);
-         this.addFrustumQuad(var30, var28, var29, 2, 3, 7, 6, 0, 0, 1);
-         this.addFrustumQuad(var30, var28, var29, 0, 4, 7, 3, 0, 1, 0);
-         this.addFrustumQuad(var30, var28, var29, 1, 5, 6, 2, 1, 0, 1);
-         VertexConsumer var31 = var2.getBuffer(RenderType.lines());
-         this.addFrustumVertex(var31, var28, var29[0]);
-         this.addFrustumVertex(var31, var28, var29[1]);
-         this.addFrustumVertex(var31, var28, var29[1]);
-         this.addFrustumVertex(var31, var28, var29[2]);
-         this.addFrustumVertex(var31, var28, var29[2]);
-         this.addFrustumVertex(var31, var28, var29[3]);
-         this.addFrustumVertex(var31, var28, var29[3]);
-         this.addFrustumVertex(var31, var28, var29[0]);
-         this.addFrustumVertex(var31, var28, var29[4]);
-         this.addFrustumVertex(var31, var28, var29[5]);
-         this.addFrustumVertex(var31, var28, var29[5]);
-         this.addFrustumVertex(var31, var28, var29[6]);
-         this.addFrustumVertex(var31, var28, var29[6]);
-         this.addFrustumVertex(var31, var28, var29[7]);
-         this.addFrustumVertex(var31, var28, var29[7]);
-         this.addFrustumVertex(var31, var28, var29[4]);
-         this.addFrustumVertex(var31, var28, var29[0]);
-         this.addFrustumVertex(var31, var28, var29[4]);
-         this.addFrustumVertex(var31, var28, var29[1]);
-         this.addFrustumVertex(var31, var28, var29[5]);
-         this.addFrustumVertex(var31, var28, var29[2]);
-         this.addFrustumVertex(var31, var28, var29[6]);
-         this.addFrustumVertex(var31, var28, var29[3]);
-         this.addFrustumVertex(var31, var28, var29[7]);
+         var1.translate((float)(var31.getCamX() - var3), (float)(var31.getCamY() - var5), (float)(var31.getCamZ() - var7));
+         Matrix4f var32 = var1.last().pose();
+         Vector4f[] var33 = var31.getFrustumPoints();
+         VertexConsumer var34 = var2.getBuffer(RenderType.debugQuads());
+         this.addFrustumQuad(var34, var32, var33, 0, 1, 2, 3, 0, 1, 1);
+         this.addFrustumQuad(var34, var32, var33, 4, 5, 6, 7, 1, 0, 0);
+         this.addFrustumQuad(var34, var32, var33, 0, 1, 5, 4, 1, 1, 0);
+         this.addFrustumQuad(var34, var32, var33, 2, 3, 7, 6, 0, 0, 1);
+         this.addFrustumQuad(var34, var32, var33, 0, 4, 7, 3, 0, 1, 0);
+         this.addFrustumQuad(var34, var32, var33, 1, 5, 6, 2, 1, 0, 1);
+         VertexConsumer var35 = var2.getBuffer(RenderType.lines());
+         this.addFrustumVertex(var35, var32, var33[0]);
+         this.addFrustumVertex(var35, var32, var33[1]);
+         this.addFrustumVertex(var35, var32, var33[1]);
+         this.addFrustumVertex(var35, var32, var33[2]);
+         this.addFrustumVertex(var35, var32, var33[2]);
+         this.addFrustumVertex(var35, var32, var33[3]);
+         this.addFrustumVertex(var35, var32, var33[3]);
+         this.addFrustumVertex(var35, var32, var33[0]);
+         this.addFrustumVertex(var35, var32, var33[4]);
+         this.addFrustumVertex(var35, var32, var33[5]);
+         this.addFrustumVertex(var35, var32, var33[5]);
+         this.addFrustumVertex(var35, var32, var33[6]);
+         this.addFrustumVertex(var35, var32, var33[6]);
+         this.addFrustumVertex(var35, var32, var33[7]);
+         this.addFrustumVertex(var35, var32, var33[7]);
+         this.addFrustumVertex(var35, var32, var33[4]);
+         this.addFrustumVertex(var35, var32, var33[0]);
+         this.addFrustumVertex(var35, var32, var33[4]);
+         this.addFrustumVertex(var35, var32, var33[1]);
+         this.addFrustumVertex(var35, var32, var33[5]);
+         this.addFrustumVertex(var35, var32, var33[2]);
+         this.addFrustumVertex(var35, var32, var33[6]);
+         this.addFrustumVertex(var35, var32, var33[3]);
+         this.addFrustumVertex(var35, var32, var33[7]);
          var1.popPose();
       }
 

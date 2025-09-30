@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -27,7 +28,7 @@ public record ChunkSectionsToRender(EnumMap<ChunkSectionLayer, List<RenderPass.D
       VertexFormat.IndexType var4 = this.maxIndicesRequired == 0 ? null : var2.type();
       ChunkSectionLayer[] var5 = var1.layers();
       Minecraft var6 = Minecraft.getInstance();
-      boolean var7 = false;
+      boolean var7 = SharedConstants.DEBUG_HOTKEYS && var6.wireframe;
       RenderTarget var8 = var1.outputTarget();
 
       try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var8.getColorTextureView(), OptionalInt.empty(), var8.getDepthTextureView(), OptionalDouble.empty())) {

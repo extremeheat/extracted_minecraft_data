@@ -11,11 +11,9 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.util.Mth;
 
-public class VillagerModel extends EntityModel<VillagerRenderState> implements HeadedModel, VillagerLikeModel {
+public class VillagerModel extends EntityModel<VillagerRenderState> implements HeadedModel, VillagerLikeModel<VillagerRenderState> {
    public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart head;
-   private final ModelPart hat;
-   private final ModelPart hatRim;
    private final ModelPart rightLeg;
    private final ModelPart leftLeg;
    private final ModelPart arms;
@@ -23,8 +21,6 @@ public class VillagerModel extends EntityModel<VillagerRenderState> implements H
    public VillagerModel(ModelPart var1) {
       super(var1);
       this.head = var1.getChild("head");
-      this.hat = this.head.getChild("hat");
-      this.hatRim = this.hat.getChild("hat_rim");
       this.rightLeg = var1.getChild("right_leg");
       this.leftLeg = var1.getChild("left_leg");
       this.arms = var1.getChild("arms");
@@ -43,6 +39,12 @@ public class VillagerModel extends EntityModel<VillagerRenderState> implements H
       var1.addOrReplaceChild("arms", CubeListBuilder.create().texOffs(44, 22).addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F).texOffs(44, 22).addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, true).texOffs(40, 38).addBox(-4.0F, 2.0F, -2.0F, 8.0F, 4.0F, 4.0F), PartPose.offsetAndRotation(0.0F, 3.0F, -1.0F, -0.75F, 0.0F, 0.0F));
       var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(-2.0F, 12.0F, 0.0F));
       var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 22).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(2.0F, 12.0F, 0.0F));
+      return var0;
+   }
+
+   public static MeshDefinition createNoHatModel() {
+      MeshDefinition var0 = createBodyModel();
+      var0.getRoot().clearChild("head").clearRecursively();
       return var0;
    }
 
@@ -67,14 +69,8 @@ public class VillagerModel extends EntityModel<VillagerRenderState> implements H
       return this.head;
    }
 
-   public void hatVisible(boolean var1) {
-      this.head.visible = var1;
-      this.hat.visible = var1;
-      this.hatRim.visible = var1;
-   }
-
-   public void translateToArms(PoseStack var1) {
-      this.root.translateAndRotate(var1);
-      this.arms.translateAndRotate(var1);
+   public void translateToArms(VillagerRenderState var1, PoseStack var2) {
+      this.root.translateAndRotate(var2);
+      this.arms.translateAndRotate(var2);
    }
 }

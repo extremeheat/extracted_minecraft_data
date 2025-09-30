@@ -65,7 +65,7 @@ public class ShearsItem extends Item {
             var2.setBlockAndUpdate(var3, var9);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1.getPlayer(), var9));
             if (var7 != null) {
-               var8.hurtAndBreak(1, var7, (EquipmentSlot)LivingEntity.getSlotForHand(var1.getHand()));
+               var8.hurtAndBreak(1, var7, (EquipmentSlot)var1.getHand().asEquipmentSlot());
             }
 
             return InteractionResult.SUCCESS;

@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import java.util.EnumMap;
 import java.util.Map;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -195,45 +196,49 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    private static boolean canPassThroughWall(Direction var0, BlockGetter var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5) {
-      VoxelShape var6 = var5.getCollisionShape(var1, var4);
-      if (var6 == Shapes.block()) {
-         return false;
-      } else {
-         VoxelShape var7 = var3.getCollisionShape(var1, var2);
-         if (var7 == Shapes.block()) {
+      if (!SharedConstants.DEBUG_DISABLE_LIQUID_SPREADING && (!SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD || var4.getZ() >= 0)) {
+         VoxelShape var6 = var5.getCollisionShape(var1, var4);
+         if (var6 == Shapes.block()) {
             return false;
-         } else if (var7 == Shapes.empty() && var6 == Shapes.empty()) {
-            return true;
          } else {
-            Object2ByteLinkedOpenHashMap var8;
-            if (!var3.getBlock().hasDynamicShape() && !var5.getBlock().hasDynamicShape()) {
-               var8 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+            VoxelShape var7 = var3.getCollisionShape(var1, var2);
+            if (var7 == Shapes.block()) {
+               return false;
+            } else if (var7 == Shapes.empty() && var6 == Shapes.empty()) {
+               return true;
             } else {
-               var8 = null;
-            }
-
-            BlockStatePairKey var9;
-            if (var8 != null) {
-               var9 = new BlockStatePairKey(var3, var5, var0);
-               byte var10 = var8.getAndMoveToFirst(var9);
-               if (var10 != 127) {
-                  return var10 != 0;
-               }
-            } else {
-               var9 = null;
-            }
-
-            boolean var11 = !Shapes.mergedFaceOccludes(var7, var6, var0);
-            if (var8 != null) {
-               if (var8.size() == 200) {
-                  var8.removeLastByte();
+               Object2ByteLinkedOpenHashMap var8;
+               if (!var3.getBlock().hasDynamicShape() && !var5.getBlock().hasDynamicShape()) {
+                  var8 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+               } else {
+                  var8 = null;
                }
 
-               var8.putAndMoveToFirst(var9, (byte)(var11 ? 1 : 0));
-            }
+               BlockStatePairKey var9;
+               if (var8 != null) {
+                  var9 = new BlockStatePairKey(var3, var5, var0);
+                  byte var10 = var8.getAndMoveToFirst(var9);
+                  if (var10 != 127) {
+                     return var10 != 0;
+                  }
+               } else {
+                  var9 = null;
+               }
 
-            return var11;
+               boolean var11 = !Shapes.mergedFaceOccludes(var7, var6, var0);
+               if (var8 != null) {
+                  if (var8.size() == 200) {
+                     var8.removeLastByte();
+                  }
+
+                  var8.putAndMoveToFirst(var9, (byte)(var11 ? 1 : 0));
+               }
+
+               return var11;
+            }
          }
+      } else {
+         return false;
       }
    }
 

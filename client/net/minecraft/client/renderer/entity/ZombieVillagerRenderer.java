@@ -15,8 +15,8 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
 
    public ZombieVillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY)), 0.5F, VillagerRenderer.CUSTOM_HEAD_TRANSFORMS);
-      this.addLayer(new HumanoidArmorLayer(this, new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_INNER_ARMOR)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_OUTER_ARMOR)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_INNER_ARMOR)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_OUTER_ARMOR)), var1.getEquipmentRenderer()));
-      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "zombie_villager"));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_ARMOR, var1.getModelSet(), ZombieVillagerModel::new), ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_BABY_ARMOR, var1.getModelSet(), ZombieVillagerModel::new), var1.getEquipmentRenderer()));
+      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "zombie_villager", new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_NO_HAT)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_NO_HAT))));
    }
 
    public ResourceLocation getTextureLocation(ZombieVillagerRenderState var1) {

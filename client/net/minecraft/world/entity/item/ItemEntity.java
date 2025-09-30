@@ -74,24 +74,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.setItem(var8);
    }
 
-   private ItemEntity(ItemEntity var1) {
-      super(var1.getType(), var1.level());
-      this.age = 0;
-      this.pickupDelay = 0;
-      this.health = 5;
-      this.setItem(var1.getItem().copy());
-      this.copyPosition(var1);
-      this.age = var1.age;
-      this.bobOffs = var1.bobOffs;
-   }
-
    public boolean dampensVibrations() {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
    @Nullable
    public Entity getOwner() {
-      return (Entity)EntityReference.get(this.thrower, this.level(), Entity.class);
+      return EntityReference.getEntity(this.thrower, this.level());
    }
 
    public void restoreFrom(Entity var1) {
@@ -135,7 +124,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
             this.applyGravity();
          }
 
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             this.noPhysics = false;
          } else {
             this.noPhysics = !this.level().noCollision(this, this.getBoundingBox().deflate(1.0E-7));
@@ -163,7 +152,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          boolean var6 = Mth.floor(this.xo) != Mth.floor(this.getX()) || Mth.floor(this.yo) != Mth.floor(this.getY()) || Mth.floor(this.zo) != Mth.floor(this.getZ());
          int var7 = var6 ? 2 : 40;
-         if (this.tickCount % var7 == 0 && !this.level().isClientSide && this.isMergable()) {
+         if (this.tickCount % var7 == 0 && !this.level().isClientSide() && this.isMergable()) {
             this.mergeWithNeighbours();
          }
 
@@ -172,14 +161,14 @@ public class ItemEntity extends Entity implements TraceableEntity {
          }
 
          this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             double var4 = this.getDeltaMovement().subtract(var1).lengthSqr();
             if (var4 > 0.01) {
                this.hasImpulse = true;
             }
          }
 
-         if (!this.level().isClientSide && this.age >= 6000) {
+         if (!this.level().isClientSide() && this.age >= 6000) {
             this.discard();
          }
 
@@ -327,7 +316,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void playerTouch(Player var1) {
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          ItemStack var2 = this.getItem();
          Item var3 = var2.getItem();
          int var4 = var2.getCount();
@@ -357,7 +346,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Nullable
    public Entity teleport(TeleportTransition var1) {
       Entity var2 = super.teleport(var1);
-      if (!this.level().isClientSide && var2 instanceof ItemEntity var3) {
+      if (!this.level().isClientSide() && var2 instanceof ItemEntity var3) {
          var3.mergeWithNeighbours();
       }
 
@@ -385,7 +374,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public void setThrower(Entity var1) {
-      this.thrower = new EntityReference<Entity>(var1);
+      this.thrower = EntityReference.of(var1);
    }
 
    public int getAge() {
@@ -427,10 +416,6 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    public static float getSpin(float var0, float var1) {
       return var0 / 20.0F + var1;
-   }
-
-   public ItemEntity copy() {
-      return new ItemEntity(this);
    }
 
    public SoundSource getSoundSource() {

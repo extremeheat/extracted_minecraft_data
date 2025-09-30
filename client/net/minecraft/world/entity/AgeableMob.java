@@ -28,6 +28,7 @@ public abstract class AgeableMob extends PathfinderMob {
       super(var1, var2);
    }
 
+   @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMobGroupData(true);
@@ -55,7 +56,7 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    public int getAge() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return (Boolean)this.entityData.get(DATA_BABY_ID) ? -1 : 1;
       } else {
          return this.age;
@@ -121,7 +122,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public void aiStep() {
       super.aiStep();
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          if (this.forcedAgeTimer > 0) {
             if (this.forcedAgeTimer % 4 == 0) {
                this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);

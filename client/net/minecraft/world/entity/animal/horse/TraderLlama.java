@@ -71,7 +71,7 @@ public class TraderLlama extends Llama {
 
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (!this.level().isClientSide()) {
          this.maybeDespawn();
       }
 

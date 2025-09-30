@@ -141,7 +141,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
    public void aiStep() {
       Vec3 var1 = this.getDeltaMovement().multiply(1.0, 0.6, 1.0);
-      if (!this.level().isClientSide && this.getAlternativeTarget(0) > 0) {
+      if (!this.level().isClientSide() && this.getAlternativeTarget(0) > 0) {
          Entity var2 = this.level().getEntity(this.getAlternativeTarget(0));
          if (var2 != null) {
             double var3 = var1.y;
@@ -446,7 +446,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
    }
 
    public void checkDespawn() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
          this.discard();
       } else {
          this.noActionTime = 0;

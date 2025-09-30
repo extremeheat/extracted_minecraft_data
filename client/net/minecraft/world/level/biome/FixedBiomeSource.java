@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 
@@ -48,7 +49,7 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
 
    @Nullable
    public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
-      return var5.test(this.biome) ? Pair.of(var1, this.biome) : null;
+      return var5.test(this.biome) ? Pair.of(var1.atY(Mth.clamp(var1.getY(), var7.getMinY() + 1, var7.getMaxY() + 1)), this.biome) : null;
    }
 
    public Set<Holder<Biome>> getBiomesWithin(int var1, int var2, int var3, int var4, Climate.Sampler var5) {

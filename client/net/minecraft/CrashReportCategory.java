@@ -20,6 +20,10 @@ public class CrashReportCategory {
       this.title = var1;
    }
 
+   public static String formatLocation(double var0, double var2, double var4) {
+      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f", var0, var2, var4);
+   }
+
    public static String formatLocation(LevelHeightAccessor var0, double var1, double var3, double var5) {
       return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", var1, var3, var5, formatLocation(var0, BlockPos.containing(var1, var3, var5)));
    }

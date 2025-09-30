@@ -15,17 +15,17 @@ import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 
-public record CatVariant(ClientAsset assetInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
-   public static final Codec<CatVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CatVariant::spawnConditions)).apply(var0, CatVariant::new));
-   public static final Codec<CatVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo)).apply(var0, CatVariant::new));
+public record CatVariant(ClientAsset.ResourceTexture assetInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
+   public static final Codec<CatVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(CatVariant::spawnConditions)).apply(var0, CatVariant::new));
+   public static final Codec<CatVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(CatVariant::assetInfo)).apply(var0, CatVariant::new));
    public static final Codec<Holder<CatVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CatVariant>> STREAM_CODEC;
 
-   private CatVariant(ClientAsset var1) {
+   private CatVariant(ClientAsset.ResourceTexture var1) {
       this(var1, SpawnPrioritySelectors.EMPTY);
    }
 
-   public CatVariant(ClientAsset var1, SpawnPrioritySelectors var2) {
+   public CatVariant(ClientAsset.ResourceTexture var1, SpawnPrioritySelectors var2) {
       super();
       this.assetInfo = var1;
       this.spawnConditions = var2;

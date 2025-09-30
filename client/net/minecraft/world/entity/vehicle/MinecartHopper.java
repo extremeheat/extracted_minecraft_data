@@ -85,7 +85,7 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
    }
 
    private void tryConsumeItems() {
-      if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && !this.consumedItemThisFrame && this.suckInItems()) {
+      if (!this.level().isClientSide() && this.isAlive() && this.isEnabled() && !this.consumedItemThisFrame && this.suckInItems()) {
          this.consumedItemThisFrame = true;
          this.setChanged();
       }

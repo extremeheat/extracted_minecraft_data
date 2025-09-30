@@ -25,7 +25,7 @@ public class CanyonCarverConfiguration extends CarverConfiguration {
    }
 
    public static class CanyonShapeConfiguration {
-      public static final Codec<CanyonShapeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(FloatProvider.CODEC.fieldOf("distance_factor").forGetter((var0x) -> var0x.distanceFactor), FloatProvider.CODEC.fieldOf("thickness").forGetter((var0x) -> var0x.thickness), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("width_smoothness").forGetter((var0x) -> var0x.widthSmoothness), FloatProvider.CODEC.fieldOf("horizontal_radius_factor").forGetter((var0x) -> var0x.horizontalRadiusFactor), Codec.FLOAT.fieldOf("vertical_radius_default_factor").forGetter((var0x) -> var0x.verticalRadiusDefaultFactor), Codec.FLOAT.fieldOf("vertical_radius_center_factor").forGetter((var0x) -> var0x.verticalRadiusCenterFactor)).apply(var0, CanyonShapeConfiguration::new));
+      public static final Codec<CanyonShapeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(FloatProvider.CODEC.fieldOf("distance_factor").forGetter((var0x) -> var0x.distanceFactor), FloatProvider.CODEC.fieldOf("thickness").forGetter((var0x) -> var0x.thickness), ExtraCodecs.POSITIVE_INT.fieldOf("width_smoothness").forGetter((var0x) -> var0x.widthSmoothness), FloatProvider.CODEC.fieldOf("horizontal_radius_factor").forGetter((var0x) -> var0x.horizontalRadiusFactor), Codec.FLOAT.fieldOf("vertical_radius_default_factor").forGetter((var0x) -> var0x.verticalRadiusDefaultFactor), Codec.FLOAT.fieldOf("vertical_radius_center_factor").forGetter((var0x) -> var0x.verticalRadiusCenterFactor)).apply(var0, CanyonShapeConfiguration::new));
       public final FloatProvider distanceFactor;
       public final FloatProvider thickness;
       public final int widthSmoothness;

@@ -1,41 +1,50 @@
 package net.minecraft.world.entity;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 
-public enum Pose {
-   STANDING(0),
-   FALL_FLYING(1),
-   SLEEPING(2),
-   SWIMMING(3),
-   SPIN_ATTACK(4),
-   CROUCHING(5),
-   LONG_JUMPING(6),
-   DYING(7),
-   CROAKING(8),
-   USING_TONGUE(9),
-   SITTING(10),
-   ROARING(11),
-   SNIFFING(12),
-   EMERGING(13),
-   DIGGING(14),
-   SLIDING(15),
-   SHOOTING(16),
-   INHALING(17);
+public enum Pose implements StringRepresentable {
+   STANDING(0, "standing"),
+   FALL_FLYING(1, "fall_flying"),
+   SLEEPING(2, "sleeping"),
+   SWIMMING(3, "swimming"),
+   SPIN_ATTACK(4, "spin_attack"),
+   CROUCHING(5, "crouching"),
+   LONG_JUMPING(6, "long_jumping"),
+   DYING(7, "dying"),
+   CROAKING(8, "croaking"),
+   USING_TONGUE(9, "using_tongue"),
+   SITTING(10, "sitting"),
+   ROARING(11, "roaring"),
+   SNIFFING(12, "sniffing"),
+   EMERGING(13, "emerging"),
+   DIGGING(14, "digging"),
+   SLIDING(15, "sliding"),
+   SHOOTING(16, "shooting"),
+   INHALING(17, "inhaling");
 
    public static final IntFunction<Pose> BY_ID = ByIdMap.<Pose>continuous(Pose::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final Codec<Pose> CODEC = StringRepresentable.<Pose>fromEnum(Pose::values);
    public static final StreamCodec<ByteBuf, Pose> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Pose::id);
    private final int id;
+   private final String name;
 
-   private Pose(final int var3) {
+   private Pose(final int var3, final String var4) {
       this.id = var3;
+      this.name = var4;
    }
 
    public int id() {
       return this.id;
+   }
+
+   public String getSerializedName() {
+      return this.name;
    }
 
    // $FF: synthetic method

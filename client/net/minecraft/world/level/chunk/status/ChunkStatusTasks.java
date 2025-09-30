@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
@@ -108,7 +109,10 @@ public class ChunkStatusTasks {
       ServerLevel var4 = var0.level();
       Heightmap.primeHeightmaps(var3, EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE));
       WorldGenRegion var5 = new WorldGenRegion(var4, var2, var1, var3);
-      var0.generator().applyBiomeDecoration(var5, var3, var4.structureManager().forWorldGenRegion(var5));
+      if (!SharedConstants.DEBUG_DISABLE_FEATURES) {
+         var0.generator().applyBiomeDecoration(var5, var3, var4.structureManager().forWorldGenRegion(var5));
+      }
+
       Blender.generateBorderTicks(var5, var3);
       return CompletableFuture.completedFuture(var3);
    }

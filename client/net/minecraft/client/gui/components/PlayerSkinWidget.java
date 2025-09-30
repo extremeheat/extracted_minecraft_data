@@ -6,13 +6,15 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class PlayerSkinWidget extends AbstractWidget {
    private static final float MODEL_HEIGHT = 2.125F;
@@ -38,23 +40,19 @@ public class PlayerSkinWidget extends AbstractWidget {
       float var5 = 0.97F * (float)this.getHeight() / 2.125F;
       float var6 = -1.0625F;
       PlayerSkin var7 = (PlayerSkin)this.skin.get();
-      PlayerModel var8 = var7.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
-      var1.submitSkinRenderState(var8, var7.texture(), var5, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
+      PlayerModel var8 = var7.model() == PlayerModelType.SLIM ? this.slimModel : this.wideModel;
+      var1.submitSkinRenderState(var8, var7.body().texturePath(), var5, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
    }
 
-   protected void onDrag(double var1, double var3, double var5, double var7) {
-      this.rotationX = Mth.clamp(this.rotationX - (float)var7 * 2.5F, -50.0F, 50.0F);
-      this.rotationY += (float)var5 * 2.5F;
+   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
+      this.rotationX = Mth.clamp(this.rotationX - (float)var4 * 2.5F, -50.0F, 50.0F);
+      this.rotationY += (float)var2 * 2.5F;
    }
 
    public void playDownSound(SoundManager var1) {
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {
-   }
-
-   public boolean isActive() {
-      return false;
    }
 
    @Nullable

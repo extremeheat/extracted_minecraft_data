@@ -47,7 +47,7 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
       }
 
       public RemoteChatSession validate(GameProfile var1, SignatureValidator var2) throws ProfilePublicKey.ValidationException {
-         return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(var2, var1.getId(), this.profilePublicKey));
+         return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(var2, var1.id(), this.profilePublicKey));
       }
    }
 }

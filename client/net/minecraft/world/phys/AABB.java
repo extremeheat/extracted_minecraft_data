@@ -365,7 +365,7 @@ public class AABB {
       Vec3 var4 = var3.add(var1);
 
       for(AABB var6 : var2) {
-         AABB var7 = var6.inflate(this.getXsize() * 0.5, this.getYsize() * 0.5, this.getZsize() * 0.5);
+         AABB var7 = var6.inflate(this.getXsize() * 0.5 - 1.0E-7, this.getYsize() * 0.5 - 1.0E-7, this.getZsize() * 0.5 - 1.0E-7);
          if (var7.contains(var4) || var7.contains(var3)) {
             return true;
          }

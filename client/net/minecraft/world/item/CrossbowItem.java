@@ -173,7 +173,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          ChargingSounds var5 = this.getChargingSounds(var3);
          float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var3, var2);
          if (var6 < 0.2F) {

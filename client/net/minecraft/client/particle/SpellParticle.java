@@ -4,18 +4,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ColorParticleOption;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class SpellParticle extends TextureSheetParticle {
+public class SpellParticle extends SingleQuadParticle {
    private static final RandomSource RANDOM = RandomSource.create();
    private final SpriteSet sprites;
    private float originalAlpha = 1.0F;
 
    SpellParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
-      super(var1, var2, var4, var6, 0.5 - RANDOM.nextDouble(), var10, 0.5 - RANDOM.nextDouble());
+      super(var1, var2, var4, var6, 0.5 - RANDOM.nextDouble(), var10, 0.5 - RANDOM.nextDouble(), var14.first());
       this.friction = 0.96F;
       this.gravity = -0.1F;
       this.speedUpWhenYMotionIsBlocked = true;
@@ -36,8 +36,8 @@ public class SpellParticle extends TextureSheetParticle {
 
    }
 
-   public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   public SingleQuadParticle.Layer getLayer() {
+      return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
    public void tick() {
@@ -70,13 +70,8 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -88,16 +83,11 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         ((Particle)var15).setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
-         ((Particle)var15).setAlpha(var1.getAlpha());
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((ColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         SpellParticle var16 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         var16.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         var16.setAlpha(var1.getAlpha());
+         return var16;
       }
    }
 
@@ -109,20 +99,15 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         float var16 = var2.random.nextFloat() * 0.5F + 0.35F;
-         var15.setColor(1.0F * var16, 0.0F * var16, 1.0F * var16);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         SpellParticle var16 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         float var17 = var15.nextFloat() * 0.5F + 0.35F;
+         var16.setColor(1.0F * var17, 0.0F * var17, 1.0F * var17);
+         return var16;
       }
    }
 
-   public static class InstantProvider implements ParticleProvider<SimpleParticleType> {
+   public static class InstantProvider implements ParticleProvider<SpellParticleOption> {
       private final SpriteSet sprite;
 
       public InstantProvider(SpriteSet var1) {
@@ -130,13 +115,11 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      public Particle createParticle(SpellParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+         SpellParticle var16 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         var16.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         var16.setPower(var1.getPower());
+         return var16;
       }
    }
 }

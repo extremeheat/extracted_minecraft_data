@@ -1,8 +1,8 @@
 package net.minecraft.world.level.storage;
 
+import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
@@ -21,12 +21,8 @@ public class DerivedLevelData implements ServerLevelData {
       this.wrapped = var2;
    }
 
-   public BlockPos getSpawnPos() {
-      return this.wrapped.getSpawnPos();
-   }
-
-   public float getSpawnAngle() {
-      return this.wrapped.getSpawnAngle();
+   public LevelData.RespawnData getRespawnData() {
+      return this.wrapped.getRespawnData();
    }
 
    public long getGameTime() {
@@ -74,7 +70,8 @@ public class DerivedLevelData implements ServerLevelData {
    public void setDayTime(long var1) {
    }
 
-   public void setSpawn(BlockPos var1, float var2) {
+   public void setSpawn(LevelData.RespawnData var1) {
+      this.wrapped.setSpawn(var1);
    }
 
    public void setThundering(boolean var1) {
@@ -111,11 +108,11 @@ public class DerivedLevelData implements ServerLevelData {
       return this.worldData.getGameRules();
    }
 
-   public WorldBorder.Settings getWorldBorder() {
-      return this.wrapped.getWorldBorder();
+   public Optional<WorldBorder.Settings> getLegacyWorldBorderSettings() {
+      return this.wrapped.getLegacyWorldBorderSettings();
    }
 
-   public void setWorldBorder(WorldBorder.Settings var1) {
+   public void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1) {
    }
 
    public Difficulty getDifficulty() {

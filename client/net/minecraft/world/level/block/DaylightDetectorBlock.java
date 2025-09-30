@@ -75,7 +75,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       if (!var4.mayBuild()) {
          return super.useWithoutItem(var1, var2, var3, var4, var5);
       } else {
-         if (!var2.isClientSide) {
+         if (!var2.isClientSide()) {
             BlockState var6 = (BlockState)var1.cycle(INVERTED);
             var2.setBlock(var3, var6, 2);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var6));
@@ -96,7 +96,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide && var1.dimensionType().hasSkyLight() ? createTickerHelper(var3, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity) : null;
+      return !var1.isClientSide() && var1.dimensionType().hasSkyLight() ? createTickerHelper(var3, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity) : null;
    }
 
    private static void tickEntity(Level var0, BlockPos var1, BlockState var2, DaylightDetectorBlockEntity var3) {

@@ -10,12 +10,14 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SmokerBlockEntity extends AbstractFurnaceBlockEntity {
+   private static final Component DEFAULT_NAME = Component.translatable("container.smoker");
+
    public SmokerBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SMOKER, var1, var2, RecipeType.SMOKING);
    }
 
    protected Component getDefaultName() {
-      return Component.translatable("container.smoker");
+      return DEFAULT_NAME;
    }
 
    protected int getBurnDuration(FuelValues var1, ItemStack var2) {

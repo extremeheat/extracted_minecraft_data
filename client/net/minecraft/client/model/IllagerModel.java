@@ -13,7 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
-public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> implements ArmedModel, HeadedModel {
+public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> implements ArmedModel<S>, HeadedModel {
    private final ModelPart head;
    private final ModelPart hat;
    private final ModelPart arms;
@@ -143,8 +143,8 @@ public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> i
       return this.head;
    }
 
-   public void translateToHand(HumanoidArm var1, PoseStack var2) {
-      this.root.translateAndRotate(var2);
-      this.getArm(var1).translateAndRotate(var2);
+   public void translateToHand(IllagerRenderState var1, HumanoidArm var2, PoseStack var3) {
+      this.root.translateAndRotate(var3);
+      this.getArm(var2).translateAndRotate(var3);
    }
 }

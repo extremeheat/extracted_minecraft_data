@@ -131,7 +131,7 @@ public class VanillaPackResources implements PackResources {
             Object var5;
             label54: {
                try {
-                  Object var4 = AbstractPackResources.getMetadataFromStream(var1, var3);
+                  Object var4 = AbstractPackResources.getMetadataFromStream(var1, var3, this.location);
                   if (var4 != null) {
                      var5 = var4;
                      break label54;

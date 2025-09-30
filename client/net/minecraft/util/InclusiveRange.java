@@ -2,6 +2,7 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import java.util.function.Function;
 
 public record InclusiveRange<T extends Comparable<T>>(T minInclusive, T maxInclusive) {
    public static final Codec<InclusiveRange<Integer>> INT;
@@ -42,6 +43,10 @@ public record InclusiveRange<T extends Comparable<T>>(T minInclusive, T maxInclu
 
    public static <T extends Comparable<T>> DataResult<InclusiveRange<T>> create(T var0, T var1) {
       return var0.compareTo(var1) <= 0 ? DataResult.success(new InclusiveRange(var0, var1)) : DataResult.error(() -> "min_inclusive must be less than or equal to max_inclusive");
+   }
+
+   public <S extends Comparable<S>> InclusiveRange<S> map(Function<? super T, ? extends S> var1) {
+      return new InclusiveRange<S>((Comparable)var1.apply(this.minInclusive), (Comparable)var1.apply(this.maxInclusive));
    }
 
    public boolean isValueInRange(T var1) {

@@ -484,6 +484,10 @@ public class Brain<E extends LivingEntity> {
       return var4.build();
    }
 
+   public boolean isBrainDead() {
+      return this.memories.isEmpty() && this.sensors.isEmpty() && this.availableBehaviorsByPriority.isEmpty();
+   }
+
    public static final class Provider<E extends LivingEntity> {
       private final Collection<? extends MemoryModuleType<?>> memoryTypes;
       private final Collection<? extends SensorType<? extends Sensor<? super E>>> sensorTypes;

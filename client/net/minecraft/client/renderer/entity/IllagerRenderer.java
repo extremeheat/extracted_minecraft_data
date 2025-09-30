@@ -10,7 +10,7 @@ import net.minecraft.world.item.CrossbowItem;
 public abstract class IllagerRenderer<T extends AbstractIllager, S extends IllagerRenderState> extends MobRenderer<T, S, IllagerModel<S>> {
    protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<S> var2, float var3) {
       super(var1, var2, var3);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
    public void extractRenderState(T var1, S var2, float var3) {

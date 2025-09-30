@@ -24,7 +24,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -55,6 +54,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
@@ -66,7 +66,6 @@ public class BeehiveBlock extends BaseEntityBlock {
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty HONEY_LEVEL;
    public static final int MAX_HONEY_LEVELS = 5;
-   private static final int SHEARED_HONEYCOMB_COUNT = 3;
 
    public MapCodec<BeehiveBlock> codec() {
       return CODEC;
@@ -81,13 +80,13 @@ public class BeehiveBlock extends BaseEntityBlock {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return (Integer)var1.getValue(HONEY_LEVEL);
    }
 
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
-      if (!var1.isClientSide && var5 instanceof BeehiveBlockEntity var7) {
+      if (!var1.isClientSide() && var5 instanceof BeehiveBlockEntity var7) {
          if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_BEE_SPAWNS_WHEN_MINING)) {
             var7.emptyAllLivingFromHive(var2, var4, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
             Containers.updateNeighboursAfterDestroy(var4, var1, var3);
@@ -123,32 +122,41 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    }
 
-   public static void dropHoneycomb(Level var0, BlockPos var1) {
-      popResource(var0, var1, new ItemStack(Items.HONEYCOMB, 3));
+   public static void dropHoneycomb(ServerLevel var0, ItemStack var1, BlockState var2, @Nullable BlockEntity var3, @Nullable Entity var4, BlockPos var5) {
+      dropFromBlockInteractLootTable(var0, BuiltInLootTables.HARVEST_BEEHIVE, var2, var3, var1, var4, (var1x, var2x) -> popResource(var1x, var5, var2x));
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       int var8 = (Integer)var2.getValue(HONEY_LEVEL);
       boolean var9 = false;
       if (var8 >= 5) {
-         Item var10 = var1.getItem();
-         if (var1.is(Items.SHEARS)) {
-            var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
-            dropHoneycomb(var3, var4);
-            var1.hurtAndBreak(1, var5, (EquipmentSlot)LivingEntity.getSlotForHand(var6));
-            var9 = true;
-            var3.gameEvent(var5, GameEvent.SHEAR, var4);
-         } else if (var1.is(Items.GLASS_BOTTLE)) {
-            var1.shrink(1);
-            var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-            if (var1.isEmpty()) {
-               var5.setItemInHand(var6, new ItemStack(Items.HONEY_BOTTLE));
-            } else if (!var5.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
-               var5.drop(new ItemStack(Items.HONEY_BOTTLE), false);
+         Item var10;
+         label40: {
+            var10 = var1.getItem();
+            if (var3 instanceof ServerLevel) {
+               ServerLevel var11 = (ServerLevel)var3;
+               if (var1.is(Items.SHEARS)) {
+                  dropHoneycomb(var11, var1, var2, var3.getBlockEntity(var4), var5, var4);
+                  var3.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
+                  var9 = true;
+                  var3.gameEvent(var5, GameEvent.SHEAR, var4);
+                  break label40;
+               }
             }
 
-            var9 = true;
-            var3.gameEvent(var5, GameEvent.FLUID_PICKUP, var4);
+            if (var1.is(Items.GLASS_BOTTLE)) {
+               var1.shrink(1);
+               var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+               if (var1.isEmpty()) {
+                  var5.setItemInHand(var6, new ItemStack(Items.HONEY_BOTTLE));
+               } else if (!var5.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
+                  var5.drop(new ItemStack(Items.HONEY_BOTTLE), false);
+               }
+
+               var9 = true;
+               var3.gameEvent(var5, GameEvent.FLUID_PICKUP, var4);
+            }
          }
 
          if (!var3.isClientSide() && var9) {
@@ -249,7 +257,7 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BEEHIVE, BeehiveBlockEntity::serverTick);
+      return var1.isClientSide() ? null : createTickerHelper(var3, BlockEntityType.BEEHIVE, BeehiveBlockEntity::serverTick);
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {

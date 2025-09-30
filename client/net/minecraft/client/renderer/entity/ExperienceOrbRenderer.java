@@ -2,10 +2,11 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -27,7 +28,7 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
       return Mth.clamp(super.getBlockLightLevel(var1, var2) + 7, 0, 15);
    }
 
-   public void render(ExperienceOrbRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ExperienceOrbRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       int var5 = var1.icon;
       float var6 = (float)(var5 % 4 * 16 + 0) / 64.0F;
@@ -43,17 +44,17 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
       boolean var16 = true;
       int var17 = (int)((Mth.sin(var14 + 4.1887903F) + 1.0F) * 0.1F * 255.0F);
       var2.translate(0.0F, 0.1F, 0.0F);
-      var2.mulPose((Quaternionfc)this.entityRenderDispatcher.cameraOrientation());
+      var2.mulPose((Quaternionfc)var4.orientation);
       float var18 = 0.3F;
       var2.scale(0.3F, 0.3F, 0.3F);
-      VertexConsumer var19 = var3.getBuffer(RENDER_TYPE);
-      PoseStack.Pose var20 = var2.last();
-      vertex(var19, var20, -0.5F, -0.25F, var15, 255, var17, var6, var9, var4);
-      vertex(var19, var20, 0.5F, -0.25F, var15, 255, var17, var7, var9, var4);
-      vertex(var19, var20, 0.5F, 0.75F, var15, 255, var17, var7, var8, var4);
-      vertex(var19, var20, -0.5F, 0.75F, var15, 255, var17, var6, var8, var4);
+      var3.submitCustomGeometry(var2, RENDER_TYPE, (var7x, var8x) -> {
+         vertex(var8x, var7x, -0.5F, -0.25F, var15, 255, var17, var6, var9, var1.lightCoords);
+         vertex(var8x, var7x, 0.5F, -0.25F, var15, 255, var17, var7, var9, var1.lightCoords);
+         vertex(var8x, var7x, 0.5F, 0.75F, var15, 255, var17, var7, var8, var1.lightCoords);
+         vertex(var8x, var7x, -0.5F, 0.75F, var15, 255, var17, var6, var8, var1.lightCoords);
+      });
       var2.popPose();
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, int var4, int var5, int var6, float var7, float var8, int var9) {

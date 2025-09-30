@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -56,6 +57,10 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
                if (var15) {
                   var12.placeBlocks(var2, var5, var13);
+               }
+
+               if (SharedConstants.DEBUG_LARGE_DRIPSTONE) {
+                  this.placeDebugMarkers(var2, var3, var7, var13);
                }
 
                return true;
@@ -158,7 +163,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
                         BlockPos var12 = var3.offset(var8);
                         if (DripstoneUtils.isEmptyOrWaterOrLava(var1, var12)) {
                            var9 = true;
-                           Block var13 = Blocks.DRIPSTONE_BLOCK;
+                           Block var13 = SharedConstants.DEBUG_LARGE_DRIPSTONE ? Blocks.GLASS : Blocks.DRIPSTONE_BLOCK;
                            var1.setBlock(var12, var13.defaultBlockState(), 2);
                         } else if (var9 && var1.getBlockState(var12).is(BlockTags.BASE_STONE_OVERWORLD)) {
                            break;

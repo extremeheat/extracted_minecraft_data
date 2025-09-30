@@ -1,23 +1,89 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import javax.annotation.Nullable;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityWithBoundingBoxRenderState;
+import net.minecraft.client.renderer.blockentity.state.TestInstanceRenderState;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionfc;
 
-public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlockEntity> {
-   private final BeaconRenderer<TestInstanceBlockEntity> beacon;
-   private final BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity> box;
+public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlockEntity, TestInstanceRenderState> {
+   private static final float ERROR_PADDING = 0.02F;
+   private final BeaconRenderer<TestInstanceBlockEntity> beacon = new BeaconRenderer<TestInstanceBlockEntity>();
+   private final BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity> box = new BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity>();
+   private final Font font;
+   private final EntityRenderDispatcher entityRenderer;
 
    public TestInstanceRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.beacon = new BeaconRenderer<TestInstanceBlockEntity>(var1);
-      this.box = new BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity>(var1);
+      this.font = var1.font();
+      this.entityRenderer = var1.entityRenderer();
    }
 
-   public void render(TestInstanceBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
-      this.beacon.render(var1, var2, var3, var4, var5, var6, var7);
-      this.box.render(var1, var2, var3, var4, var5, var6, var7);
+   public TestInstanceRenderState createRenderState() {
+      return new TestInstanceRenderState();
+   }
+
+   public void extractRenderState(TestInstanceBlockEntity var1, TestInstanceRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
+      var2.beaconRenderState = new BeaconRenderState();
+      BlockEntityRenderState.extractBase(var1, var2.beaconRenderState, var5);
+      BeaconRenderer.extract(var1, var2.beaconRenderState, var3, var4);
+      var2.blockEntityWithBoundingBoxRenderState = new BlockEntityWithBoundingBoxRenderState();
+      BlockEntityRenderState.extractBase(var1, var2.blockEntityWithBoundingBoxRenderState, var5);
+      BlockEntityWithBoundingBoxRenderer.extract(var1, var2.blockEntityWithBoundingBoxRenderState);
+      var2.errorMarkers.clear();
+
+      for(TestInstanceBlockEntity.ErrorMarker var7 : var1.getErrorMarkers()) {
+         var2.errorMarkers.add(new TestInstanceBlockEntity.ErrorMarker(var7.pos().subtract(var1.getBlockPos()), var7.text()));
+      }
+
+   }
+
+   public void submit(TestInstanceRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
+      this.beacon.submit(var1.beaconRenderState, var2, var3, var4);
+      this.box.submit(var1.blockEntityWithBoundingBoxRenderState, var2, var3, var4);
+
+      for(TestInstanceBlockEntity.ErrorMarker var6 : var1.errorMarkers) {
+         this.submitErrorMarker(var2, var3, var6, var4);
+      }
+
+   }
+
+   private void submitErrorMarker(PoseStack var1, SubmitNodeCollector var2, TestInstanceBlockEntity.ErrorMarker var3, CameraRenderState var4) {
+      BlockPos var5 = var3.pos();
+      var2.order(1).submitCustomGeometry(var1, RenderType.debugFilledBox(), (var1x, var2x) -> {
+         float var3 = (float)var5.getX() - 0.02F;
+         float var4 = (float)var5.getY() - 0.02F;
+         float var5x = (float)var5.getZ() - 0.02F;
+         float var6 = (float)var5.getX() + 1.0F + 0.02F;
+         float var7 = (float)var5.getY() + 1.0F + 0.02F;
+         float var8 = (float)var5.getZ() + 1.0F + 0.02F;
+         PoseStack var9 = new PoseStack();
+         var9.last().set(var1x);
+         ShapeRenderer.addChainedFilledBoxVertices(var9, var2x, var3, var4, var5x, var6, var7, var8, 1.0F, 0.0F, 0.0F, 0.375F);
+      });
+      FormattedCharSequence var6 = var3.text().getVisualOrderText();
+      int var7 = this.font.width(var6);
+      float var8 = 0.01F;
+      var1.pushPose();
+      var1.translate((float)var5.getX() + 0.5F, (float)var5.getY() + 1.2F, (float)var5.getZ() + 0.5F);
+      var1.mulPose((Quaternionfc)var4.orientation);
+      var1.scale(0.01F, -0.01F, 0.01F);
+      var2.order(2).submitText(var1, (float)(-var7) / 2.0F, 0.0F, var6, false, Font.DisplayMode.SEE_THROUGH, 15728880, -1, 0, 0);
+      var1.popPose();
    }
 
    public boolean shouldRenderOffScreen() {
@@ -30,5 +96,10 @@ public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlo
 
    public boolean shouldRender(TestInstanceBlockEntity var1, Vec3 var2) {
       return this.beacon.shouldRender(var1, var2) || this.box.shouldRender(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public BlockEntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

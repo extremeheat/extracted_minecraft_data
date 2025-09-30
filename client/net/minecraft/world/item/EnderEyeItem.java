@@ -38,7 +38,7 @@ public class EnderEyeItem extends Item {
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
       if (var4.is(Blocks.END_PORTAL_FRAME) && !(Boolean)var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
-         if (var2.isClientSide) {
+         if (var2.isClientSide()) {
             return InteractionResult.SUCCESS;
          } else {
             BlockState var5 = (BlockState)var4.setValue(EndPortalFrameBlock.HAS_EYE, true);

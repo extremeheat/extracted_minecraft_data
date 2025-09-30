@@ -18,6 +18,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class SummonCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.summon.failed"));
+   private static final SimpleCommandExceptionType ERROR_FAILED_PEACEFUL = new SimpleCommandExceptionType(Component.translatable("commands.summon.failed.peaceful"));
    private static final SimpleCommandExceptionType ERROR_DUPLICATE_UUID = new SimpleCommandExceptionType(Component.translatable("commands.summon.failed.uuid"));
    private static final SimpleCommandExceptionType INVALID_POSITION = new SimpleCommandExceptionType(Component.translatable("commands.summon.invalidPosition"));
 
@@ -43,6 +45,8 @@ public class SummonCommand {
       BlockPos var5 = BlockPos.containing(var2);
       if (!Level.isInSpawnableBounds(var5)) {
          throw INVALID_POSITION.create();
+      } else if (var0.getLevel().getDifficulty() == Difficulty.PEACEFUL && !((EntityType)var1.value()).isAllowedInPeaceful()) {
+         throw ERROR_FAILED_PEACEFUL.create();
       } else {
          CompoundTag var6 = var3.copy();
          var6.putString("id", var1.key().location().toString());
@@ -55,7 +59,8 @@ public class SummonCommand {
             throw ERROR_FAILED.create();
          } else {
             if (var4 && var8 instanceof Mob) {
-               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), EntitySpawnReason.COMMAND, (SpawnGroupData)null);
+               Mob var9 = (Mob)var8;
+               var9.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), EntitySpawnReason.COMMAND, (SpawnGroupData)null);
             }
 
             if (!var7.tryAddFreshEntityWithPassengers(var8)) {

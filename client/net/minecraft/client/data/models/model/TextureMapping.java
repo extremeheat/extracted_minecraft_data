@@ -302,6 +302,10 @@ public class TextureMapping {
       return (new TextureMapping()).put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom")).put(TextureSlot.SIDE, getBlockTexture(Blocks.SCULK_SHRIEKER, "_side")).put(TextureSlot.TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, "_top")).put(TextureSlot.INNER_TOP, getBlockTexture(Blocks.SCULK_SHRIEKER, var1 + "_inner_top")).put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SCULK_SHRIEKER, "_bottom"));
    }
 
+   public static TextureMapping bars(Block var0) {
+      return (new TextureMapping()).put(TextureSlot.BARS, getBlockTexture(var0)).put(TextureSlot.EDGE, getBlockTexture(var0));
+   }
+
    public static TextureMapping layer0(Item var0) {
       return (new TextureMapping()).put(TextureSlot.LAYER0, getItemTexture(var0));
    }

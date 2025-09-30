@@ -38,7 +38,7 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
 
    private ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf var1) {
       super();
-      this.sectionPos = SectionPos.of(var1.readLong());
+      this.sectionPos = (SectionPos)SectionPos.STREAM_CODEC.decode(var1);
       int var2 = var1.readVarInt();
       this.positions = new short[var2];
       this.states = new BlockState[var2];
@@ -52,7 +52,7 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeLong(this.sectionPos.asLong());
+      SectionPos.STREAM_CODEC.encode(var1, this.sectionPos);
       var1.writeVarInt(this.positions.length);
 
       for(int var2 = 0; var2 < this.positions.length; ++var2) {

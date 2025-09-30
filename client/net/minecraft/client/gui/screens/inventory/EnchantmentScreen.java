@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -57,20 +58,20 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       this.tickBook();
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      int var6 = (this.width - this.imageWidth) / 2;
-      int var7 = (this.height - this.imageHeight) / 2;
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      int var3 = (this.width - this.imageWidth) / 2;
+      int var4 = (this.height - this.imageHeight) / 2;
 
-      for(int var8 = 0; var8 < 3; ++var8) {
-         double var9 = var1 - (double)(var6 + 60);
-         double var11 = var3 - (double)(var7 + 14 + 19 * var8);
-         if (var9 >= 0.0 && var11 >= 0.0 && var9 < 108.0 && var11 < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, var8)) {
-            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var8);
+      for(int var5 = 0; var5 < 3; ++var5) {
+         double var6 = var1.x() - (double)(var3 + 60);
+         double var8 = var1.y() - (double)(var4 + 14 + 19 * var5);
+         if (var6 >= 0.0 && var8 >= 0.0 && var6 < 108.0 && var8 < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, var5)) {
+            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var5);
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var3, var5);
+      return super.mouseClicked(var1, var2);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {

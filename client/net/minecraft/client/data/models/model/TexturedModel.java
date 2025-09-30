@@ -32,6 +32,7 @@ public class TexturedModel {
    public static final Provider LEAVES;
    public static final Provider LANTERN;
    public static final Provider HANGING_LANTERN;
+   public static final Provider CHAIN;
    public static final Provider SEAGRASS;
    public static final Provider COLUMN_ALT;
    public static final Provider COLUMN_HORIZONTAL_ALT;
@@ -101,6 +102,7 @@ public class TexturedModel {
       LEAVES = createDefault(TextureMapping::cube, ModelTemplates.LEAVES);
       LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.LANTERN);
       HANGING_LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.HANGING_LANTERN);
+      CHAIN = createDefault(TextureMapping::defaultTexture, ModelTemplates.CHAIN);
       SEAGRASS = createDefault(TextureMapping::defaultTexture, ModelTemplates.SEAGRASS);
       COLUMN_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN);
       COLUMN_HORIZONTAL_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN_HORIZONTAL);

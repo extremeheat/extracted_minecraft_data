@@ -105,7 +105,7 @@ public class Squid extends AgeableWaterCreature {
       this.oldTentacleAngle = this.tentacleAngle;
       this.tentacleMovement += this.tentacleSpeed;
       if ((double)this.tentacleMovement > 6.283185307179586) {
-         if (this.level().isClientSide) {
+         if (this.level().isClientSide()) {
             this.tentacleMovement = 6.2831855F;
          } else {
             this.tentacleMovement -= 6.2831855F;
@@ -147,7 +147,7 @@ public class Squid extends AgeableWaterCreature {
          this.xBodyRot += (-((float)Mth.atan2(var2, var4.y)) * 57.295776F - this.xBodyRot) * 0.1F;
       } else {
          this.tentacleAngle = Mth.abs(Mth.sin(this.tentacleMovement)) * 3.1415927F * 0.25F;
-         if (!this.level().isClientSide) {
+         if (!this.level().isClientSide()) {
             double var5 = this.getDeltaMovement().y;
             if (this.hasEffect(MobEffects.LEVITATION)) {
                var5 = 0.05 * (double)(this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1);

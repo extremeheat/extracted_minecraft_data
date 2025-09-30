@@ -13,16 +13,13 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
       super(var1, var2, var3, var4, var5);
-   }
-
-   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
    }
 
    @Nullable
@@ -89,24 +86,23 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       return this.isFocused() ? NarratableEntry.NarrationPriority.FOCUSED : super.narrationPriority();
    }
 
-   protected boolean isSelectedItem(int var1) {
+   protected boolean entriesCanBeSelected() {
       return false;
    }
 
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      Entry var2 = (Entry)this.getHovered();
-      if (var2 != null) {
+      AbstractSelectionList.Entry var4 = this.getHovered();
+      if (var4 instanceof Entry var2) {
          var2.updateNarration(var1.nest());
          this.narrateListElementPosition(var1, var2);
       } else {
-         Entry var3 = (Entry)this.getFocused();
-         if (var3 != null) {
+         var4 = this.getFocused();
+         if (var4 instanceof Entry var3) {
             var3.updateNarration(var1.nest());
             this.narrateListElementPosition(var1, var3);
          }
       }
 
-      var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.component_list.usage"));
    }
 
    public abstract static class Entry<E extends Entry<E>> extends AbstractSelectionList.Entry<E> implements ContainerEventHandler {
@@ -128,8 +124,8 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          this.dragging = var1;
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         return ContainerEventHandler.super.mouseClicked(var1, var3, var5);
+      public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         return ContainerEventHandler.super.mouseClicked(var1, var2);
       }
 
       public void setFocused(@Nullable GuiEventListener var1) {
@@ -204,18 +200,15 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          List var2 = this.narratables();
          Screen.NarratableSearchResult var3 = Screen.findNarratableWidget(var2, this.lastNarratable);
          if (var3 != null) {
-            if (var3.priority.isTerminal()) {
-               this.lastNarratable = var3.entry;
+            if (var3.priority().isTerminal()) {
+               this.lastNarratable = var3.entry();
             }
 
             if (var2.size() > 1) {
-               var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.object_list", var3.index + 1, var2.size()));
-               if (var3.priority == NarratableEntry.NarrationPriority.FOCUSED) {
-                  var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.component_list.usage"));
-               }
+               var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.object_list", var3.index() + 1, var2.size()));
             }
 
-            var3.entry.updateNarration(var1.nest());
+            var3.entry().updateNarration(var1.nest());
          }
 
       }

@@ -1,12 +1,17 @@
 package net.minecraft.client.animation;
 
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
-public record Keyframe(float timestamp, Vector3f target, AnimationChannel.Interpolation interpolation) {
-   public Keyframe(float var1, Vector3f var2, AnimationChannel.Interpolation var3) {
+public record Keyframe(float timestamp, Vector3fc preTarget, Vector3fc postTarget, AnimationChannel.Interpolation interpolation) {
+   public Keyframe(float var1, Vector3fc var2, AnimationChannel.Interpolation var3) {
+      this(var1, var2, var2, var3);
+   }
+
+   public Keyframe(float var1, Vector3fc var2, Vector3fc var3, AnimationChannel.Interpolation var4) {
       super();
       this.timestamp = var1;
-      this.target = var2;
-      this.interpolation = var3;
+      this.preTarget = var2;
+      this.postTarget = var3;
+      this.interpolation = var4;
    }
 }

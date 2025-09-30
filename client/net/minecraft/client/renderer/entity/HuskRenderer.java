@@ -9,7 +9,7 @@ public class HuskRenderer extends ZombieRenderer {
    private static final ResourceLocation HUSK_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/husk.png");
 
    public HuskRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.HUSK, ModelLayers.HUSK_BABY, ModelLayers.HUSK_INNER_ARMOR, ModelLayers.HUSK_OUTER_ARMOR, ModelLayers.HUSK_BABY_INNER_ARMOR, ModelLayers.HUSK_BABY_OUTER_ARMOR);
+      super(var1, ModelLayers.HUSK, ModelLayers.HUSK_BABY, ModelLayers.HUSK_ARMOR, ModelLayers.HUSK_BABY_ARMOR);
    }
 
    public ResourceLocation getTextureLocation(ZombieRenderState var1) {

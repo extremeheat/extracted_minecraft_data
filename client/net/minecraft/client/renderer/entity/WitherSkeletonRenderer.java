@@ -10,7 +10,7 @@ public class WitherSkeletonRenderer extends AbstractSkeletonRenderer<WitherSkele
    private static final ResourceLocation WITHER_SKELETON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png");
 
    public WitherSkeletonRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.WITHER_SKELETON, ModelLayers.WITHER_SKELETON_INNER_ARMOR, ModelLayers.WITHER_SKELETON_OUTER_ARMOR);
+      super(var1, ModelLayers.WITHER_SKELETON, ModelLayers.WITHER_SKELETON_ARMOR);
    }
 
    public ResourceLocation getTextureLocation(SkeletonRenderState var1) {

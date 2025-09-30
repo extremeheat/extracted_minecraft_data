@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
 import net.minecraft.client.model.ArmorStandArmorModel;
 import net.minecraft.client.model.ArmorStandModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -28,10 +29,10 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    public ArmorStandRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND)), 0.0F);
       this.smallModel = new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL));
-      this.addLayer(new HumanoidArmorLayer(this, new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_INNER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_OUTER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL_INNER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL_OUTER_ARMOR)), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ARMOR_STAND_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), ArmorModelSet.bake(ModelLayers.ARMOR_STAND_SMALL_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), var1.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer(this));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
    public ResourceLocation getTextureLocation(ArmorStandRenderState var1) {
@@ -59,9 +60,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       var2.wiggle = (float)(var1.level().getGameTime() - var1.lastHit) + var3;
    }
 
-   public void render(ArmorStandRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ArmorStandRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       this.model = var1.isSmall ? this.smallModel : this.bigModel;
-      super.render(var1, var2, var3, var4);
+      super.submit(var1, var2, var3, var4);
    }
 
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {

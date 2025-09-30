@@ -21,18 +21,24 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
+import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.particle.FireworkParticles;
+import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.EndFlashState;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
@@ -40,14 +46,18 @@ import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ARGB;
@@ -55,8 +65,8 @@ import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -82,9 +92,11 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -121,6 +133,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final ClientLevelData clientLevelData;
    private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
+   @Nullable
+   private final EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    final List<EnderDragonPart> dragonParts = Lists.newArrayList();
@@ -138,11 +152,17 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
+   private final ClientExplosionTracker explosionTracker = new ClientExplosionTracker();
+   private final WorldBorder worldBorder = new WorldBorder();
    private final int seaLevel;
    private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
 
    public void handleBlockChangedAck(int var1) {
+      if (SharedConstants.DEBUG_BLOCK_BREAK) {
+         LOGGER.debug("ACK {}", var1);
+      }
+
       this.blockStatePredictionHandler.endPredictionsUpTo(var1, this);
    }
 
@@ -203,9 +223,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.clientLevelData = var2;
       this.levelRenderer = var7;
       this.seaLevel = var11;
-      this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
+      this.levelEventHandler = new LevelEventHandler(this.minecraft, this);
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
-      this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
+      this.endFlashState = this.effects.hasEndFlashes() ? new EndFlashState() : null;
+      this.setRespawnData(LevelData.RespawnData.of(var3, new BlockPos(8, 64, 8), 0.0F, 0.0F));
       this.serverSimulationDistance = var6;
       this.updateSkyBrightness();
       this.prepareWeather();
@@ -234,6 +255,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.effects;
    }
 
+   @Nullable
+   public EndFlashState endFlashState() {
+      return this.endFlashState;
+   }
+
    public void tick(BooleanSupplier var1) {
       this.getWorldBorder().tick();
       this.updateSkyBrightness();
@@ -244,6 +270,15 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       if (this.skyFlashTime > 0) {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
+
+      if (this.endFlashState != null) {
+         this.endFlashState.tick(this.getGameTime());
+         if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.screen instanceof WinScreen)) {
+            this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
+         }
+      }
+
+      this.explosionTracker.tick(this);
 
       try (Zone var2 = Profiler.get().zone("blocks")) {
          this.chunkSource.tick(var1, true);
@@ -270,15 +305,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void tickEntities() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("entities");
-      this.tickingEntities.forEach((var1x) -> {
-         if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
-            this.guardEntityTick(this::tickNonPassenger, var1x);
+      this.tickingEntities.forEach((var1) -> {
+         if (!var1.isRemoved() && !var1.isPassenger() && !this.tickRateManager.isEntityFrozen(var1)) {
+            this.guardEntityTick(this::tickNonPassenger, var1);
          }
       });
-      var1.pop();
-      this.tickBlockEntities();
    }
 
    public boolean isTickingEntity(Entity var1) {
@@ -532,6 +563,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.connection.send(var1);
    }
 
+   public WorldBorder getWorldBorder() {
+      return this.worldBorder;
+   }
+
    public RecipeAccess recipeAccess() {
       return this.connection.recipes();
    }
@@ -604,19 +639,53 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter(), var2, var4, var6, var8, var10, var12);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter(), false, var2, var4, var6, var8, var10, var12);
    }
 
    public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this.levelRenderer.addParticle(var1, false, true, var2, var4, var6, var8, var10, var12);
+      this.doAddParticle(var1, false, true, var2, var4, var6, var8, var10, var12);
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, true, var3, var5, var7, var9, var11, var13);
+      this.doAddParticle(var1, var1.getType().getOverrideLimiter() || var2, true, var3, var5, var7, var9, var11, var13);
+   }
+
+   private void doAddParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
+      try {
+         Camera var16 = this.minecraft.gameRenderer.getMainCamera();
+         ParticleStatus var20 = this.calculateParticleLevel(var3);
+         if (var2) {
+            this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+         } else if (!(var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0)) {
+            if (var20 != ParticleStatus.MINIMAL) {
+               this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
+            }
+         }
+      } catch (Throwable var19) {
+         CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
+         CrashReportCategory var18 = var17.addCategory("Particle being added");
+         var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
+         var18.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).toString()));
+         var18.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var4, var6, var8)));
+         throw new ReportedException(var17);
+      }
+   }
+
+   private ParticleStatus calculateParticleLevel(boolean var1) {
+      ParticleStatus var2 = (ParticleStatus)this.minecraft.options.particles().get();
+      if (var1 && var2 == ParticleStatus.MINIMAL && this.random.nextInt(10) == 0) {
+         var2 = ParticleStatus.DECREASED;
+      }
+
+      if (var2 == ParticleStatus.DECREASED && this.random.nextInt(3) == 0) {
+         var2 = ParticleStatus.MINIMAL;
+      }
+
+      return var2;
    }
 
    public List<AbstractClientPlayer> players() {
@@ -761,8 +830,12 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
    }
 
-   public void setDefaultSpawnPos(BlockPos var1, float var2) {
-      this.levelData.setSpawn(var1, var2);
+   public void setRespawnData(LevelData.RespawnData var1) {
+      this.levelData.setSpawn(this.getWorldBorderAdjustedRespawnData(var1));
+   }
+
+   public LevelData.RespawnData getRespawnData() {
+      return this.levelData.getRespawnData();
    }
 
    public String toString() {
@@ -794,7 +867,72 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void addDestroyBlockEffect(BlockPos var1, BlockState var2) {
-      this.minecraft.particleEngine.destroy(var1, var2);
+      if (!var2.isAir() && var2.shouldSpawnTerrainParticles()) {
+         VoxelShape var3 = var2.getShape(this, var1);
+         double var4 = 0.25;
+         var3.forAllBoxes((var3x, var5, var7, var9, var11, var13) -> {
+            double var15 = Math.min(1.0, var9 - var3x);
+            double var17 = Math.min(1.0, var11 - var5);
+            double var19 = Math.min(1.0, var13 - var7);
+            int var21 = Math.max(2, Mth.ceil(var15 / 0.25));
+            int var22 = Math.max(2, Mth.ceil(var17 / 0.25));
+            int var23 = Math.max(2, Mth.ceil(var19 / 0.25));
+
+            for(int var24 = 0; var24 < var21; ++var24) {
+               for(int var25 = 0; var25 < var22; ++var25) {
+                  for(int var26 = 0; var26 < var23; ++var26) {
+                     double var27 = ((double)var24 + 0.5) / (double)var21;
+                     double var29 = ((double)var25 + 0.5) / (double)var22;
+                     double var31 = ((double)var26 + 0.5) / (double)var23;
+                     double var33 = var27 * var15 + var3x;
+                     double var35 = var29 * var17 + var5;
+                     double var37 = var31 * var19 + var7;
+                     this.minecraft.particleEngine.add(new TerrainParticle(this, (double)var1.getX() + var33, (double)var1.getY() + var35, (double)var1.getZ() + var37, var27 - 0.5, var29 - 0.5, var31 - 0.5, var2, var1));
+                  }
+               }
+            }
+
+         });
+      }
+   }
+
+   public void addBreakingBlockEffect(BlockPos var1, Direction var2) {
+      BlockState var3 = this.getBlockState(var1);
+      if (var3.getRenderShape() != RenderShape.INVISIBLE && var3.shouldSpawnTerrainParticles()) {
+         int var4 = var1.getX();
+         int var5 = var1.getY();
+         int var6 = var1.getZ();
+         float var7 = 0.1F;
+         AABB var8 = var3.getShape(this, var1).bounds();
+         double var9 = (double)var4 + this.random.nextDouble() * (var8.maxX - var8.minX - 0.20000000298023224) + 0.10000000149011612 + var8.minX;
+         double var11 = (double)var5 + this.random.nextDouble() * (var8.maxY - var8.minY - 0.20000000298023224) + 0.10000000149011612 + var8.minY;
+         double var13 = (double)var6 + this.random.nextDouble() * (var8.maxZ - var8.minZ - 0.20000000298023224) + 0.10000000149011612 + var8.minZ;
+         if (var2 == Direction.DOWN) {
+            var11 = (double)var5 + var8.minY - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.UP) {
+            var11 = (double)var5 + var8.maxY + 0.10000000149011612;
+         }
+
+         if (var2 == Direction.NORTH) {
+            var13 = (double)var6 + var8.minZ - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.SOUTH) {
+            var13 = (double)var6 + var8.maxZ + 0.10000000149011612;
+         }
+
+         if (var2 == Direction.WEST) {
+            var9 = (double)var4 + var8.minX - 0.10000000149011612;
+         }
+
+         if (var2 == Direction.EAST) {
+            var9 = (double)var4 + var8.maxX + 0.10000000149011612;
+         }
+
+         this.minecraft.particleEngine.add((new TerrainParticle(this, var9, var11, var13, 0.0, 0.0, 0.0, var3, var1)).setPower(0.2F).scale(0.6F));
+      }
    }
 
    public void setServerSimulationDistance(int var1) {
@@ -817,7 +955,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.connection.fuelValues();
    }
 
-   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15) {
+   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, Level.ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, WeightedList<ExplosionParticleInfo> var15, Holder<SoundEvent> var16) {
    }
 
    public int getSeaLevel() {
@@ -830,6 +968,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public void registerForCleaning(CacheSlot<ClientLevel, ?> var1) {
       this.connection.registerForCleaning(var1);
+   }
+
+   public void trackExplosionEffects(Vec3 var1, float var2, int var3, WeightedList<ExplosionParticleInfo> var4) {
+      this.explosionTracker.track(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
@@ -854,8 +996,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
       private final boolean isFlat;
-      private BlockPos spawnPos;
-      private float spawnAngle;
+      private LevelData.RespawnData respawnData;
       private long gameTime;
       private long dayTime;
       private boolean raining;
@@ -869,12 +1010,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          this.isFlat = var3;
       }
 
-      public BlockPos getSpawnPos() {
-         return this.spawnPos;
-      }
-
-      public float getSpawnAngle() {
-         return this.spawnAngle;
+      public LevelData.RespawnData getRespawnData() {
+         return this.respawnData;
       }
 
       public long getGameTime() {
@@ -893,9 +1030,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          this.dayTime = var1;
       }
 
-      public void setSpawn(BlockPos var1, float var2) {
-         this.spawnPos = var1.immutable();
-         this.spawnAngle = var2;
+      public void setSpawn(LevelData.RespawnData var1) {
+         this.respawnData = var1;
       }
 
       public boolean isThundering() {

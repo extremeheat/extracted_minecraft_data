@@ -1,6 +1,5 @@
 package net.minecraft.client.main;
 
-import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.blaze3d.platform.DisplayData;
 import java.io.File;
 import java.net.Proxy;
@@ -34,8 +33,9 @@ public class GameConfig {
       public final boolean disableChat;
       public final boolean captureTracyImages;
       public final boolean renderDebugLabels;
+      public final boolean offlineDeveloperMode;
 
-      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6, boolean var7) {
+      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6, boolean var7, boolean var8) {
          super();
          this.demo = var1;
          this.launchVersion = var2;
@@ -44,21 +44,18 @@ public class GameConfig {
          this.disableChat = var5;
          this.captureTracyImages = var6;
          this.renderDebugLabels = var7;
+         this.offlineDeveloperMode = var8;
       }
    }
 
    public static class UserData {
       public final User user;
-      public final PropertyMap userProperties;
-      public final PropertyMap profileProperties;
       public final Proxy proxy;
 
-      public UserData(User var1, PropertyMap var2, PropertyMap var3, Proxy var4) {
+      public UserData(User var1, Proxy var2) {
          super();
          this.user = var1;
-         this.userProperties = var2;
-         this.profileProperties = var3;
-         this.proxy = var4;
+         this.proxy = var2;
       }
    }
 

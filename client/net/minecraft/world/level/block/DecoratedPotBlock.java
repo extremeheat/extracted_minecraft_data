@@ -82,7 +82,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       BlockEntity var9 = var3.getBlockEntity(var4);
       if (var9 instanceof DecoratedPotBlockEntity var8) {
-         if (var3.isClientSide) {
+         if (var3.isClientSide()) {
             return InteractionResult.SUCCESS;
          } else {
             ItemStack var13 = var8.getTheItem();
@@ -208,7 +208,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 

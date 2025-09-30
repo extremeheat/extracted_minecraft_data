@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
+import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,6 +34,10 @@ public record VaultConfig(ResourceKey<LootTable> lootTable, double activationRan
       this.overrideLootTableToDisplay = var7;
       this.playerDetector = var8;
       this.entitySelector = var9;
+   }
+
+   public PlayerDetector playerDetector() {
+      return SharedConstants.DEBUG_VAULT_DETECTS_SHEEP_AS_PLAYERS ? PlayerDetector.SHEEP : this.playerDetector;
    }
 
    private DataResult<VaultConfig> validate() {

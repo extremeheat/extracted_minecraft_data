@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceMetadata;
 
 public final class MissingTextureAtlasSprite {
    private static final int MISSING_IMAGE_WIDTH = 16;
@@ -38,7 +37,7 @@ public final class MissingTextureAtlasSprite {
 
    public static SpriteContents create() {
       NativeImage var0 = generateMissingImage(16, 16);
-      return new SpriteContents(MISSING_TEXTURE_LOCATION, new FrameSize(16, 16), var0, ResourceMetadata.EMPTY);
+      return new SpriteContents(MISSING_TEXTURE_LOCATION, new FrameSize(16, 16), var0);
    }
 
    public static ResourceLocation getLocation() {

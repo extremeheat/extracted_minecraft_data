@@ -9,6 +9,8 @@ import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -41,14 +43,7 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    abstract int getPreviousY();
 
    protected void init() {
-      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
-      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
       boolean var1 = this.getCommandBlock().isTrackOutput();
-      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
-         BaseCommandBlock var3 = this.getCommandBlock();
-         var3.setTrackOutput(var2);
-         this.updatePreviousOutput(var2);
-      }));
       this.commandEdit = new EditBox(this.font, this.width / 2 - 150, 50, 300, 20, Component.translatable("advMode.command")) {
          protected MutableComponent createNarrationMessage() {
             return super.createNarrationMessage().append(AbstractCommandBlockEditScreen.this.commandSuggestions.getNarrationMessage());
@@ -62,10 +57,21 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.previousEdit.setEditable(false);
       this.previousEdit.setValue("-");
       this.addWidget(this.previousEdit);
+      this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
+         BaseCommandBlock var3 = this.getCommandBlock();
+         var3.setTrackOutput(var2);
+         this.updatePreviousOutput(var2);
+      }));
+      this.addExtraControls();
+      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.commandEdit, this.font, true, true, 0, 7, false, -2147483648);
       this.commandSuggestions.setAllowSuggestions(true);
       this.commandSuggestions.updateCommandInfo();
       this.updatePreviousOutput(var1);
+   }
+
+   protected void addExtraControls() {
    }
 
    protected void setInitialFocus() {
@@ -103,16 +109,20 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.commandSuggestions.updateCommandInfo();
    }
 
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
+   public boolean isInGameUi() {
+      return true;
+   }
+
+   public boolean keyPressed(KeyEvent var1) {
+      if (this.commandSuggestions.keyPressed(var1)) {
          return true;
-      } else if (super.keyPressed(var1, var2, var3)) {
+      } else if (super.keyPressed(var1)) {
          return true;
-      } else if (var1 != 257 && var1 != 335) {
-         return false;
-      } else {
+      } else if (var1.isConfirmation()) {
          this.onDone();
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -120,8 +130,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.mouseScrolled(var7) ? true : super.mouseScrolled(var1, var3, var5, var7);
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      return this.commandSuggestions.mouseClicked(var1, var3, var5) ? true : super.mouseClicked(var1, var3, var5);
+   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+      return this.commandSuggestions.mouseClicked(var1) ? true : super.mouseClicked(var1, var2);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -138,9 +148,5 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       }
 
       this.commandSuggestions.render(var1, var2, var3);
-   }
-
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTransparentBackground(var1);
    }
 }

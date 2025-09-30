@@ -6,10 +6,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.util.Mth;
 
-public class SpinAttackEffectModel extends EntityModel<PlayerRenderState> {
+public class SpinAttackEffectModel extends EntityModel<AvatarRenderState> {
    private static final int BOX_COUNT = 2;
    private final ModelPart[] boxes = new ModelPart[2];
 
@@ -39,7 +39,7 @@ public class SpinAttackEffectModel extends EntityModel<PlayerRenderState> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void setupAnim(PlayerRenderState var1) {
+   public void setupAnim(AvatarRenderState var1) {
       super.setupAnim(var1);
 
       for(int var2 = 0; var2 < this.boxes.length; ++var2) {

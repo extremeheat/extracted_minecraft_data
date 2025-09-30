@@ -11,44 +11,40 @@ import net.minecraft.network.VarInt;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
 
 public class HashMapPalette<T> implements Palette<T> {
-   private final IdMap<T> registry;
    private final CrudeIncrementalIntIdentityHashBiMap<T> values;
-   private final PaletteResize<T> resizeHandler;
    private final int bits;
 
-   public HashMapPalette(IdMap<T> var1, int var2, PaletteResize<T> var3, List<T> var4) {
-      this(var1, var2, var3);
+   public HashMapPalette(int var1, List<T> var2) {
+      this(var1);
       CrudeIncrementalIntIdentityHashBiMap var10001 = this.values;
       Objects.requireNonNull(var10001);
-      var4.forEach(var10001::add);
+      var2.forEach(var10001::add);
    }
 
-   public HashMapPalette(IdMap<T> var1, int var2, PaletteResize<T> var3) {
-      this(var1, var2, var3, CrudeIncrementalIntIdentityHashBiMap.create(1 << var2));
+   public HashMapPalette(int var1) {
+      this(var1, CrudeIncrementalIntIdentityHashBiMap.create(1 << var1));
    }
 
-   private HashMapPalette(IdMap<T> var1, int var2, PaletteResize<T> var3, CrudeIncrementalIntIdentityHashBiMap<T> var4) {
+   private HashMapPalette(int var1, CrudeIncrementalIntIdentityHashBiMap<T> var2) {
       super();
-      this.registry = var1;
-      this.bits = var2;
-      this.resizeHandler = var3;
-      this.values = var4;
+      this.bits = var1;
+      this.values = var2;
    }
 
-   public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new HashMapPalette<A>(var1, var0, var2, var3);
+   public static <A> Palette<A> create(int var0, List<A> var1) {
+      return new HashMapPalette<A>(var0, var1);
    }
 
-   public int idFor(T var1) {
-      int var2 = this.values.getId(var1);
-      if (var2 == -1) {
-         var2 = this.values.add(var1);
-         if (var2 >= 1 << this.bits) {
-            var2 = this.resizeHandler.onResize(this.bits + 1, var1);
+   public int idFor(T var1, PaletteResize<T> var2) {
+      int var3 = this.values.getId(var1);
+      if (var3 == -1) {
+         var3 = this.values.add(var1);
+         if (var3 >= 1 << this.bits) {
+            var3 = var2.onResize(this.bits + 1, var1);
          }
       }
 
-      return var2;
+      return var3;
    }
 
    public boolean maybeHas(Predicate<T> var1) {
@@ -70,34 +66,34 @@ public class HashMapPalette<T> implements Palette<T> {
       }
    }
 
-   public void read(FriendlyByteBuf var1) {
+   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
       this.values.clear();
-      int var2 = var1.readVarInt();
+      int var3 = var1.readVarInt();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         this.values.add(this.registry.byIdOrThrow(var1.readVarInt()));
+      for(int var4 = 0; var4 < var3; ++var4) {
+         this.values.add(var2.byIdOrThrow(var1.readVarInt()));
       }
 
    }
 
-   public void write(FriendlyByteBuf var1) {
-      int var2 = this.getSize();
-      var1.writeVarInt(var2);
+   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
+      int var3 = this.getSize();
+      var1.writeVarInt(var3);
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         var1.writeVarInt(this.registry.getId(this.values.byId(var3)));
+      for(int var4 = 0; var4 < var3; ++var4) {
+         var1.writeVarInt(var2.getId(this.values.byId(var4)));
       }
 
    }
 
-   public int getSerializedSize() {
-      int var1 = VarInt.getByteSize(this.getSize());
+   public int getSerializedSize(IdMap<T> var1) {
+      int var2 = VarInt.getByteSize(this.getSize());
 
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
-         var1 += VarInt.getByteSize(this.registry.getId(this.values.byId(var2)));
+      for(int var3 = 0; var3 < this.getSize(); ++var3) {
+         var2 += VarInt.getByteSize(var1.getId(this.values.byId(var3)));
       }
 
-      return var1;
+      return var2;
    }
 
    public List<T> getEntries() {
@@ -112,7 +108,7 @@ public class HashMapPalette<T> implements Palette<T> {
       return this.values.size();
    }
 
-   public Palette<T> copy(PaletteResize<T> var1) {
-      return new HashMapPalette<T>(this.registry, this.bits, var1, this.values.copy());
+   public Palette<T> copy() {
+      return new HashMapPalette<T>(this.bits, this.values.copy());
    }
 }

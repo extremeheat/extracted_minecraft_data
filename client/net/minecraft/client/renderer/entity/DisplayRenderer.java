@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import java.util.ArrayList;
@@ -11,15 +10,16 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -72,40 +72,39 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return var2 == null ? 0.0F : var2.shadowStrength().get(var1.interpolationProgress);
    }
 
-   public void render(ST var1, PoseStack var2, MultiBufferSource var3, int var4) {
+   public void submit(ST var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       Display.RenderState var5 = var1.renderState;
       if (var5 != null && var1.hasSubState()) {
          float var6 = var1.interpolationProgress;
-         super.render(var1, var2, var3, var4);
+         super.submit(var1, var2, var3, var4);
          var2.pushPose();
          var2.mulPose((Quaternionfc)this.calculateOrientation(var5, var1, new Quaternionf()));
          Transformation var7 = (Transformation)var5.transformation().get(var6);
          var2.mulPose(var7.getMatrix());
-         this.renderInner(var1, var2, var3, var4, var6);
+         this.submitInner(var1, var2, var3, var1.lightCoords, var6);
          var2.popPose();
       }
    }
 
    private Quaternionf calculateOrientation(Display.RenderState var1, ST var2, Quaternionf var3) {
-      Camera var4 = this.entityRenderDispatcher.camera;
       Quaternionf var10000;
       switch (var1.billboardConstraints()) {
          case FIXED -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * var2.entityXRot, 0.0F);
-         case HORIZONTAL -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * cameraXRot(var4), 0.0F);
-         case VERTICAL -> var10000 = var3.rotationYXZ(-0.017453292F * cameraYrot(var4), 0.017453292F * var2.entityXRot, 0.0F);
-         case CENTER -> var10000 = var3.rotationYXZ(-0.017453292F * cameraYrot(var4), 0.017453292F * cameraXRot(var4), 0.0F);
+         case HORIZONTAL -> var10000 = var3.rotationYXZ(-0.017453292F * var2.entityYRot, 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
+         case VERTICAL -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * var2.entityXRot, 0.0F);
+         case CENTER -> var10000 = var3.rotationYXZ(-0.017453292F * transformYRot(var2.cameraYRot), 0.017453292F * transformXRot(var2.cameraXRot), 0.0F);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private static float cameraYrot(Camera var0) {
-      return var0.getYRot() - 180.0F;
+   private static float transformYRot(float var0) {
+      return var0 - 180.0F;
    }
 
-   private static float cameraXRot(Camera var0) {
-      return -var0.getXRot();
+   private static float transformXRot(float var0) {
+      return -var0;
    }
 
    private static <T extends Display> float entityYRot(T var0, float var1) {
@@ -116,7 +115,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return var0.getXRot(var1);
    }
 
-   protected abstract void renderInner(ST var1, PoseStack var2, MultiBufferSource var3, int var4, float var5);
+   protected abstract void submitInner(ST var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5);
 
    public void extractRenderState(T var1, ST var2, float var3) {
       super.extractRenderState(var1, var2, var3);
@@ -124,6 +123,9 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       var2.interpolationProgress = var1.calculateInterpolationProgress(var3);
       var2.entityYRot = entityYRot(var1, var3);
       var2.entityXRot = entityXRot(var1, var3);
+      Camera var4 = this.entityRenderDispatcher.camera;
+      var2.cameraXRot = var4.getXRot();
+      var2.cameraYRot = var4.getYRot();
    }
 
    // $FF: synthetic method
@@ -142,11 +144,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
    }
 
    public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState, BlockDisplayEntityRenderState> {
-      private final BlockRenderDispatcher blockRenderer;
-
       protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
          super(var1);
-         this.blockRenderer = var1.getBlockRenderDispatcher();
       }
 
       public BlockDisplayEntityRenderState createRenderState() {
@@ -158,8 +157,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          var2.blockRenderState = var1.blockRenderState();
       }
 
-      public void renderInner(BlockDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         this.blockRenderer.renderSingleBlock(var1.blockRenderState.blockState(), var2, var3, var4, OverlayTexture.NO_OVERLAY);
+      public void submitInner(BlockDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
+         var3.submitBlock(var2, var1.blockRenderState.blockState(), var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
       }
 
       // $FF: synthetic method
@@ -206,10 +205,10 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
 
       }
 
-      public void renderInner(ItemDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
+      public void submitInner(ItemDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
          if (!var1.item.isEmpty()) {
             var2.mulPose((Quaternionfc)Axis.YP.rotation(3.1415927F));
-            var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
+            var1.item.submit(var2, var3, var4, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          }
       }
 
@@ -266,7 +265,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          return new Display.TextDisplay.CachedInfo(var4, var5);
       }
 
-      public void renderInner(TextDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
+      public void submitInner(TextDisplayEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, int var4, float var5) {
          Display.TextDisplay.TextRenderState var6 = var1.textRenderState;
          byte var7 = var6.flags();
          boolean var8 = (var7 & 2) != 0;
@@ -282,7 +281,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             var13 = var6.backgroundColor().get(var5);
          }
 
-         float var24 = 0.0F;
+         float var25 = 0.0F;
          Matrix4f var15 = var2.last().pose();
          var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
          var15.scale(-0.025F, -0.025F, -0.025F);
@@ -294,25 +293,28 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          int var20 = var16.lines().size() * var18 - 1;
          var15.translate(1.0F - (float)var19 / 2.0F, (float)(-var20), 0.0F);
          if (var13 != 0) {
-            VertexConsumer var21 = var3.getBuffer(var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
-            var21.addVertex(var15, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, (float)var19, -1.0F, 0.0F).setColor(var13).setLight(var4);
+            var3.submitCustomGeometry(var2, var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground(), (var4x, var5x) -> {
+               var5x.addVertex(var4x, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
+               var5x.addVertex(var4x, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
+               var5x.addVertex(var4x, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);
+               var5x.addVertex(var4x, (float)var19, -1.0F, 0.0F).setColor(var13).setLight(var4);
+            });
          }
 
-         for(Display.TextDisplay.CachedLine var22 : var16.lines()) {
+         OrderedSubmitNodeCollector var21 = var3.order(var13 != 0 ? 1 : 0);
+
+         for(Display.TextDisplay.CachedLine var23 : var16.lines()) {
             float var10000;
             switch (var11) {
                case LEFT -> var10000 = 0.0F;
-               case RIGHT -> var10000 = (float)(var19 - var22.width());
-               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var22.width() / 2.0F;
+               case RIGHT -> var10000 = (float)(var19 - var23.width());
+               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var23.width() / 2.0F;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            float var23 = var10000;
-            this.font.drawInBatch((FormattedCharSequence)var22.contents(), var23, var24, var12 << 24 | 16777215, var10, var15, var3, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, 0, var4);
-            var24 += (float)var18;
+            float var24 = var10000;
+            var21.submitText(var2, var24, var25, var23.contents(), var10, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, var4, var12 << 24 | 16777215, 0, 0);
+            var25 += (float)var18;
          }
 
       }

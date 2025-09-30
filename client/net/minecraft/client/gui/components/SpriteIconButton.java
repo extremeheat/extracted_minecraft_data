@@ -8,12 +8,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public abstract class SpriteIconButton extends Button {
-   protected final ResourceLocation sprite;
+   protected final WidgetSprites sprite;
    protected final int spriteWidth;
    protected final int spriteHeight;
 
-   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
-      super(0, 0, var1, var2, var3, var7, var8 == null ? DEFAULT_NARRATION : var8);
+   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+      super(0, 0, var1, var2, var3, var7, var9 == null ? DEFAULT_NARRATION : var9);
+      if (var8 != null) {
+         this.setTooltip(Tooltip.create(var8));
+      }
+
       this.spriteWidth = var4;
       this.spriteHeight = var5;
       this.sprite = var6;
@@ -24,15 +28,15 @@ public abstract class SpriteIconButton extends Button {
    }
 
    public static class CenteredIcon extends SpriteIconButton {
-      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
-         super(var1, var2, var3, var4, var5, var6, var7, var8);
+      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+         super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {
@@ -40,15 +44,15 @@ public abstract class SpriteIconButton extends Button {
    }
 
    public static class TextAndIcon extends SpriteIconButton {
-      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
-         super(var1, var2, var3, var4, var5, var6, var7, var8);
+      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+         super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() - this.spriteWidth - 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
       }
 
       public void renderString(GuiGraphics var1, Font var2, int var3) {
@@ -66,11 +70,13 @@ public abstract class SpriteIconButton extends Button {
       private int width = 150;
       private int height = 20;
       @Nullable
-      private ResourceLocation sprite;
+      private WidgetSprites sprite;
       private int spriteWidth;
       private int spriteHeight;
       @Nullable
-      Button.CreateNarration narration;
+      private Component tooltip;
+      @Nullable
+      private Button.CreateNarration narration;
 
       public Builder(Component var1, Button.OnPress var2, boolean var3) {
          super();
@@ -91,9 +97,21 @@ public abstract class SpriteIconButton extends Button {
       }
 
       public Builder sprite(ResourceLocation var1, int var2, int var3) {
+         this.sprite = new WidgetSprites(var1);
+         this.spriteWidth = var2;
+         this.spriteHeight = var3;
+         return this;
+      }
+
+      public Builder sprite(WidgetSprites var1, int var2, int var3) {
          this.sprite = var1;
          this.spriteWidth = var2;
          this.spriteHeight = var3;
+         return this;
+      }
+
+      public Builder withTootip() {
+         this.tooltip = this.message;
          return this;
       }
 
@@ -106,7 +124,7 @@ public abstract class SpriteIconButton extends Button {
          if (this.sprite == null) {
             throw new IllegalStateException("Sprite not set");
          } else {
-            return (SpriteIconButton)(this.iconOnly ? new CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration) : new TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration));
+            return (SpriteIconButton)(this.iconOnly ? new CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.tooltip, this.narration) : new TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.tooltip, this.narration));
          }
       }
    }

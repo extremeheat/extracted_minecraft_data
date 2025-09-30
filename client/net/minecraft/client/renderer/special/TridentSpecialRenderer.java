@@ -1,14 +1,13 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import net.minecraft.client.model.TridentModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
 
@@ -20,11 +19,10 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
       this.model = var1;
    }
 
-   public void render(ItemDisplayContext var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, boolean var6) {
+   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
       var2.pushPose();
       var2.scale(1.0F, -1.0F, -1.0F);
-      VertexConsumer var7 = ItemRenderer.getFoilBuffer(var3, this.model.renderType(TridentModel.TEXTURE), false, var6);
-      this.model.renderToBuffer(var2, var7, var4, var5);
+      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
       var2.popPose();
    }
 
@@ -45,8 +43,8 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(EntityModelSet var1) {
-         return new TridentSpecialRenderer(new TridentModel(var1.bakeLayer(ModelLayers.TRIDENT)));
+      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+         return new TridentSpecialRenderer(new TridentModel(var1.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
       }
    }
 }

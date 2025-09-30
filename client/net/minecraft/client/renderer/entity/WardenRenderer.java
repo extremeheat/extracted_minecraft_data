@@ -20,11 +20,15 @@ public class WardenRenderer extends MobRenderer<Warden, WardenRenderState, Warde
 
    public WardenRenderer(EntityRendererProvider.Context var1) {
       super(var1, new WardenModel(var1.bakeLayer(ModelLayers.WARDEN)), 0.9F);
-      this.addLayer(new LivingEntityEmissiveLayer(this, BIOLUMINESCENT_LAYER_TEXTURE, (var0, var1x) -> 1.0F, WardenModel::getBioluminescentLayerModelParts, RenderType::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, PULSATING_SPOTS_TEXTURE_1, (var0, var1x) -> Math.max(0.0F, Mth.cos(var1x * 0.045F) * 0.25F), WardenModel::getPulsatingSpotsLayerModelParts, RenderType::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, PULSATING_SPOTS_TEXTURE_2, (var0, var1x) -> Math.max(0.0F, Mth.cos(var1x * 0.045F + 3.1415927F) * 0.25F), WardenModel::getPulsatingSpotsLayerModelParts, RenderType::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, TEXTURE, (var0, var1x) -> var0.tendrilAnimation, WardenModel::getTendrilsLayerModelParts, RenderType::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, HEART_TEXTURE, (var0, var1x) -> var0.heartAnimation, WardenModel::getHeartLayerModelParts, RenderType::entityTranslucentEmissive, false));
+      WardenModel var2 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_BIOLUMINESCENT));
+      WardenModel var3 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_PULSATING_SPOTS));
+      WardenModel var4 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_TENDRILS));
+      WardenModel var5 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_HEART));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> BIOLUMINESCENT_LAYER_TEXTURE, (var0, var1x) -> 1.0F, var2, RenderType::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> PULSATING_SPOTS_TEXTURE_1, (var0, var1x) -> Math.max(0.0F, Mth.cos(var1x * 0.045F) * 0.25F), var3, RenderType::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> PULSATING_SPOTS_TEXTURE_2, (var0, var1x) -> Math.max(0.0F, Mth.cos(var1x * 0.045F + 3.1415927F) * 0.25F), var3, RenderType::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> TEXTURE, (var0, var1x) -> var0.tendrilAnimation, var4, RenderType::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> HEART_TEXTURE, (var0, var1x) -> var0.heartAnimation, var5, RenderType::entityTranslucentEmissive, false));
    }
 
    public ResourceLocation getTextureLocation(WardenRenderState var1) {

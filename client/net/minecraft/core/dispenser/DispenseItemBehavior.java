@@ -86,18 +86,21 @@ public interface DispenseItemBehavior {
       DefaultDispenseItemBehavior var0 = new DefaultDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var1.level().registryAccess(), var2);
+            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
+            if (var4 == null) {
+               return var2;
+            } else {
+               try {
+                  var4.spawn(var1.level(), var2, (LivingEntity)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
+               } catch (Exception var6) {
+                  LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
+                  return ItemStack.EMPTY;
+               }
 
-            try {
-               var4.spawn(var1.level(), var2, (LivingEntity)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
-            } catch (Exception var6) {
-               LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
-               return ItemStack.EMPTY;
+               var2.shrink(1);
+               var1.level().gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var1.pos());
+               return var2;
             }
-
-            var2.shrink(1);
-            var1.level().gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var1.pos());
-            return var2;
          }
       };
 
@@ -238,7 +241,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             if (!BoneMealItem.growCrop(var2, var3, var4) && !BoneMealItem.growWaterPlant(var2, var3, var4, (Direction)null)) {
                this.setSuccess(false);
-            } else if (!var3.isClientSide) {
+            } else if (!((Level)var3).isClientSide()) {
                ((Level)var3).levelEvent(1505, var4, 15);
             }
 
@@ -291,7 +294,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             CarvedPumpkinBlock var5 = (CarvedPumpkinBlock)Blocks.CARVED_PUMPKIN;
             if (((Level)var3).isEmptyBlock(var4) && var5.canSpawnGolem(var3, var4)) {
-               if (!var3.isClientSide) {
+               if (!((Level)var3).isClientSide()) {
                   ((Level)var3).setBlock(var4, var5.defaultBlockState(), 3);
                   ((Level)var3).gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var4);
                }
@@ -366,7 +369,7 @@ public interface DispenseItemBehavior {
                return var2;
             } else {
                for(Armadillo var7 : var5) {
-                  if (var7.brushOffScute()) {
+                  if (var7.brushOffScute((Entity)null, var2)) {
                      var2.hurtAndBreak(16, var3, (ServerPlayer)null, (var0) -> {
                      });
                      return var2;
@@ -409,7 +412,7 @@ public interface DispenseItemBehavior {
                if (!var4.getBlockState(var6).is(BlockTags.CONVERTABLE_TO_MUD)) {
                   return this.defaultDispenseItemBehavior.dispense(var1, var2);
                } else {
-                  if (!var4.isClientSide) {
+                  if (!var4.isClientSide()) {
                      for(int var7 = 0; var7 < 5; ++var7) {
                         var4.sendParticles(ParticleTypes.SPLASH, (double)var5.getX() + var4.random.nextDouble(), (double)(var5.getY() + 1), (double)var5.getZ() + var4.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
                      }

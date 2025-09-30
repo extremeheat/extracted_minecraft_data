@@ -3,32 +3,35 @@ package net.minecraft.client.player;
 import com.mojang.authlib.GameProfile;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
+import net.minecraft.world.scores.Scoreboard;
 
-public abstract class AbstractClientPlayer extends Player {
+public abstract class AbstractClientPlayer extends Player implements ClientAvatarEntity {
    @Nullable
    private PlayerInfo playerInfo;
-   protected Vec3 deltaMovementOnPreviousTick;
-   public float elytraRotX;
-   public float elytraRotY;
-   public float elytraRotZ;
-   public final ClientLevel clientLevel;
-   public float walkDistO;
-   public float walkDist;
+   private final boolean showExtraEars = "deadmau5".equals(this.getGameProfile().name());
+   private final ClientAvatarState clientAvatarState = new ClientAvatarState();
 
    public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
       super(var1, var2);
-      this.deltaMovementOnPreviousTick = Vec3.ZERO;
-      this.clientLevel = var1;
    }
 
    @Nullable
@@ -47,18 +50,60 @@ public abstract class AbstractClientPlayer extends Player {
    }
 
    public void tick() {
-      this.walkDistO = this.walkDist;
-      this.deltaMovementOnPreviousTick = this.getDeltaMovement();
+      this.clientAvatarState.tick(this.position(), this.getDeltaMovement());
       super.tick();
    }
 
-   public Vec3 getDeltaMovementLerped(float var1) {
-      return this.deltaMovementOnPreviousTick.lerp(this.getDeltaMovement(), (double)var1);
+   protected void addWalkedDistance(float var1) {
+      this.clientAvatarState.addWalkDistance(var1);
+   }
+
+   public ClientAvatarState avatarState() {
+      return this.clientAvatarState;
+   }
+
+   @Nullable
+   public Component belowNameDisplay() {
+      Scoreboard var1 = this.level().getScoreboard();
+      Objective var2 = var1.getDisplayObjective(DisplaySlot.BELOW_NAME);
+      if (var2 != null) {
+         ReadOnlyScoreInfo var3 = var1.getPlayerScoreInfo(this, var2);
+         MutableComponent var4 = ReadOnlyScoreInfo.safeFormatValue(var3, var2.numberFormatOrDefault(StyledFormat.NO_STYLE));
+         return Component.empty().append((Component)var4).append(CommonComponents.SPACE).append(var2.getDisplayName());
+      } else {
+         return null;
+      }
    }
 
    public PlayerSkin getSkin() {
       PlayerInfo var1 = this.getPlayerInfo();
       return var1 == null ? DefaultPlayerSkin.get(this.getUUID()) : var1.getSkin();
+   }
+
+   @Nullable
+   public Parrot.Variant getParrotVariantOnShoulder(boolean var1) {
+      return (Parrot.Variant)(var1 ? this.getShoulderParrotLeft() : this.getShoulderParrotRight()).orElse((Object)null);
+   }
+
+   public void rideTick() {
+      super.rideTick();
+      this.avatarState().resetBob();
+   }
+
+   public void aiStep() {
+      this.updateBob();
+      super.aiStep();
+   }
+
+   protected void updateBob() {
+      float var1;
+      if (this.onGround() && !this.isDeadOrDying() && !this.isSwimming()) {
+         var1 = Math.min(0.1F, (float)this.getDeltaMovement().horizontalDistance());
+      } else {
+         var1 = 0.0F;
+      }
+
+      this.avatarState().updateBob(var1);
    }
 
    public float getFieldOfViewModifier(boolean var1, float var2) {
@@ -83,5 +128,9 @@ public abstract class AbstractClientPlayer extends Player {
       }
 
       return Mth.lerp(var2, 1.0F, var3);
+   }
+
+   public boolean showExtraEars() {
+      return this.showExtraEars;
    }
 }

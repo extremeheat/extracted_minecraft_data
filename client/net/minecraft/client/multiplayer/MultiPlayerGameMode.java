@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -130,6 +131,10 @@ public class MultiPlayerGameMode {
                   var4.destroy(var2, var1, var3);
                }
 
+               if (SharedConstants.DEBUG_BLOCK_BREAK) {
+                  LOGGER.error("client broke {} {} -> {}", new Object[]{var1, var3, ((Level)var2).getBlockState(var1)});
+               }
+
                return var6;
             }
          }
@@ -145,6 +150,10 @@ public class MultiPlayerGameMode {
          if (this.minecraft.player.getAbilities().instabuild) {
             BlockState var3 = this.minecraft.level.getBlockState(var1);
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, 1.0F);
+            if (SharedConstants.DEBUG_BLOCK_BREAK) {
+               LOGGER.info("Creative start {} {}", var1, var3);
+            }
+
             this.startPrediction(this.minecraft.level, (var3x) -> {
                this.destroyBlock(var1);
                return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var3x);
@@ -152,11 +161,19 @@ public class MultiPlayerGameMode {
             this.destroyDelay = 5;
          } else if (!this.isDestroying || !this.sameDestroyTarget(var1)) {
             if (this.isDestroying) {
+               if (SharedConstants.DEBUG_BLOCK_BREAK) {
+                  LOGGER.info("Abort old break {} {}", var1, this.minecraft.level.getBlockState(var1));
+               }
+
                this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, this.destroyBlockPos, var2));
             }
 
             BlockState var4 = this.minecraft.level.getBlockState(var1);
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var4, 0.0F);
+            if (SharedConstants.DEBUG_BLOCK_BREAK) {
+               LOGGER.info("Start break {} {}", var1, var4);
+            }
+
             this.startPrediction(this.minecraft.level, (var4x) -> {
                boolean var5 = !var4.isAir();
                if (var5 && this.destroyProgress == 0.0F) {
@@ -186,6 +203,10 @@ public class MultiPlayerGameMode {
       if (this.isDestroying) {
          BlockState var1 = this.minecraft.level.getBlockState(this.destroyBlockPos);
          this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, this.destroyBlockPos, var1, -1.0F);
+         if (SharedConstants.DEBUG_BLOCK_BREAK) {
+            LOGGER.info("Stop dest {} {}", this.destroyBlockPos, var1);
+         }
+
          this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, this.destroyBlockPos, Direction.DOWN));
          this.isDestroying = false;
          this.destroyProgress = 0.0F;
@@ -204,6 +225,10 @@ public class MultiPlayerGameMode {
          this.destroyDelay = 5;
          BlockState var5 = this.minecraft.level.getBlockState(var1);
          this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var5, 1.0F);
+         if (SharedConstants.DEBUG_BLOCK_BREAK) {
+            LOGGER.info("Creative cont {} {}", var1, var5);
+         }
+
          this.startPrediction(this.minecraft.level, (var3x) -> {
             this.destroyBlock(var1);
             return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var3x);
@@ -225,6 +250,10 @@ public class MultiPlayerGameMode {
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
                this.isDestroying = false;
+               if (SharedConstants.DEBUG_BLOCK_BREAK) {
+                  LOGGER.info("Finished breaking {} {}", var1, var3);
+               }
+
                this.startPrediction(this.minecraft.level, (var3x) -> {
                   this.destroyBlock(var1);
                   return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, var1, var2, var3x);

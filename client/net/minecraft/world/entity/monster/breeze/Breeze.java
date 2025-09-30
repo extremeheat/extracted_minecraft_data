@@ -5,13 +5,15 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.util.debug.DebugBreezeInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
@@ -218,12 +220,6 @@ public class Breeze extends Monster {
       super.customServerAiStep(var1);
    }
 
-   protected void sendDebugPackets() {
-      super.sendDebugPackets();
-      DebugPackets.sendEntityBrain(this);
-      DebugPackets.sendBreezeInfo(this);
-   }
-
    public boolean canAttackType(EntityType<?> var1) {
       return var1 == EntityType.PLAYER || var1 == EntityType.IRON_GOLEM;
    }
@@ -263,5 +259,10 @@ public class Breeze extends Monster {
    @Nullable
    public LivingEntity getTarget() {
       return this.getTargetFromBrain();
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      super.registerDebugValues(var1, var2);
+      var2.register(DebugSubscriptions.BREEZES, () -> new DebugBreezeInfo(this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).map(Entity::getId), this.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET)));
    }
 }

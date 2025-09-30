@@ -43,6 +43,7 @@ import net.minecraft.client.renderer.special.BannerSpecialRenderer;
 import net.minecraft.client.renderer.special.BedSpecialRenderer;
 import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.special.ConduitSpecialRenderer;
+import net.minecraft.client.renderer.special.CopperGolemStatueSpecialRenderer;
 import net.minecraft.client.renderer.special.DecoratedPotSpecialRenderer;
 import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.ShulkerBoxSpecialRenderer;
@@ -53,6 +54,7 @@ import net.minecraft.core.FrontAndTop;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.item.DyeColor;
@@ -61,6 +63,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChiseledBookShelfBlock;
+import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.CrafterBlock;
 import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.DriedGhastBlock;
@@ -75,6 +79,7 @@ import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.VaultBlock;
+import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
@@ -86,12 +91,14 @@ import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
+import net.minecraft.world.level.block.state.properties.SideChainPart;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
@@ -150,8 +157,21 @@ public class BlockModelGenerators {
       return new ConditionBuilder();
    }
 
+   @SafeVarargs
+   private static <T extends Enum<T> & StringRepresentable> ConditionBuilder condition(EnumProperty<T> var0, T var1, T... var2) {
+      return condition().term(var0, var1, var2);
+   }
+
+   private static ConditionBuilder condition(BooleanProperty var0, boolean var1) {
+      return condition().term(var0, var1);
+   }
+
    private static Condition or(ConditionBuilder... var0) {
       return new CombinedCondition(CombinedCondition.Operation.OR, Stream.of(var0).map(ConditionBuilder::build).toList());
+   }
+
+   private static Condition and(ConditionBuilder... var0) {
+      return new CombinedCondition(CombinedCondition.Operation.AND, Stream.of(var0).map(ConditionBuilder::build).toList());
    }
 
    private static BlockModelDefinitionGenerator createMirroredCubeGenerator(Block var0, Variant var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
@@ -1041,11 +1061,12 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1, plainVariant(ModelLocationUtils.getModelLocation(var1))).with(ROTATIONS_COLUMN_WITH_FACING));
    }
 
-   private void createLightningRod() {
-      Block var1 = Blocks.LIGHTNING_ROD;
-      MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(var1, "_on"));
-      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(var1));
-      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var2, var3)).with(ROTATIONS_COLUMN_WITH_FACING));
+   private void createLightningRod(Block var1, Block var2) {
+      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.LIGHTNING_ROD, "_on"));
+      MultiVariant var4 = plainVariant(ModelTemplates.LIGHTNING_ROD.create(var1, TextureMapping.defaultTexture(var1), this.modelOutput));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var3, var4)).with(ROTATIONS_COLUMN_WITH_FACING));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var2).with(createBooleanModelDispatch(BlockStateProperties.POWERED, var3, var4)).with(ROTATIONS_COLUMN_WITH_FACING));
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
    }
 
    private void createFarmland() {
@@ -1087,6 +1108,21 @@ public class BlockModelGenerators {
       MultiVariant var3 = plainVariant(TexturedModel.HANGING_LANTERN.create(var1, this.modelOutput));
       this.registerSimpleFlatItemModel(var1.asItem());
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.HANGING, var3, var2)));
+   }
+
+   private void createCopperLantern(Block var1, Block var2) {
+      ResourceLocation var3 = TexturedModel.LANTERN.create(var1, this.modelOutput);
+      ResourceLocation var4 = TexturedModel.HANGING_LANTERN.create(var1, this.modelOutput);
+      this.registerSimpleFlatItemModel(var1.asItem());
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var1).with(createBooleanModelDispatch(BlockStateProperties.HANGING, plainVariant(var4), plainVariant(var3))));
+      this.blockStateOutput.accept(MultiVariantGenerator.dispatch(var2).with(createBooleanModelDispatch(BlockStateProperties.HANGING, plainVariant(var4), plainVariant(var3))));
+   }
+
+   private void createCopperChain(Block var1, Block var2) {
+      MultiVariant var3 = plainVariant(TexturedModel.CHAIN.create(var1, this.modelOutput));
+      this.createAxisAlignedPillarBlockCustomModel(var1, var3);
+      this.createAxisAlignedPillarBlockCustomModel(var2, var3);
    }
 
    private void createMuddyMangroveRoots() {
@@ -1153,15 +1189,34 @@ public class BlockModelGenerators {
       this.itemModelOutput.copy(var1.asItem(), var2.asItem());
    }
 
-   private void createIronBars() {
-      MultiVariant var1 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_post_ends"));
-      MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_post"));
-      MultiVariant var3 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_cap"));
-      MultiVariant var4 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_cap_alt"));
-      MultiVariant var5 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_side"));
-      MultiVariant var6 = plainVariant(ModelLocationUtils.getModelLocation(Blocks.IRON_BARS, "_side_alt"));
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(Blocks.IRON_BARS).with(var1).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var2).with(condition().term(BlockStateProperties.NORTH, true).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var3).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, true).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var3.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, true).term(BlockStateProperties.WEST, false), var4).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, true), var4.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, true), var5).with(condition().term(BlockStateProperties.EAST, true), var5.with(Y_ROT_90)).with(condition().term(BlockStateProperties.SOUTH, true), var6).with(condition().term(BlockStateProperties.WEST, true), var6.with(Y_ROT_90)));
-      this.registerSimpleFlatItemModel(Blocks.IRON_BARS);
+   private void createBarsAndItem(Block var1) {
+      TextureMapping var2 = TextureMapping.bars(var1);
+      this.createBars(var1, ModelTemplates.BARS_POST_ENDS.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST.create(var1, var2, this.modelOutput), ModelTemplates.BARS_CAP.create(var1, var2, this.modelOutput), ModelTemplates.BARS_CAP_ALT.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST_SIDE.create(var1, var2, this.modelOutput), ModelTemplates.BARS_POST_SIDE_ALT.create(var1, var2, this.modelOutput));
+      this.registerSimpleFlatItemModel(var1);
+   }
+
+   private void createBarsAndItem(Block var1, Block var2) {
+      TextureMapping var3 = TextureMapping.bars(var1);
+      ResourceLocation var4 = ModelTemplates.BARS_POST_ENDS.create(var1, var3, this.modelOutput);
+      ResourceLocation var5 = ModelTemplates.BARS_POST.create(var1, var3, this.modelOutput);
+      ResourceLocation var6 = ModelTemplates.BARS_CAP.create(var1, var3, this.modelOutput);
+      ResourceLocation var7 = ModelTemplates.BARS_CAP_ALT.create(var1, var3, this.modelOutput);
+      ResourceLocation var8 = ModelTemplates.BARS_POST_SIDE.create(var1, var3, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.BARS_POST_SIDE_ALT.create(var1, var3, this.modelOutput);
+      this.createBars(var1, var4, var5, var6, var7, var8, var9);
+      this.createBars(var2, var4, var5, var6, var7, var8, var9);
+      this.registerSimpleFlatItemModel(var1);
+      this.itemModelOutput.copy(var1.asItem(), var2.asItem());
+   }
+
+   private void createBars(Block var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7) {
+      MultiVariant var8 = plainVariant(var2);
+      MultiVariant var9 = plainVariant(var3);
+      MultiVariant var10 = plainVariant(var4);
+      MultiVariant var11 = plainVariant(var5);
+      MultiVariant var12 = plainVariant(var6);
+      MultiVariant var13 = plainVariant(var7);
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with(var8).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var9).with(condition().term(BlockStateProperties.NORTH, true).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var10).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, true).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, false), var10.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, true).term(BlockStateProperties.WEST, false), var11).with(condition().term(BlockStateProperties.NORTH, false).term(BlockStateProperties.EAST, false).term(BlockStateProperties.SOUTH, false).term(BlockStateProperties.WEST, true), var11.with(Y_ROT_90)).with(condition().term(BlockStateProperties.NORTH, true), var12).with(condition().term(BlockStateProperties.EAST, true), var12.with(Y_ROT_90)).with(condition().term(BlockStateProperties.SOUTH, true), var13).with(condition().term(BlockStateProperties.WEST, true), var13.with(Y_ROT_90)));
    }
 
    private void createNonTemplateHorizontalBlock(Block var1) {
@@ -1587,16 +1642,50 @@ public class BlockModelGenerators {
       this.registerSimpleItemModel(Blocks.SCULK_CATALYST, var4);
    }
 
+   private void createShelf(Block var1, Block var2) {
+      TextureMapping var3 = (new TextureMapping()).put(TextureSlot.ALL, TextureMapping.getBlockTexture(var1)).put(TextureSlot.PARTICLE, TextureMapping.getBlockTexture(var2));
+      MultiPartGenerator var4 = MultiPartGenerator.multiPart(var1);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_BODY, (Boolean)null, (SideChainPart)null);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_UNPOWERED, false, (SideChainPart)null);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_UNCONNECTED, true, SideChainPart.UNCONNECTED);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_LEFT, true, SideChainPart.LEFT);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_CENTER, true, SideChainPart.CENTER);
+      this.addShelfPart(var1, var3, var4, ModelTemplates.SHELF_RIGHT, true, SideChainPart.RIGHT);
+      this.blockStateOutput.accept(var4);
+      this.registerSimpleItemModel(var1, ModelTemplates.SHELF_INVENTORY.create(var1, var3, this.modelOutput));
+   }
+
+   private void addShelfPart(Block var1, TextureMapping var2, MultiPartGenerator var3, ModelTemplate var4, @Nullable Boolean var5, @Nullable SideChainPart var6) {
+      MultiVariant var7 = plainVariant(var4.create(var1, var2, this.modelOutput));
+      forEachHorizontalDirection((var4x, var5x) -> var3.with(shelfCondition(var4x, var5, var6), var7.with(var5x)));
+   }
+
+   private static void forEachHorizontalDirection(BiConsumer<Direction, VariantMutator> var0) {
+      List.of(Pair.of(Direction.NORTH, NOP), Pair.of(Direction.EAST, Y_ROT_90), Pair.of(Direction.SOUTH, Y_ROT_180), Pair.of(Direction.WEST, Y_ROT_270)).forEach((var1) -> {
+         Direction var2 = (Direction)var1.getFirst();
+         VariantMutator var3 = (VariantMutator)var1.getSecond();
+         var0.accept(var2, var3);
+      });
+   }
+
+   private static Condition shelfCondition(Direction var0, @Nullable Boolean var1, @Nullable SideChainPart var2) {
+      ConditionBuilder var3 = condition(BlockStateProperties.HORIZONTAL_FACING, var0);
+      if (var1 == null) {
+         return var3.build();
+      } else {
+         ConditionBuilder var4 = condition(BlockStateProperties.POWERED, var1);
+         return var2 != null ? and(var3, var4, condition(BlockStateProperties.SIDE_CHAIN_PART, var2)) : and(var3, var4);
+      }
+   }
+
    private void createChiseledBookshelf() {
       Block var1 = Blocks.CHISELED_BOOKSHELF;
       MultiVariant var2 = plainVariant(ModelLocationUtils.getModelLocation(var1));
       MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
-      List.of(Pair.of(Direction.NORTH, NOP), Pair.of(Direction.EAST, Y_ROT_90), Pair.of(Direction.SOUTH, Y_ROT_180), Pair.of(Direction.WEST, Y_ROT_270)).forEach((var3x) -> {
-         Direction var4 = (Direction)var3x.getFirst();
-         VariantMutator var5 = (VariantMutator)var3x.getSecond();
-         Condition var6 = condition().term(BlockStateProperties.HORIZONTAL_FACING, var4).build();
-         var3.with(var6, var2.with(var5).with(UV_LOCK));
-         this.addSlotStateAndRotationVariants(var3, var6, var5);
+      forEachHorizontalDirection((var3x, var4) -> {
+         Condition var5 = condition().term(BlockStateProperties.HORIZONTAL_FACING, var3x).build();
+         var3.with(var5, var2.with(var4).with(UV_LOCK));
+         this.addSlotStateAndRotationVariants(var3, var5, var4);
       });
       this.blockStateOutput.accept(var3);
       this.registerSimpleItemModel(var1, ModelLocationUtils.getModelLocation(var1, "_inventory"));
@@ -1604,7 +1693,7 @@ public class BlockModelGenerators {
    }
 
    private void addSlotStateAndRotationVariants(MultiPartGenerator var1, Condition var2, VariantMutator var3) {
-      List.of(Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_0_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_LEFT), Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_1_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_MID), Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_2_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_RIGHT), Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_3_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_LEFT), Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_4_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_MID), Pair.of(BlockStateProperties.CHISELED_BOOKSHELF_SLOT_5_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_RIGHT)).forEach((var4) -> {
+      List.of(Pair.of(ChiseledBookShelfBlock.SLOT_0_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_LEFT), Pair.of(ChiseledBookShelfBlock.SLOT_1_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_MID), Pair.of(ChiseledBookShelfBlock.SLOT_2_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_TOP_RIGHT), Pair.of(ChiseledBookShelfBlock.SLOT_3_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_LEFT), Pair.of(ChiseledBookShelfBlock.SLOT_4_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_MID), Pair.of(ChiseledBookShelfBlock.SLOT_5_OCCUPIED, ModelTemplates.CHISELED_BOOKSHELF_SLOT_BOTTOM_RIGHT)).forEach((var4) -> {
          BooleanProperty var5 = (BooleanProperty)var4.getFirst();
          ModelTemplate var6 = (ModelTemplate)var4.getSecond();
          this.addBookSlotModel(var1, var2, var3, var5, var6, true);
@@ -1739,6 +1828,24 @@ public class BlockModelGenerators {
       this.createHead(Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, SkullBlock.Types.DRAGON, ModelLocationUtils.getModelLocation(Items.DRAGON_HEAD));
    }
 
+   private void createCopperGolemStatues() {
+      this.createCopperGolemStatue(Blocks.COPPER_GOLEM_STATUE, Blocks.COPPER_BLOCK, WeatheringCopper.WeatherState.UNAFFECTED);
+      this.createCopperGolemStatue(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER, WeatheringCopper.WeatherState.EXPOSED);
+      this.createCopperGolemStatue(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER, WeatheringCopper.WeatherState.WEATHERED);
+      this.createCopperGolemStatue(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER, WeatheringCopper.WeatherState.OXIDIZED);
+      this.copyModel(Blocks.COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE);
+      this.copyModel(Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
+   }
+
+   private void createCopperGolemStatue(Block var1, Block var2, WeatheringCopper.WeatherState var3) {
+      MultiVariant var4 = plainVariant(ModelTemplates.PARTICLE_ONLY.create(var1, TextureMapping.particle(TextureMapping.getBlockTexture(var2)), this.modelOutput));
+      ResourceLocation var5 = ModelLocationUtils.decorateItemModelLocation("template_copper_golem_statue");
+      this.blockStateOutput.accept(createSimpleBlock(var1, var4));
+      this.itemModelOutput.accept(var1.asItem(), ItemModelUtils.selectBlockItemProperty(CopperGolemStatueBlock.POSE, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.STANDING)), Map.of(CopperGolemStatueBlock.Pose.SITTING, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.SITTING)), CopperGolemStatueBlock.Pose.STAR, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.STAR)), CopperGolemStatueBlock.Pose.RUNNING, ItemModelUtils.specialModel(var5, new CopperGolemStatueSpecialRenderer.Unbaked(var3, CopperGolemStatueBlock.Pose.RUNNING)))));
+   }
+
    private void createBanner(Block var1, Block var2, DyeColor var3) {
       MultiVariant var4 = plainVariant(ModelLocationUtils.decorateBlockModelLocation("banner"));
       ResourceLocation var5 = ModelLocationUtils.decorateItemModelLocation("template_banner");
@@ -1785,6 +1892,17 @@ public class BlockModelGenerators {
       this.createChest(Blocks.CHEST, Blocks.OAK_PLANKS, ChestSpecialRenderer.NORMAL_CHEST_TEXTURE, true);
       this.createChest(Blocks.TRAPPED_CHEST, Blocks.OAK_PLANKS, ChestSpecialRenderer.TRAPPED_CHEST_TEXTURE, true);
       this.createChest(Blocks.ENDER_CHEST, Blocks.OBSIDIAN, ChestSpecialRenderer.ENDER_CHEST_TEXTURE, false);
+   }
+
+   private void createCopperChests() {
+      this.createChest(Blocks.COPPER_CHEST, Blocks.COPPER_BLOCK, ChestSpecialRenderer.COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.EXPOSED_COPPER_CHEST, Blocks.EXPOSED_COPPER, ChestSpecialRenderer.EXPOSED_COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.WEATHERED_COPPER_CHEST, Blocks.WEATHERED_COPPER, ChestSpecialRenderer.WEATHERED_COPPER_CHEST_TEXTURE, false);
+      this.createChest(Blocks.OXIDIZED_COPPER_CHEST, Blocks.OXIDIZED_COPPER, ChestSpecialRenderer.OXIDIZED_COPPER_CHEST_TEXTURE, false);
+      this.copyModel(Blocks.COPPER_CHEST, Blocks.WAXED_COPPER_CHEST);
+      this.copyModel(Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST);
+      this.copyModel(Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST);
+      this.copyModel(Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
    }
 
    private void createBed(Block var1, Block var2, DyeColor var3) {
@@ -1849,7 +1967,8 @@ public class BlockModelGenerators {
       this.createNonTemplateModelBlock(Blocks.WATER);
       this.createNonTemplateModelBlock(Blocks.LAVA);
       this.createNonTemplateModelBlock(Blocks.SLIME_BLOCK);
-      this.registerSimpleFlatItemModel(Items.CHAIN);
+      this.registerSimpleFlatItemModel(Items.IRON_CHAIN);
+      Items.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChainItem);
       this.createCandleAndCandleCake(Blocks.WHITE_CANDLE, Blocks.WHITE_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.ORANGE_CANDLE, Blocks.ORANGE_CANDLE_CAKE);
       this.createCandleAndCandleCake(Blocks.MAGENTA_CANDLE, Blocks.MAGENTA_CANDLE_CAKE);
@@ -1994,8 +2113,24 @@ public class BlockModelGenerators {
       this.copyModel(Blocks.EXPOSED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER_GRATE);
       this.copyModel(Blocks.WEATHERED_COPPER_GRATE, Blocks.WAXED_WEATHERED_COPPER_GRATE);
       this.copyModel(Blocks.OXIDIZED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER_GRATE);
+      this.createLightningRod(Blocks.LIGHTNING_ROD, Blocks.WAXED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WAXED_EXPOSED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.WEATHERED_LIGHTNING_ROD, Blocks.WAXED_WEATHERED_LIGHTNING_ROD);
+      this.createLightningRod(Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
       this.createWeightedPressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.GOLD_BLOCK);
       this.createWeightedPressurePlate(Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.IRON_BLOCK);
+      this.createShelf(Blocks.ACACIA_SHELF, Blocks.STRIPPED_ACACIA_LOG);
+      this.createShelf(Blocks.BAMBOO_SHELF, Blocks.STRIPPED_BAMBOO_BLOCK);
+      this.createShelf(Blocks.BIRCH_SHELF, Blocks.STRIPPED_BIRCH_LOG);
+      this.createShelf(Blocks.CHERRY_SHELF, Blocks.STRIPPED_CHERRY_LOG);
+      this.createShelf(Blocks.CRIMSON_SHELF, Blocks.STRIPPED_CRIMSON_STEM);
+      this.createShelf(Blocks.DARK_OAK_SHELF, Blocks.STRIPPED_DARK_OAK_LOG);
+      this.createShelf(Blocks.JUNGLE_SHELF, Blocks.STRIPPED_JUNGLE_LOG);
+      this.createShelf(Blocks.MANGROVE_SHELF, Blocks.STRIPPED_MANGROVE_LOG);
+      this.createShelf(Blocks.OAK_SHELF, Blocks.STRIPPED_OAK_LOG);
+      this.createShelf(Blocks.PALE_OAK_SHELF, Blocks.STRIPPED_PALE_OAK_LOG);
+      this.createShelf(Blocks.SPRUCE_SHELF, Blocks.STRIPPED_SPRUCE_LOG);
+      this.createShelf(Blocks.WARPED_SHELF, Blocks.STRIPPED_WARPED_STEM);
       this.createAmethystClusters();
       this.createBookshelf();
       this.createChiseledBookshelf();
@@ -2010,7 +2145,6 @@ public class BlockModelGenerators {
       this.createDaylightDetector();
       this.createEndPortalFrame();
       this.createRotatableColumn(Blocks.END_ROD);
-      this.createLightningRod();
       this.createFarmland();
       this.createFire();
       this.createSoulFire();
@@ -2020,7 +2154,8 @@ public class BlockModelGenerators {
       this.createDirtPath();
       this.createGrindstone();
       this.createHopper();
-      this.createIronBars();
+      this.createBarsAndItem(Blocks.IRON_BARS);
+      Blocks.COPPER_BARS.waxedMapping().forEach(this::createBarsAndItem);
       this.createLever();
       this.createLilyPad();
       this.createNetherPortalBlock();
@@ -2066,6 +2201,7 @@ public class BlockModelGenerators {
       this.createNonTemplateHorizontalBlock(Blocks.BIG_DRIPLEAF_STEM);
       this.createNormalTorch(Blocks.TORCH, Blocks.WALL_TORCH);
       this.createNormalTorch(Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH);
+      this.createNormalTorch(Blocks.COPPER_TORCH, Blocks.COPPER_WALL_TORCH);
       this.createCraftingTableLike(Blocks.CRAFTING_TABLE, Blocks.OAK_PLANKS, TextureMapping::craftingTable);
       this.createCraftingTableLike(Blocks.FLETCHING_TABLE, Blocks.BIRCH_PLANKS, TextureMapping::fletchingTable);
       this.createNyliumBlock(Blocks.CRIMSON_NYLIUM);
@@ -2075,7 +2211,9 @@ public class BlockModelGenerators {
       this.createCrafterBlock();
       this.createLantern(Blocks.LANTERN);
       this.createLantern(Blocks.SOUL_LANTERN);
-      this.createAxisAlignedPillarBlockCustomModel(Blocks.CHAIN, plainVariant(ModelLocationUtils.getModelLocation(Blocks.CHAIN)));
+      Blocks.COPPER_LANTERN.waxedMapping().forEach(this::createCopperLantern);
+      this.createAxisAlignedPillarBlockCustomModel(Blocks.IRON_CHAIN, plainVariant(TexturedModel.CHAIN.create(Blocks.IRON_CHAIN, this.modelOutput)));
+      Blocks.COPPER_CHAIN.waxedMapping().forEach(this::createCopperChain);
       this.createAxisAlignedPillarBlock(Blocks.BASALT, TexturedModel.COLUMN);
       this.createAxisAlignedPillarBlock(Blocks.POLISHED_BASALT, TexturedModel.COLUMN);
       this.createTrivialCube(Blocks.SMOOTH_BASALT);
@@ -2110,6 +2248,7 @@ public class BlockModelGenerators {
       this.createBeds();
       this.createHeads();
       this.createChests();
+      this.createCopperChests();
       this.createShulkerBox(Blocks.SHULKER_BOX, (DyeColor)null);
       this.createShulkerBox(Blocks.WHITE_SHULKER_BOX, DyeColor.WHITE);
       this.createShulkerBox(Blocks.ORANGE_SHULKER_BOX, DyeColor.ORANGE);
@@ -2127,6 +2266,7 @@ public class BlockModelGenerators {
       this.createShulkerBox(Blocks.GREEN_SHULKER_BOX, DyeColor.GREEN);
       this.createShulkerBox(Blocks.RED_SHULKER_BOX, DyeColor.RED);
       this.createShulkerBox(Blocks.BLACK_SHULKER_BOX, DyeColor.BLACK);
+      this.createCopperGolemStatues();
       this.createParticleOnlyBlock(Blocks.CONDUIT);
       this.generateSimpleSpecialItemModel(Blocks.CONDUIT, new ConduitSpecialRenderer.Unbaked());
       this.createParticleOnlyBlock(Blocks.DECORATED_POT, Blocks.TERRACOTTA);
@@ -2370,6 +2510,12 @@ public class BlockModelGenerators {
 
       this.itemModelOutput.accept(Items.LIGHT, ItemModelUtils.selectBlockItemProperty(LightBlock.LEVEL, var1, var2));
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.LIGHT).with(var3));
+   }
+
+   private void createCopperChainItem(Item var1, Item var2) {
+      ResourceLocation var3 = this.createFlatItemModel(var1);
+      this.registerSimpleItemModel(var1, var3);
+      this.registerSimpleItemModel(var2, var3);
    }
 
    private void createCandleAndCandleCake(Block var1, Block var2) {

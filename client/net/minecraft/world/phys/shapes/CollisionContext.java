@@ -1,7 +1,6 @@
 package net.minecraft.world.phys.shapes;
 
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +15,11 @@ import net.minecraft.world.level.material.FluidState;
 
 public interface CollisionContext {
    static CollisionContext empty() {
-      return EntityCollisionContext.EMPTY;
+      return EntityCollisionContext.Empty.WITHOUT_FLUID_COLLISIONS;
+   }
+
+   static CollisionContext emptyWithFluidCollisions() {
+      return EntityCollisionContext.Empty.WITH_FLUID_COLLISIONS;
    }
 
    static CollisionContext of(Entity var0) {
@@ -42,7 +45,7 @@ public interface CollisionContext {
    }
 
    static CollisionContext placementContext(@Nullable Player var0) {
-      return new EntityCollisionContext(var0 != null ? var0.isDescending() : false, true, var0 != null ? var0.getY() : -1.7976931348623157E308, var0 instanceof LivingEntity ? ((LivingEntity)var0).getMainHandItem() : ItemStack.EMPTY, var0 instanceof LivingEntity ? (var1) -> var0.canStandOnFluid(var1) : (var0x) -> false, var0);
+      return new EntityCollisionContext(var0 != null ? var0.isDescending() : false, true, var0 != null ? var0.getY() : -1.7976931348623157E308, var0 instanceof LivingEntity ? ((LivingEntity)var0).getMainHandItem() : ItemStack.EMPTY, false, var0);
    }
 
    static CollisionContext withPosition(@Nullable Entity var0, double var1) {
@@ -56,14 +59,7 @@ public interface CollisionContext {
          var10005 = ItemStack.EMPTY;
       }
 
-      Predicate var10006;
-      if (var0 instanceof LivingEntity var4) {
-         var10006 = (var1x) -> var4.canStandOnFluid(var1x);
-      } else {
-         var10006 = (var0x) -> false;
-      }
-
-      var10000.<init>(var10002, true, var10004, var10005, var10006, var0);
+      var10000.<init>(var10002, true, var10004, var10005, false, var0);
       return var10000;
    }
 
@@ -72,6 +68,8 @@ public interface CollisionContext {
    boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3);
 
    boolean isHoldingItem(Item var1);
+
+   boolean alwaysCollideWithFluid();
 
    boolean canStandOnFluid(FluidState var1, FluidState var2);
 

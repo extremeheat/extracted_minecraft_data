@@ -247,7 +247,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock()) && !var2.isClientSide) {
+      if (!var4.is(var1.getBlock()) && !var2.isClientSide()) {
          this.updatePowerStrength(var2, var3, var1, (Orientation)null, true);
 
          for(Direction var7 : Direction.Plane.VERTICAL) {
@@ -286,7 +286,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          if (var4 != this || !useExperimentalEvaluator(var2)) {
             if (var1.canSurvive(var2, var3)) {
                this.updatePowerStrength(var2, var3, var1, var5, false);

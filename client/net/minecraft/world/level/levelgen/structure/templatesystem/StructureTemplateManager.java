@@ -33,6 +33,8 @@ import net.minecraft.FileUtil;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.gametest.framework.StructureUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -336,40 +338,48 @@ public class StructureTemplateManager {
          return false;
       } else {
          StructureTemplate var3 = (StructureTemplate)var2.get();
-         Path var4 = this.createAndValidatePathToGeneratedStructure(var1, ".nbt");
+         Path var4 = this.createAndValidatePathToGeneratedStructure(var1, SharedConstants.DEBUG_SAVE_STRUCTURES_AS_SNBT ? ".snbt" : ".nbt");
          Path var5 = var4.getParent();
          if (var5 == null) {
             return false;
          } else {
             try {
                Files.createDirectories(Files.exists(var5, new LinkOption[0]) ? var5.toRealPath() : var5);
-            } catch (IOException var13) {
+            } catch (IOException var14) {
                LOGGER.error("Failed to create parent directory: {}", var5);
                return false;
             }
 
             CompoundTag var6 = var3.save(new CompoundTag());
-
-            try {
-               FileOutputStream var7 = new FileOutputStream(var4.toFile());
-
+            if (SharedConstants.DEBUG_SAVE_STRUCTURES_AS_SNBT) {
                try {
-                  NbtIo.writeCompressed(var6, (OutputStream)var7);
-               } catch (Throwable var11) {
+                  NbtToSnbt.writeSnbt(CachedOutput.NO_CACHE, var4, NbtUtils.structureToSnbt(var6));
+               } catch (Throwable var13) {
+                  return false;
+               }
+            } else {
+               try {
+                  FileOutputStream var7 = new FileOutputStream(var4.toFile());
+
                   try {
-                     ((OutputStream)var7).close();
-                  } catch (Throwable var10) {
-                     var11.addSuppressed(var10);
+                     NbtIo.writeCompressed(var6, (OutputStream)var7);
+                  } catch (Throwable var11) {
+                     try {
+                        ((OutputStream)var7).close();
+                     } catch (Throwable var10) {
+                        var11.addSuppressed(var10);
+                     }
+
+                     throw var11;
                   }
 
-                  throw var11;
+                  ((OutputStream)var7).close();
+               } catch (Throwable var12) {
+                  return false;
                }
-
-               ((OutputStream)var7).close();
-               return true;
-            } catch (Throwable var12) {
-               return false;
             }
+
+            return true;
          }
       }
    }

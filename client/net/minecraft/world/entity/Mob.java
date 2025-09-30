@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,6 +25,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.debug.DebugBrainDump;
+import net.minecraft.util.debug.DebugGoalInfo;
+import net.minecraft.util.debug.DebugPathInfo;
+import net.minecraft.util.debug.DebugSubscriptions;
+import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
@@ -58,6 +63,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -69,6 +75,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -89,6 +96,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private static final Vec3i ITEM_PICKUP_REACH;
    private static final List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER;
    public static final float MAX_WEARING_ARMOR_CHANCE = 0.15F;
+   public static final float WEARING_ARMOR_UPGRADE_MATERIAL_CHANCE = 0.1087F;
+   public static final float WEARING_ARMOR_UPGRADE_MATERIAL_ATTEMPTS = 3.0F;
    public static final float MAX_PICKUP_LOOT_CHANCE = 0.55F;
    public static final float MAX_ENCHANTED_ARMOR_CHANCE = 0.5F;
    public static final float MAX_ENCHANTED_WEAPON_CHANCE = 0.25F;
@@ -321,7 +330,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public void spawnAnim() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          this.makePoofParticles();
       } else {
          this.level().broadcastEntityEvent(this, (byte)20);
@@ -340,7 +349,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void tick() {
       super.tick();
-      if (!this.level().isClientSide && this.tickCount % 5 == 0) {
+      if (!this.level().isClientSide() && this.tickCount % 5 == 0) {
          this.updateControlFlags();
       }
 
@@ -617,12 +626,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.isPassenger();
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return false;
-   }
-
    public void checkDespawn() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
          this.discard();
       } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
          Player var1 = this.level().getNearestPlayer(this, -1.0);
@@ -686,11 +691,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.jumpControl.tick();
       var1.pop();
       var1.pop();
-      this.sendDebugPackets();
-   }
-
-   protected void sendDebugPackets() {
-      DebugPackets.sendGoalSelector(this.level(), this, this.goalSelector);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -901,25 +901,20 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       if (var1.nextFloat() < 0.15F * var2.getSpecialMultiplier()) {
-         int var3 = var1.nextInt(2);
-         float var4 = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
+         int var3 = var1.nextInt(3);
+
+         for(int var4 = 1; (float)var4 <= 3.0F; ++var4) {
+            if (var1.nextFloat() < 0.1087F) {
+               ++var3;
+            }
          }
 
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
-         }
-
-         if (var1.nextFloat() < 0.095F) {
-            ++var3;
-         }
-
+         float var10 = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
          boolean var5 = true;
 
          for(EquipmentSlot var7 : EQUIPMENT_POPULATION_ORDER) {
             ItemStack var8 = this.getItemBySlot(var7);
-            if (!var5 && var1.nextFloat() < var4) {
+            if (!var5 && var1.nextFloat() < var10) {
                break;
             }
 
@@ -942,48 +937,56 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
             if (var1 == 0) {
                return Items.LEATHER_HELMET;
             } else if (var1 == 1) {
-               return Items.GOLDEN_HELMET;
+               return Items.COPPER_HELMET;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_HELMET;
+               return Items.GOLDEN_HELMET;
             } else if (var1 == 3) {
-               return Items.IRON_HELMET;
+               return Items.CHAINMAIL_HELMET;
             } else if (var1 == 4) {
+               return Items.IRON_HELMET;
+            } else if (var1 == 5) {
                return Items.DIAMOND_HELMET;
             }
          case CHEST:
             if (var1 == 0) {
                return Items.LEATHER_CHESTPLATE;
             } else if (var1 == 1) {
-               return Items.GOLDEN_CHESTPLATE;
+               return Items.COPPER_CHESTPLATE;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_CHESTPLATE;
+               return Items.GOLDEN_CHESTPLATE;
             } else if (var1 == 3) {
-               return Items.IRON_CHESTPLATE;
+               return Items.CHAINMAIL_CHESTPLATE;
             } else if (var1 == 4) {
+               return Items.IRON_CHESTPLATE;
+            } else if (var1 == 5) {
                return Items.DIAMOND_CHESTPLATE;
             }
          case LEGS:
             if (var1 == 0) {
                return Items.LEATHER_LEGGINGS;
             } else if (var1 == 1) {
-               return Items.GOLDEN_LEGGINGS;
+               return Items.COPPER_LEGGINGS;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_LEGGINGS;
+               return Items.GOLDEN_LEGGINGS;
             } else if (var1 == 3) {
-               return Items.IRON_LEGGINGS;
+               return Items.CHAINMAIL_LEGGINGS;
             } else if (var1 == 4) {
+               return Items.IRON_LEGGINGS;
+            } else if (var1 == 5) {
                return Items.DIAMOND_LEGGINGS;
             }
          case FEET:
             if (var1 == 0) {
                return Items.LEATHER_BOOTS;
             } else if (var1 == 1) {
-               return Items.GOLDEN_BOOTS;
+               return Items.COPPER_BOOTS;
             } else if (var1 == 2) {
-               return Items.CHAINMAIL_BOOTS;
+               return Items.GOLDEN_BOOTS;
             } else if (var1 == 3) {
-               return Items.IRON_BOOTS;
+               return Items.CHAINMAIL_BOOTS;
             } else if (var1 == 4) {
+               return Items.IRON_BOOTS;
+            } else if (var1 == 5) {
                return Items.DIAMOND_BOOTS;
             }
          default:
@@ -1112,6 +1115,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return InteractionResult.PASS;
    }
 
+   protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
+      int var4 = var3.getCount();
+      UseRemainder var5 = (UseRemainder)var3.get(DataComponents.USE_REMAINDER);
+      var3.consume(1, var1);
+      if (var5 != null) {
+         boolean var10003 = var1.hasInfiniteMaterials();
+         Objects.requireNonNull(var1);
+         ItemStack var6 = var5.convertIntoRemainder(var3, var4, var10003, var1::handleExtraItemsCreatedOnUse);
+         var1.setItemInHand(var2, var6);
+      }
+
+   }
+
    public boolean isWithinHome() {
       return this.isWithinHome(this.blockPosition());
    }
@@ -1216,13 +1232,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return !(this instanceof Enemy);
    }
 
-   public boolean startRiding(Entity var1, boolean var2) {
-      boolean var3 = super.startRiding(var1, var2);
-      if (var3 && this.isLeashed()) {
+   public boolean startRiding(Entity var1, boolean var2, boolean var3) {
+      boolean var4 = super.startRiding(var1, var2, var3);
+      if (var4 && this.isLeashed()) {
          this.dropLeash();
       }
 
-      return var3;
+      return var4;
    }
 
    public boolean isEffectiveAi() {
@@ -1313,7 +1329,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    protected boolean isSunBurnTick() {
-      if (this.level().isBrightOutside() && !this.level().isClientSide) {
+      if (this.level().isBrightOutside() && !this.level().isClientSide()) {
          float var1 = this.getLightLevelDependentMagicValue();
          BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
          boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
@@ -1366,6 +1382,23 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       super.onAttributeUpdated(var1);
       if (var1.is(Attributes.FOLLOW_RANGE) || var1.is(Attributes.TEMPT_RANGE)) {
          this.getNavigation().updatePathfinderMaxVisitedNodes();
+      }
+
+   }
+
+   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+      var2.register(DebugSubscriptions.ENTITY_PATHS, () -> {
+         Path var1 = this.getNavigation().getPath();
+         return var1 != null && var1.debugData() != null ? new DebugPathInfo(var1.copy(), this.getNavigation().getMaxDistanceToWaypoint()) : null;
+      });
+      var2.register(DebugSubscriptions.GOAL_SELECTORS, () -> {
+         Set var1 = this.goalSelector.getAvailableGoals();
+         ArrayList var2 = new ArrayList(var1.size());
+         var1.forEach((var1x) -> var2.add(new DebugGoalInfo.DebugGoal(var1x.getPriority(), var1x.isRunning(), var1x.getGoal().getClass().getSimpleName())));
+         return new DebugGoalInfo(var2);
+      });
+      if (!this.brain.isBrainDead()) {
+         var2.register(DebugSubscriptions.BRAINS, () -> DebugBrainDump.takeBrainDump(var1, this));
       }
 
    }

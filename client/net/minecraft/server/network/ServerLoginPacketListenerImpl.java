@@ -37,6 +37,7 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
@@ -102,7 +103,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    }
 
    private boolean isPlayerAlreadyInWorld(GameProfile var1) {
-      return this.server.getPlayerList().getPlayer(var1.getId()) != null;
+      return this.server.getPlayerList().getPlayer(var1.id()) != null;
    }
 
    public void onDisconnect(DisconnectionDetails var1) {
@@ -119,7 +120,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       Validate.validState(StringUtil.isValidPlayerName(var1.name()), "Invalid characters in username", new Object[0]);
       this.requestedUsername = var1.name();
       GameProfile var2 = this.server.getSingleplayerProfile();
-      if (var2 != null && this.requestedUsername.equalsIgnoreCase(var2.getName())) {
+      if (var2 != null && this.requestedUsername.equalsIgnoreCase(var2.name())) {
          this.startClientVerification(var2);
       } else {
          if (this.server.usesAuthentication() && !this.connection.isMemoryConnection()) {
@@ -139,7 +140,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
    private void verifyLoginAndFinishConnectionSetup(GameProfile var1) {
       PlayerList var2 = this.server.getPlayerList();
-      Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), var1);
+      Component var3 = var2.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(var1));
       if (var3 != null) {
          this.disconnect(var3);
       } else {
@@ -147,7 +148,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
          }
 
-         boolean var4 = var2.disconnectAllPlayersWithProfile(var1);
+         boolean var4 = var2.disconnectAllPlayersWithProfile(var1.id());
          if (var4) {
             this.state = ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT;
          } else {
@@ -187,10 +188,10 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             String var1 = (String)Objects.requireNonNull(ServerLoginPacketListenerImpl.this.requestedUsername, "Player name not initialized");
 
             try {
-               ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.getSessionService().hasJoinedServer(var1, var2, this.getAddress());
+               ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.services().sessionService().hasJoinedServer(var1, var2, this.getAddress());
                if (var2x != null) {
                   GameProfile var3 = var2x.profile();
-                  ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.getName(), var3.getId());
+                  ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.name(), var3.id());
                   ServerLoginPacketListenerImpl.this.startClientVerification(var3);
                } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");

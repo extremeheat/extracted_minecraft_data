@@ -6,6 +6,10 @@ import net.minecraft.network.chat.Component;
 public interface Nameable {
    Component getName();
 
+   default String getPlainTextName() {
+      return this.getName().getString();
+   }
+
    default boolean hasCustomName() {
       return this.getCustomName() != null;
    }

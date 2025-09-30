@@ -1,8 +1,8 @@
 package net.minecraft.network.protocol.game;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Multimap;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.PropertyMap;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -97,13 +97,13 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
 
    public static enum Action {
       ADD_PLAYER((var0, var1) -> {
-         GameProfile var2 = new GameProfile(var0.profileId, var1.readUtf(16));
-         var2.getProperties().putAll((Multimap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1));
-         var0.profile = var2;
+         String var2 = (String)ByteBufCodecs.PLAYER_NAME.decode(var1);
+         PropertyMap var3 = (PropertyMap)ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(var1);
+         var0.profile = new GameProfile(var0.profileId, var2, var3);
       }, (var0, var1) -> {
          GameProfile var2 = (GameProfile)Objects.requireNonNull(var1.profile());
-         var0.writeUtf(var2.getName(), 16);
-         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var0, var2.getProperties());
+         ByteBufCodecs.PLAYER_NAME.encode(var0, var2.name());
+         ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(var0, var2.properties());
       }),
       INITIALIZE_CHAT((var0, var1) -> var0.chatSession = (RemoteChatSession.Data)var1.readNullable(RemoteChatSession.Data::read), (var0, var1) -> var0.writeNullable(var1.chatSession, RemoteChatSession.Data::write)),
       UPDATE_GAME_MODE((var0, var1) -> var0.gameMode = GameType.byId(var1.readVarInt()), (var0, var1) -> var0.writeVarInt(var1.gameMode().getId())),

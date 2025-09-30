@@ -73,7 +73,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide()) {
          var2.scheduleTick(var3, this, 1);
       }
 

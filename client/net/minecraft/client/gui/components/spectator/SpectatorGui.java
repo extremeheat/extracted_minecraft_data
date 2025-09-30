@@ -121,7 +121,7 @@ public class SpectatorGui implements SpectatorMenuListener {
 
    }
 
-   public void onMouseMiddleClick() {
+   public void onHotbarActionKeyPressed() {
       this.lastSelectionTime = Util.getMillis();
       if (this.isMenuActive()) {
          int var1 = this.menu.getSelectedSlot();

@@ -69,7 +69,7 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
       }
 
       var3.getAllOfType(ConsumableListener.class).forEach((var4x) -> var4x.onConsume(var1, var2, var3, this));
-      if (!var1.isClientSide) {
+      if (!var1.isClientSide()) {
          this.onConsumeEffects.forEach((var3x) -> var3x.apply(var1, var3, var2));
       }
 

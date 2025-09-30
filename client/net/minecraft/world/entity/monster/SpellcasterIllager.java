@@ -54,7 +54,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    public boolean isCastingSpell() {
-      if (this.level().isClientSide) {
+      if (this.level().isClientSide()) {
          return (Byte)this.entityData.get(DATA_SPELL_CASTING_ID) > 0;
       } else {
          return this.spellCastingTickCount > 0;
@@ -67,7 +67,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    protected IllagerSpell getCurrentSpell() {
-      return !this.level().isClientSide ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId((Byte)this.entityData.get(DATA_SPELL_CASTING_ID));
+      return !this.level().isClientSide() ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId((Byte)this.entityData.get(DATA_SPELL_CASTING_ID));
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -80,7 +80,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide && this.isCastingSpell()) {
+      if (this.level().isClientSide() && this.isCastingSpell()) {
          IllagerSpell var1 = this.getCurrentSpell();
          float var2 = (float)var1.spellColor[0];
          float var3 = (float)var1.spellColor[1];

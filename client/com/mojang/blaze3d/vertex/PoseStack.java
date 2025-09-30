@@ -94,7 +94,7 @@ public class PoseStack {
          this.trustedNormals = false;
       }
 
-      void set(Pose var1) {
+      public void set(Pose var1) {
          this.pose.set(var1.pose);
          this.normal.set(var1.normal);
          this.trustedNormals = var1.trustedNormals;

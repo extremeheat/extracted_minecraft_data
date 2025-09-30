@@ -12,8 +12,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
 public class KeybindContents implements ComponentContents {
-   public static final MapCodec<KeybindContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> var0x.name)).apply(var0, KeybindContents::new));
-   public static final ComponentContents.Type<KeybindContents> TYPE;
+   public static final MapCodec<KeybindContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> var0x.name)).apply(var0, KeybindContents::new));
    private final String name;
    @Nullable
    private Supplier<Component> nameResolver;
@@ -69,11 +68,7 @@ public class KeybindContents implements ComponentContents {
       return this.name;
    }
 
-   public ComponentContents.Type<?> type() {
-      return TYPE;
-   }
-
-   static {
-      TYPE = new ComponentContents.Type<KeybindContents>(CODEC, "keybind");
+   public MapCodec<KeybindContents> codec() {
+      return MAP_CODEC;
    }
 }

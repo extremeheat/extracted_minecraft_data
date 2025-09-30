@@ -28,7 +28,7 @@ public class ChainBlock extends RotatedPillarBlock implements SimpleWaterloggedB
    public static final BooleanProperty WATERLOGGED;
    private static final Map<Direction.Axis, VoxelShape> SHAPES;
 
-   public MapCodec<ChainBlock> codec() {
+   public MapCodec<? extends ChainBlock> codec() {
       return CODEC;
    }
 

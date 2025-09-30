@@ -13,7 +13,7 @@ public abstract class StoredUserEntry<T> {
    }
 
    @Nullable
-   T getUser() {
+   public T getUser() {
       return this.user;
    }
 

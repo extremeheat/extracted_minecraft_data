@@ -9,11 +9,11 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
+import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -84,13 +84,13 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    }
 
    @Nullable
-   public GlyphInfo getGlyph(int var1) {
+   public UnbakedGlyph getGlyph(int var1) {
       GlyphEntry var2 = this.glyphs.get(var1);
       return var2 != null ? this.getOrLoadGlyphInfo(var1, var2) : null;
    }
 
-   private GlyphInfo getOrLoadGlyphInfo(int var1, GlyphEntry var2) {
-      GlyphInfo var3 = var2.glyph;
+   private UnbakedGlyph getOrLoadGlyphInfo(int var1, GlyphEntry var2) {
+      UnbakedGlyph var3 = var2.glyph;
       if (var3 == null) {
          FT_Face var4 = this.validateFontOpen();
          synchronized(var4) {
@@ -105,7 +105,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       return var3;
    }
 
-   private GlyphInfo loadGlyph(int var1, FT_Face var2, int var3) {
+   private UnbakedGlyph loadGlyph(int var1, FT_Face var2, int var3) {
       int var4 = FreeType.FT_Load_Glyph(var2, var3, 4194312);
       if (var4 != 0) {
          FreeTypeUtil.assertError(var4, String.format(Locale.ROOT, "Loading glyph U+%06X", var1));
@@ -121,7 +121,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          int var9 = var5.bitmap_top();
          int var10 = var7.width();
          int var11 = var7.rows();
-         return (GlyphInfo)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : () -> var6 / this.oversample);
+         return (UnbakedGlyph)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : new EmptyGlyph(var6 / this.oversample));
       }
    }
 
@@ -153,7 +153,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    static class GlyphEntry {
       final int index;
       @Nullable
-      volatile GlyphInfo glyph;
+      volatile UnbakedGlyph glyph;
 
       GlyphEntry(int var1) {
          super();
@@ -161,30 +161,30 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       }
    }
 
-   class Glyph implements GlyphInfo {
+   class Glyph implements UnbakedGlyph {
       final int width;
       final int height;
       final float bearingX;
       final float bearingY;
-      private final float advance;
+      private final GlyphInfo info;
       final int index;
 
       Glyph(final float var2, final float var3, final int var4, final int var5, final float var6, final int var7) {
          super();
          this.width = var4;
          this.height = var5;
-         this.advance = var6 / TrueTypeGlyphProvider.this.oversample;
+         this.info = GlyphInfo.simple(var6 / TrueTypeGlyphProvider.this.oversample);
          this.bearingX = var2 / TrueTypeGlyphProvider.this.oversample;
          this.bearingY = var3 / TrueTypeGlyphProvider.this.oversample;
          this.index = var7;
       }
 
-      public float getAdvance() {
-         return this.advance;
+      public GlyphInfo info() {
+         return this.info;
       }
 
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
+      public BakedGlyph bake(UnbakedGlyph.Stitcher var1) {
+         return var1.stitch(this.info, new GlyphBitmap() {
             public int getPixelWidth() {
                return Glyph.this.width;
             }

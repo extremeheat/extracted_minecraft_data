@@ -30,7 +30,7 @@ public class SpawnerBlock extends BaseEntityBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.MOB_SPAWNER, var1.isClientSide ? SpawnerBlockEntity::clientTick : SpawnerBlockEntity::serverTick);
+      return createTickerHelper(var3, BlockEntityType.MOB_SPAWNER, var1.isClientSide() ? SpawnerBlockEntity::clientTick : SpawnerBlockEntity::serverTick);
    }
 
    protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {

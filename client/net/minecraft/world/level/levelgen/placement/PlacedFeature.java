@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -15,6 +16,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.FeatureCountTracker;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<PlacementModifier> placement) {
@@ -49,6 +51,9 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<Placem
       var4.forEach((var4x) -> {
          if (var7.place(var1.getLevel(), var1.generator(), var2, var4x)) {
             var8.setTrue();
+            if (SharedConstants.DEBUG_FEATURE_COUNT) {
+               FeatureCountTracker.featurePlaced(var1.getLevel().getLevel(), var7, var1.topFeature());
+            }
          }
 
       });
