@@ -141,14 +141,14 @@ public class CropBlock extends VegetationBlock implements BonemealableBlock {
       return var0.getRawBrightness(var1, 0) >= 8;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (var2 instanceof ServerLevel var6) {
-         if (var4 instanceof Ravager && var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            var6.destroyBlock(var3, true, var4);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      if (var2 instanceof ServerLevel var7) {
+         if (var4 instanceof Ravager && var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var7.destroyBlock(var3, true, var4);
          }
       }
 
-      super.entityInside(var1, var2, var3, var4, var5);
+      super.entityInside(var1, var2, var3, var4, var5, var6);
    }
 
    protected ItemLike getBaseSeedId() {

@@ -77,18 +77,18 @@ public class SweetBerryBushBlock extends VegetationBlock implements Bonemealable
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var4 instanceof LivingEntity && var4.getType() != EntityType.FOX && var4.getType() != EntityType.BEE) {
          var4.makeStuckInBlock(var1, new Vec3(0.800000011920929, 0.75, 0.800000011920929));
          if (var2 instanceof ServerLevel) {
-            ServerLevel var6 = (ServerLevel)var2;
+            ServerLevel var7 = (ServerLevel)var2;
             if ((Integer)var1.getValue(AGE) != 0) {
-               Vec3 var7 = var4.isClientAuthoritative() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
-               if (var7.horizontalDistanceSqr() > 0.0) {
-                  double var8 = Math.abs(var7.x());
-                  double var10 = Math.abs(var7.z());
-                  if (var8 >= 0.003000000026077032 || var10 >= 0.003000000026077032) {
-                     var4.hurtServer(var6, var2.damageSources().sweetBerryBush(), 1.0F);
+               Vec3 var8 = var4.isClientAuthoritative() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
+               if (var8.horizontalDistanceSqr() > 0.0) {
+                  double var9 = Math.abs(var8.x());
+                  double var11 = Math.abs(var8.z());
+                  if (var9 >= 0.003000000026077032 || var11 >= 0.003000000026077032) {
+                     var4.hurtServer(var7, var2.damageSources().sweetBerryBush(), 1.0F);
                   }
                }
 

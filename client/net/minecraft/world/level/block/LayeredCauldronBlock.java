@@ -64,12 +64,12 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
       return FILLED_SHAPES[(Integer)var1.getValue(LEVEL) - 1];
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (var2 instanceof ServerLevel var6) {
-         BlockPos var7 = var3.immutable();
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      if (var2 instanceof ServerLevel var7) {
+         BlockPos var8 = var3.immutable();
          var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var5x) -> {
-            if (var5x.isOnFire() && var5x.mayInteract(var6, var7)) {
-               this.handleEntityOnFireInside(var1, var2, var7);
+            if (var5x.isOnFire() && var5x.mayInteract(var7, var8)) {
+               this.handleEntityOnFireInside(var1, var2, var8);
             }
 
          });

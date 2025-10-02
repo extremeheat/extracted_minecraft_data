@@ -727,7 +727,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          ProfilerFiller var3 = Profiler.get();
          var3.push("move");
          if (this.stuckSpeedMultiplier.lengthSqr() > 1.0E-7) {
-            var2 = var2.multiply(this.stuckSpeedMultiplier);
+            if (var1 != MoverType.PISTON) {
+               var2 = var2.multiply(this.stuckSpeedMultiplier);
+            }
+
             this.stuckSpeedMultiplier = Vec3.ZERO;
             this.setDeltaMovement(Vec3.ZERO);
          }
@@ -1207,63 +1210,66 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
 
    private int checkInsideBlocks(Vec3 var1, Vec3 var2, InsideBlockEffectApplier.StepBasedCollector var3, LongSet var4, int var5) {
       AABB var6;
+      boolean var7;
       boolean var10000;
-      label12: {
+      label16: {
          var6 = this.makeBoundingBox(var2).deflate(9.999999747378752E-6);
-         Level var9 = this.level;
-         if (var9 instanceof ServerLevel var8) {
-            if (var8.getServer().debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS)) {
+         var7 = var1.distanceToSqr(var2) > Mth.square(0.9999900000002526);
+         Level var10 = this.level;
+         if (var10 instanceof ServerLevel var9) {
+            if (var9.getServer().debugSubscribers().hasAnySubscriberFor(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS)) {
                var10000 = true;
-               break label12;
+               break label16;
             }
          }
 
          var10000 = false;
       }
 
-      boolean var7 = var10000;
-      AtomicInteger var10 = new AtomicInteger();
-      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var6, (var8x, var9x) -> {
+      boolean var8 = var10000;
+      AtomicInteger var11 = new AtomicInteger();
+      BlockGetter.forEachBlockIntersectedBetween(var1, var2, var6, (var10x, var11x) -> {
          if (!this.isAlive()) {
             return false;
-         } else if (var9x >= var5) {
+         } else if (var11x >= var5) {
             return false;
          } else {
-            var10.set(var9x);
-            BlockState var10x = this.level().getBlockState(var8x);
-            if (var10x.isAir()) {
-               if (var7) {
-                  this.debugBlockIntersection((ServerLevel)this.level(), var8x.immutable(), false, false);
+            var11.set(var11x);
+            BlockState var12 = this.level().getBlockState(var10x);
+            if (var12.isAir()) {
+               if (var8) {
+                  this.debugBlockIntersection((ServerLevel)this.level(), var10x.immutable(), false, false);
                }
 
                return true;
             } else {
-               VoxelShape var11 = var10x.getEntityInsideCollisionShape(this.level(), var8x, this);
-               boolean var12 = var11 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var11.move(new Vec3(var8x)).toAabbs());
-               boolean var13 = this.collidedWithFluid(var10x.getFluidState(), var8x, var1, var2);
-               if ((var12 || var13) && var4.add(var8x.asLong())) {
-                  if (var12) {
+               VoxelShape var13 = var12.getEntityInsideCollisionShape(this.level(), var10x, this);
+               boolean var14 = var13 == Shapes.block() || this.collidedWithShapeMovingFrom(var1, var2, var13.move(new Vec3(var10x)).toAabbs());
+               boolean var15 = this.collidedWithFluid(var12.getFluidState(), var10x, var1, var2);
+               if ((var14 || var15) && var4.add(var10x.asLong())) {
+                  if (var14) {
                      try {
-                        var3.advanceStep(var9x);
-                        var10x.entityInside(this.level(), var8x, this, var3);
-                        this.onInsideBlock(var10x);
-                     } catch (Throwable var18) {
-                        CrashReport var15 = CrashReport.forThrowable(var18, "Colliding entity with block");
-                        CrashReportCategory var16 = var15.addCategory("Block being collided with");
-                        CrashReportCategory.populateBlockDetails(var16, this.level(), var8x, var10x);
-                        CrashReportCategory var17 = var15.addCategory("Entity being checked for collision");
-                        this.fillCrashReportCategory(var17);
-                        throw new ReportedException(var15);
+                        boolean var16 = var7 || var6.intersects(var10x);
+                        var3.advanceStep(var11x);
+                        var12.entityInside(this.level(), var10x, this, var3, var16);
+                        this.onInsideBlock(var12);
+                     } catch (Throwable var20) {
+                        CrashReport var17 = CrashReport.forThrowable(var20, "Colliding entity with block");
+                        CrashReportCategory var18 = var17.addCategory("Block being collided with");
+                        CrashReportCategory.populateBlockDetails(var18, this.level(), var10x, var12);
+                        CrashReportCategory var19 = var17.addCategory("Entity being checked for collision");
+                        this.fillCrashReportCategory(var19);
+                        throw new ReportedException(var17);
                      }
                   }
 
-                  if (var13) {
-                     var3.advanceStep(var9x);
-                     var10x.getFluidState().entityInside(this.level(), var8x, this, var3);
+                  if (var15) {
+                     var3.advanceStep(var11x);
+                     var12.getFluidState().entityInside(this.level(), var10x, this, var3);
                   }
 
-                  if (var7) {
-                     this.debugBlockIntersection((ServerLevel)this.level(), var8x.immutable(), var12, var13);
+                  if (var8) {
+                     this.debugBlockIntersection((ServerLevel)this.level(), var10x.immutable(), var14, var15);
                   }
 
                   return true;
@@ -1273,7 +1279,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
             }
          }
       });
-      return var10.get() + 1;
+      return var11.get() + 1;
    }
 
    private void debugBlockIntersection(ServerLevel var1, BlockPos var2, boolean var3, boolean var4) {

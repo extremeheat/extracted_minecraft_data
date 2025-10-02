@@ -152,7 +152,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (!var2.isClientSide()) {
          if (var1.getValue(TILT) == Tilt.NONE && canEntityTilt(var3, var4) && !var2.hasNeighborSignal(var3)) {
             this.setTiltAndScheduleTick(var1, var2, var3, Tilt.UNSTABLE, (SoundEvent)null);

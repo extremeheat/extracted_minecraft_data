@@ -47,13 +47,15 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(DRAG_DOWN, true));
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      BlockState var6 = var2.getBlockState(var3.above());
-      boolean var7 = var6.getCollisionShape(var2, var3).isEmpty() && var6.getFluidState().isEmpty();
-      if (var7) {
-         var4.onAboveBubbleColumn((Boolean)var1.getValue(DRAG_DOWN), var3);
-      } else {
-         var4.onInsideBubbleColumn((Boolean)var1.getValue(DRAG_DOWN));
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      if (var6) {
+         BlockState var7 = var2.getBlockState(var3.above());
+         boolean var8 = var7.getCollisionShape(var2, var3).isEmpty() && var7.getFluidState().isEmpty();
+         if (var8) {
+            var4.onAboveBubbleColumn((Boolean)var1.getValue(DRAG_DOWN), var3);
+         } else {
+            var4.onInsideBubbleColumn((Boolean)var1.getValue(DRAG_DOWN));
+         }
       }
 
    }

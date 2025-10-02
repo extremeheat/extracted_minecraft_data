@@ -39,7 +39,7 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
       return FILLED_SHAPE;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       var5.apply(InsideBlockEffectType.CLEAR_FREEZE);
       var5.apply(InsideBlockEffectType.LAVA_IGNITE);
       var5.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);

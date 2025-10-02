@@ -27,8 +27,8 @@ public class WaterlilyBlock extends VegetationBlock {
       super(var1);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      super.entityInside(var1, var2, var3, var4, var5);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      super.entityInside(var1, var2, var3, var4, var5, var6);
       if (var2 instanceof ServerLevel && var4 instanceof AbstractBoat) {
          var2.destroyBlock(new BlockPos(var3), true, var4);
       }

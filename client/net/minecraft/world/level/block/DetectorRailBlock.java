@@ -46,7 +46,7 @@ public class DetectorRailBlock extends BaseRailBlock {
       return true;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (!var2.isClientSide()) {
          if (!(Boolean)var1.getValue(POWERED)) {
             this.checkPressed(var2, var3, var1);

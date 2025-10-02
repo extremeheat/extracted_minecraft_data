@@ -141,10 +141,10 @@ public class HopperBlock extends BaseEntityBlock {
       var1.add(FACING, ENABLED);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var6);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      BlockEntity var7 = var2.getBlockEntity(var3);
+      if (var7 instanceof HopperBlockEntity) {
+         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var7);
       }
 
    }

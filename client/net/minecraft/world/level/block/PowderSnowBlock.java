@@ -56,23 +56,23 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
          var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
          if (var2.isClientSide()) {
-            RandomSource var6 = var2.getRandom();
-            boolean var7 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
-            if (var7 && var6.nextBoolean()) {
-               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var6, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var6, -1.0F, 1.0F) * 0.083333336F));
+            RandomSource var7 = var2.getRandom();
+            boolean var8 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
+            if (var8 && var7.nextBoolean()) {
+               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var7, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var7, -1.0F, 1.0F) * 0.083333336F));
             }
          }
       }
 
-      BlockPos var8 = var3.immutable();
+      BlockPos var9 = var3.immutable();
       var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var2x) -> {
          if (var2 instanceof ServerLevel var3) {
-            if (var2x.isOnFire() && (var3.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var8)) {
-               var2.destroyBlock(var8, false);
+            if (var2x.isOnFire() && (var3.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var9)) {
+               var2.destroyBlock(var9, false);
             }
          }
 

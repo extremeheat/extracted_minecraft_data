@@ -102,22 +102,29 @@ public class ItemFrame extends HangingEntity {
    }
 
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
-      float var3 = 0.46875F;
-      Vec3 var4 = Vec3.atCenterOf(var1).relative(var2, -0.46875);
-      boolean var5 = this.hasFramedMap();
-      float var6 = var5 ? 1.0F : 0.75F;
-      float var7 = var5 ? 1.0F : 0.75F;
+      return this.createBoundingBox(var1, var2, this.hasFramedMap());
+   }
+
+   protected AABB getPopBox() {
+      return this.createBoundingBox(this.pos, this.getDirection(), false);
+   }
+
+   private AABB createBoundingBox(BlockPos var1, Direction var2, boolean var3) {
+      float var4 = 0.46875F;
+      Vec3 var5 = Vec3.atCenterOf(var1).relative(var2, -0.46875);
+      float var6 = var3 ? 1.0F : 0.75F;
+      float var7 = var3 ? 1.0F : 0.75F;
       Direction.Axis var8 = var2.getAxis();
       double var9 = var8 == Direction.Axis.X ? 0.0625 : (double)var6;
       double var11 = var8 == Direction.Axis.Y ? 0.0625 : (double)var7;
       double var13 = var8 == Direction.Axis.Z ? 0.0625 : (double)var6;
-      return AABB.ofSize(var4, var9, var11, var13);
+      return AABB.ofSize(var5, var9, var11, var13);
    }
 
    public boolean survives() {
       if (this.fixed) {
          return true;
-      } else if (!this.level().noCollision(this)) {
+      } else if (!this.level().noCollision(this, this.getPopBox())) {
          return false;
       } else {
          BlockState var1 = this.level().getBlockState(this.pos.relative(this.getDirection().getOpposite()));

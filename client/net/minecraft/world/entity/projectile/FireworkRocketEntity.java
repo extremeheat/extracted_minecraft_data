@@ -191,7 +191,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
-      this.level().getBlockState(var2).entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP);
+      this.level().getBlockState(var2).entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP, true);
       Level var4 = this.level();
       if (var4 instanceof ServerLevel var3) {
          if (this.hasExplosion()) {

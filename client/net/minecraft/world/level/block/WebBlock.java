@@ -22,14 +22,14 @@ public class WebBlock extends Block {
       super(var1);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      Vec3 var6 = new Vec3(0.25, 0.05000000074505806, 0.25);
-      if (var4 instanceof LivingEntity var7) {
-         if (var7.hasEffect(MobEffects.WEAVING)) {
-            var6 = new Vec3(0.5, 0.25, 0.5);
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      Vec3 var7 = new Vec3(0.25, 0.05000000074505806, 0.25);
+      if (var4 instanceof LivingEntity var8) {
+         if (var8.hasEffect(MobEffects.WEAVING)) {
+            var7 = new Vec3(0.5, 0.25, 0.5);
          }
       }
 
-      var4.makeStuckInBlock(var1, var6);
+      var4.makeStuckInBlock(var1, var7);
    }
 }
