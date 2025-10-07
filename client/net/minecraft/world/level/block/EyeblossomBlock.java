@@ -93,10 +93,10 @@ public class EyeblossomBlock extends FlowerBlock {
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
-      if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var6) {
-         if (Bee.attractsBees(var1) && !var6.hasEffect(MobEffects.POISON)) {
-            var6.addEffect(this.getBeeInteractionEffect());
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
+      if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var7) {
+         if (Bee.attractsBees(var1) && !var7.hasEffect(MobEffects.POISON)) {
+            var7.addEffect(this.getBeeInteractionEffect());
          }
       }
 

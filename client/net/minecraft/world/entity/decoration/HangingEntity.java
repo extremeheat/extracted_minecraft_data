@@ -76,7 +76,7 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    protected abstract AABB calculateBoundingBox(BlockPos var1, Direction var2);
 
    public boolean survives() {
-      if (!this.level().noCollision(this)) {
+      if (!this.level().noCollision(this, this.getPopBox())) {
          return false;
       } else {
          boolean var1 = BlockPos.betweenClosedStream(this.calculateSupportBox()).allMatch((var1x) -> {
@@ -97,7 +97,11 @@ public abstract class HangingEntity extends BlockAttachedEntity {
          boolean var4 = var2x.getDirection() == this.getDirection();
          return var2x != this && (var3 || var4);
       };
-      return !this.level().hasEntities(EntityTypeTest.forClass(HangingEntity.class), this.getBoundingBox(), var2);
+      return !this.level().hasEntities(EntityTypeTest.forClass(HangingEntity.class), this.getPopBox(), var2);
+   }
+
+   protected AABB getPopBox() {
+      return this.getBoundingBox();
    }
 
    public abstract void playPlacementSound();

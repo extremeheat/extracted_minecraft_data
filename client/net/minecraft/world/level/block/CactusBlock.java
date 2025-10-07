@@ -110,7 +110,7 @@ public class CactusBlock extends Block {
       return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       var4.hurt(var2.damageSources().cactus(), 1.0F);
    }
 

@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4554;
+   public static final int WORLD_VERSION = 4556;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,7 +26,7 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 773;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 273;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 274;
    public static final int SNBT_NAG_VERSION = 4531;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;

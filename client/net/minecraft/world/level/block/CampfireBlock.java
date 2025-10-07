@@ -96,12 +96,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return InteractionResult.TRY_WITH_EMPTY_HAND;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if ((Boolean)var1.getValue(LIT) && var4 instanceof LivingEntity) {
          var4.hurt(var2.damageSources().campfire(), (float)this.fireDamage);
       }
 
-      super.entityInside(var1, var2, var3, var4, var5);
+      super.entityInside(var1, var2, var3, var4, var5, var6);
    }
 
    @Nullable

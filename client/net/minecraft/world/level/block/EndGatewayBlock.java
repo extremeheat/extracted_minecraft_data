@@ -79,14 +79,14 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       return false;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var4.canUsePortal(false)) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (!var2.isClientSide() && var6 instanceof TheEndGatewayBlockEntity) {
-            TheEndGatewayBlockEntity var7 = (TheEndGatewayBlockEntity)var6;
-            if (!var7.isCoolingDown()) {
+         BlockEntity var7 = var2.getBlockEntity(var3);
+         if (!var2.isClientSide() && var7 instanceof TheEndGatewayBlockEntity) {
+            TheEndGatewayBlockEntity var8 = (TheEndGatewayBlockEntity)var7;
+            if (!var8.isCoolingDown()) {
                var4.setAsInsidePortal(this, var3);
-               TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var7);
+               TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var8);
             }
          }
       }

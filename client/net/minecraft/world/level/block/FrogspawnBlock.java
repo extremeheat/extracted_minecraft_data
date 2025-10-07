@@ -71,7 +71,7 @@ public class FrogspawnBlock extends Block {
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var4.getType().equals(EntityType.FALLING_BLOCK)) {
          this.destroyBlock(var2, var3);
       }

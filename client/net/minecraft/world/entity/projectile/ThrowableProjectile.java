@@ -85,7 +85,7 @@ public abstract class ThrowableProjectile extends Projectile {
          for(BlockPos var2 : BlockPos.betweenClosed(this.getBoundingBox())) {
             BlockState var3 = this.level().getBlockState(var2);
             if (var3.is(Blocks.BUBBLE_COLUMN)) {
-               var3.entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP);
+               var3.entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP, true);
             }
          }
       }

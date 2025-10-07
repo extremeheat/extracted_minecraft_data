@@ -64,11 +64,11 @@ public abstract class BasePressurePlateBlock extends Block {
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (!var2.isClientSide()) {
-         int var6 = this.getSignalForState(var1);
-         if (var6 == 0) {
-            this.checkPressed(var4, var2, var3, var1, var6);
+         int var7 = this.getSignalForState(var1);
+         if (var7 == 0) {
+            this.checkPressed(var4, var2, var3, var1, var7);
          }
 
       }

@@ -752,6 +752,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   ProfilerFiller var73 = Profiler.get();
                   var73.push("tick");
                   this.tickFrame.start();
+                  var73.push("scheduledPacketProcessing");
+                  this.packetProcessor.processQueuedPackets();
+                  var73.pop();
                   this.tickServer(var72 ? () -> false : this::haveTime);
                   this.tickFrame.end();
                   var73.popPush("nextTickWait");

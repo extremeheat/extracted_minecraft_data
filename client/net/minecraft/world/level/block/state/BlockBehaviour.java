@@ -348,7 +348,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return 0;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
    }
 
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
@@ -1104,8 +1104,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().randomTick(this.asState(), var1, var2, var3);
       }
 
-      public void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
-         this.getBlock().entityInside(this.asState(), var1, var2, var3, var4);
+      public void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4, boolean var5) {
+         this.getBlock().entityInside(this.asState(), var1, var2, var3, var4, var5);
       }
 
       public void spawnAfterBreak(ServerLevel var1, BlockPos var2, ItemStack var3, boolean var4) {

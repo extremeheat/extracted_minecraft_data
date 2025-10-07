@@ -115,7 +115,7 @@ public abstract class BaseFireBlock extends Block {
 
    protected abstract boolean canBurn(BlockState var1);
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       var5.apply(InsideBlockEffectType.CLEAR_FREEZE);
       var5.apply(InsideBlockEffectType.FIRE_IGNITE);
       var5.runAfter(InsideBlockEffectType.FIRE_IGNITE, (var1x) -> var1x.hurt(var1x.level().damageSources().inFire(), this.fireDamage));

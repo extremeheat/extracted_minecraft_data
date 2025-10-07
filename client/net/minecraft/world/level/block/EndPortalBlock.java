@@ -53,12 +53,12 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
       return var1.getShape(var2, var3);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var4.canUsePortal(false)) {
          if (!var2.isClientSide() && var2.dimension() == Level.END && var4 instanceof ServerPlayer) {
-            ServerPlayer var6 = (ServerPlayer)var4;
-            if (!var6.seenCredits) {
-               var6.showEndCredits();
+            ServerPlayer var7 = (ServerPlayer)var4;
+            if (!var7.seenCredits) {
+               var7.showEndCredits();
                return;
             }
          }
