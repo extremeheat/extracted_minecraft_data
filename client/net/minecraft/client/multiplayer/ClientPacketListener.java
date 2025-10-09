@@ -70,6 +70,7 @@ import net.minecraft.client.resources.sounds.SnifferSoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.client.waypoints.ClientWaypointManager;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
@@ -248,6 +249,9 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -341,32 +345,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private static final Component BUTTON_SUGGEST_COMMAND = Component.translatable("multiplayer.confirm_command.suggest_command");
    private static final int PENDING_OFFSET_THRESHOLD = 64;
    public static final int TELEPORT_INTERPOLATION_THRESHOLD = 64;
-   private static final ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider> COMMAND_NODE_BUILDER = new ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider>() {
-      public ArgumentBuilder<ClientSuggestionProvider, ?> createLiteral(String var1) {
-         return LiteralArgumentBuilder.literal(var1);
-      }
-
-      public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable ResourceLocation var3) {
-         RequiredArgumentBuilder var4 = RequiredArgumentBuilder.argument(var1, var2);
-         if (var3 != null) {
-            var4.suggests(SuggestionProviders.getProvider(var3));
-         }
-
-         return var4;
-      }
-
-      public ArgumentBuilder<ClientSuggestionProvider, ?> configure(ArgumentBuilder<ClientSuggestionProvider, ?> var1, boolean var2, boolean var3) {
-         if (var2) {
-            var1.executes((var0) -> 0);
-         }
-
-         if (var3) {
-            var1.requires(ClientSuggestionProvider::allowsRestrictedCommands);
-         }
-
-         return var1;
-      }
-   };
+   private static final Permission RESTRICTED_COMMAND = Permission.Atom.create("client/commands/restricted");
+   static final PermissionCheck RESTRICTED_COMMAND_CHECK;
+   private static final PermissionSet ALLOW_RESTRICTED_COMMANDS;
+   private static final ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider> COMMAND_NODE_BUILDER;
    private final GameProfile localGameProfile;
    private ClientLevel level;
    private ClientLevel.ClientLevelData levelData;
@@ -430,8 +412,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          })).asInt();
       this.enabledFeatures = var3.enabledFeatures();
       this.advancements = new ClientAdvancements(var1, this.telemetryManager);
-      this.suggestionsProvider = new ClientSuggestionProvider(this, var1, true);
-      this.restrictedSuggestionsProvider = new ClientSuggestionProvider(this, var1, false);
+      PermissionSet var5 = (var1x) -> {
+         LocalPlayer var2 = var1.player;
+         return var2 != null && var2.permissions().hasPermission(var1x);
+      };
+      this.suggestionsProvider = new ClientSuggestionProvider(this, var1, var5.union(ALLOW_RESTRICTED_COMMANDS));
+      this.restrictedSuggestionsProvider = new ClientSuggestionProvider(this, var1, PermissionSet.NO_PERMISSIONS);
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.debugSubscriber = new ClientDebugSubscriber(this, var1.getDebugOverlay());
       if (var3.chatState() != null) {
@@ -2596,6 +2582,37 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public DebugValueAccess createDebugValueAccess() {
       return this.debugSubscriber.createDebugValueAccess(this.level);
+   }
+
+   static {
+      RESTRICTED_COMMAND_CHECK = new PermissionCheck.Require(RESTRICTED_COMMAND);
+      ALLOW_RESTRICTED_COMMANDS = (var0) -> var0.equals(RESTRICTED_COMMAND);
+      COMMAND_NODE_BUILDER = new ClientboundCommandsPacket.NodeBuilder<ClientSuggestionProvider>() {
+         public ArgumentBuilder<ClientSuggestionProvider, ?> createLiteral(String var1) {
+            return LiteralArgumentBuilder.literal(var1);
+         }
+
+         public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable ResourceLocation var3) {
+            RequiredArgumentBuilder var4 = RequiredArgumentBuilder.argument(var1, var2);
+            if (var3 != null) {
+               var4.suggests(SuggestionProviders.getProvider(var3));
+            }
+
+            return var4;
+         }
+
+         public ArgumentBuilder<ClientSuggestionProvider, ?> configure(ArgumentBuilder<ClientSuggestionProvider, ?> var1, boolean var2, boolean var3) {
+            if (var2) {
+               var1.executes((var0) -> 0);
+            }
+
+            if (var3) {
+               var1.requires(Commands.hasPermission(ClientPacketListener.RESTRICTED_COMMAND_CHECK));
+            }
+
+            return var1;
+         }
+      };
    }
 
    static enum CommandCheckResult {

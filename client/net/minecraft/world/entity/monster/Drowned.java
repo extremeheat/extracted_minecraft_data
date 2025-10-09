@@ -17,6 +17,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -40,6 +41,7 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -55,9 +57,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
+   private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
+   private static final Logger log = LoggerFactory.getLogger(Drowned.class);
    boolean searchingForLand;
 
    public Drowned(EntityType<? extends Drowned> var1, Level var2) {
@@ -94,6 +100,16 @@ public class Drowned extends Zombie implements RangedAttackMob {
       if (this.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && var1.getRandom().nextFloat() < 0.03F) {
          this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.NAUTILUS_SHELL));
          this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
+      }
+
+      if ((var3 == EntitySpawnReason.NATURAL || var3 == EntitySpawnReason.STRUCTURE) && this.getMainHandItem().is(Items.TRIDENT) && var1.getRandom().nextFloat() < 0.5F && !this.isBaby() && !var1.getBiome(this.blockPosition()).is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
+         ZombieNautilus var5 = EntityType.ZOMBIE_NAUTILUS.create(this.level(), EntitySpawnReason.JOCKEY);
+         if (var5 != null) {
+            var5.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+            var5.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
+            this.startRiding(var5, false, false);
+            var1.addFreshEntity(var5);
+         }
       }
 
       return var4;
@@ -209,7 +225,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public boolean isVisuallySwimming() {
-      return this.isSwimming();
+      return this.isSwimming() && !this.isPassenger();
    }
 
    protected boolean closeToNextPos() {
@@ -249,6 +265,15 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public void setSearchingForLand(boolean var1) {
       this.searchingForLand = var1;
+   }
+
+   public void rideTick() {
+      super.rideTick();
+      Entity var2 = this.getControlledVehicle();
+      if (var2 instanceof PathfinderMob var1) {
+         this.yBodyRot = var1.yBodyRot;
+      }
+
    }
 
    static class DrownedTridentAttackGoal extends RangedAttackGoal {

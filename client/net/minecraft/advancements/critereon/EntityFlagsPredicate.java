@@ -7,10 +7,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
-public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isFlying, Optional<Boolean> isBaby) {
-   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new));
+public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isFlying, Optional<Boolean> isBaby, Optional<Boolean> isInWater, Optional<Boolean> isFallFlying) {
+   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby), Codec.BOOL.optionalFieldOf("is_in_water").forGetter(EntityFlagsPredicate::isInWater), Codec.BOOL.optionalFieldOf("is_fall_flying").forGetter(EntityFlagsPredicate::isFallFlying)).apply(var0, EntityFlagsPredicate::new));
 
-   public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7) {
+   public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7, Optional<Boolean> var8, Optional<Boolean> var9) {
       super();
       this.isOnGround = var1;
       this.isOnFire = var2;
@@ -19,6 +19,8 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
       this.isSwimming = var5;
       this.isFlying = var6;
       this.isBaby = var7;
+      this.isInWater = var8;
+      this.isFallFlying = var9;
    }
 
    public boolean matches(Entity var1) {
@@ -35,24 +37,24 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
       } else {
          if (this.isFlying.isPresent()) {
             boolean var10000;
-            label54: {
-               label53: {
+            label68: {
+               label67: {
                   if (var1 instanceof LivingEntity) {
                      LivingEntity var4 = (LivingEntity)var1;
                      if (var4.isFallFlying()) {
-                        break label53;
+                        break label67;
                      }
 
                      if (var4 instanceof Player) {
                         Player var3 = (Player)var4;
                         if (var3.getAbilities().flying) {
-                           break label53;
+                           break label67;
                         }
                      }
                   }
 
                   var10000 = false;
-                  break label54;
+                  break label68;
                }
 
                var10000 = true;
@@ -64,14 +66,25 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
             }
          }
 
-         if (this.isBaby.isPresent() && var1 instanceof LivingEntity) {
-            LivingEntity var5 = (LivingEntity)var1;
-            if (var5.isBaby() != (Boolean)this.isBaby.get()) {
-               return false;
+         if (this.isInWater.isPresent() && var1.isInWater() != (Boolean)this.isInWater.get()) {
+            return false;
+         } else {
+            if (this.isFallFlying.isPresent() && var1 instanceof LivingEntity) {
+               LivingEntity var5 = (LivingEntity)var1;
+               if (var5.isFallFlying() != (Boolean)this.isFallFlying.get()) {
+                  return false;
+               }
             }
-         }
 
-         return true;
+            if (this.isBaby.isPresent() && var1 instanceof LivingEntity) {
+               LivingEntity var6 = (LivingEntity)var1;
+               if (var6.isBaby() != (Boolean)this.isBaby.get()) {
+                  return false;
+               }
+            }
+
+            return true;
+         }
       }
    }
 
@@ -83,6 +96,8 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
       private Optional<Boolean> isSwimming = Optional.empty();
       private Optional<Boolean> isFlying = Optional.empty();
       private Optional<Boolean> isBaby = Optional.empty();
+      private Optional<Boolean> isInWater = Optional.empty();
+      private Optional<Boolean> isFallFlying = Optional.empty();
 
       public Builder() {
          super();
@@ -127,8 +142,18 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
          return this;
       }
 
+      public Builder setIsInWater(Boolean var1) {
+         this.isInWater = Optional.of(var1);
+         return this;
+      }
+
+      public Builder setIsFallFlying(Boolean var1) {
+         this.isFallFlying = Optional.of(var1);
+         return this;
+      }
+
       public EntityFlagsPredicate build() {
-         return new EntityFlagsPredicate(this.isOnGround, this.isOnFire, this.isCrouching, this.isSprinting, this.isSwimming, this.isFlying, this.isBaby);
+         return new EntityFlagsPredicate(this.isOnGround, this.isOnFire, this.isCrouching, this.isSprinting, this.isSwimming, this.isFlying, this.isBaby, this.isInWater, this.isFallFlying);
       }
    }
 }

@@ -6,6 +6,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -165,7 +166,7 @@ public class BlockItem extends Item {
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.getPermissionLevel() >= 2) {
+      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
          if (var3 != null) {
             return ((BlockEntityType)var3.type()).onlyOpCanSetNbt();

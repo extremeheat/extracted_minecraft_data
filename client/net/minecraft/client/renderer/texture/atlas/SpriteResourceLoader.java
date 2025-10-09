@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
+import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
@@ -25,55 +26,58 @@ public interface SpriteResourceLoader {
    static SpriteResourceLoader create(Set<MetadataSectionType<?>> var0) {
       return (var1, var2) -> {
          Optional var3;
-         List var4;
+         Optional var4;
+         List var5;
          try {
-            ResourceMetadata var5 = var2.metadata();
-            var3 = var5.getSection(AnimationMetadataSection.TYPE);
-            var4 = var5.getTypedSections(var0);
-         } catch (Exception var10) {
-            LOGGER.error("Unable to parse metadata from {}", var1, var10);
+            ResourceMetadata var6 = var2.metadata();
+            var3 = var6.getSection(AnimationMetadataSection.TYPE);
+            var4 = var6.getSection(TextureMetadataSection.TYPE);
+            var5 = var6.getTypedSections(var0);
+         } catch (Exception var11) {
+            LOGGER.error("Unable to parse metadata from {}", var1, var11);
             return null;
          }
 
-         NativeImage var13;
+         NativeImage var14;
          try {
-            InputStream var6 = var2.open();
+            InputStream var7 = var2.open();
 
             try {
-               var13 = NativeImage.read(var6);
-            } catch (Throwable var11) {
-               if (var6 != null) {
+               var14 = NativeImage.read(var7);
+            } catch (Throwable var12) {
+               if (var7 != null) {
                   try {
-                     var6.close();
-                  } catch (Throwable var9) {
-                     var11.addSuppressed(var9);
+                     var7.close();
+                  } catch (Throwable var10) {
+                     var12.addSuppressed(var10);
                   }
                }
 
-               throw var11;
+               throw var12;
             }
 
-            if (var6 != null) {
-               var6.close();
+            if (var7 != null) {
+               var7.close();
             }
-         } catch (IOException var12) {
-            LOGGER.error("Using missing texture, unable to load {}", var1, var12);
+         } catch (IOException var13) {
+            LOGGER.error("Using missing texture, unable to load {}", var1, var13);
             return null;
          }
 
-         FrameSize var14;
+         FrameSize var15;
          if (var3.isPresent()) {
-            var14 = ((AnimationMetadataSection)var3.get()).calculateFrameSize(var13.getWidth(), var13.getHeight());
-            if (!Mth.isMultipleOf(var13.getWidth(), var14.width()) || !Mth.isMultipleOf(var13.getHeight(), var14.height())) {
-               LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var13.getWidth(), var13.getHeight(), var14.width(), var14.height()});
-               var13.close();
+            var15 = ((AnimationMetadataSection)var3.get()).calculateFrameSize(var14.getWidth(), var14.getHeight());
+            if (!Mth.isMultipleOf(var14.getWidth(), var15.width()) || !Mth.isMultipleOf(var14.getHeight(), var15.height())) {
+               LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var14.getWidth(), var14.getHeight(), var15.width(), var15.height()});
+               var14.close();
                return null;
             }
          } else {
-            var14 = new FrameSize(var13.getWidth(), var13.getHeight());
+            var15 = new FrameSize(var14.getWidth(), var14.getHeight());
          }
 
-         return new SpriteContents(var1, var14, var13, var3, var4);
+         boolean var8 = (Boolean)var4.map(TextureMetadataSection::darkenedCutoutMipmap).orElse(false);
+         return new SpriteContents(var1, var15, var14, var3, var5, var8);
       };
    }
 

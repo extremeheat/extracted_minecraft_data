@@ -149,16 +149,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    public void containerTick() {
       super.containerTick();
-      if (this.minecraft != null) {
-         LocalPlayer var1 = this.minecraft.player;
-         if (var1 != null) {
-            this.tryRefreshInvalidatedTabs(var1.connection.enabledFeatures(), this.hasPermissions(var1), var1.level().registryAccess());
-            if (!var1.hasInfiniteMaterials()) {
-               this.minecraft.setScreen(new InventoryScreen(var1));
-            }
+      LocalPlayer var1 = this.minecraft.player;
+      if (var1 != null) {
+         this.tryRefreshInvalidatedTabs(var1.connection.enabledFeatures(), this.hasPermissions(var1), var1.level().registryAccess());
+         if (!var1.hasInfiniteMaterials()) {
+            this.minecraft.setScreen(new InventoryScreen(var1));
          }
-
       }
+
    }
 
    protected void slotClicked(@Nullable Slot var1, int var2, int var3, ClickType var4) {
@@ -305,6 +303,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          this.searchBox.setBordered(false);
          this.searchBox.setVisible(false);
          this.searchBox.setTextColor(-1);
+         this.searchBox.setInvertHighlightedTextColor(false);
          this.addWidget(this.searchBox);
          CreativeModeTab var1 = selectedTab;
          selectedTab = CreativeModeTabs.getDefaultTab();
@@ -321,16 +320,16 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      int var4 = ((ItemPickerMenu)this.menu).getRowIndexForScroll(this.scrollOffs);
-      String var5 = this.searchBox.getValue();
-      this.init(var1, var2, var3);
-      this.searchBox.setValue(var5);
+   public void resize(int var1, int var2) {
+      int var3 = ((ItemPickerMenu)this.menu).getRowIndexForScroll(this.scrollOffs);
+      String var4 = this.searchBox.getValue();
+      this.init(var1, var2);
+      this.searchBox.setValue(var4);
       if (!this.searchBox.getValue().isEmpty()) {
          this.refreshSearchResults();
       }
 
-      this.scrollOffs = ((ItemPickerMenu)this.menu).getScrollForRowIndex(var4);
+      this.scrollOffs = ((ItemPickerMenu)this.menu).getScrollForRowIndex(var3);
       ((ItemPickerMenu)this.menu).scrollTo(this.scrollOffs);
    }
 
@@ -630,9 +629,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.effects.renderEffects(var1, var2, var3);
+      this.effects.render(var1, var2, var3);
       super.render(var1, var2, var3, var4);
-      this.effects.renderTooltip(var1, var2, var3);
 
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(var1, var6, var2, var3)) {

@@ -55,8 +55,7 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
 
    public void setupAnim(S var1) {
       super.setupAnim(var1);
-      float var2 = var1.attackTime;
-      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var2, var1.ageInTicks);
+      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var1);
    }
 
    public void translateToArms(ZombieVillagerRenderState var1, PoseStack var2) {

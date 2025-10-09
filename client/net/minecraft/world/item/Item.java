@@ -42,11 +42,15 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
@@ -57,17 +61,21 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.KineticWeapon;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
@@ -195,10 +203,14 @@ public class Item implements FeatureElement, ItemLike {
          Equippable var6 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
          if (var6 != null && var6.swappable()) {
             return var6.swapWithEquipmentSlot(var4, var2);
+         } else if (var4.has(DataComponents.BLOCKS_ATTACKS)) {
+            var2.startUsingItem(var3);
+            return InteractionResult.CONSUME;
          } else {
-            BlocksAttacks var7 = (BlocksAttacks)var4.get(DataComponents.BLOCKS_ATTACKS);
+            KineticWeapon var7 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
             if (var7 != null) {
                var2.startUsingItem(var3);
+               var7.makeSound(var2);
                return InteractionResult.CONSUME;
             } else {
                return InteractionResult.PASS;
@@ -238,8 +250,10 @@ public class Item implements FeatureElement, ItemLike {
       return 0.0F;
    }
 
+   /** @deprecated */
+   @Deprecated
    @Nullable
-   public DamageSource getDamageSource(LivingEntity var1) {
+   public DamageSource getItemDamageSource(LivingEntity var1) {
       return null;
    }
 
@@ -293,9 +307,10 @@ public class Item implements FeatureElement, ItemLike {
       Consumable var2 = (Consumable)var1.get(DataComponents.CONSUMABLE);
       if (var2 != null) {
          return var2.animation();
+      } else if (var1.has(DataComponents.BLOCKS_ATTACKS)) {
+         return ItemUseAnimation.BLOCK;
       } else {
-         BlocksAttacks var3 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
-         return var3 != null ? ItemUseAnimation.BLOCK : ItemUseAnimation.NONE;
+         return var1.has(DataComponents.KINETIC_WEAPON) ? ItemUseAnimation.SPEAR : ItemUseAnimation.NONE;
       }
    }
 
@@ -304,8 +319,7 @@ public class Item implements FeatureElement, ItemLike {
       if (var3 != null) {
          return var3.consumeTicks();
       } else {
-         BlocksAttacks var4 = (BlocksAttacks)var1.get(DataComponents.BLOCKS_ATTACKS);
-         return var4 != null ? 72000 : 0;
+         return !var1.has(DataComponents.BLOCKS_ATTACKS) && !var1.has(DataComponents.KINETIC_WEAPON) ? 0 : 72000;
       }
    }
 
@@ -384,7 +398,7 @@ public class Item implements FeatureElement, ItemLike {
       @Nullable
       private ResourceKey<Item> id;
       private DependantName<Item, String> descriptionId;
-      private DependantName<Item, ResourceLocation> model;
+      private final DependantName<Item, ResourceLocation> model;
 
       public Properties() {
          super();
@@ -483,6 +497,10 @@ public class Item implements FeatureElement, ItemLike {
          return var1.applySwordProperties(this, var2, var3);
       }
 
+      public Properties spear(ToolMaterial var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
+         return this.durability(var1.durability()).repairable(var1.repairItems()).enchantable(var1.enchantmentValue()).component(DataComponents.DAMAGE_TYPE, new EitherHolder(DamageTypes.SPEAR)).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(2.0F, 4.5F, 0.25F, (int)(var4 * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(var5 * 20.0F), var6), KineticWeapon.Condition.ofAttackerSpeed((int)(var7 * 20.0F), var8), KineticWeapon.Condition.ofRelativeSpeed((int)(var9 * 20.0F), var10), 0.38F, var3, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(2.0F, 4.5F, 0.25F, true, false, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(var2 * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + var1.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.HAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / var2) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
+      }
+
       public Properties spawnEgg(EntityType<?> var1) {
          return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(var1, new CompoundTag()));
       }
@@ -498,6 +516,11 @@ public class Item implements FeatureElement, ItemLike {
       public Properties horseArmor(ArmorMaterial var1) {
          HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
          return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
+      }
+
+      public Properties nautilusArmor(ArmorMaterial var1) {
+         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
       }
 
       public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {

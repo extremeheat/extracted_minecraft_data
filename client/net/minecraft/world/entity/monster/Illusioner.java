@@ -234,7 +234,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          } else if (Illusioner.this.getTarget().getId() == this.lastTargetId) {
             return false;
          } else {
-            return Illusioner.this.level().getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
+            return getServerLevel(Illusioner.this).getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
          }
       }
 

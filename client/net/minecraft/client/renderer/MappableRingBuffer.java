@@ -13,7 +13,7 @@ public class MappableRingBuffer implements AutoCloseable {
    private final int size;
    private int current = 0;
 
-   public MappableRingBuffer(Supplier<String> var1, int var2, int var3) {
+   public MappableRingBuffer(Supplier<String> var1, @GpuBuffer.Usage int var2, int var3) {
       super();
       GpuDevice var4 = RenderSystem.getDevice();
       if ((var2 & 1) == 0 && (var2 & 2) == 0) {

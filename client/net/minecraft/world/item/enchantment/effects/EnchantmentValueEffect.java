@@ -15,6 +15,7 @@ public interface EnchantmentValueEffect {
       Registry.register(var0, (String)"all_of", AllOf.ValueEffects.CODEC);
       Registry.register(var0, (String)"multiply", MultiplyValue.CODEC);
       Registry.register(var0, (String)"remove_binomial", RemoveBinomial.CODEC);
+      Registry.register(var0, (String)"exponential", ScaleExponentially.CODEC);
       return (MapCodec)Registry.register(var0, (String)"set", SetValue.CODEC);
    }
 

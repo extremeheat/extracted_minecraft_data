@@ -65,7 +65,9 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class FriendlyByteBuf extends ByteBuf {
    public static final int DEFAULT_NBT_QUOTA = 2097152;
@@ -442,7 +444,7 @@ public class FriendlyByteBuf extends ByteBuf {
       writeVector3f(this, var1);
    }
 
-   public static void writeVector3f(ByteBuf var0, Vector3f var1) {
+   public static void writeVector3f(ByteBuf var0, Vector3fc var1) {
       var0.writeFloat(var1.x());
       var0.writeFloat(var1.y());
       var0.writeFloat(var1.z());
@@ -460,11 +462,11 @@ public class FriendlyByteBuf extends ByteBuf {
       writeQuaternion(this, var1);
    }
 
-   public static void writeQuaternion(ByteBuf var0, Quaternionf var1) {
-      var0.writeFloat(var1.x);
-      var0.writeFloat(var1.y);
-      var0.writeFloat(var1.z);
-      var0.writeFloat(var1.w);
+   public static void writeQuaternion(ByteBuf var0, Quaternionfc var1) {
+      var0.writeFloat(var1.x());
+      var0.writeFloat(var1.y());
+      var0.writeFloat(var1.z());
+      var0.writeFloat(var1.w());
    }
 
    public static Vec3 readVec3(ByteBuf var0) {

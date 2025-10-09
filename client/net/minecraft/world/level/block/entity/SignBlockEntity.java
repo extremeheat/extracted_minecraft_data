@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -225,7 +226,7 @@ public class SignBlockEntity extends BlockEntity {
    private static CommandSourceStack createCommandSourceStack(@Nullable Player var0, ServerLevel var1, BlockPos var2) {
       String var3 = var0 == null ? "Sign" : var0.getPlainTextName();
       Object var4 = var0 == null ? Component.literal("Sign") : var0.getDisplayName();
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, 2, var3, (Component)var4, var1.getServer(), var0);
+      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(var2), Vec2.ZERO, var1, LevelBasedPermissionSet.GAMEMASTER, var3, (Component)var4, var1.getServer(), var0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

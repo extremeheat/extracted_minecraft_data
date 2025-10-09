@@ -35,7 +35,7 @@ public abstract class NeedleDirectionHelper {
       }
    }
 
-   protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, @Nullable ItemOwner var4);
+   protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4);
 
    protected boolean wobble() {
       return this.wobble;

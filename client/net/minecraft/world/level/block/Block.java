@@ -8,6 +8,10 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -97,10 +101,10 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE = 128;
    public static final int UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS = 256;
    public static final int UPDATE_SKIP_ON_PLACE = 512;
-   public static final int UPDATE_NONE = 260;
-   public static final int UPDATE_ALL = 3;
-   public static final int UPDATE_ALL_IMMEDIATE = 11;
-   public static final int UPDATE_SKIP_ALL_SIDEEFFECTS = 816;
+   public static final @Block.UpdateFlags int UPDATE_NONE = 260;
+   public static final @Block.UpdateFlags int UPDATE_ALL = 3;
+   public static final @Block.UpdateFlags int UPDATE_ALL_IMMEDIATE = 11;
+   public static final @Block.UpdateFlags int UPDATE_SKIP_ALL_SIDEEFFECTS = 816;
    public static final float INDESTRUCTIBLE = -1.0F;
    public static final float INSTANT = 0.0F;
    public static final int UPDATE_LIMIT = 512;
@@ -207,11 +211,11 @@ public class Block extends BlockBehaviour implements ItemLike {
       return var3;
    }
 
-   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, int var4) {
+   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4) {
       updateOrDestroy(var0, var1, var2, var3, var4, 512);
    }
 
-   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
       if (var1 != var0) {
          if (var1.isAir()) {
             if (!var2.isClientSide()) {
@@ -574,5 +578,10 @@ public class Block extends BlockBehaviour implements ItemLike {
       public int hashCode() {
          return System.identityHashCode(this.first) * 31 + System.identityHashCode(this.second);
       }
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface UpdateFlags {
    }
 }

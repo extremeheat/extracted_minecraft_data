@@ -22,6 +22,7 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.FilteredText;
+import net.minecraft.server.permissions.Permissions;
 
 public class MessageArgument implements SignedArgument<Message> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
@@ -107,7 +108,7 @@ public class MessageArgument implements SignedArgument<Message> {
       }
 
       Component resolveComponent(CommandSourceStack var1) throws CommandSyntaxException {
-         return this.toComponent(var1, EntitySelectorParser.allowSelectors(var1));
+         return this.toComponent(var1, var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
       }
 
       public Component toComponent(CommandSourceStack var1, boolean var2) throws CommandSyntaxException {

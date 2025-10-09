@@ -52,12 +52,12 @@ public class PiglinModel extends AbstractPiglinModel<PiglinRenderState> {
 
    }
 
-   protected void setupAttackAnimation(PiglinRenderState var1, float var2) {
-      float var3 = var1.attackTime;
-      if (var3 > 0.0F && var1.armPose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
-         AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1.mainArm, var3, var1.ageInTicks);
+   protected void setupAttackAnimation(PiglinRenderState var1) {
+      float var2 = var1.attackTime;
+      if (var2 > 0.0F && var1.armPose == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
+         AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1.mainArm, var2, var1.ageInTicks);
       } else {
-         super.setupAttackAnimation(var1, var2);
+         super.setupAttackAnimation(var1);
       }
    }
 

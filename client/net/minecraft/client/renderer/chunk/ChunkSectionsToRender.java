@@ -5,6 +5,9 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.EnumMap;
 import java.util.List;
@@ -30,21 +33,22 @@ public record ChunkSectionsToRender(EnumMap<ChunkSectionLayer, List<RenderPass.D
       Minecraft var6 = Minecraft.getInstance();
       boolean var7 = SharedConstants.DEBUG_HOTKEYS && var6.wireframe;
       RenderTarget var8 = var1.outputTarget();
+      GpuSampler var9 = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.NEAREST);
 
-      try (RenderPass var9 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var8.getColorTextureView(), OptionalInt.empty(), var8.getDepthTextureView(), OptionalDouble.empty())) {
-         RenderSystem.bindDefaultUniforms(var9);
-         var9.bindSampler("Sampler2", var6.gameRenderer.lightTexture().getTextureView());
+      try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Section layers for " + var1.label(), var8.getColorTextureView(), OptionalInt.empty(), var8.getDepthTextureView(), OptionalDouble.empty())) {
+         RenderSystem.bindDefaultUniforms(var10);
+         var10.bindTexture("Sampler2", var6.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
 
-         for(ChunkSectionLayer var13 : var5) {
-            List var14 = (List)this.drawsPerLayer.get(var13);
-            if (!var14.isEmpty()) {
-               if (var13 == ChunkSectionLayer.TRANSLUCENT) {
-                  var14 = var14.reversed();
+         for(ChunkSectionLayer var14 : var5) {
+            List var15 = (List)this.drawsPerLayer.get(var14);
+            if (!var15.isEmpty()) {
+               if (var14 == ChunkSectionLayer.TRANSLUCENT) {
+                  var15 = var15.reversed();
                }
 
-               var9.setPipeline(var7 ? RenderPipelines.WIREFRAME : var13.pipeline());
-               var9.bindSampler("Sampler0", var13.textureView());
-               var9.drawMultipleIndexed(var14, var3, var4, List.of("DynamicTransforms"), this.dynamicTransforms);
+               var10.setPipeline(var7 ? RenderPipelines.WIREFRAME : var14.pipeline());
+               var10.bindTexture("Sampler0", var14.texture().getTextureView(), var9);
+               var10.drawMultipleIndexed(var15, var3, var4, List.of("DynamicTransforms"), this.dynamicTransforms);
             }
          }
       }

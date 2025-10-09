@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.ScissorState;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class GlRenderPass implements RenderPass {
    protected VertexFormat.IndexType indexType;
    private final ScissorState scissorState;
    protected final HashMap<String, GpuBufferSlice> uniforms;
-   protected final HashMap<String, GpuTextureView> samplers;
+   protected final HashMap<String, TextureViewAndSampler> samplers;
    protected final Set<String> dirtyUniforms;
    protected int pushedDebugGroups;
 
@@ -77,11 +78,11 @@ public class GlRenderPass implements RenderPass {
       this.pipeline = this.encoder.getDevice().getOrCompilePipeline(var1);
    }
 
-   public void bindSampler(String var1, @Nullable GpuTextureView var2) {
-      if (var2 == null) {
+   public void bindTexture(String var1, @Nullable GpuTextureView var2, GpuSampler var3) {
+      if (var3 == null) {
          this.samplers.remove(var1);
       } else {
-         this.samplers.put(var1, var2);
+         this.samplers.put(var1, new TextureViewAndSampler((GlTextureView)var2, (GlSampler)var3));
       }
 
       this.dirtyUniforms.add(var1);
@@ -181,5 +182,13 @@ public class GlRenderPass implements RenderPass {
 
    static {
       VALIDATION = SharedConstants.IS_RUNNING_IN_IDE;
+   }
+
+   protected static record TextureViewAndSampler(GlTextureView view, GlSampler sampler) {
+      protected TextureViewAndSampler(GlTextureView var1, GlSampler var2) {
+         super();
+         this.view = var1;
+         this.sampler = var2;
+      }
    }
 }

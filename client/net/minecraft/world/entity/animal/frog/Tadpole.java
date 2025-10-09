@@ -195,7 +195,7 @@ public class Tadpole extends AbstractFish {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
          this.convertTo(EntityType.FROG, ConversionParams.single(this, false, false), (var2x) -> {
-            var2x.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
+            var2x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
             var2x.setPersistenceRequired();
             var2x.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);

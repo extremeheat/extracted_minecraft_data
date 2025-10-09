@@ -16,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -73,6 +74,8 @@ import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.KineticWeapon;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -98,6 +101,7 @@ import org.slf4j.Logger;
 public final class ItemStack implements DataComponentHolder {
    private static final List<Component> OP_NBT_WARNING;
    private static final Component UNBREAKABLE_TOOLTIP;
+   private static final Component INTANGIBLE_TOOLTIP;
    public static final MapCodec<ItemStack> MAP_CODEC;
    public static final Codec<ItemStack> CODEC;
    public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
@@ -638,6 +642,34 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
+   public static boolean matchesIgnoringComponents(ItemStack var0, ItemStack var1, Predicate<DataComponentType<?>> var2) {
+      if (var0 == var1) {
+         return true;
+      } else if (var0.getCount() != var1.getCount()) {
+         return false;
+      } else if (!var0.is(var1.getItem())) {
+         return false;
+      } else if (var0.isEmpty() && var1.isEmpty()) {
+         return true;
+      } else if (var0.components.size() != var1.components.size()) {
+         return false;
+      } else {
+         for(DataComponentType var4 : var0.components.keySet()) {
+            Object var5 = var0.components.get(var4);
+            Object var6 = var1.components.get(var4);
+            if (var5 == null || var6 == null) {
+               return false;
+            }
+
+            if (!Objects.equals(var5, var6) && !var2.test(var4)) {
+               return false;
+            }
+         }
+
+         return true;
+      }
+   }
+
    public static MapCodec<ItemStack> lenientOptionalFieldOf(String var0) {
       return CODEC.lenientOptionalFieldOf(var0).xmap((var0x) -> (ItemStack)var0x.orElse(EMPTY), (var0x) -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
    }
@@ -841,10 +873,8 @@ public final class ItemStack implements DataComponentHolder {
       this.addToTooltip(DataComponents.PROFILE, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
       this.addAttributeTooltips(var5, var2, var3);
-      if (this.has(DataComponents.UNBREAKABLE) && var2.shows(DataComponents.UNBREAKABLE)) {
-         var5.accept(UNBREAKABLE_TOOLTIP);
-      }
-
+      this.addUnitComponentToTooltip(DataComponents.INTANGIBLE_PROJECTILE, INTANGIBLE_TOOLTIP, var2, var5);
+      this.addUnitComponentToTooltip(DataComponents.UNBREAKABLE, UNBREAKABLE_TOOLTIP, var2, var5);
       this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
       this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
@@ -887,6 +917,13 @@ public final class ItemStack implements DataComponentHolder {
       boolean var10 = this.getItem().shouldPrintOpWarning(this, var3);
       if (var10) {
          OP_NBT_WARNING.forEach(var5);
+      }
+
+   }
+
+   private void addUnitComponentToTooltip(DataComponentType<?> var1, Component var2, TooltipDisplay var3, Consumer<Component> var4) {
+      if (this.has(var1) && var3.shows(var1)) {
+         var4.accept(var2);
       }
 
    }
@@ -1006,6 +1043,10 @@ public final class ItemStack implements DataComponentHolder {
       return var2;
    }
 
+   public SwingAnimation getSwingAnimation() {
+      return (SwingAnimation)this.getOrDefault(DataComponents.SWING_ANIMATION, SwingAnimation.DEFAULT);
+   }
+
    public boolean canPlaceOnBlockInAdventureMode(BlockInWorld var1) {
       AdventureModePredicate var2 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
       return var2 != null && var2.test(var1);
@@ -1066,7 +1107,12 @@ public final class ItemStack implements DataComponentHolder {
          var4.emitParticlesAndSounds(var2.getRandom(), var2, this, 5);
       }
 
-      this.getItem().onUseTick(var1, var2, this, var3);
+      KineticWeapon var5 = (KineticWeapon)this.get(DataComponents.KINETIC_WEAPON);
+      if (var5 != null && !var1.isClientSide()) {
+         var5.damageEntities(this, var3, var2, var2.getUsedItemHand().asEquipmentSlot());
+      } else {
+         this.getItem().onUseTick(var1, var2, this, var3);
+      }
    }
 
    public void onDestroyed(ItemEntity var1) {
@@ -1087,9 +1133,14 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().canDestroyBlock(this, var1, var2, var3, var4);
    }
 
+   public DamageSource getDamageSource(LivingEntity var1, Supplier<DamageSource> var2) {
+      return (DamageSource)Optional.ofNullable((EitherHolder)this.get(DataComponents.DAMAGE_TYPE)).flatMap((var1x) -> var1x.unwrap(var1.registryAccess())).map((var1x) -> new DamageSource(var1x, var1)).or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(var1))).orElseGet(var2);
+   }
+
    static {
       OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
       UNBREAKABLE_TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
+      INTANGIBLE_TOOLTIP = Component.translatable("item.intangible").withStyle(ChatFormatting.GRAY);
       MAP_CODEC = MapCodec.recursive("ItemStack", (var0) -> RecordCodecBuilder.mapCodec((var0x) -> var0x.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0) -> var0.components.asPatch())).apply(var0x, ItemStack::new)));
       MapCodec var10000 = MAP_CODEC;
       Objects.requireNonNull(var10000);

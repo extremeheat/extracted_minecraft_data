@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.MoonPhase;
 
 public class Time extends NeedleDirectionHelper implements RangeSelectItemModelProperty {
    public static final MapCodec<Time> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), Time.TimeSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, Time::new));
@@ -49,7 +50,7 @@ public class Time extends NeedleDirectionHelper implements RangeSelectItemModelP
       },
       MOON_PHASE("moon_phase") {
          public float get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3, RandomSource var4) {
-            return (float)var1.getMoonPhase() / 8.0F;
+            return (float)var1.getMoonPhase().index() / (float)MoonPhase.COUNT;
          }
       };
 

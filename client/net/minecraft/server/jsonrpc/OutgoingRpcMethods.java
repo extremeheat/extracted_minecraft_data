@@ -16,6 +16,7 @@ public class OutgoingRpcMethods {
    public static final Holder.Reference<OutgoingRpcMethod.ParmeterlessNotification> SERVER_SHUTTING_DOWN = OutgoingRpcMethod.notification().description("Server shutting down").register("server/stopping");
    public static final Holder.Reference<OutgoingRpcMethod.ParmeterlessNotification> SERVER_SAVE_STARTED = OutgoingRpcMethod.notification().description("Server save started").register("server/saving");
    public static final Holder.Reference<OutgoingRpcMethod.ParmeterlessNotification> SERVER_SAVE_COMPLETED = OutgoingRpcMethod.notification().description("Server save completed").register("server/saved");
+   public static final Holder.Reference<OutgoingRpcMethod.ParmeterlessNotification> SERVER_ACTIVITY_OCCURRED = OutgoingRpcMethod.notification().description("Server activity occurred. Rate limited to 1 notification per 30 seconds").register("server/activity");
    public static final Holder.Reference<OutgoingRpcMethod.Notification<PlayerDto>> PLAYER_JOINED;
    public static final Holder.Reference<OutgoingRpcMethod.Notification<PlayerDto>> PLAYER_LEFT;
    public static final Holder.Reference<OutgoingRpcMethod.Notification<OperatorService.OperatorDto>> PLAYER_OPED;

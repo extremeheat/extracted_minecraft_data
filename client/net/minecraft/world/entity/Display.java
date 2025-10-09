@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.ByIdMap;
@@ -34,7 +35,9 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.slf4j.Logger;
 
 public abstract class Display extends Entity {
@@ -43,10 +46,10 @@ public abstract class Display extends Entity {
    private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID;
    private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID;
    private static final EntityDataAccessor<Integer> DATA_POS_ROT_INTERPOLATION_DURATION_ID;
-   private static final EntityDataAccessor<Vector3f> DATA_TRANSLATION_ID;
-   private static final EntityDataAccessor<Vector3f> DATA_SCALE_ID;
-   private static final EntityDataAccessor<Quaternionf> DATA_LEFT_ROTATION_ID;
-   private static final EntityDataAccessor<Quaternionf> DATA_RIGHT_ROTATION_ID;
+   private static final EntityDataAccessor<Vector3fc> DATA_TRANSLATION_ID;
+   private static final EntityDataAccessor<Vector3fc> DATA_SCALE_ID;
+   private static final EntityDataAccessor<Quaternionfc> DATA_LEFT_ROTATION_ID;
+   private static final EntityDataAccessor<Quaternionfc> DATA_RIGHT_ROTATION_ID;
    private static final EntityDataAccessor<Byte> DATA_BILLBOARD_RENDER_CONSTRAINTS_ID;
    private static final EntityDataAccessor<Integer> DATA_BRIGHTNESS_OVERRIDE_ID;
    private static final EntityDataAccessor<Float> DATA_VIEW_RANGE_ID;
@@ -124,10 +127,10 @@ public abstract class Display extends Entity {
    }
 
    private static Transformation createTransformation(SynchedEntityData var0) {
-      Vector3f var1 = (Vector3f)var0.get(DATA_TRANSLATION_ID);
-      Quaternionf var2 = (Quaternionf)var0.get(DATA_LEFT_ROTATION_ID);
-      Vector3f var3 = (Vector3f)var0.get(DATA_SCALE_ID);
-      Quaternionf var4 = (Quaternionf)var0.get(DATA_RIGHT_ROTATION_ID);
+      Vector3fc var1 = (Vector3fc)var0.get(DATA_TRANSLATION_ID);
+      Quaternionfc var2 = (Quaternionfc)var0.get(DATA_LEFT_ROTATION_ID);
+      Vector3fc var3 = (Vector3fc)var0.get(DATA_SCALE_ID);
+      Quaternionfc var4 = (Quaternionfc)var0.get(DATA_RIGHT_ROTATION_ID);
       return new Transformation(var1, var2, var3, var4);
    }
 
@@ -395,10 +398,10 @@ public abstract class Display extends Entity {
       DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_POS_ROT_INTERPOLATION_DURATION_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
-      DATA_TRANSLATION_ID = SynchedEntityData.<Vector3f>defineId(Display.class, EntityDataSerializers.VECTOR3);
-      DATA_SCALE_ID = SynchedEntityData.<Vector3f>defineId(Display.class, EntityDataSerializers.VECTOR3);
-      DATA_LEFT_ROTATION_ID = SynchedEntityData.<Quaternionf>defineId(Display.class, EntityDataSerializers.QUATERNION);
-      DATA_RIGHT_ROTATION_ID = SynchedEntityData.<Quaternionf>defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_TRANSLATION_ID = SynchedEntityData.<Vector3fc>defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_SCALE_ID = SynchedEntityData.<Vector3fc>defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_LEFT_ROTATION_ID = SynchedEntityData.<Quaternionfc>defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_RIGHT_ROTATION_ID = SynchedEntityData.<Quaternionfc>defineId(Display.class, EntityDataSerializers.QUATERNION);
       DATA_BILLBOARD_RENDER_CONSTRAINTS_ID = SynchedEntityData.<Byte>defineId(Display.class, EntityDataSerializers.BYTE);
       DATA_BRIGHTNESS_OVERRIDE_ID = SynchedEntityData.<Integer>defineId(Display.class, EntityDataSerializers.INT);
       DATA_VIEW_RANGE_ID = SynchedEntityData.<Float>defineId(Display.class, EntityDataSerializers.FLOAT);
@@ -727,7 +730,7 @@ public abstract class Display extends Entity {
                Level var6 = this.level();
                if (var6 instanceof ServerLevel) {
                   ServerLevel var5 = (ServerLevel)var6;
-                  CommandSourceStack var11 = this.createCommandSourceStackForNameResolution(var5).withPermission(2);
+                  CommandSourceStack var11 = this.createCommandSourceStackForNameResolution(var5).withPermission(LevelBasedPermissionSet.GAMEMASTER);
                   MutableComponent var7 = ComponentUtils.updateForEntity(var11, (Component)var4.get(), this, 0);
                   this.setText(var7);
                } else {

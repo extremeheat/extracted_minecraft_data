@@ -30,7 +30,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
       this.compassTarget = var2;
    }
 
-   protected float calculate(ItemStack var1, ClientLevel var2, int var3, @Nullable ItemOwner var4) {
+   protected float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4) {
       GlobalPos var5 = this.compassTarget.get(var2, var1, var4);
       long var6 = var2.getGameTime();
       return !isValidCompassTargetPos(var4, var5) ? this.getRandomlySpinningRotation(var3, var6) : this.getRotationTowardsCompassTarget(var4, var6, var5.pos());
@@ -65,8 +65,8 @@ public class CompassAngleState extends NeedleDirectionHelper {
       return Mth.positiveModulo(var7, 1.0F);
    }
 
-   private static boolean isValidCompassTargetPos(@Nullable ItemOwner var0, @Nullable GlobalPos var1) {
-      return var1 != null && var0 != null && var1.dimension() == var0.level().dimension() && !(var1.pos().distToCenterSqr(var0.position()) < 9.999999747378752E-6);
+   private static boolean isValidCompassTargetPos(ItemOwner var0, @Nullable GlobalPos var1) {
+      return var1 != null && var1.dimension() == var0.level().dimension() && !(var1.pos().distToCenterSqr(var0.position()) < 9.999999747378752E-6);
    }
 
    private static double getAngleFromEntityToPos(ItemOwner var0, BlockPos var1) {

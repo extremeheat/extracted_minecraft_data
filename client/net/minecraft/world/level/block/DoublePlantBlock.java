@@ -66,7 +66,7 @@ public class DoublePlantBlock extends VegetationBlock {
       }
    }
 
-   public static void placeAt(LevelAccessor var0, BlockState var1, BlockPos var2, int var3) {
+   public static void placeAt(LevelAccessor var0, BlockState var1, BlockPos var2, @Block.UpdateFlags int var3) {
       BlockPos var4 = var2.above();
       var0.setBlock(var2, copyWaterloggedFrom(var0, var2, (BlockState)var1.setValue(HALF, DoubleBlockHalf.LOWER)), var3);
       var0.setBlock(var4, copyWaterloggedFrom(var0, var4, (BlockState)var1.setValue(HALF, DoubleBlockHalf.UPPER)), var3);

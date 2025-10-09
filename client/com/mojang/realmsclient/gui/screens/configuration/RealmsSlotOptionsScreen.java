@@ -99,8 +99,8 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       this.nameEdit = (EditBox)this.addWidget(new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, (EditBox)null, Component.translatable("mco.configure.world.edit.slot.name")));
       this.nameEdit.setValue(this.worldName);
       this.nameEdit.setResponder(this::setWorldName);
-      CycleButton var5 = (CycleButton)this.addRenderableWidget(CycleButton.builder(Difficulty::getDisplayName).withValues(DIFFICULTIES).withInitialValue(this.difficulty).create(var1, row(1), this.columnWidth, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> this.difficulty = var2x));
-      CycleButton var3 = (CycleButton)this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues(GAME_MODES).withInitialValue(this.gameMode).create(this.column1X, row(3), this.columnWidth, 20, Component.translatable("selectWorld.gameMode"), (var1x, var2x) -> this.gameMode = var2x));
+      CycleButton var5 = (CycleButton)this.addRenderableWidget(CycleButton.builder(Difficulty::getDisplayName, this.difficulty).withValues(DIFFICULTIES).create(var1, row(1), this.columnWidth, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> this.difficulty = var2x));
+      CycleButton var3 = (CycleButton)this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GAME_MODES).create(this.column1X, row(3), this.columnWidth, 20, Component.translatable("selectWorld.gameMode"), (var1x, var2x) -> this.gameMode = var2x));
       CycleButton var4 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.forceGameMode).create(var1, row(3), this.columnWidth, 20, Component.translatable("mco.configure.world.forceGameMode"), (var1x, var2x) -> this.forceGameMode = var2x));
       this.spawnProtectionButton = (SettingsSlider)this.addRenderableWidget(new SettingsSlider(this.column1X, row(5), this.columnWidth, this.spawnProtection, 0.0F, 16.0F));
       if (this.worldType != RealmsServer.WorldType.NORMAL) {

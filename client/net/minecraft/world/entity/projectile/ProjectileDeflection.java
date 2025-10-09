@@ -18,7 +18,7 @@ public interface ProjectileDeflection {
    };
    ProjectileDeflection AIM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
-         Vec3 var3 = var1.getLookAngle().normalize();
+         Vec3 var3 = var1.getLookAngle();
          var0.setDeltaMovement(var3);
          var0.hasImpulse = true;
       }

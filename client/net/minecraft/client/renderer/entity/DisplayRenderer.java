@@ -124,8 +124,8 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       var2.entityYRot = entityYRot(var1, var3);
       var2.entityXRot = entityXRot(var1, var3);
       Camera var4 = this.entityRenderDispatcher.camera;
-      var2.cameraXRot = var4.getXRot();
-      var2.cameraYRot = var4.getYRot();
+      var2.cameraXRot = var4.xRot();
+      var2.cameraYRot = var4.yRot();
    }
 
    // $FF: synthetic method

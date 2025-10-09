@@ -74,13 +74,13 @@ public class MultiLineTextWidget extends AbstractStringWidget {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
-      int var6 = this.getX();
-      int var7 = this.getY();
+      int var6 = this.getTextX();
+      int var7 = this.getTextY();
       Objects.requireNonNull(this.getFont());
       byte var8 = 9;
       int var9 = this.getColor();
       if (this.centered) {
-         int var10 = var6 + this.getWidth() / 2;
+         int var10 = this.getX() + this.getWidth() / 2;
          var5.render(var1, MultiLineLabel.Align.CENTER, var10, var7, var8, true, var9);
       } else {
          var5.render(var1, MultiLineLabel.Align.LEFT, var6, var7, var8, true, var9);
@@ -93,11 +93,19 @@ public class MultiLineTextWidget extends AbstractStringWidget {
 
    }
 
+   protected int getTextX() {
+      return this.getX();
+   }
+
+   protected int getTextY() {
+      return this.getY();
+   }
+
    @Nullable
    private Style getComponentStyleAt(double var1, double var3) {
       MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
-      int var6 = this.getX();
-      int var7 = this.getY();
+      int var6 = this.getTextX();
+      int var7 = this.getTextY();
       Objects.requireNonNull(this.getFont());
       byte var8 = 9;
       if (this.centered) {

@@ -232,7 +232,7 @@ public class ModelDiscovery {
       }
 
       public QuadCollection bakeTopGeometry(TextureSlots var1, ModelBaker var2, ModelState var3) {
-         return var3 == BlockModelRotation.X0_Y0 ? this.bakeDefaultState(var1, var2, var3) : (QuadCollection)this.modelBakeCache.computeIfAbsent(var3, (var3x) -> {
+         return var3 == BlockModelRotation.IDENTITY ? this.bakeDefaultState(var1, var2, var3) : (QuadCollection)this.modelBakeCache.computeIfAbsent(var3, (var3x) -> {
             UnbakedGeometry var4 = this.getTopGeometry();
             return var4.bake(var1, var2, var3x, this);
          });

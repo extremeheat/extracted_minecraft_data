@@ -22,6 +22,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.Entity;
 
 public class EntityArgument implements ArgumentType<EntitySelector> {
@@ -124,7 +125,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       if (var4 instanceof SharedSuggestionProvider var3) {
          StringReader var8 = new StringReader(var2.getInput());
          var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, EntitySelectorParser.allowSelectors(var3));
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
          try {
             var5.parse();

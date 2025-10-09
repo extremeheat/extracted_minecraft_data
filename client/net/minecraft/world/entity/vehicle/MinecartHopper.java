@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -40,10 +41,10 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       return 5;
    }
 
-   public void activateMinecart(int var1, int var2, int var3, boolean var4) {
-      boolean var5 = !var4;
-      if (var5 != this.isEnabled()) {
-         this.setEnabled(var5);
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+      boolean var6 = !var5;
+      if (var6 != this.isEnabled()) {
+         this.setEnabled(var6);
       }
 
    }

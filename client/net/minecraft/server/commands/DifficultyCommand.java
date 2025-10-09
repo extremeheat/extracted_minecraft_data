@@ -24,7 +24,7 @@ public class DifficultyCommand {
          var1.then(Commands.literal(var5.getKey()).executes((var1x) -> setDifficulty((CommandSourceStack)var1x.getSource(), var5)));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.requires(Commands.hasPermission(2))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> {
          Difficulty var1 = ((CommandSourceStack)var0x.getSource()).getLevel().getDifficulty();
          ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", var1.getDisplayName()), false);
          return var1.getId();

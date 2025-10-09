@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -13,8 +14,9 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.network.chat.Component;
 
-public class OptionsList extends ContainerObjectSelectionList<Entry> {
+public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
    private static final int BIG_BUTTON_WIDTH = 310;
    private static final int DEFAULT_ITEM_HEIGHT = 25;
    private final OptionsSubScreen screen;
@@ -48,13 +50,20 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
       this.addEntry(OptionsList.Entry.small(var1, var2, this.screen));
    }
 
+   public void addHeader(Component var1) {
+      Objects.requireNonNull(this.minecraft.font);
+      byte var2 = 9;
+      int var3 = this.children().isEmpty() ? 0 : var2 * 2;
+      this.addEntry(new HeaderEntry(this.screen, var1, var3), var3 + var2 + 4);
+   }
+
    public int getRowWidth() {
       return 310;
    }
 
    @Nullable
    public AbstractWidget findOption(OptionInstance<?> var1) {
-      for(Entry var3 : this.children()) {
+      for(AbstractEntry var3 : this.children()) {
          if (var3 instanceof OptionEntry var4) {
             AbstractWidget var5 = (AbstractWidget)var4.options.get(var1);
             if (var5 != null) {
@@ -67,7 +76,7 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
    }
 
    public void applyUnsavedChanges() {
-      for(Entry var2 : this.children()) {
+      for(AbstractEntry var2 : this.children()) {
          if (var2 instanceof OptionEntry var3) {
             for(AbstractWidget var5 : var3.options.values()) {
                if (var5 instanceof OptionInstance.OptionInstanceSliderButton var6) {
@@ -79,7 +88,51 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
 
    }
 
-   protected static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+   public void resetOption(OptionInstance<?> var1) {
+      for(AbstractEntry var3 : this.children()) {
+         if (var3 instanceof OptionEntry var4) {
+            AbstractWidget var5 = (AbstractWidget)var4.options.get(var1);
+            if (var5 instanceof ResettableOptionWidget var6) {
+               var6.resetValue();
+            }
+         }
+      }
+
+   }
+
+   protected abstract static class AbstractEntry extends ContainerObjectSelectionList.Entry<AbstractEntry> {
+      protected AbstractEntry() {
+         super();
+      }
+   }
+
+   protected static class HeaderEntry extends AbstractEntry {
+      private final Screen screen;
+      private final int paddingTop;
+      private final StringWidget widget;
+
+      protected HeaderEntry(Screen var1, Component var2, int var3) {
+         super();
+         this.screen = var1;
+         this.paddingTop = var3;
+         this.widget = new StringWidget(var2, var1.getFont());
+      }
+
+      public List<? extends NarratableEntry> narratables() {
+         return List.of(this.widget);
+      }
+
+      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         this.widget.setPosition(this.screen.width / 2 - 155, this.getContentY() + this.paddingTop);
+         this.widget.render(var1, var2, var3, var5);
+      }
+
+      public List<? extends GuiEventListener> children() {
+         return List.of(this.widget);
+      }
+   }
+
+   protected static class Entry extends AbstractEntry {
       private final List<AbstractWidget> children;
       private final Screen screen;
       private static final int X_OFFSET = 160;

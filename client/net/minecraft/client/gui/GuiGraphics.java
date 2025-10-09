@@ -4,9 +4,9 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +47,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.MapRenderState;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -92,13 +93,11 @@ public class GuiGraphics {
    private CursorType pendingCursor;
    @Nullable
    private Runnable deferredTooltip;
-   private final List<OutlineBox> deferredOutlines;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
       super();
       this.scissorStack = new ScissorStack();
       this.pendingCursor = CursorType.DEFAULT;
-      this.deferredOutlines = new ArrayList();
       this.minecraft = var1;
       this.pose = var2;
       AtlasManager var4 = var1.getAtlasManager();
@@ -204,8 +203,11 @@ public class GuiGraphics {
       this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8 != null ? var8 : var7, this.scissorStack.peek()));
    }
 
-   public void textHighlight(int var1, int var2, int var3, int var4) {
-      this.fill(RenderPipelines.GUI_INVERT, var1, var2, var3, var4, -1);
+   public void textHighlight(int var1, int var2, int var3, int var4, boolean var5) {
+      if (var5) {
+         this.fill(RenderPipelines.GUI_INVERT, var1, var2, var3, var4, -1);
+      }
+
       this.fill(RenderPipelines.GUI_TEXT_HIGHLIGHT, var1, var2, var3, var4, -16776961);
    }
 
@@ -277,8 +279,11 @@ public class GuiGraphics {
       this.drawString(var1, var2, var3, var4, var6, true);
    }
 
-   public void submitOutline(int var1, int var2, int var3, int var4, int var5) {
-      this.deferredOutlines.add(new OutlineBox(var1, var2, var3, var4, var5));
+   public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
+      this.fill(var1, var2, var1 + var3, var2 + 1, var5);
+      this.fill(var1, var2 + var4 - 1, var1 + var3, var2 + var4, var5);
+      this.fill(var1, var2 + 1, var1 + 1, var2 + var4 - 1, var5);
+      this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
@@ -394,8 +399,9 @@ public class GuiGraphics {
    private void blitTiledSprite(RenderPipeline var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
       if (var5 > 0 && var6 > 0) {
          if (var9 > 0 && var10 > 0) {
-            GpuTextureView var14 = this.minecraft.getTextureManager().getTexture(var2.atlasLocation()).getTextureView();
-            this.submitTiledBlit(var1, var14, var9, var10, var3, var4, var3 + var5, var4 + var6, var2.getU((float)var7 / (float)var11), var2.getU((float)(var7 + var9) / (float)var11), var2.getV((float)var8 / (float)var12), var2.getV((float)(var8 + var10) / (float)var12), var13);
+            AbstractTexture var14 = this.minecraft.getTextureManager().getTexture(var2.atlasLocation());
+            GpuTextureView var15 = var14.getTextureView();
+            this.submitTiledBlit(var1, var15, var14.getSampler(), var9, var10, var3, var4, var3 + var5, var4 + var6, var2.getU((float)var7 / (float)var11), var2.getU((float)(var7 + var9) / (float)var11), var2.getV((float)var8 / (float)var12), var2.getV((float)(var8 + var10) / (float)var12), var13);
          } else {
             throw new IllegalArgumentException("Tile size must be positive, got " + var9 + "x" + var10);
          }
@@ -423,16 +429,16 @@ public class GuiGraphics {
    }
 
    private void innerBlit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
-      GpuTextureView var12 = this.minecraft.getTextureManager().getTexture(var2).getTextureView();
-      this.submitBlit(var1, var12, var3, var5, var4, var6, var7, var8, var9, var10, var11);
+      AbstractTexture var12 = this.minecraft.getTextureManager().getTexture(var2);
+      this.submitBlit(var1, var12.getTextureView(), var12.getSampler(), var3, var5, var4, var6, var7, var8, var9, var10, var11);
    }
 
-   private void submitBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
-      this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, this.scissorStack.peek()));
+   private void submitBlit(RenderPipeline var1, GpuTextureView var2, GpuSampler var3, int var4, int var5, int var6, int var7, float var8, float var9, float var10, float var11, int var12) {
+      this.guiRenderState.submitGuiElement(new BlitRenderState(var1, TextureSetup.singleTexture(var2, var3), new Matrix3x2f(this.pose), var4, var5, var6, var7, var8, var9, var10, var11, var12, this.scissorStack.peek()));
    }
 
-   private void submitTiledBlit(RenderPipeline var1, GpuTextureView var2, int var3, int var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13) {
-      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(var1, TextureSetup.singleTexture(var2), new Matrix3x2f(this.pose), var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, this.scissorStack.peek()));
+   private void submitTiledBlit(RenderPipeline var1, GpuTextureView var2, GpuSampler var3, int var4, int var5, int var6, int var7, int var8, int var9, float var10, float var11, float var12, float var13, int var14) {
+      this.guiRenderState.submitGuiElement(new TiledBlitRenderState(var1, TextureSetup.singleTexture(var2, var3), new Matrix3x2f(this.pose), var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, this.scissorStack.peek()));
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {
@@ -586,16 +592,6 @@ public class GuiGraphics {
    }
 
    public void renderDeferredElements() {
-      if (!this.deferredOutlines.isEmpty()) {
-         this.nextStratum();
-
-         for(OutlineBox var2 : this.deferredOutlines) {
-            var2.render(this);
-         }
-
-         this.deferredOutlines.clear();
-      }
-
       if (this.deferredTooltip != null) {
          this.nextStratum();
          this.deferredTooltip.run();
@@ -698,8 +694,8 @@ public class GuiGraphics {
    public void submitMapRenderState(MapRenderState var1) {
       Minecraft var2 = Minecraft.getInstance();
       TextureManager var3 = var2.getTextureManager();
-      GpuTextureView var4 = var3.getTexture(var1.texture).getTextureView();
-      this.submitBlit(RenderPipelines.GUI_TEXTURED, var4, 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
+      AbstractTexture var4 = var3.getTexture(var1.texture);
+      this.submitBlit(RenderPipelines.GUI_TEXTURED, var4.getTextureView(), var4.getSampler(), 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
 
       for(MapRenderState.MapDecorationRenderState var6 : var1.decorations) {
          if (var6.renderOnFrame) {
@@ -710,8 +706,8 @@ public class GuiGraphics {
             this.pose.translate(-0.125F, 0.125F);
             TextureAtlasSprite var7 = var6.atlasSprite;
             if (var7 != null) {
-               GpuTextureView var8 = var3.getTexture(var7.atlasLocation()).getTextureView();
-               this.submitBlit(RenderPipelines.GUI_TEXTURED, var8, -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
+               AbstractTexture var8 = var3.getTexture(var7.atlasLocation());
+               this.submitBlit(RenderPipelines.GUI_TEXTURED, var8.getTextureView(), var8.getSampler(), -1, -1, 1, 1, var7.getU0(), var7.getU1(), var7.getV1(), var7.getV0(), -1);
             }
 
             this.pose.popMatrix();
@@ -796,24 +792,6 @@ public class GuiGraphics {
 
       public boolean containsPoint(int var1, int var2) {
          return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
-      }
-   }
-
-   static record OutlineBox(int x, int y, int width, int height, int color) {
-      OutlineBox(int var1, int var2, int var3, int var4, int var5) {
-         super();
-         this.x = var1;
-         this.y = var2;
-         this.width = var3;
-         this.height = var4;
-         this.color = var5;
-      }
-
-      public void render(GuiGraphics var1) {
-         var1.fill(this.x, this.y, this.x + this.width, this.y + 1, this.color);
-         var1.fill(this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, this.color);
-         var1.fill(this.x, this.y + 1, this.x + 1, this.y + this.height - 1, this.color);
-         var1.fill(this.x + this.width - 1, this.y + 1, this.x + this.width, this.y + this.height - 1, this.color);
       }
    }
 }

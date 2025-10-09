@@ -171,6 +171,7 @@ public class ModelTemplates {
    public static final ModelTemplate BUNDLE_OPEN_BACK_INVENTORY;
    public static final ModelTemplate BOW;
    public static final ModelTemplate CROSSBOW;
+   public static final ModelTemplate SPEAR_IN_HAND;
    public static final ModelTemplate CANDLE;
    public static final ModelTemplate TWO_CANDLES;
    public static final ModelTemplate THREE_CANDLES;
@@ -372,6 +373,7 @@ public class ModelTemplates {
       BUNDLE_OPEN_BACK_INVENTORY = createItem("template_bundle_open_back", "_open_back", TextureSlot.LAYER0);
       BOW = createItem("bow", TextureSlot.LAYER0);
       CROSSBOW = createItem("crossbow", TextureSlot.LAYER0);
+      SPEAR_IN_HAND = createItem("spear_in_hand", "_in_hand", TextureSlot.LAYER0);
       CANDLE = create("template_candle", TextureSlot.ALL, TextureSlot.PARTICLE);
       TWO_CANDLES = create("template_two_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
       THREE_CANDLES = create("template_three_candles", TextureSlot.ALL, TextureSlot.PARTICLE);

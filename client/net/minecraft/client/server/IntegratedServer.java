@@ -7,6 +7,9 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -20,6 +23,8 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Position;
+import net.minecraft.gizmos.Gizmos;
+import net.minecraft.gizmos.SimpleGizmoCollector;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -28,6 +33,8 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
@@ -58,6 +65,8 @@ public class IntegratedServer extends MinecraftServer {
    @Nullable
    private UUID uuid;
    private int previousSimulationDistance = 0;
+   private volatile List<SimpleGizmoCollector.GizmoInstance> latestTicksGizmos = new ArrayList();
+   private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
 
    public IntegratedServer(Thread var1, Minecraft var2, LevelStorageSource.LevelStorageAccess var3, PackRepository var4, WorldStem var5, Services var6, LevelLoadListener var7) {
       super(var1, var3, var4, var5, var2.getProxy(), var2.getFixerUpper(), var6, var7);
@@ -100,11 +109,15 @@ public class IntegratedServer extends MinecraftServer {
             this.forceTimeSynchronization();
          }
 
-         super.tickServer(var1);
-         int var4 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
-         if (var4 != this.getPlayerList().getViewDistance()) {
-            LOGGER.info("Changing view distance to {}, from {}", var4, this.getPlayerList().getViewDistance());
-            this.getPlayerList().setViewDistance(var4);
+         try (Gizmos.TemporaryCollection var4 = Gizmos.withCollector(this.gizmoCollector)) {
+            super.tickServer(var1);
+         }
+
+         this.latestTicksGizmos = this.gizmoCollector.drainGizmos();
+         int var9 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
+         if (var9 != this.getPlayerList().getViewDistance()) {
+            LOGGER.info("Changing view distance to {}, from {}", var9, this.getPlayerList().getViewDistance());
+            this.getPlayerList().setViewDistance(var9);
          }
 
          int var5 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());
@@ -186,8 +199,8 @@ public class IntegratedServer extends MinecraftServer {
          this.lanPinger.start();
          this.publishedGameType = var1;
          this.getPlayerList().setAllowCommandsForAllPlayers(var2);
-         int var4 = this.getProfilePermissions(this.minecraft.player.nameAndId());
-         this.minecraft.player.setPermissionLevel(var4);
+         LevelBasedPermissionSet var4 = this.getProfilePermissions(this.minecraft.player.nameAndId());
+         this.minecraft.player.setPermissions(var4);
 
          for(ServerPlayer var6 : this.getPlayerList().getPlayers()) {
             this.getCommands().sendCommands(var6);
@@ -238,12 +251,12 @@ public class IntegratedServer extends MinecraftServer {
       this.publishedGameType = null;
    }
 
-   public int operatorUserPermissionLevel() {
-      return 2;
+   public LevelBasedPermissionSet operatorUserPermissions() {
+      return LevelBasedPermissionSet.GAMEMASTER;
    }
 
-   public int getFunctionCompilationLevel() {
-      return 2;
+   public LevelBasedPermissionSet getFunctionCompilationPermissions() {
+      return LevelBasedPermissionSet.GAMEMASTER;
    }
 
    public void setUUID(UUID var1) {
@@ -313,8 +326,17 @@ public class IntegratedServer extends MinecraftServer {
       return 8;
    }
 
+   public Collection<SimpleGizmoCollector.GizmoInstance> getPerTickGizmos() {
+      return this.latestTicksGizmos;
+   }
+
    // $FF: synthetic method
    public SampleLogger getTickTimeLogger() {
       return this.getTickTimeLogger();
+   }
+
+   // $FF: synthetic method
+   public PermissionSet getFunctionCompilationPermissions() {
+      return this.getFunctionCompilationPermissions();
    }
 }

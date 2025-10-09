@@ -45,7 +45,7 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
 
    protected HumanoidModel.ArmPose getArmPose(Drowned var1, HumanoidArm var2) {
       ItemStack var3 = var1.getItemHeldByArm(var2);
-      return var1.getMainArm() == var2 && var1.isAggressive() && var3.is(Items.TRIDENT) ? HumanoidModel.ArmPose.THROW_SPEAR : HumanoidModel.ArmPose.EMPTY;
+      return var1.getMainArm() == var2 && var1.isAggressive() && var3.is(Items.TRIDENT) ? HumanoidModel.ArmPose.THROW_TRIDENT : super.getArmPose(var1, var2);
    }
 
    // $FF: synthetic method

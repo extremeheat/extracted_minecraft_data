@@ -127,13 +127,13 @@ public class PlayerSpawnFinder {
                   } else {
                      this.scheduleNext();
                   }
-               } catch (Exception var9) {
+               } catch (Throwable var9) {
                   var6x = var9;
                }
             }
 
             if (var6x != null) {
-               CrashReport var10 = CrashReport.forThrowable((Throwable)var6x, "Searching for spawn");
+               CrashReport var10 = CrashReport.forThrowable(var6x, "Searching for spawn");
                CrashReportCategory var8 = var10.addCategory("Spawn Lookup");
                BlockPos var10002 = this.spawnSuggestion;
                Objects.requireNonNull(var10002);

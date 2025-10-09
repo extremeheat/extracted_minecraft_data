@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.fog.environment;
 
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
@@ -21,15 +21,16 @@ public class BlindnessFogEnvironment extends MobEffectFogEnvironment {
       return MobEffects.BLINDNESS;
    }
 
-   public void setupFog(FogData var1, Entity var2, BlockPos var3, ClientLevel var4, float var5, DeltaTracker var6) {
-      if (var2 instanceof LivingEntity var7) {
-         MobEffectInstance var8 = var7.getEffect(this.getMobEffect());
-         if (var8 != null) {
-            float var9 = var8.isInfiniteDuration() ? 5.0F : Mth.lerp(Math.min(1.0F, (float)var8.getDuration() / 20.0F), var5, 5.0F);
-            var1.environmentalStart = var9 * 0.25F;
-            var1.environmentalEnd = var9;
-            var1.skyEnd = var9 * 0.8F;
-            var1.cloudEnd = var9 * 0.8F;
+   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
+      Entity var7 = var2.entity();
+      if (var7 instanceof LivingEntity var6) {
+         MobEffectInstance var9 = var6.getEffect(this.getMobEffect());
+         if (var9 != null) {
+            float var8 = var9.isInfiniteDuration() ? 5.0F : Mth.lerp(Math.min(1.0F, (float)var9.getDuration() / 20.0F), var4, 5.0F);
+            var1.environmentalStart = var8 * 0.25F;
+            var1.environmentalEnd = var8;
+            var1.skyEnd = var8 * 0.8F;
+            var1.cloudEnd = var8 * 0.8F;
          }
       }
 

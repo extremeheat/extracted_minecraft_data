@@ -14,6 +14,8 @@ public class DefaultVertexFormat {
    public static final VertexFormat POSITION_COLOR_TEX_LIGHTMAP;
    public static final VertexFormat POSITION_TEX_LIGHTMAP_COLOR;
    public static final VertexFormat POSITION_TEX_COLOR_NORMAL;
+   public static final VertexFormat POSITION_COLOR_LINE_WIDTH;
+   public static final VertexFormat POSITION_COLOR_NORMAL_LINE_WIDTH;
 
    public DefaultVertexFormat() {
       super();
@@ -32,5 +34,7 @@ public class DefaultVertexFormat {
       POSITION_COLOR_TEX_LIGHTMAP = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).build();
       POSITION_TEX_LIGHTMAP_COLOR = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("UV2", VertexFormatElement.UV2).add("Color", VertexFormatElement.COLOR).build();
       POSITION_TEX_COLOR_NORMAL = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("UV0", VertexFormatElement.UV0).add("Color", VertexFormatElement.COLOR).add("Normal", VertexFormatElement.NORMAL).padding(1).build();
+      POSITION_COLOR_LINE_WIDTH = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("LineWidth", VertexFormatElement.LINE_WIDTH).build();
+      POSITION_COLOR_NORMAL_LINE_WIDTH = VertexFormat.builder().add("Position", VertexFormatElement.POSITION).add("Color", VertexFormatElement.COLOR).add("Normal", VertexFormatElement.NORMAL).add("LineWidth", VertexFormatElement.LINE_WIDTH).build();
    }
 }

@@ -17,6 +17,8 @@ public interface VertexConsumer {
 
    VertexConsumer setColor(int var1, int var2, int var3, int var4);
 
+   VertexConsumer setColor(int var1);
+
    VertexConsumer setUv(float var1, float var2);
 
    VertexConsumer setUv1(int var1, int var2);
@@ -24,6 +26,8 @@ public interface VertexConsumer {
    VertexConsumer setUv2(int var1, int var2);
 
    VertexConsumer setNormal(float var1, float var2, float var3);
+
+   VertexConsumer setLineWidth(float var1);
 
    default void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
       this.addVertex(var1, var2, var3);
@@ -36,10 +40,6 @@ public interface VertexConsumer {
 
    default VertexConsumer setColor(float var1, float var2, float var3, float var4) {
       return this.setColor((int)(var1 * 255.0F), (int)(var2 * 255.0F), (int)(var3 * 255.0F), (int)(var4 * 255.0F));
-   }
-
-   default VertexConsumer setColor(int var1) {
-      return this.setColor(ARGB.red(var1), ARGB.green(var1), ARGB.blue(var1), ARGB.alpha(var1));
    }
 
    default VertexConsumer setLight(int var1) {

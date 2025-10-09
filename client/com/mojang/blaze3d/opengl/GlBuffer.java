@@ -17,7 +17,7 @@ public class GlBuffer extends GpuBuffer {
    @Nullable
    protected ByteBuffer persistentBuffer;
 
-   protected GlBuffer(@Nullable Supplier<String> var1, DirectStateAccess var2, int var3, int var4, int var5, @Nullable ByteBuffer var6) {
+   protected GlBuffer(@Nullable Supplier<String> var1, DirectStateAccess var2, @GpuBuffer.Usage int var3, int var4, int var5, @Nullable ByteBuffer var6) {
       super(var3, var4);
       this.label = var1;
       this.dsa = var2;

@@ -61,7 +61,7 @@ public class MouseHandler {
       this.scrollWheelHandler = new ScrollWheelHandler();
    }
 
-   private void onButton(long var1, MouseButtonInfo var3, int var4) {
+   private void onButton(long var1, MouseButtonInfo var3, @MouseButtonInfo.Action int var4) {
       Window var5 = this.minecraft.getWindow();
       if (var1 == var5.handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();

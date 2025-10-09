@@ -62,7 +62,7 @@ public class ItemPickupParticleGroup extends ParticleGroup<ItemPickupParticle> {
          double var10 = Mth.lerp((double)var3, var0.itemRenderState.x, var4);
          double var12 = Mth.lerp((double)var3, var0.itemRenderState.y, var6);
          double var14 = Mth.lerp((double)var3, var0.itemRenderState.z, var8);
-         Vec3 var16 = var1.getPosition();
+         Vec3 var16 = var1.position();
          return new ParticleInstance(var0.itemRenderState, var10 - var16.x(), var12 - var16.y(), var14 - var16.z());
       }
    }

@@ -69,7 +69,9 @@ public class DialogBodyHandlers {
       }
 
       public LayoutElement createControls(DialogScreen<?> var1, PlainMessage var2) {
-         return (new FocusableTextWidget(var2.width(), var2.contents(), var1.getFont(), false, FocusableTextWidget.BackgroundFill.NEVER, 4)).configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)).setCentered(true);
+         FocusableTextWidget var3 = FocusableTextWidget.builder(var2.contents(), var1.getFont()).maxWidth(var2.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
+         var3.configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)).setCentered(true);
+         return var3;
       }
    }
 
@@ -85,7 +87,9 @@ public class DialogBodyHandlers {
             var4.defaultCellSetting().alignVerticallyMiddle();
             ItemDisplayWidget var5 = new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), CommonComponents.EMPTY, var2.item(), var2.showDecorations(), var2.showTooltip());
             var4.addChild(var5);
-            var4.addChild((new FocusableTextWidget(var3.width(), var3.contents(), var1.getFont(), false, FocusableTextWidget.BackgroundFill.NEVER, 4)).configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x)));
+            FocusableTextWidget var6 = FocusableTextWidget.builder(var3.contents(), var1.getFont()).maxWidth(var3.width()).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.NEVER).build();
+            var6.configureStyleHandling(true, (var1x) -> DialogBodyHandlers.runActionOnParent(var1, var1x));
+            var4.addChild(var6);
             return var4;
          } else {
             return new ItemDisplayWidget(Minecraft.getInstance(), 0, 0, var2.width(), var2.height(), var2.item().getHoverName(), var2.item(), var2.showDecorations(), var2.showTooltip());

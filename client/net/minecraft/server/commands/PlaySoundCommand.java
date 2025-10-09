@@ -41,7 +41,7 @@ public class PlaySoundCommand {
          var1.then(source(var5));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(2))).then(var1));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(var1));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> source(SoundSource var0) {

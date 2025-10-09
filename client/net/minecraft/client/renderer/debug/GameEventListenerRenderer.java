@@ -1,19 +1,15 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
+import net.minecraft.gizmos.TextGizmo;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 
 public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final float BOX_HEIGHT = 1.0F;
@@ -27,33 +23,23 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       var1.forEachEntity(DebugSubscriptions.GAME_EVENT_LISTENERS, (var1x, var2x) -> var2.accept(var1x.position(), var2x.listenerRadius()));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
-      VertexConsumer var11 = var2.getBuffer(RenderType.lines());
-      this.forEachListener(var9, (var8, var9x) -> {
-         double var10 = (double)var9x * 2.0;
-         DebugRenderer.renderVoxelShape(var1, var11, Shapes.create(AABB.ofSize(var8, var10, var10, var10)), -var3, -var5, -var7, 1.0F, 1.0F, 0.0F, 0.35F, true);
+   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
+      this.forEachListener(var7, (var0, var1x) -> {
+         double var2 = (double)var1x * 2.0;
+         Gizmos.cuboid(AABB.ofSize(var0, var2, var2, var2), GizmoStyle.fill(ARGB.colorFromFloat(0.35F, 1.0F, 1.0F, 0.0F)));
       });
-      VertexConsumer var12 = var2.getBuffer(RenderType.debugFilledBox());
-      this.forEachListener(var9, (var8, var9x) -> ShapeRenderer.addChainedFilledBoxVertices(var1, var12, var8.x() - 0.25 - var3, var8.y() - var5, var8.z() - 0.25 - var7, var8.x() + 0.25 - var3, var8.y() - var5 + 1.0, var8.z() + 0.25 - var7, 1.0F, 1.0F, 0.0F, 0.35F));
-      this.forEachListener(var9, (var2x, var3x) -> {
-         DebugRenderer.renderFloatingText(var1, var2, "Listener Origin", var2x.x(), var2x.y() + 1.7999999523162842, var2x.z(), -1, 0.025F);
-         DebugRenderer.renderFloatingText(var1, var2, BlockPos.containing(var2x).toString(), var2x.x(), var2x.y() + 1.5, var2x.z(), -6959665, 0.025F);
+      this.forEachListener(var7, (var0, var1x) -> Gizmos.cuboid(AABB.ofSize(var0, 0.5, 1.0, 0.5).move(0.0, 0.5, 0.0), GizmoStyle.fill(ARGB.colorFromFloat(0.35F, 1.0F, 1.0F, 0.0F))));
+      this.forEachListener(var7, (var0, var1x) -> {
+         Gizmos.billboardText("Listener Origin", var0.add(0.0, 1.8, 0.0), TextGizmo.Style.whiteAndCentered().withScale(0.4F));
+         Gizmos.billboardText(BlockPos.containing(var0).toString(), var0.add(0.0, 1.5, 0.0), TextGizmo.Style.forColorAndCentered(-6959665).withScale(0.4F));
       });
-      var9.forEachEvent(DebugSubscriptions.GAME_EVENTS, (var2x, var3x, var4) -> {
-         Vec3 var5 = var2x.pos();
-         double var6 = 0.4;
-         AABB var8 = AABB.ofSize(var5.add(0.0, 0.5, 0.0), 0.4, 0.9, 0.4);
-         renderFilledBox(var1, var2, var8, 1.0F, 1.0F, 1.0F, 0.2F);
-         DebugRenderer.renderFloatingText(var1, var2, var2x.event().getRegisteredName(), var5.x, var5.y + 0.8500000238418579, var5.z, -7564911, 0.0075F);
+      var7.forEachEvent(DebugSubscriptions.GAME_EVENTS, (var0, var1x, var2) -> {
+         Vec3 var3 = var0.pos();
+         double var4 = 0.4;
+         AABB var6 = AABB.ofSize(var3.add(0.0, 0.5, 0.0), 0.4, 0.9, 0.4);
+         Gizmos.cuboid(var6, GizmoStyle.fill(ARGB.colorFromFloat(0.2F, 1.0F, 1.0F, 1.0F)));
+         Gizmos.billboardText(var0.event().getRegisteredName(), var3.add(0.0, 0.85, 0.0), TextGizmo.Style.forColorAndCentered(-7564911).withScale(0.12F));
       });
-   }
-
-   private static void renderFilledBox(PoseStack var0, MultiBufferSource var1, AABB var2, float var3, float var4, float var5, float var6) {
-      Camera var7 = Minecraft.getInstance().gameRenderer.getMainCamera();
-      if (var7.isInitialized()) {
-         Vec3 var8 = var7.getPosition().reverse();
-         DebugRenderer.renderFilledBox(var0, var1, var2.move(var8), var3, var4, var5, var6);
-      }
    }
 
    @FunctionalInterface

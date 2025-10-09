@@ -20,6 +20,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +35,7 @@ import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 
 public class TreeFeature extends Feature<TreeConfiguration> {
-   private static final int BLOCK_UPDATE_FLAGS = 19;
+   private static final @Block.UpdateFlags int BLOCK_UPDATE_FLAGS = 19;
 
    public TreeFeature(Codec<TreeConfiguration> var1) {
       super(var1);

@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 
 public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int MAX_ANIMATED_MIP_LEVELS = 2;
    final ResourceLocation name;
    final int width;
    final int height;
@@ -39,12 +40,13 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    @Nullable
    private final AnimatedTexture animatedTexture;
    private final List<MetadataSectionType.WithValue<?>> additionalMetadata;
+   private final boolean darkenedCutoutMipmap;
 
    public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3) {
-      this(var1, var2, var3, Optional.empty(), List.of());
+      this(var1, var2, var3, Optional.empty(), List.of(), false);
    }
 
-   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5) {
+   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, boolean var6) {
       super();
       this.name = var1;
       this.width = var2.width();
@@ -53,11 +55,12 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       this.animatedTexture = (AnimatedTexture)var4.map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
       this.originalImage = var3;
       this.byMipLevel = new NativeImage[]{this.originalImage};
+      this.darkenedCutoutMipmap = var6;
    }
 
    public void increaseMipLevel(int var1) {
       try {
-         this.byMipLevel = MipmapGenerator.generateMipLevels(this.byMipLevel, var1);
+         this.byMipLevel = MipmapGenerator.generateMipLevels(this.byMipLevel, var1, this.darkenedCutoutMipmap);
       } catch (Throwable var5) {
          CrashReport var3 = CrashReport.forThrowable(var5, "Generating mipmaps for frame");
          CrashReportCategory var4 = var3.addCategory("Frame being iterated");
@@ -134,9 +137,9 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return var9.size() <= 1 ? null : new AnimatedTexture(List.copyOf(var9), var5, var4.interpolatedFrames());
    }
 
-   void upload(int var1, int var2, int var3, int var4, NativeImage[] var5, GpuTexture var6) {
-      for(int var7 = 0; var7 < this.byMipLevel.length; ++var7) {
-         RenderSystem.getDevice().createCommandEncoder().writeToTexture(var6, var5[var7], var7, 0, var1 >> var7, var2 >> var7, this.width >> var7, this.height >> var7, var3 >> var7, var4 >> var7);
+   void upload(int var1, int var2, int var3, int var4, NativeImage[] var5, GpuTexture var6, int var7) {
+      for(int var8 = 0; var8 < Math.min(this.byMipLevel.length, var7); ++var8) {
+         RenderSystem.getDevice().createCommandEncoder().writeToTexture(var6, var5[var8], var8, 0, var1 >> var8, var2 >> var8, this.width >> var8, this.height >> var8, var3 >> var8, var4 >> var8);
       }
 
    }
@@ -200,7 +203,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       if (this.animatedTexture != null) {
          this.animatedTexture.uploadFirstFrame(var1, var2, var3);
       } else {
-         this.upload(var1, var2, 0, 0, this.byMipLevel, var3);
+         this.upload(var1, var2, 0, 0, this.byMipLevel, var3, this.byMipLevel.length);
       }
 
    }
@@ -241,7 +244,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
                }
             }
 
-            SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame, var4);
+            SpriteContents.this.upload(var1, var2, 0, 0, this.activeFrame, var4, 2);
             if (SharedConstants.DEBUG_DUMP_INTERPOLATED_TEXTURE_FRAMES) {
                try {
                   Path var19 = TextureUtil.getDebugTexturePath();
@@ -301,10 +304,10 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          return var1 / this.frameRowSize;
       }
 
-      void uploadFrame(int var1, int var2, int var3, GpuTexture var4) {
-         int var5 = this.getFrameX(var3) * SpriteContents.this.width;
-         int var6 = this.getFrameY(var3) * SpriteContents.this.height;
-         SpriteContents.this.upload(var1, var2, var5, var6, SpriteContents.this.byMipLevel, var4);
+      void uploadFrame(int var1, int var2, int var3, GpuTexture var4, int var5) {
+         int var6 = this.getFrameX(var3) * SpriteContents.this.width;
+         int var7 = this.getFrameY(var3) * SpriteContents.this.height;
+         SpriteContents.this.upload(var1, var2, var6, var7, SpriteContents.this.byMipLevel, var4, var5);
       }
 
       public SpriteTicker createTicker() {
@@ -312,7 +315,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       }
 
       public void uploadFirstFrame(int var1, int var2, GpuTexture var3) {
-         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index, var3);
+         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index, var3, var3.getMipLevels());
       }
 
       public IntStream getUniqueFrames() {
@@ -342,7 +345,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
             this.subFrame = 0;
             int var6 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
             if (var5 != var6) {
-               this.animationInfo.uploadFrame(var1, var2, var6, var3);
+               this.animationInfo.uploadFrame(var1, var2, var6, var3, 2);
             }
          } else if (this.interpolationData != null) {
             this.interpolationData.uploadInterpolatedFrame(var1, var2, this, var3);

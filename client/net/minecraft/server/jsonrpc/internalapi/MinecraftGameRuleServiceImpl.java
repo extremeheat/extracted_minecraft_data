@@ -9,15 +9,16 @@ import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.jsonrpc.methods.GameRulesService;
 import net.minecraft.server.jsonrpc.methods.InvalidParameterJsonRpcException;
-import net.minecraft.world.flag.FeatureFlagSet;
 
 public class MinecraftGameRuleServiceImpl implements MinecraftGameRuleService {
    private final DedicatedServer server;
+   private final net.minecraft.world.level.GameRules gameRules;
    private final JsonRpcLogger jsonrpcLogger;
 
    public MinecraftGameRuleServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
       super();
       this.server = var1;
+      this.gameRules = var1.getWorldData().getGameRules();
       this.jsonrpcLogger = var2;
    }
 
@@ -42,7 +43,7 @@ public class MinecraftGameRuleServiceImpl implements MinecraftGameRuleService {
    }
 
    public <T extends net.minecraft.world.level.GameRules.Value<T>> T getRule(net.minecraft.world.level.GameRules.Key<T> var1) {
-      return (T)this.server.getGameRules().getRule(var1);
+      return (T)this.gameRules.getRule(var1);
    }
 
    public GameRulesService.TypedRule getTypedRule(String var1, net.minecraft.world.level.GameRules.Value<?> var2) {
@@ -69,8 +70,7 @@ public class MinecraftGameRuleServiceImpl implements MinecraftGameRuleService {
    }
 
    public Stream<Map.Entry<net.minecraft.world.level.GameRules.Key<?>, net.minecraft.world.level.GameRules.Type<?>>> getAvailableGameRules() {
-      FeatureFlagSet var1 = this.server.getWorldData().getLevelSettings().getDataConfiguration().enabledFeatures();
-      return net.minecraft.world.level.GameRules.availableRules(var1);
+      return net.minecraft.world.level.GameRules.availableRules(this.server.getWorldData().enabledFeatures());
    }
 
    private Optional<net.minecraft.world.level.GameRules.Key<?>> getRuleKey(String var1) {
@@ -80,6 +80,6 @@ public class MinecraftGameRuleServiceImpl implements MinecraftGameRuleService {
 
    private net.minecraft.world.level.GameRules.Value<?> getRuleValue(String var1) {
       net.minecraft.world.level.GameRules.Key var2 = (net.minecraft.world.level.GameRules.Key)this.getRuleKey(var1).orElseThrow(() -> new InvalidParameterJsonRpcException("Game rule '" + var1 + "' does not exist"));
-      return this.server.getGameRules().getRule(var2);
+      return this.gameRules.getRule(var2);
    }
 }

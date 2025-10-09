@@ -40,14 +40,14 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
    private void createTexture(Supplier<String> var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
-      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = var2.createTextureView(this.texture);
    }
 
    private void createTexture(String var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.texture = var2.createTexture(var1, 5, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
-      this.texture.setTextureFilter(FilterMode.NEAREST, false);
+      this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
       this.textureView = var2.createTextureView(this.texture);
    }
 

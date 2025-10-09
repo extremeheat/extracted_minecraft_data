@@ -28,7 +28,7 @@ public class BanIpCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(3))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), MessageArgument.getMessage(var0x, "reason"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), MessageArgument.getMessage(var0x, "reason"))))));
    }
 
    private static int banIpOrName(CommandSourceStack var0, String var1, @Nullable Component var2) throws CommandSyntaxException {

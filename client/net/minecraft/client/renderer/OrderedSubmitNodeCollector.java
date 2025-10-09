@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -23,8 +22,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 public interface OrderedSubmitNodeCollector {
-   void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3);
-
    void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3);
 
    void submitNameTag(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9);

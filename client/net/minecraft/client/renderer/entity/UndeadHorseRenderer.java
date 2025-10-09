@@ -19,6 +19,7 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
    public UndeadHorseRenderer(EntityRendererProvider.Context var1, Type var2) {
       super(var1, new HorseModel(var1.bakeLayer(var2.model)), new HorseModel(var1.bakeLayer(var2.babyModel)));
       this.texture = var2.texture;
+      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_BODY, (var0) -> var0.bodyArmorItem, new HorseModel(var1.bakeLayer(ModelLayers.UNDEAD_HORSE_ARMOR)), new HorseModel(var1.bakeLayer(ModelLayers.UNDEAD_HORSE_BABY_ARMOR))));
       this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), var2.saddleLayer, (var0) -> var0.saddle, new EquineSaddleModel(var1.bakeLayer(var2.saddleModel)), new EquineSaddleModel(var1.bakeLayer(var2.babySaddleModel))));
    }
 

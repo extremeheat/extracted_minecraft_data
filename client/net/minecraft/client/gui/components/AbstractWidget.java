@@ -34,7 +34,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected int height;
    private int x;
    private int y;
-   private Component message;
+   protected Component message;
    protected boolean isHovered;
    public boolean active = true;
    public boolean visible = true;

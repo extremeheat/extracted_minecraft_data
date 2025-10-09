@@ -129,7 +129,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return RecordCodecBuilder.mapCodec((var1) -> var1.group(propertiesCodec()).apply(var1, var0));
    }
 
-   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
@@ -1062,11 +1062,11 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().neighborChanged(this.asState(), var1, var2, var3, var4, var5);
       }
 
-      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3) {
+      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3) {
          this.updateNeighbourShapes(var1, var2, var3, 512);
       }
 
-      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
+      public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
          for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
@@ -1076,11 +1076,11 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       }
 
-      public final void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3) {
+      public final void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3) {
          this.updateIndirectNeighbourShapes(var1, var2, var3, 512);
       }
 
-      public void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
+      public void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, @Block.UpdateFlags int var3, int var4) {
          this.getBlock().updateIndirectNeighbourShapes(this.asState(), var1, var2, var3, var4);
       }
 

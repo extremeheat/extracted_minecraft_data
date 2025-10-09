@@ -127,7 +127,7 @@ public class SectionOcclusionGraph {
    }
 
    public void update(boolean var1, Camera var2, Frustum var3, List<SectionRenderDispatcher.RenderSection> var4, LongOpenHashSet var5) {
-      Vec3 var6 = var2.getPosition();
+      Vec3 var6 = var2.position();
       if (this.needsFullUpdate && (this.fullUpdateTask == null || this.fullUpdateTask.isDone())) {
          this.scheduleFullUpdate(var1, var2, var6, var5);
       }
@@ -205,7 +205,7 @@ public class SectionOcclusionGraph {
    }
 
    private void initializeQueueForFullUpdate(Camera var1, Queue<Node> var2) {
-      BlockPos var3 = var1.getBlockPosition();
+      BlockPos var3 = var1.blockPosition();
       long var4 = SectionPos.asLong(var3);
       int var6 = SectionPos.y(var4);
       SectionRenderDispatcher.RenderSection var7 = this.viewArea.getRenderSection(var4);

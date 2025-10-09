@@ -1,31 +1,28 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.time.Duration;
 import java.time.Instant;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.lighting.LayerLightSectionStorage;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 
 public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final Duration REFRESH_INTERVAL = Duration.ofMillis(500L);
    private static final int RADIUS = 10;
-   private static final Vector4f LIGHT_AND_BLOCKS_COLOR = new Vector4f(1.0F, 1.0F, 0.0F, 0.25F);
-   private static final Vector4f LIGHT_ONLY_COLOR = new Vector4f(0.25F, 0.125F, 0.0F, 0.125F);
+   private static final int LIGHT_AND_BLOCKS_COLOR = ARGB.colorFromFloat(0.25F, 1.0F, 1.0F, 0.0F);
+   private static final int LIGHT_ONLY_COLOR = ARGB.colorFromFloat(0.125F, 0.25F, 0.125F, 0.0F);
    private final Minecraft minecraft;
    private final LightLayer lightLayer;
    private Instant lastUpdateTime = Instant.now();
@@ -38,59 +35,55 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.lightLayer = var2;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
-      Instant var11 = Instant.now();
-      if (this.data == null || Duration.between(this.lastUpdateTime, var11).compareTo(REFRESH_INTERVAL) > 0) {
-         this.lastUpdateTime = var11;
+   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
+      Instant var10 = Instant.now();
+      if (this.data == null || Duration.between(this.lastUpdateTime, var10).compareTo(REFRESH_INTERVAL) > 0) {
+         this.lastUpdateTime = var10;
          this.data = new SectionData(this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer);
       }
 
-      renderEdges(var1, this.data.lightAndBlocksShape, this.data.minPos, var2, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
-      renderEdges(var1, this.data.lightShape, this.data.minPos, var2, var3, var5, var7, LIGHT_ONLY_COLOR);
-      VertexConsumer var12 = var2.getBuffer(RenderType.debugSectionQuads());
-      renderFaces(var1, this.data.lightAndBlocksShape, this.data.minPos, var12, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
-      renderFaces(var1, this.data.lightShape, this.data.minPos, var12, var3, var5, var7, LIGHT_ONLY_COLOR);
+      renderEdges(this.data.lightAndBlocksShape, this.data.minPos, LIGHT_AND_BLOCKS_COLOR);
+      renderEdges(this.data.lightShape, this.data.minPos, LIGHT_ONLY_COLOR);
+      renderFaces(this.data.lightAndBlocksShape, this.data.minPos, LIGHT_AND_BLOCKS_COLOR);
+      renderFaces(this.data.lightShape, this.data.minPos, LIGHT_ONLY_COLOR);
    }
 
-   private static void renderFaces(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, VertexConsumer var3, double var4, double var6, double var8, Vector4f var10) {
-      var1.forAllFaces((var10x, var11, var12, var13) -> {
-         int var14 = var11 + var2.getX();
-         int var15 = var12 + var2.getY();
-         int var16 = var13 + var2.getZ();
-         renderFace(var0, var3, var10x, var4, var6, var8, var14, var15, var16, var10);
+   private static void renderFaces(DiscreteVoxelShape var0, SectionPos var1, int var2) {
+      var0.forAllFaces((var2x, var3, var4, var5) -> {
+         int var6 = var3 + var1.getX();
+         int var7 = var4 + var1.getY();
+         int var8 = var5 + var1.getZ();
+         renderFace(var2x, var6, var7, var8, var2);
       });
    }
 
-   private static void renderEdges(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, MultiBufferSource var3, double var4, double var6, double var8, Vector4f var10) {
-      var1.forAllEdges((var10x, var11, var12, var13, var14, var15) -> {
-         int var16 = var10x + var2.getX();
-         int var17 = var11 + var2.getY();
-         int var18 = var12 + var2.getZ();
-         int var19 = var13 + var2.getX();
-         int var20 = var14 + var2.getY();
-         int var21 = var15 + var2.getZ();
-         VertexConsumer var22 = var3.getBuffer(RenderType.debugLineStrip(1.0));
-         renderEdge(var0, var22, var4, var6, var8, var16, var17, var18, var19, var20, var21, var10);
+   private static void renderEdges(DiscreteVoxelShape var0, SectionPos var1, int var2) {
+      var0.forAllEdges((var2x, var3, var4, var5, var6, var7) -> {
+         int var8 = var2x + var1.getX();
+         int var9 = var3 + var1.getY();
+         int var10 = var4 + var1.getZ();
+         int var11 = var5 + var1.getX();
+         int var12 = var6 + var1.getY();
+         int var13 = var7 + var1.getZ();
+         renderEdge(var8, var9, var10, var11, var12, var13, var2);
       }, true);
    }
 
-   private static void renderFace(PoseStack var0, VertexConsumer var1, Direction var2, double var3, double var5, double var7, int var9, int var10, int var11, Vector4f var12) {
-      float var13 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var3);
-      float var14 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var5);
-      float var15 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var7);
-      ShapeRenderer.renderFace(var0.last().pose(), var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
+   private static void renderFace(Direction var0, int var1, int var2, int var3, int var4) {
+      Vec3 var5 = new Vec3((double)SectionPos.sectionToBlockCoord(var1), (double)SectionPos.sectionToBlockCoord(var2), (double)SectionPos.sectionToBlockCoord(var3));
+      Vec3 var6 = var5.add(16.0, 16.0, 16.0);
+      Gizmos.rect(var5, var6, var0, GizmoStyle.fill(var4));
    }
 
-   private static void renderEdge(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, int var8, int var9, int var10, int var11, int var12, int var13, Vector4f var14) {
-      float var15 = (float)((double)SectionPos.sectionToBlockCoord(var8) - var2);
-      float var16 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var4);
-      float var17 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var6);
-      float var18 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var2);
-      float var19 = (float)((double)SectionPos.sectionToBlockCoord(var12) - var4);
-      float var20 = (float)((double)SectionPos.sectionToBlockCoord(var13) - var6);
-      Matrix4f var21 = var0.last().pose();
-      var1.addVertex(var21, var15, var16, var17).setColor(var14.x(), var14.y(), var14.z(), 1.0F);
-      var1.addVertex(var21, var18, var19, var20).setColor(var14.x(), var14.y(), var14.z(), 1.0F);
+   private static void renderEdge(int var0, int var1, int var2, int var3, int var4, int var5, int var6) {
+      double var7 = (double)SectionPos.sectionToBlockCoord(var0);
+      double var9 = (double)SectionPos.sectionToBlockCoord(var1);
+      double var11 = (double)SectionPos.sectionToBlockCoord(var2);
+      double var13 = (double)SectionPos.sectionToBlockCoord(var3);
+      double var15 = (double)SectionPos.sectionToBlockCoord(var4);
+      double var17 = (double)SectionPos.sectionToBlockCoord(var5);
+      int var19 = ARGB.opaque(var6);
+      Gizmos.line(new Vec3(var7, var9, var11), new Vec3(var13, var15, var17), var19);
    }
 
    static final class SectionData {

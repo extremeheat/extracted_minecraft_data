@@ -65,6 +65,7 @@ import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraft.server.packs.repository.ServerPacksSource;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
@@ -391,7 +392,7 @@ public class CreateWorldScreen extends Screen {
 
    private static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository var0, WorldDataConfiguration var1) {
       WorldLoader.PackConfig var2 = new WorldLoader.PackConfig(var0, var1, false, true);
-      return new WorldLoader.InitConfig(var2, Commands.CommandSelection.INTEGRATED, 2);
+      return new WorldLoader.InitConfig(var2, Commands.CommandSelection.INTEGRATED, LevelBasedPermissionSet.GAMEMASTER);
    }
 
    private void removeTempDataPackDir() {
@@ -565,19 +566,19 @@ public class CreateWorldScreen extends Screen {
          CreateWorldScreen.this.uiState.addListener((var1x) -> this.nameEdit.setTooltip(Tooltip.create(Component.translatable("selectWorld.targetFolder", Component.literal(var1x.getTargetFolder()).withStyle(ChatFormatting.ITALIC)))));
          CreateWorldScreen.this.setInitialFocus(this.nameEdit);
          var2.addChild(CommonLayouts.labeledElement(CreateWorldScreen.this.font, this.nameEdit, CreateWorldScreen.NAME_LABEL), var2.newCellSettings().alignHorizontallyCenter());
-         CycleButton var4 = (CycleButton)var2.addChild(CycleButton.builder((var0) -> var0.displayName).withValues(WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1x, var2x) -> CreateWorldScreen.this.uiState.setGameMode(var2x)), var3);
+         CycleButton var4 = (CycleButton)var2.addChild(CycleButton.builder((var0) -> var0.displayName, CreateWorldScreen.this.uiState.getGameMode()).withValues(WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1x, var2x) -> CreateWorldScreen.this.uiState.setGameMode(var2x)), var3);
          CreateWorldScreen.this.uiState.addListener((var1x) -> {
             var4.setValue(var1x.getGameMode());
             var4.active = !var1x.isDebug();
             var4.setTooltip(Tooltip.create(var1x.getGameMode().getInfo()));
          });
-         CycleButton var5 = (CycleButton)var2.addChild(CycleButton.builder(Difficulty::getDisplayName).withValues(Difficulty.values()).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setDifficulty(var2x)), var3);
+         CycleButton var5 = (CycleButton)var2.addChild(CycleButton.builder(Difficulty::getDisplayName, CreateWorldScreen.this.uiState.getDifficulty()).withValues(Difficulty.values()).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setDifficulty(var2x)), var3);
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             var5.setValue(CreateWorldScreen.this.uiState.getDifficulty());
             var5.active = !CreateWorldScreen.this.uiState.isHardcore();
             var5.setTooltip(Tooltip.create(CreateWorldScreen.this.uiState.getDifficulty().getInfo()));
          });
-         CycleButton var6 = (CycleButton)var2.addChild(CycleButton.onOffBuilder().withTooltip((var0) -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO)).create(0, 0, 210, 20, ALLOW_COMMANDS, (var1x, var2x) -> CreateWorldScreen.this.uiState.setAllowCommands(var2x)));
+         CycleButton var6 = (CycleButton)var2.addChild(CycleButton.onOffBuilder(CreateWorldScreen.this.uiState.isAllowCommands()).withTooltip((var0) -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO)).create(0, 0, 210, 20, ALLOW_COMMANDS, (var1x, var2x) -> CreateWorldScreen.this.uiState.setAllowCommands(var2x)));
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             var6.setValue(CreateWorldScreen.this.uiState.isAllowCommands());
             var6.active = !CreateWorldScreen.this.uiState.isDebug() && !CreateWorldScreen.this.uiState.isHardcore();
@@ -604,7 +605,7 @@ public class CreateWorldScreen extends Screen {
       WorldTab() {
          super(TITLE);
          GridLayout.RowHelper var2 = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
-         CycleButton var3 = (CycleButton)var2.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset).withValues(this.createWorldTypeValueSupplier()).withCustomNarration(WorldTab::createTypeButtonNarration).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setWorldType(var2x)));
+         CycleButton var3 = (CycleButton)var2.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier()).withCustomNarration(WorldTab::createTypeButtonNarration).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setWorldType(var2x)));
          var3.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             WorldCreationUiState.WorldTypeEntry var3x = var2x.getWorldType();

@@ -5,7 +5,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
@@ -15,7 +14,7 @@ public abstract class FogEnvironment {
       super();
    }
 
-   public abstract void setupFog(FogData var1, Entity var2, BlockPos var3, ClientLevel var4, float var5, DeltaTracker var6);
+   public abstract void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5);
 
    public boolean providesColor() {
       return true;
@@ -34,7 +33,4 @@ public abstract class FogEnvironment {
    }
 
    public abstract boolean isApplicable(@Nullable FogType var1, Entity var2);
-
-   public void onNotApplicable() {
-   }
 }

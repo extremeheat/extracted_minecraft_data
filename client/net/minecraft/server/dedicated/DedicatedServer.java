@@ -53,6 +53,8 @@ import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.network.ServerTextFilter;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.server.players.PlayerList;
@@ -276,7 +278,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          String var9 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
          LOGGER.info("Done ({})! For help, type \"help\"", var9);
          if (var13.announcePlayerAchievements != null) {
-            ((GameRules.BooleanValue)this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
+            ((GameRules.BooleanValue)this.worldData.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
          }
 
          if (var13.enableQuery) {
@@ -563,16 +565,16 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.settings.update((var2) -> (DedicatedServerProperties)var2.hideOnlinePlayers.update(this.registryAccess(), var1));
    }
 
-   public int operatorUserPermissionLevel() {
-      return (Integer)this.getProperties().opPermissionLevel.get();
+   public LevelBasedPermissionSet operatorUserPermissions() {
+      return this.getProperties().opPermissions.get();
    }
 
-   public void setOperatorUserPermissionLevel(int var1) {
-      this.settings.update((var2) -> (DedicatedServerProperties)var2.opPermissionLevel.update(this.registryAccess(), var1));
+   public void setOperatorUserPermissions(LevelBasedPermissionSet var1) {
+      this.settings.update((var2) -> (DedicatedServerProperties)var2.opPermissions.update(this.registryAccess(), var1));
    }
 
-   public int getFunctionCompilationLevel() {
-      return this.getProperties().functionPermissionLevel;
+   public PermissionSet getFunctionCompilationPermissions() {
+      return this.getProperties().functionPermissions;
    }
 
    public int playerIdleTimeout() {

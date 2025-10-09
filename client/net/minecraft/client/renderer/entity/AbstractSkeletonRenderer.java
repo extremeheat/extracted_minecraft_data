@@ -30,7 +30,7 @@ public abstract class AbstractSkeletonRenderer<T extends AbstractSkeleton, S ext
       return var1.isShaking;
    }
 
-   protected HumanoidModel.ArmPose getArmPose(AbstractSkeleton var1, HumanoidArm var2) {
-      return var1.getMainArm() == var2 && var1.isAggressive() && var1.getMainHandItem().is(Items.BOW) ? HumanoidModel.ArmPose.BOW_AND_ARROW : HumanoidModel.ArmPose.EMPTY;
+   protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
+      return var1.getMainArm() == var2 && var1.isAggressive() && var1.getMainHandItem().is(Items.BOW) ? HumanoidModel.ArmPose.BOW_AND_ARROW : super.getArmPose(var1, var2);
    }
 }

@@ -5,7 +5,7 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 
 public enum ChunkSectionLayerGroup {
-   OPAQUE(new ChunkSectionLayer[]{ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT_MIPPED, ChunkSectionLayer.CUTOUT}),
+   OPAQUE(new ChunkSectionLayer[]{ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT}),
    TRANSLUCENT(new ChunkSectionLayer[]{ChunkSectionLayer.TRANSLUCENT}),
    TRIPWIRE(new ChunkSectionLayer[]{ChunkSectionLayer.TRIPWIRE});
 

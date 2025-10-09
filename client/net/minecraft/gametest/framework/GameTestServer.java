@@ -39,6 +39,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.ProfileResolver;
@@ -87,7 +89,7 @@ public class GameTestServer extends MinecraftServer {
       WorldDataConfiguration var6 = new WorldDataConfiguration(new DataPackConfig(var5, List.of()), ENABLED_FEATURES);
       LevelSettings var7 = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, new GameRules(ENABLED_FEATURES), var6);
       WorldLoader.PackConfig var8 = new WorldLoader.PackConfig(var2, var6, false, true);
-      WorldLoader.InitConfig var9 = new WorldLoader.InitConfig(var8, Commands.CommandSelection.DEDICATED, 4);
+      WorldLoader.InitConfig var9 = new WorldLoader.InitConfig(var8, Commands.CommandSelection.DEDICATED, LevelBasedPermissionSet.OWNER);
 
       try {
          LOGGER.debug("Starting resource loading");
@@ -251,12 +253,12 @@ public class GameTestServer extends MinecraftServer {
       return false;
    }
 
-   public int operatorUserPermissionLevel() {
-      return 0;
+   public LevelBasedPermissionSet operatorUserPermissions() {
+      return LevelBasedPermissionSet.ALL;
    }
 
-   public int getFunctionCompilationLevel() {
-      return 4;
+   public PermissionSet getFunctionCompilationPermissions() {
+      return LevelBasedPermissionSet.OWNER;
    }
 
    public boolean shouldRconBroadcast() {
@@ -273,14 +275,6 @@ public class GameTestServer extends MinecraftServer {
 
    public boolean isEpollEnabled() {
       return false;
-   }
-
-   public boolean isCommandBlockEnabled() {
-      return true;
-   }
-
-   public boolean isSpawnerBlockEnabled() {
-      return true;
    }
 
    public boolean isPublished() {

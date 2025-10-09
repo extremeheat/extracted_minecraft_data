@@ -4,9 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -22,7 +20,6 @@ public abstract class RenderStateShard {
    protected final String name;
    private final Runnable setupState;
    private final Runnable clearState;
-   protected static final TextureStateShard BLOCK_SHEET_MIPPED;
    protected static final TextureStateShard BLOCK_SHEET;
    protected static final EmptyTextureStateShard NO_TEXTURE;
    protected static final TexturingStateShard DEFAULT_TEXTURING;
@@ -40,7 +37,6 @@ public abstract class RenderStateShard {
    protected static final OutputStateShard OUTLINE_TARGET;
    protected static final OutputStateShard WEATHER_TARGET;
    protected static final OutputStateShard ITEM_ENTITY_TARGET;
-   protected static final LineStateShard DEFAULT_LINE;
 
    public RenderStateShard(String var1, Runnable var2, Runnable var3) {
       super();
@@ -75,8 +71,7 @@ public abstract class RenderStateShard {
    }
 
    static {
-      BLOCK_SHEET_MIPPED = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, true);
-      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false);
+      BLOCK_SHEET = new TextureStateShard(TextureAtlas.LOCATION_BLOCKS);
       NO_TEXTURE = new EmptyTextureStateShard();
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
@@ -120,7 +115,6 @@ public abstract class RenderStateShard {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getItemEntityTarget();
          return var0 != null ? var0 : Minecraft.getInstance().getMainRenderTarget();
       });
-      DEFAULT_LINE = new LineStateShard(OptionalDouble.of(1.0));
    }
 
    protected static class EmptyTextureStateShard extends RenderStateShard {
@@ -142,19 +136,18 @@ public abstract class RenderStateShard {
    protected static class MultiTextureStateShard extends EmptyTextureStateShard {
       private final Optional<ResourceLocation> cutoutTexture;
 
-      MultiTextureStateShard(List<Entry> var1) {
+      MultiTextureStateShard(List<ResourceLocation> var1) {
          super(() -> {
             for(int var1x = 0; var1x < var1.size(); ++var1x) {
-               Entry var2 = (Entry)var1.get(var1x);
+               ResourceLocation var2 = (ResourceLocation)var1.get(var1x);
                TextureManager var3 = Minecraft.getInstance().getTextureManager();
-               AbstractTexture var4 = var3.getTexture(var2.id);
-               var4.setUseMipmaps(var2.mipmap);
-               RenderSystem.setShaderTexture(var1x, var4.getTextureView());
+               AbstractTexture var4 = var3.getTexture(var2);
+               RenderSystem.setShaderTexture(var1x, var4.getTextureView(), var4.getSampler());
             }
 
          }, () -> {
          });
-         this.cutoutTexture = var1.isEmpty() ? Optional.empty() : Optional.of(((Entry)var1.getFirst()).id);
+         this.cutoutTexture = var1.isEmpty() ? Optional.empty() : Optional.of((ResourceLocation)var1.getFirst());
       }
 
       protected Optional<ResourceLocation> cutoutTexture() {
@@ -165,26 +158,15 @@ public abstract class RenderStateShard {
          return new Builder();
       }
 
-      static record Entry(ResourceLocation id, boolean mipmap) {
-         final ResourceLocation id;
-         final boolean mipmap;
-
-         Entry(ResourceLocation var1, boolean var2) {
-            super();
-            this.id = var1;
-            this.mipmap = var2;
-         }
-      }
-
       public static final class Builder {
-         private final ImmutableList.Builder<Entry> builder = new ImmutableList.Builder();
+         private final ImmutableList.Builder<ResourceLocation> builder = new ImmutableList.Builder();
 
          public Builder() {
             super();
          }
 
-         public Builder add(ResourceLocation var1, boolean var2) {
-            this.builder.add(new Entry(var1, var2));
+         public Builder add(ResourceLocation var1) {
+            this.builder.add(var1);
             return this;
          }
 
@@ -196,23 +178,20 @@ public abstract class RenderStateShard {
 
    protected static class TextureStateShard extends EmptyTextureStateShard {
       private final Optional<ResourceLocation> texture;
-      private final boolean mipmap;
 
-      public TextureStateShard(ResourceLocation var1, boolean var2) {
+      public TextureStateShard(ResourceLocation var1) {
          super(() -> {
-            TextureManager var2x = Minecraft.getInstance().getTextureManager();
-            AbstractTexture var3 = var2x.getTexture(var1);
-            var3.setUseMipmaps(var2);
-            RenderSystem.setShaderTexture(0, var3.getTextureView());
+            TextureManager var1x = Minecraft.getInstance().getTextureManager();
+            AbstractTexture var2 = var1x.getTexture(var1);
+            RenderSystem.setShaderTexture(0, var2.getTextureView(), var2.getSampler());
          }, () -> {
          });
          this.texture = Optional.of(var1);
-         this.mipmap = var2;
       }
 
       public String toString() {
          String var10000 = this.name;
-         return var10000 + "[" + String.valueOf(this.texture) + "(mipmap=" + this.mipmap + ")]";
+         return var10000 + "[" + String.valueOf(this.texture) + "]";
       }
 
       protected Optional<ResourceLocation> cutoutTexture() {
@@ -295,34 +274,6 @@ public abstract class RenderStateShard {
 
       public RenderTarget getRenderTarget() {
          return (RenderTarget)this.renderTargetSupplier.get();
-      }
-   }
-
-   protected static class LineStateShard extends RenderStateShard {
-      private final OptionalDouble width;
-
-      public LineStateShard(OptionalDouble var1) {
-         super("line_width", () -> {
-            if (!Objects.equals(var1, OptionalDouble.of(1.0))) {
-               if (var1.isPresent()) {
-                  RenderSystem.lineWidth((float)var1.getAsDouble());
-               } else {
-                  RenderSystem.lineWidth(Math.max(2.5F, (float)Minecraft.getInstance().getWindow().getWidth() / 1920.0F * 2.5F));
-               }
-            }
-
-         }, () -> {
-            if (!Objects.equals(var1, OptionalDouble.of(1.0))) {
-               RenderSystem.lineWidth(1.0F);
-            }
-
-         });
-         this.width = var1;
-      }
-
-      public String toString() {
-         String var10000 = this.name;
-         return var10000 + "[" + String.valueOf(this.width.isPresent() ? this.width.getAsDouble() : "window_scale") + "]";
       }
    }
 }

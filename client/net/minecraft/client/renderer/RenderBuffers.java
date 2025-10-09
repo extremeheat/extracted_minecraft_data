@@ -20,7 +20,7 @@ public class RenderBuffers {
       SequencedMap var2 = (SequencedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var1x) -> {
          var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.SOLID));
          var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
-         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT_MIPPED));
+         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.CUTOUT));
          var1x.put(Sheets.translucentItemSheet(), this.fixedBufferPack.buffer(ChunkSectionLayer.TRANSLUCENT));
          put(var1x, Sheets.shieldSheet());
          put(var1x, Sheets.bedSheet());

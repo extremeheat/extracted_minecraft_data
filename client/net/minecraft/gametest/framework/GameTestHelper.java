@@ -40,6 +40,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
@@ -159,24 +160,37 @@ public class GameTestHelper {
    }
 
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
-      ServerLevel var3 = this.getLevel();
-      Entity var4 = var1.create(var3, EntitySpawnReason.STRUCTURE);
-      if (var4 == null) {
+      return (E)this.spawn(var1, var2, (EntitySpawnReason)null);
+   }
+
+   public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2, @Nullable EntitySpawnReason var3) {
+      ServerLevel var4 = this.getLevel();
+      Entity var5 = var1.create(var4, EntitySpawnReason.STRUCTURE);
+      if (var5 == null) {
          throw this.assertionException(BlockPos.containing(var2), "test.error.spawn_failure", var1.builtInRegistryHolder().getRegisteredName());
       } else {
-         if (var4 instanceof Mob) {
-            Mob var5 = (Mob)var4;
-            var5.setPersistenceRequired();
+         if (var5 instanceof Mob) {
+            Mob var6 = (Mob)var5;
+            var6.setPersistenceRequired();
          }
 
-         Vec3 var7 = this.absoluteVec(var2);
-         float var6 = var4.rotate(this.getTestRotation());
-         var4.snapTo(var7.x, var7.y, var7.z, var6, var4.getXRot());
-         var4.setYBodyRot(var6);
-         var4.setYHeadRot(var6);
-         var3.addFreshEntity(var4);
-         return (E)var4;
+         Vec3 var9 = this.absoluteVec(var2);
+         float var7 = var5.rotate(this.getTestRotation());
+         var5.snapTo(var9.x, var9.y, var9.z, var7, var5.getXRot());
+         var5.setYBodyRot(var7);
+         var5.setYHeadRot(var7);
+         if (var3 != null && var5 instanceof Mob) {
+            Mob var8 = (Mob)var5;
+            var8.finalizeSpawn(this.getLevel(), this.getLevel().getCurrentDifficultyAt(var8.blockPosition()), var3, (SpawnGroupData)null);
+         }
+
+         var4.addFreshEntityWithPassengers(var5);
+         return (E)var5;
       }
+   }
+
+   public <E extends Mob> E spawn(EntityType<E> var1, int var2, int var3, int var4, EntitySpawnReason var5) {
+      return (E)(this.spawn(var1, new Vec3((double)var2, (double)var3, (double)var4), var5));
    }
 
    public void hurt(Entity var1, DamageSource var2, float var3) {
@@ -387,14 +401,6 @@ public class GameTestHelper {
       }
 
       this.getLevel().setBlock(this.absolutePos(var1), var4, 3);
-   }
-
-   public void setNight() {
-      this.setDayTime(13000);
-   }
-
-   public void setDayTime(int var1) {
-      this.getLevel().setDayTime((long)var1);
    }
 
    public void assertBlockPresent(Block var1, int var2, int var3, int var4) {
@@ -945,6 +951,10 @@ public class GameTestHelper {
       }
    }
 
+   public void assertTrue(boolean var1, String var2) {
+      this.assertTrue(var1, (Component)Component.literal(var2));
+   }
+
    public <N> void assertValueEqual(N var1, N var2, Component var3) {
       if (!var1.equals(var2)) {
          throw this.assertionException("test.error.value_not_equal", var3, var1, var2);
@@ -953,6 +963,10 @@ public class GameTestHelper {
 
    public void assertFalse(boolean var1, Component var2) {
       this.assertTrue(!var1, var2);
+   }
+
+   public void assertFalse(boolean var1, String var2) {
+      this.assertFalse(var1, (Component)Component.literal(var2));
    }
 
    public long getTick() {

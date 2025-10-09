@@ -1,6 +1,8 @@
 package net.minecraft.client.gui.render.state;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -26,7 +28,7 @@ public record GlyphRenderState(Matrix3x2f pose, TextRenderable renderable, @Null
    }
 
    public TextureSetup textureSetup() {
-      return TextureSetup.singleTextureWithLightmap(this.renderable.textureView());
+      return TextureSetup.singleTextureWithLightmap(this.renderable.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
    }
 
    @Nullable

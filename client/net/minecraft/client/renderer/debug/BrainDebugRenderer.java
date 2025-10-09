@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -12,9 +11,9 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.util.debug.DebugBrainDump;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
@@ -42,7 +41,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final boolean SHOW_ANGER_LEVEL_FOR_SELECTED = true;
    private static final int MAX_RENDER_DIST_FOR_BRAIN_INFO = 30;
    private static final int MAX_TARGETING_DIST = 8;
-   private static final float TEXT_SCALE = 0.02F;
+   private static final float TEXT_SCALE = 0.32F;
    private static final int CYAN = -16711681;
    private static final int GRAY = -3355444;
    private static final int PINK = -98404;
@@ -56,85 +55,85 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
-      this.doRender(var1, var2, var3, var5, var7, var9);
+   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
+      this.doRender(var7);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();
       }
 
    }
 
-   private void doRender(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9) {
-      var9.forEachEntity(DebugSubscriptions.BRAINS, (var9x, var10) -> {
-         if (this.minecraft.player.closerThan(var9x, 30.0)) {
-            this.renderBrainInfo(var1, var2, var9x, var10, var3, var5, var7);
+   private void doRender(DebugValueAccess var1) {
+      var1.forEachEntity(DebugSubscriptions.BRAINS, (var1x, var2) -> {
+         if (this.minecraft.player.closerThan(var1x, 30.0)) {
+            this.renderBrainInfo(var1x, var2);
          }
 
       });
    }
 
-   private void renderBrainInfo(PoseStack var1, MultiBufferSource var2, Entity var3, DebugBrainDump var4, double var5, double var7, double var9) {
-      boolean var11 = this.isMobSelected(var3);
-      int var12 = 0;
-      DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var4.name(), -1, 0.03F);
-      ++var12;
-      if (var11) {
-         DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var4.profession() + " " + var4.xp() + " xp", -1, 0.02F);
-         ++var12;
+   private void renderBrainInfo(Entity var1, DebugBrainDump var2) {
+      boolean var3 = this.isMobSelected(var1);
+      int var4 = 0;
+      Gizmos.billboardTextOverMob(var1, var4, var2.name(), -1, 0.48F);
+      ++var4;
+      if (var3) {
+         Gizmos.billboardTextOverMob(var1, var4, var2.profession() + " " + var2.xp() + " xp", -1, 0.32F);
+         ++var4;
       }
 
-      if (var11) {
-         int var13 = var4.health() < var4.maxHealth() ? -23296 : -1;
-         String var10004 = String.format(Locale.ROOT, "%.1f", var4.health());
-         DebugRenderer.renderTextOverMob(var1, var2, var3, var12, "health: " + var10004 + " / " + String.format(Locale.ROOT, "%.1f", var4.maxHealth()), var13, 0.02F);
-         ++var12;
+      if (var3) {
+         int var5 = var2.health() < var2.maxHealth() ? -23296 : -1;
+         String var10002 = String.format(Locale.ROOT, "%.1f", var2.health());
+         Gizmos.billboardTextOverMob(var1, var4, "health: " + var10002 + " / " + String.format(Locale.ROOT, "%.1f", var2.maxHealth()), var5, 0.32F);
+         ++var4;
       }
 
-      if (var11 && !var4.inventory().equals("")) {
-         DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var4.inventory(), -98404, 0.02F);
-         ++var12;
+      if (var3 && !var2.inventory().equals("")) {
+         Gizmos.billboardTextOverMob(var1, var4, var2.inventory(), -98404, 0.32F);
+         ++var4;
       }
 
-      if (var11) {
-         for(String var14 : var4.behaviors()) {
-            DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var14, -16711681, 0.02F);
-            ++var12;
+      if (var3) {
+         for(String var6 : var2.behaviors()) {
+            Gizmos.billboardTextOverMob(var1, var4, var6, -16711681, 0.32F);
+            ++var4;
          }
       }
 
-      if (var11) {
-         for(String var20 : var4.activities()) {
-            DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var20, -16711936, 0.02F);
-            ++var12;
+      if (var3) {
+         for(String var12 : var2.activities()) {
+            Gizmos.billboardTextOverMob(var1, var4, var12, -16711936, 0.32F);
+            ++var4;
          }
       }
 
-      if (var4.wantsGolem()) {
-         DebugRenderer.renderTextOverMob(var1, var2, var3, var12, "Wants Golem", -23296, 0.02F);
-         ++var12;
+      if (var2.wantsGolem()) {
+         Gizmos.billboardTextOverMob(var1, var4, "Wants Golem", -23296, 0.32F);
+         ++var4;
       }
 
-      if (var11 && var4.angerLevel() != -1) {
-         DebugRenderer.renderTextOverMob(var1, var2, var3, var12, "Anger Level: " + var4.angerLevel(), -98404, 0.02F);
-         ++var12;
+      if (var3 && var2.angerLevel() != -1) {
+         Gizmos.billboardTextOverMob(var1, var4, "Anger Level: " + var2.angerLevel(), -98404, 0.32F);
+         ++var4;
       }
 
-      if (var11) {
-         for(String var21 : var4.gossips()) {
-            if (var21.startsWith(var4.name())) {
-               DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var21, -1, 0.02F);
+      if (var3) {
+         for(String var13 : var2.gossips()) {
+            if (var13.startsWith(var2.name())) {
+               Gizmos.billboardTextOverMob(var1, var4, var13, -1, 0.32F);
             } else {
-               DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var21, -23296, 0.02F);
+               Gizmos.billboardTextOverMob(var1, var4, var13, -23296, 0.32F);
             }
 
-            ++var12;
+            ++var4;
          }
       }
 
-      if (var11) {
-         for(String var22 : Lists.reverse(var4.memories())) {
-            DebugRenderer.renderTextOverMob(var1, var2, var3, var12, var22, -3355444, 0.02F);
-            ++var12;
+      if (var3) {
+         for(String var14 : Lists.reverse(var2.memories())) {
+            Gizmos.billboardTextOverMob(var1, var4, var14, -3355444, 0.32F);
+            ++var4;
          }
       }
 

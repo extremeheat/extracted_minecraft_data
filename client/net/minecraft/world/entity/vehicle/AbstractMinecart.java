@@ -256,7 +256,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.behavior.getMaxSpeed(var1);
    }
 
-   public void activateMinecart(int var1, int var2, int var3, boolean var4) {
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
    }
 
    public void lerpPositionAndRotationStep(int var1, double var2, double var4, double var6, double var8, double var10) {

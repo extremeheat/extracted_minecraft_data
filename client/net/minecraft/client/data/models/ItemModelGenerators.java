@@ -16,6 +16,7 @@ import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.renderer.item.BundleSelectedItemSpecialRenderer;
+import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.RangeSelectItemModel;
 import net.minecraft.client.renderer.item.properties.conditional.Broken;
@@ -270,6 +271,12 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, createFlatModelDispatch(var2, var5));
    }
 
+   private void generateSpear(Item var1) {
+      ItemModel.Unbaked var2 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM));
+      ItemModel.Unbaked var3 = ItemModelUtils.plainModel(ModelTemplates.SPEAR_IN_HAND.create(var1, TextureMapping.layer0(TextureMapping.getItemTexture(var1, "_in_hand")), this.modelOutput));
+      this.itemModelOutput.accept(var1, createFlatModelDispatch(var2, var3), new ClientItem.Properties(true, false, 1.9F));
+   }
+
    private void addPotionTint(Item var1, ResourceLocation var2) {
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var2, new Potion()));
    }
@@ -358,6 +365,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.COPPER_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.COPPER_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.COPPER_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.COPPER_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CREEPER_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CYAN_DYE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DARK_OAK_BOAT, ModelTemplates.FLAT_ITEM);
@@ -366,6 +374,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.DIAMOND_AXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.DIAMOND_HOE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.DIAMOND_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.DIAMOND_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DIAMOND_PICKAXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.DIAMOND_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -403,6 +412,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.GOLDEN_CARROT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOLDEN_HOE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.GOLDEN_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GOLDEN_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOLDEN_PICKAXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.GOLDEN_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.GOLDEN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -421,6 +431,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.IRON_AXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.IRON_HOE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.IRON_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.IRON_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.IRON_INGOT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.IRON_NUGGET, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.IRON_PICKAXE, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -480,6 +491,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.NETHERITE_SCRAP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHERITE_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateFlatItem(Items.NETHERITE_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHER_BRICK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.RESIN_BRICK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHER_STAR, ModelTemplates.FLAT_ITEM);
@@ -673,6 +685,13 @@ public class ItemModelGenerators {
       this.generateFishingRod(Items.FISHING_ROD);
       this.generateGoatHorn(Items.GOAT_HORN);
       this.generateShield(Items.SHIELD);
+      this.generateSpear(Items.WOODEN_SPEAR);
+      this.generateSpear(Items.STONE_SPEAR);
+      this.generateSpear(Items.COPPER_SPEAR);
+      this.generateSpear(Items.GOLDEN_SPEAR);
+      this.generateSpear(Items.IRON_SPEAR);
+      this.generateSpear(Items.DIAMOND_SPEAR);
+      this.generateSpear(Items.NETHERITE_SPEAR);
       this.generateTippedArrow(Items.TIPPED_ARROW);
       this.generatePotion(Items.POTION);
       this.generatePotion(Items.SPLASH_POTION);
@@ -716,6 +735,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.MAGMA_CUBE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.MOOSHROOM_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.MULE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.NAUTILUS_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OCELOT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PANDA_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PARROT_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
@@ -760,6 +780,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.ZOMBIE_HORSE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ZOMBIE_VILLAGER_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ZOMBIFIED_PIGLIN_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ZOMBIE_NAUTILUS_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.declareCustomModelItem(Items.AIR);
       this.declareCustomModelItem(Items.AMETHYST_CLUSTER);
       this.declareCustomModelItem(Items.SMALL_AMETHYST_BUD);

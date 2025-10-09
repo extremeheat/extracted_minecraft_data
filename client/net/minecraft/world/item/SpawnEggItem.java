@@ -12,6 +12,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -63,7 +64,7 @@ public class SpawnEggItem extends Item {
             EntityType var13 = this.getType(var4);
             if (var13 == null) {
                return InteractionResult.FAIL;
-            } else if (!var3.getServer().isSpawnerBlockEnabled()) {
+            } else if (!var3.isSpawnerBlockEnabled()) {
                Player var11 = var1.getPlayer();
                if (var11 instanceof ServerPlayer) {
                   ServerPlayer var10 = (ServerPlayer)var11;
@@ -184,7 +185,7 @@ public class SpawnEggItem extends Item {
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.getPermissionLevel() >= 2) {
+      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.ENTITY_DATA);
          if (var3 != null) {
             return ((EntityType)var3.type()).onlyOpCanSetNbt();

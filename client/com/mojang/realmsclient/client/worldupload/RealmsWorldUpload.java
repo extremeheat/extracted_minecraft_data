@@ -95,7 +95,7 @@ public class RealmsWorldUpload {
             }
 
             if (var2 != null) {
-               if (!var2.isWorldClosed()) {
+               if (!var2.worldClosed()) {
                   throw new RealmsUploadWorldNotClosedException();
                }
 

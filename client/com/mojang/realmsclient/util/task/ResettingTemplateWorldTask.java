@@ -14,6 +14,6 @@ public class ResettingTemplateWorldTask extends ResettingWorldTask {
    }
 
    protected void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException {
-      var1.resetWorldWithTemplate(var2, this.template.id);
+      var1.resetWorldWithTemplate(var2, this.template.id());
    }
 }

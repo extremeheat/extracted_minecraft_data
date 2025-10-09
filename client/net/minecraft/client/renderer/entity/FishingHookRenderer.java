@@ -48,14 +48,15 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       float var5 = (float)var1.lineOriginOffset.x;
       float var6 = (float)var1.lineOriginOffset.y;
       float var7 = (float)var1.lineOriginOffset.z;
-      var3.submitCustomGeometry(var2, RenderType.lines(), (var3x, var4x) -> {
-         boolean var5x = true;
+      float var8 = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
+      var3.submitCustomGeometry(var2, RenderType.lines(), (var4x, var5x) -> {
+         boolean var6x = true;
 
-         for(int var6x = 0; var6x < 16; ++var6x) {
-            float var7x = fraction(var6x, 16);
-            float var8 = fraction(var6x + 1, 16);
-            stringVertex(var5, var6, var7, var4x, var3x, var7x, var8);
-            stringVertex(var5, var6, var7, var4x, var3x, var8, var7x);
+         for(int var7x = 0; var7x < 16; ++var7x) {
+            float var8x = fraction(var7x, 16);
+            float var9 = fraction(var7x + 1, 16);
+            stringVertex(var5, var6, var7, var5x, var4x, var8x, var9, var8);
+            stringVertex(var5, var6, var7, var5x, var4x, var9, var8x, var8);
          }
 
       });
@@ -93,18 +94,18 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       var0.addVertex(var1, var3 - 0.5F, (float)var4 - 0.5F, 0.0F).setColor(-1).setUv((float)var5, (float)var6).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var2).setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 
-   private static void stringVertex(float var0, float var1, float var2, VertexConsumer var3, PoseStack.Pose var4, float var5, float var6) {
-      float var7 = var0 * var5;
-      float var8 = var1 * (var5 * var5 + var5) * 0.5F + 0.25F;
-      float var9 = var2 * var5;
-      float var10 = var0 * var6 - var7;
-      float var11 = var1 * (var6 * var6 + var6) * 0.5F + 0.25F - var8;
-      float var12 = var2 * var6 - var9;
-      float var13 = Mth.sqrt(var10 * var10 + var11 * var11 + var12 * var12);
-      var10 /= var13;
-      var11 /= var13;
-      var12 /= var13;
-      var3.addVertex(var4, var7, var8, var9).setColor(-16777216).setNormal(var4, var10, var11, var12);
+   private static void stringVertex(float var0, float var1, float var2, VertexConsumer var3, PoseStack.Pose var4, float var5, float var6, float var7) {
+      float var8 = var0 * var5;
+      float var9 = var1 * (var5 * var5 + var5) * 0.5F + 0.25F;
+      float var10 = var2 * var5;
+      float var11 = var0 * var6 - var8;
+      float var12 = var1 * (var6 * var6 + var6) * 0.5F + 0.25F - var9;
+      float var13 = var2 * var6 - var10;
+      float var14 = Mth.sqrt(var11 * var11 + var12 * var12 + var13 * var13);
+      var11 /= var14;
+      var12 /= var14;
+      var13 /= var14;
+      var3.addVertex(var4, var8, var9, var10).setColor(-16777216).setNormal(var4, var11, var12, var13).setLineWidth(var7);
    }
 
    public FishingHookRenderState createRenderState() {

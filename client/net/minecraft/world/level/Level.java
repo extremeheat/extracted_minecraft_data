@@ -41,7 +41,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.random.WeightedList;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
@@ -97,7 +96,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
    public static final int MAX_BRIGHTNESS = 15;
-   public static final int TICKS_PER_DAY = 24000;
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
    private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
@@ -187,11 +185,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return this.setBlock(var1, var2, var3, 512);
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
       if (this.isOutsideBuildHeight(var1)) {
          return false;
       } else if (!this.isClientSide() && this.isDebug()) {
@@ -291,7 +289,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
    }
 
-   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       this.neighborUpdater.shapeUpdate(var1, var4, var2, var3, var5, var6);
    }
 
@@ -674,10 +672,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void onBlockEntityAdded(BlockEntity var1) {
    }
 
-   public long getGameTime() {
-      return this.levelData.getGameTime();
-   }
-
    public long getDayTime() {
       return this.levelData.getDayTime();
    }
@@ -802,17 +796,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          }
       }
 
-   }
-
-   public DifficultyInstance getCurrentDifficultyAt(BlockPos var1) {
-      long var2 = 0L;
-      float var4 = 0.0F;
-      if (this.hasChunkAt(var1)) {
-         var4 = this.getMoonBrightness();
-         var2 = this.getChunkAt(var1).getInhabitedTime();
-      }
-
-      return new DifficultyInstance(this.getDifficulty(), this.getDayTime(), var2, var4);
    }
 
    public int getSkyDarken() {

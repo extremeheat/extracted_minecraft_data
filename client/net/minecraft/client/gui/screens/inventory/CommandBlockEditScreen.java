@@ -1,8 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
@@ -48,9 +46,9 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
          }
 
          return var10000;
-      }).withValues(CommandBlockEntity.Mode.values()).displayOnlyValue().withInitialValue(this.mode).create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (var1, var2) -> this.mode = var2));
-      this.conditionalButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.conditional"), Component.translatable("advMode.mode.unconditional")).displayOnlyValue().withInitialValue(this.conditional).create(this.width / 2 - 50, 165, 100, 20, Component.translatable("advMode.type"), (var1, var2) -> this.conditional = var2));
-      this.autoexecButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.autoexec.bat"), Component.translatable("advMode.mode.redstoneTriggered")).displayOnlyValue().withInitialValue(this.autoexec).create(this.width / 2 + 50 + 4, 165, 100, 20, Component.translatable("advMode.triggering"), (var1, var2) -> this.autoexec = var2));
+      }, this.mode).withValues(CommandBlockEntity.Mode.values()).displayOnlyValue().create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (var1, var2) -> this.mode = var2));
+      this.conditionalButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.conditional"), Component.translatable("advMode.mode.unconditional"), this.conditional).displayOnlyValue().create(this.width / 2 - 50, 165, 100, 20, Component.translatable("advMode.type"), (var1, var2) -> this.conditional = var2));
+      this.autoexecButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.autoexec.bat"), Component.translatable("advMode.mode.redstoneTriggered"), this.autoexec).displayOnlyValue().create(this.width / 2 + 50 + 4, 165, 100, 20, Component.translatable("advMode.triggering"), (var1, var2) -> this.autoexec = var2));
    }
 
    private void enableControls(boolean var1) {
@@ -76,12 +74,12 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
       this.enableControls(true);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      super.resize(var1, var2, var3);
+   public void resize(int var1, int var2) {
+      super.resize(var1, var2);
       this.enableControls(true);
    }
 
-   protected void populateAndSendPacket(BaseCommandBlock var1) {
-      this.minecraft.getConnection().send(new ServerboundSetCommandBlockPacket(BlockPos.containing(var1.getPosition()), this.commandEdit.getValue(), this.mode, var1.isTrackOutput(), this.conditional, this.autoexec));
+   protected void populateAndSendPacket() {
+      this.minecraft.getConnection().send(new ServerboundSetCommandBlockPacket(this.autoCommandBlock.getBlockPos(), this.commandEdit.getValue(), this.mode, this.autoCommandBlock.getCommandBlock().isTrackOutput(), this.conditional, this.autoexec));
    }
 }

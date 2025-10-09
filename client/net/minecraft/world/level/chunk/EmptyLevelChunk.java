@@ -7,6 +7,7 @@ import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,7 +27,7 @@ public class EmptyLevelChunk extends LevelChunk {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return null;
    }
 

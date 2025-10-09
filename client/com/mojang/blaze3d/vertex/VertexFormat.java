@@ -111,7 +111,7 @@ public class VertexFormat {
       return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
-   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer var0, ByteBuffer var1, int var2, Supplier<String> var3) {
+   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer var0, ByteBuffer var1, @GpuBuffer.Usage int var2, Supplier<String> var3) {
       GpuDevice var4 = RenderSystem.getDevice();
       if (GraphicsWorkarounds.get(var4).alwaysCreateFreshImmediateBuffer()) {
          if (var0 != null) {
@@ -198,9 +198,9 @@ public class VertexFormat {
 
    public static enum Mode {
       LINES(2, 2, false),
-      LINE_STRIP(2, 1, true),
       DEBUG_LINES(2, 2, false),
       DEBUG_LINE_STRIP(2, 1, true),
+      POINTS(1, 1, false),
       TRIANGLES(3, 3, false),
       TRIANGLE_STRIP(3, 1, true),
       TRIANGLE_FAN(3, 1, true),
@@ -240,7 +240,7 @@ public class VertexFormat {
 
       // $FF: synthetic method
       private static Mode[] $values() {
-         return new Mode[]{LINES, LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS};
+         return new Mode[]{LINES, DEBUG_LINES, DEBUG_LINE_STRIP, POINTS, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS};
       }
    }
 }

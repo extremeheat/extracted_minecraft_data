@@ -134,8 +134,7 @@ public class PostChain implements AutoCloseable {
                var37 = var60;
                boolean var15 = (boolean)var37;
                AbstractTexture var40 = var0.getTexture(var12.withPath((UnaryOperator)((var0x) -> "textures/effect/" + var0x + ".png")));
-               var40.setFilter(var15, false);
-               var34.add(new PostPass.TextureInput(var11, var40, var13, var14));
+               var34.add(new PostPass.TextureInput(var11, var40, var13, var14, var15));
                break;
             case 1:
                PostChainConfig.TargetInput var16 = (PostChainConfig.TargetInput)var7;

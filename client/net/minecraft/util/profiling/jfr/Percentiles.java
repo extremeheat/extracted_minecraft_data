@@ -19,6 +19,10 @@ public class Percentiles {
       return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
    }
 
+   public static Map<Integer, Double> evaluate(int[] var0) {
+      return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
+   }
+
    public static Map<Integer, Double> evaluate(double[] var0) {
       return var0.length == 0 ? Map.of() : sorted(DEFAULT_INDEXES.compute(var0));
    }

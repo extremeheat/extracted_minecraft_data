@@ -45,6 +45,7 @@ public class EditBox extends AbstractWidget {
    private boolean isEditable;
    private boolean centered;
    private boolean textShadow;
+   private boolean invertHighlightedTextColor;
    private int displayPos;
    private int cursorPos;
    private int highlightPos;
@@ -79,6 +80,7 @@ public class EditBox extends AbstractWidget {
       this.isEditable = true;
       this.centered = false;
       this.textShadow = true;
+      this.invertHighlightedTextColor = true;
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
       this.filter = Objects::nonNull;
@@ -291,7 +293,7 @@ public class EditBox extends AbstractWidget {
          switch (var1.key()) {
             case 259:
                if (this.isEditable) {
-                  this.deleteText(-1, var1.hasControlDown());
+                  this.deleteText(-1, var1.hasControlDownWithQuirk());
                }
 
                return true;
@@ -328,12 +330,12 @@ public class EditBox extends AbstractWidget {
                }
             case 261:
                if (this.isEditable) {
-                  this.deleteText(1, var1.hasControlDown());
+                  this.deleteText(1, var1.hasControlDownWithQuirk());
                }
 
                return true;
             case 262:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.moveCursorTo(this.getWordPosition(1), var1.hasShiftDown());
                } else {
                   this.moveCursor(1, var1.hasShiftDown());
@@ -341,7 +343,7 @@ public class EditBox extends AbstractWidget {
 
                return true;
             case 263:
-               if (var1.hasControlDown()) {
+               if (var1.hasControlDownWithQuirk()) {
                   this.moveCursorTo(this.getWordPosition(-1), var1.hasShiftDown());
                } else {
                   this.moveCursor(-1, var1.hasShiftDown());
@@ -457,7 +459,7 @@ public class EditBox extends AbstractWidget {
             int var10003 = Math.min(var14 - 1, this.getX() + this.width);
             int var10004 = this.textY + 1;
             Objects.requireNonNull(this.font);
-            var1.textHighlight(var10001, var10002, var10003, var10004 + 9);
+            var1.textHighlight(var10001, var10002, var10003, var10004 + 9, this.invertHighlightedTextColor);
          }
 
          if (var9) {
@@ -561,6 +563,10 @@ public class EditBox extends AbstractWidget {
 
    public void setTextShadow(boolean var1) {
       this.textShadow = var1;
+   }
+
+   public void setInvertHighlightedTextColor(boolean var1) {
+      this.invertHighlightedTextColor = var1;
    }
 
    public int getInnerWidth() {

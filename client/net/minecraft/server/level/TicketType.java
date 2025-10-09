@@ -1,9 +1,13 @@
 package net.minecraft.server.level;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-public record TicketType(long timeout, int flags) {
+public record TicketType(long timeout, @TicketType.Flags int flags) {
    public static final long NO_TIMEOUT = 0L;
    public static final int FLAG_PERSIST = 1;
    public static final int FLAG_LOADING = 2;
@@ -20,13 +24,13 @@ public record TicketType(long timeout, int flags) {
    public static final TicketType ENDER_PEARL = register("ender_pearl", 40L, 14);
    public static final TicketType UNKNOWN = register("unknown", 1L, 18);
 
-   public TicketType(long var1, int var3) {
+   public TicketType(long var1, @TicketType.Flags int var3) {
       super();
       this.timeout = var1;
       this.flags = var3;
    }
 
-   private static TicketType register(String var0, long var1, int var3) {
+   private static TicketType register(String var0, long var1, @TicketType.Flags int var3) {
       return (TicketType)Registry.register(BuiltInRegistries.TICKET_TYPE, (String)var0, new TicketType(var1, var3));
    }
 
@@ -52,5 +56,10 @@ public record TicketType(long timeout, int flags) {
 
    public boolean hasTimeout() {
       return this.timeout != 0L;
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Flags {
    }
 }

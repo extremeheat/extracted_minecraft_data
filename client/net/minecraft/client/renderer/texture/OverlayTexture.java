@@ -2,6 +2,8 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import net.minecraft.util.ARGB;
 
 public class OverlayTexture implements AutoCloseable {
@@ -11,6 +13,7 @@ public class OverlayTexture implements AutoCloseable {
    public static final int WHITE_OVERLAY_V = 10;
    public static final int NO_OVERLAY = pack(0, 10);
    private final DynamicTexture texture = new DynamicTexture("Entity Color Overlay", 16, 16, false);
+   private final GpuSampler sampler;
 
    public OverlayTexture() {
       super();
@@ -27,8 +30,8 @@ public class OverlayTexture implements AutoCloseable {
          }
       }
 
-      this.texture.setClamp(true);
       this.texture.upload();
+      this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
    }
 
    public void close() {
@@ -36,7 +39,7 @@ public class OverlayTexture implements AutoCloseable {
    }
 
    public void setupOverlayColor() {
-      RenderSystem.setupOverlayColor(this.texture.getTextureView());
+      RenderSystem.setupOverlayColor(this.texture.getTextureView(), this.sampler);
    }
 
    public static int u(float var0) {

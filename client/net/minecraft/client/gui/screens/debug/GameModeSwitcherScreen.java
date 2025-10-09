@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.debug;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -14,8 +13,10 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -32,7 +33,6 @@ public class GameModeSwitcherScreen extends Screen {
    private static final int SLOT_AREA_PADDED = 31;
    private static final int HELP_TIPS_OFFSET_Y = 5;
    private static final int ALL_SLOTS_WIDTH = GameModeSwitcherScreen.GameModeIcon.values().length * 31 - 5;
-   private static final Component SELECT_KEY;
    private final GameModeIcon previousHovered = GameModeSwitcherScreen.GameModeIcon.getFromGameType(this.getDefaultSelected());
    private GameModeIcon currentlyHovered;
    private int firstMouseX;
@@ -68,26 +68,25 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      if (!this.checkToClose()) {
-         var1.drawCenteredString(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
-         var1.drawCenteredString(this.font, (Component)SELECT_KEY, this.width / 2, this.height / 2 + 5, -1);
-         if (!this.setFirstMousePos) {
-            this.firstMouseX = var2;
-            this.firstMouseY = var3;
-            this.setFirstMousePos = true;
-         }
-
-         boolean var5 = this.firstMouseX == var2 && this.firstMouseY == var3;
-
-         for(GameModeSlot var7 : this.slots) {
-            var7.render(var1, var2, var3, var4);
-            var7.setSelected(this.currentlyHovered == var7.icon);
-            if (!var5 && var7.isHoveredOrFocused()) {
-               this.currentlyHovered = var7.icon;
-            }
-         }
-
+      var1.drawCenteredString(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
+      MutableComponent var5 = Component.translatable("debug.gamemodes.select_next", this.minecraft.options.keyDebugSwitchGameMode.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA));
+      var1.drawCenteredString(this.font, (Component)var5, this.width / 2, this.height / 2 + 5, -1);
+      if (!this.setFirstMousePos) {
+         this.firstMouseX = var2;
+         this.firstMouseY = var3;
+         this.setFirstMousePos = true;
       }
+
+      boolean var6 = this.firstMouseX == var2 && this.firstMouseY == var3;
+
+      for(GameModeSlot var8 : this.slots) {
+         var8.render(var1, var2, var3, var4);
+         var8.setSelected(this.currentlyHovered == var8.icon);
+         if (!var6 && var8.isHoveredOrFocused()) {
+            this.currentlyHovered = var8.icon;
+         }
+      }
+
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
@@ -103,25 +102,15 @@ public class GameModeSwitcherScreen extends Screen {
    private static void switchToHoveredGameMode(Minecraft var0, GameModeIcon var1) {
       if (var0.canSwitchGameMode()) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
-         if (var0.player.hasPermissions(2) && var1 != var2) {
+         if (var1 != var2 && GameModeCommand.PERMISSION_CHECK.check(var0.player.permissions())) {
             var0.player.connection.send(new ServerboundChangeGameModePacket(var1.mode));
          }
 
       }
    }
 
-   private boolean checkToClose() {
-      if (!InputConstants.isKeyDown(this.minecraft.getWindow(), 292)) {
-         this.switchToHoveredGameMode();
-         this.minecraft.setScreen((Screen)null);
-         return true;
-      } else {
-         return false;
-      }
-   }
-
    public boolean keyPressed(KeyEvent var1) {
-      if (var1.key() == 293) {
+      if (this.minecraft.options.keyDebugSwitchGameMode.matches(var1)) {
          this.setFirstMousePos = false;
          this.currentlyHovered = this.currentlyHovered.getNext();
          return true;
@@ -130,12 +119,18 @@ public class GameModeSwitcherScreen extends Screen {
       }
    }
 
-   public boolean isPauseScreen() {
-      return false;
+   public boolean keyReleased(KeyEvent var1) {
+      if (this.minecraft.options.keyDebugModifier.matches(var1)) {
+         this.switchToHoveredGameMode();
+         this.minecraft.setScreen((Screen)null);
+         return true;
+      } else {
+         return super.keyReleased(var1);
+      }
    }
 
-   static {
-      SELECT_KEY = Component.translatable("debug.gamemodes.select_next", Component.translatable("debug.gamemodes.press_f4").withStyle(ChatFormatting.AQUA));
+   public boolean isPauseScreen() {
+      return false;
    }
 
    static enum GameModeIcon {

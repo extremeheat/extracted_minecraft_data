@@ -45,7 +45,7 @@ public final class MobEffectUtil {
    }
 
    public static boolean hasWaterBreathing(LivingEntity var0) {
-      return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+      return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER) || var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
    }
 
    public static List<ServerPlayer> addEffectToPlayersAround(ServerLevel var0, @Nullable Entity var1, Vec3 var2, double var3, MobEffectInstance var5, int var6) {

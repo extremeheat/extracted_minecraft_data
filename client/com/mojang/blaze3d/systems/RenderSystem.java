@@ -11,6 +11,7 @@ import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -70,7 +71,7 @@ public class RenderSystem {
    private static final Matrix4fStack modelViewStack;
    private static Matrix4f textureMatrix;
    public static final int TEXTURE_COUNT = 12;
-   private static final GpuTextureView[] shaderTextures;
+   private static final TextureAndSampler[] shaderTextures;
    @Nullable
    private static GpuBufferSlice shaderFog;
    @Nullable
@@ -79,7 +80,6 @@ public class RenderSystem {
    private static GpuBufferSlice projectionMatrixBuffer;
    @Nullable
    private static GpuBufferSlice savedProjectionMatrixBuffer;
-   private static float shaderLineWidth;
    private static String apiDescription;
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
@@ -92,10 +92,15 @@ public class RenderSystem {
    private static GpuBuffer globalSettingsUniform;
    @Nullable
    private static DynamicUniforms dynamicUniforms;
-   private static ScissorState scissorStateForRenderTypeDraws;
+   private static final ScissorState scissorStateForRenderTypeDraws;
+   private static SamplerCache samplerCache;
 
    public RenderSystem() {
       super();
+   }
+
+   public static SamplerCache getSamplerCache() {
+      return samplerCache;
    }
 
    public static void initRenderThread() {
@@ -173,16 +178,6 @@ public class RenderSystem {
       return shaderLightDirections;
    }
 
-   public static void lineWidth(float var0) {
-      assertOnRenderThread();
-      shaderLineWidth = var0;
-   }
-
-   public static float getShaderLineWidth() {
-      assertOnRenderThread();
-      return shaderLineWidth;
-   }
-
    public static void enableScissorForRenderTypeDraws(int var0, int var1, int var2, int var3) {
       scissorStateForRenderTypeDraws.enable(var0, var1, var2, var3);
    }
@@ -213,6 +208,7 @@ public class RenderSystem {
       DEVICE = new GlDevice(var0, var2, var3, var4, var5);
       apiDescription = getDevice().getImplementationInformation();
       dynamicUniforms = new DynamicUniforms();
+      samplerCache.initialize();
    }
 
    public static void setErrorCallback(GLFWErrorCallbackI var0) {
@@ -224,26 +220,26 @@ public class RenderSystem {
       textureMatrix.identity();
    }
 
-   public static void setupOverlayColor(@Nullable GpuTextureView var0) {
+   public static void setupOverlayColor(@Nullable GpuTextureView var0, @Nullable GpuSampler var1) {
       assertOnRenderThread();
-      setShaderTexture(1, var0);
+      setShaderTexture(1, var0, var1);
    }
 
    public static void teardownOverlayColor() {
       assertOnRenderThread();
-      setShaderTexture(1, (GpuTextureView)null);
+      setShaderTexture(1, (GpuTextureView)null, (GpuSampler)null);
    }
 
-   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1) {
+   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1, @Nullable GpuSampler var2) {
       assertOnRenderThread();
       if (var0 >= 0 && var0 < shaderTextures.length) {
-         shaderTextures[var0] = var1;
+         shaderTextures[var0] = var1 != null && var2 != null ? new TextureAndSampler(var1, var2) : null;
       }
 
    }
 
    @Nullable
-   public static GpuTextureView getShaderTexture(int var0) {
+   public static TextureAndSampler getShaderTexture(int var0) {
       assertOnRenderThread();
       return var0 >= 0 && var0 < shaderTextures.length ? shaderTextures[var0] : null;
    }
@@ -393,14 +389,22 @@ public class RenderSystem {
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
       textureMatrix = new Matrix4f();
-      shaderTextures = new GpuTextureView[12];
+      shaderTextures = new TextureAndSampler[12];
       shaderFog = null;
-      shaderLineWidth = 1.0F;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
       scissorStateForRenderTypeDraws = new ScissorState();
+      samplerCache = new SamplerCache();
+   }
+
+   public static record TextureAndSampler(GpuTextureView view, GpuSampler sampler) {
+      public TextureAndSampler(GpuTextureView var1, GpuSampler var2) {
+         super();
+         this.view = var1;
+         this.sampler = var2;
+      }
    }
 
    public static final class AutoStorageIndexBuffer {

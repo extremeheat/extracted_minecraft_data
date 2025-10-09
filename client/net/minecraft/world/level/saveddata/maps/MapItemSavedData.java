@@ -278,7 +278,7 @@ public class MapItemSavedData extends SavedData {
 
    private byte calculateRotation(@Nullable LevelAccessor var1, double var2) {
       if (this.dimension == Level.NETHER && var1 != null) {
-         int var6 = (int)(var1.getLevelData().getDayTime() / 10L);
+         int var6 = (int)(var1.getGameTime() / 10L);
          return (byte)(var6 * var6 * 34187121 + var6 * 121 >> 15 & 15);
       } else {
          double var4 = var2 < 0.0 ? var2 - 8.0 : var2 + 8.0;

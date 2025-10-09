@@ -213,7 +213,7 @@ public class GuiRenderer implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer var10 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
          GpuBuffer var11 = var10.getBuffer(var5);
          VertexFormat.IndexType var8 = var10.type();
-         GpuBufferSlice var9 = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+         GpuBufferSlice var9 = RenderSystem.getDynamicUniforms().writeTransform((new Matrix4f()).setTranslation(0.0F, 0.0F, -11000.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
          if (this.firstDrawIndexAfterBlur > 0) {
             this.executeDrawRange(() -> "GUI before blur", var4, var1, var9, var11, var8, 0, Math.min(this.firstDrawIndexAfterBlur, this.draws.size()));
          }
@@ -390,13 +390,12 @@ public class GuiRenderer implements AutoCloseable {
    private void submitBlitFromItemAtlas(GuiItemRenderState var1, float var2, float var3, int var4, int var5) {
       float var6 = var2 + (float)var4 / (float)var5;
       float var7 = var3 + (float)(-var4) / (float)var5;
-      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
+      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.itemsAtlasView, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), var1.pose(), var1.x(), var1.y(), var1.x() + 16, var1.y() + 16, var2, var6, var3, var7, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void createAtlasTextures(int var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.itemsAtlas = var2.createTexture("UI items atlas", 12, TextureFormat.RGBA8, var1, var1, 1, 1);
-      this.itemsAtlas.setTextureFilter(FilterMode.NEAREST, false);
       this.itemsAtlasView = var2.createTextureView(this.itemsAtlas);
       this.itemsAtlasDepth = var2.createTexture("UI items atlas depth", 8, TextureFormat.DEPTH32, var1, var1, 1, 1);
       this.itemsAtlasDepthView = var2.createTextureView(this.itemsAtlasDepth);
@@ -559,15 +558,15 @@ public class GuiRenderer implements AutoCloseable {
       }
 
       if (var1.textureSetup.texure0() != null) {
-         var2.bindSampler("Sampler0", var1.textureSetup.texure0());
+         var2.bindTexture("Sampler0", var1.textureSetup.texure0(), var1.textureSetup.sampler0());
       }
 
       if (var1.textureSetup.texure1() != null) {
-         var2.bindSampler("Sampler1", var1.textureSetup.texure1());
+         var2.bindTexture("Sampler1", var1.textureSetup.texure1(), var1.textureSetup.sampler1());
       }
 
       if (var1.textureSetup.texure2() != null) {
-         var2.bindSampler("Sampler2", var1.textureSetup.texure2());
+         var2.bindTexture("Sampler2", var1.textureSetup.texure2(), var1.textureSetup.sampler2());
       }
 
       var2.setIndexBuffer(var3, var4);

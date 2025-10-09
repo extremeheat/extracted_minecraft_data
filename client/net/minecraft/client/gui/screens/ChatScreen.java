@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GuiMessageTag;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.CommandSuggestions;
@@ -63,9 +62,9 @@ public class ChatScreen extends Screen {
       this.setInitialFocus(this.input);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
+   public void resize(int var1, int var2) {
       this.initial = this.input.getValue();
-      this.init(var1, var2, var3);
+      this.init(var1, var2);
    }
 
    public void onClose() {

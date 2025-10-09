@@ -16,7 +16,7 @@ public class DebugEntrySimplePerformanceImpactors implements DebugScreenEntry {
    public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
       Minecraft var5 = Minecraft.getInstance();
       Options var6 = var5.options;
-      var1.addLine(String.format(Locale.ROOT, "%s%s B: %d", var6.graphicsMode().get(), var6.cloudStatus().get() == CloudStatus.OFF ? "" : (var6.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), var6.biomeBlendRadius().get()));
+      var1.addLine(String.format(Locale.ROOT, "%s%s B: %d", (Boolean)var6.improvedTransparency().get() ? "improved-transparency" : "", var6.cloudStatus().get() == CloudStatus.OFF ? "" : (var6.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), var6.biomeBlendRadius().get()));
    }
 
    public boolean isAllowed(boolean var1) {

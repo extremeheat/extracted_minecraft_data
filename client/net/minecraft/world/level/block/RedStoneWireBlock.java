@@ -164,7 +164,7 @@ public class RedStoneWireBlock extends Block {
       return !((RedstoneSide)var0.getValue(NORTH)).isConnected() && !((RedstoneSide)var0.getValue(SOUTH)).isConnected() && !((RedstoneSide)var0.getValue(EAST)).isConnected() && !((RedstoneSide)var0.getValue(WEST)).isConnected();
    }
 
-   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
       for(Direction var8 : Direction.Plane.HORIZONTAL) {

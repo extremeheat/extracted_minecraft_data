@@ -52,10 +52,6 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       this.shapes = this.makeShapes();
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1) {
-      return Shapes.empty();
-   }
-
    public Function<BlockState, VoxelShape> makeShapes() {
       Map var1 = Shapes.rotateHorizontal(Block.boxZ(16.0, 0.0, 10.0, 0.0, 1.0));
       Map var2 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
@@ -157,7 +153,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return getUpdatedState(this.defaultBlockState(), var1.getLevel(), var1.getClickedPos(), true);
    }
 
-   public static void placeAt(LevelAccessor var0, BlockPos var1, RandomSource var2, int var3) {
+   public static void placeAt(LevelAccessor var0, BlockPos var1, RandomSource var2, @Block.UpdateFlags int var3) {
       BlockState var4 = Blocks.PALE_MOSS_CARPET.defaultBlockState();
       BlockState var5 = getUpdatedState(var4, var0, var1, true);
       var0.setBlock(var1, var5, var3);

@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.options;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -73,5 +74,12 @@ public abstract class OptionsSubScreen extends Screen {
       }
 
       this.minecraft.setScreen(this.lastScreen);
+   }
+
+   public void resetOption(OptionInstance<?> var1) {
+      if (this.list != null) {
+         this.list.resetOption(var1);
+      }
+
    }
 }

@@ -16,6 +16,7 @@ public class AtlasIds {
    public static final ResourceLocation SHIELD_PATTERNS = ResourceLocation.withDefaultNamespace("shield_patterns");
    public static final ResourceLocation SHULKER_BOXES = ResourceLocation.withDefaultNamespace("shulker_boxes");
    public static final ResourceLocation SIGNS = ResourceLocation.withDefaultNamespace("signs");
+   public static final ResourceLocation CELESTIALS = ResourceLocation.withDefaultNamespace("celestials");
 
    public AtlasIds() {
       super();

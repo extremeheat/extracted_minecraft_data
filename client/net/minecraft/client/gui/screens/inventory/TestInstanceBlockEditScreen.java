@@ -84,7 +84,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.sizeZEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeZEdit);
       this.setSize(var6);
-      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay).withValues(Rotation.values()).withInitialValue(this.blockEntity.getRotation()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (var1x, var2x) -> this.updateSaveState()));
+      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (var1x, var2x) -> this.updateSaveState()));
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.blockEntity.ignoreEntities()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, INCLUDE_ENTITIES_LABEL));
       var7 = 0;
       this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (var1x) -> {

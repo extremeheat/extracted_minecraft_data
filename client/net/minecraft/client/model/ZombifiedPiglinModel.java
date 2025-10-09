@@ -10,7 +10,7 @@ public class ZombifiedPiglinModel extends AbstractPiglinModel<ZombifiedPiglinRen
 
    public void setupAnim(ZombifiedPiglinRenderState var1) {
       super.setupAnim(var1);
-      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var1.attackTime, var1.ageInTicks);
+      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var1);
    }
 
    public void setAllVisible(boolean var1) {

@@ -81,7 +81,7 @@ public class OverworldBiomes {
          BiomeDefaultFeatures.commonSpawns(var3);
       } else {
          BiomeDefaultFeatures.caveSpawns(var3);
-         BiomeDefaultFeatures.monsters(var3, 100, 25, 100, false);
+         BiomeDefaultFeatures.monsters(var3, 100, 25, 0, 100, false);
       }
 
       BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
@@ -202,7 +202,7 @@ public class OverworldBiomes {
       globalOverworldGeneration(var6);
       if (var3) {
          var5.creatureGenerationProbability(0.07F);
-         BiomeDefaultFeatures.snowySpawns(var5);
+         BiomeDefaultFeatures.snowySpawns(var5, !var4);
          if (var4) {
             var6.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_SPIKE);
             var6.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_PATCH);
@@ -269,7 +269,7 @@ public class OverworldBiomes {
       MobSpawnSettings.Builder var5 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(var5);
       var5.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 2, 6)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1)).addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.ARMADILLO, 2, 3));
-      BiomeDefaultFeatures.commonSpawns(var5);
+      BiomeDefaultFeatures.commonSpawnWithZombieHorse(var5);
       if (var3) {
          var5.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 4, 4));
          var5.addSpawn(MobCategory.CREATURE, 8, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 4, 8));
@@ -325,6 +325,7 @@ public class OverworldBiomes {
       MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.oceanSpawns(var3, 3, 4, 15);
       var3.addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 1, 5));
+      var3.addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityType.NAUTILUS, 1, 1));
       BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
       var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP_COLD : AquaticPlacements.SEAGRASS_COLD);
       BiomeDefaultFeatures.addColdOceanExtraVegetation(var4);
@@ -334,7 +335,7 @@ public class OverworldBiomes {
    public static Biome ocean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
       MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.oceanSpawns(var3, 1, 4, 10);
-      var3.addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 2));
+      var3.addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 2)).addSpawn(MobCategory.WATER_CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityType.NAUTILUS, 1, 1));
       BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
       var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP : AquaticPlacements.SEAGRASS_NORMAL);
       BiomeDefaultFeatures.addColdOceanExtraVegetation(var4);
@@ -349,7 +350,7 @@ public class OverworldBiomes {
          BiomeDefaultFeatures.oceanSpawns(var3, 10, 2, 15);
       }
 
-      var3.addSpawn(MobCategory.WATER_AMBIENT, 5, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 1, 3)).addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 8, 8)).addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 2));
+      var3.addSpawn(MobCategory.WATER_AMBIENT, 5, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 1, 3)).addSpawn(MobCategory.WATER_AMBIENT, 25, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 8, 8)).addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 2)).addSpawn(MobCategory.WATER_CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityType.NAUTILUS, 1, 1));
       BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
       var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP_WARM : AquaticPlacements.SEAGRASS_WARM);
       BiomeDefaultFeatures.addLukeWarmKelp(var4);
@@ -357,14 +358,14 @@ public class OverworldBiomes {
    }
 
    public static Biome warmOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      MobSpawnSettings.Builder var2 = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 1, 3));
+      MobSpawnSettings.Builder var2 = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 1, 3)).addSpawn(MobCategory.WATER_CREATURE, 5, new MobSpawnSettings.SpawnerData(EntityType.NAUTILUS, 1, 1));
       BiomeDefaultFeatures.warmOceanSpawns(var2, 10, 4);
       BiomeGenerationSettings.Builder var3 = baseOceanGeneration(var0, var1).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.WARM_OCEAN_VEGETATION).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_WARM).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEA_PICKLE);
       return baseOcean(var2, 4445678, 270131, var3);
    }
 
    public static Biome frozenOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
-      MobSpawnSettings.Builder var3 = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 1, 4)).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 1, 5)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 2));
+      MobSpawnSettings.Builder var3 = (new MobSpawnSettings.Builder()).addSpawn(MobCategory.WATER_CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 1, 4)).addSpawn(MobCategory.WATER_AMBIENT, 15, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 1, 5)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 2)).addSpawn(MobCategory.WATER_CREATURE, 2, new MobSpawnSettings.SpawnerData(EntityType.NAUTILUS, 1, 1));
       BiomeDefaultFeatures.commonSpawns(var3);
       var3.addSpawn(MobCategory.MONSTER, 5, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 1, 1));
       float var4 = var2 ? 0.5F : 0.0F;

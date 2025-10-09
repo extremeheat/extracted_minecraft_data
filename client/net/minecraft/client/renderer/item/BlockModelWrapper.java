@@ -114,7 +114,7 @@ public class BlockModelWrapper implements ItemModel {
          ModelBaker var2 = var1.blockModelBaker();
          ResolvedModel var3 = var2.getModel(this.model);
          TextureSlots var4 = var3.getTopTextureSlots();
-         List var5 = var3.bakeTopGeometry(var4, var2, BlockModelRotation.X0_Y0).getAll();
+         List var5 = var3.bakeTopGeometry(var4, var2, BlockModelRotation.IDENTITY).getAll();
          ModelRenderProperties var6 = ModelRenderProperties.fromResolvedModel(var2, var3, var4);
          return new BlockModelWrapper(this.tints, var5, var6);
       }

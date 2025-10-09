@@ -26,6 +26,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    protected InputConstants.Key key;
    private boolean isDown;
    private int clickCount;
+   private final int order;
 
    public static void click(InputConstants.Key var0) {
       forAllKeyMappings(var0, (var0x) -> ++var0x.clickCount);
@@ -97,11 +98,16 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4) {
+      this(var1, var2, var3, var4, 0);
+   }
+
+   public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4, int var5) {
       super();
       this.name = var1;
       this.key = var2.getOrCreate(var3);
       this.defaultKey = this.key;
       this.category = var4;
+      this.order = var5;
       ALL.put(var1, this);
       this.registerMapping(this.key);
    }
@@ -145,7 +151,11 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public int compareTo(KeyMapping var1) {
-      return this.category == var1.category ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
+      if (this.category == var1.category) {
+         return this.order == var1.order ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(this.order, var1.order);
+      } else {
+         return Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
+      }
    }
 
    public static Supplier<Component> createNameSupplier(String var0) {
@@ -217,6 +227,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       public static final Category INVENTORY = register("inventory");
       public static final Category CREATIVE = register("creative");
       public static final Category SPECTATOR = register("spectator");
+      public static final Category DEBUG = register("debug");
 
       public Category(ResourceLocation var1) {
          super();

@@ -25,12 +25,12 @@ public class DrownedModel extends ZombieModel<ZombieRenderState> {
 
    public void setupAnim(ZombieRenderState var1) {
       super.setupAnim(var1);
-      if (var1.leftArmPose == HumanoidModel.ArmPose.THROW_SPEAR) {
+      if (var1.leftArmPose == HumanoidModel.ArmPose.THROW_TRIDENT) {
          this.leftArm.xRot = this.leftArm.xRot * 0.5F - 3.1415927F;
          this.leftArm.yRot = 0.0F;
       }
 
-      if (var1.rightArmPose == HumanoidModel.ArmPose.THROW_SPEAR) {
+      if (var1.rightArmPose == HumanoidModel.ArmPose.THROW_TRIDENT) {
          this.rightArm.xRot = this.rightArm.xRot * 0.5F - 3.1415927F;
          this.rightArm.yRot = 0.0F;
       }

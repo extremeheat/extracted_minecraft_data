@@ -98,7 +98,7 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       int var4 = var1.getX();
       int var5 = var1.getY();
       int var6 = var1.getZ();

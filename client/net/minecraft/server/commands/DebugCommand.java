@@ -36,6 +36,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.profiling.ProfileResults;
 import org.apache.commons.io.IOUtils;
@@ -53,7 +54,7 @@ public class DebugCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(3))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(3))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
@@ -107,7 +108,7 @@ public class DebugCommand {
 
                for(final CommandFunction var15 : var6) {
                   try {
-                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
+                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
                      InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
                      var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {

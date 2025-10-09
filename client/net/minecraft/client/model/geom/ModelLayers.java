@@ -165,6 +165,10 @@ public class ModelLayers {
    public static final ModelLayerLocation MULE_BABY = register("mule_baby");
    public static final ModelLayerLocation MULE_SADDLE = register("mule", "saddle");
    public static final ModelLayerLocation MULE_BABY_SADDLE = register("mule_baby", "saddle");
+   public static final ModelLayerLocation NAUTILUS = register("nautilus");
+   public static final ModelLayerLocation NAUTILUS_BABY = register("nautilus_baby");
+   public static final ModelLayerLocation NAUTILUS_SADDLE = register("nautilus", "saddle");
+   public static final ModelLayerLocation NAUTILUS_ARMOR = register("nautilus_armor");
    public static final ModelLayerLocation OAK_BOAT = register("boat/oak");
    public static final ModelLayerLocation OAK_CHEST_BOAT = register("chest_boat/oak");
    public static final ModelLayerLocation OCELOT = register("ocelot");
@@ -253,6 +257,8 @@ public class ModelLayers {
    public static final ModelLayerLocation TROPICAL_FISH_SMALL_PATTERN = register("tropical_fish_small", "pattern");
    public static final ModelLayerLocation TURTLE = register("turtle");
    public static final ModelLayerLocation TURTLE_BABY = register("turtle_baby");
+   public static final ModelLayerLocation UNDEAD_HORSE_ARMOR = register("undead_horse_armor");
+   public static final ModelLayerLocation UNDEAD_HORSE_BABY_ARMOR = register("undead_horse_baby_armor");
    public static final ModelLayerLocation VEX = register("vex");
    public static final ModelLayerLocation VILLAGER = register("villager");
    public static final ModelLayerLocation VILLAGER_NO_HAT = register("villager_no_hat");
@@ -300,6 +306,7 @@ public class ModelLayers {
    public static final ModelLayerLocation ZOMBIFIED_PIGLIN_BABY = register("zombified_piglin_baby");
    public static final ArmorModelSet<ModelLayerLocation> ZOMBIFIED_PIGLIN_BABY_ARMOR = registerArmorSet("zombified_piglin_baby");
    public static final ArmorModelSet<ModelLayerLocation> ZOMBIFIED_PIGLIN_ARMOR = registerArmorSet("zombified_piglin");
+   public static final ModelLayerLocation ZOMBIE_NAUTILUS = register("zombie_nautilus");
 
    public ModelLayers() {
       super();

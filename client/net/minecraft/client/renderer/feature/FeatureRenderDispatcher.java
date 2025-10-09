@@ -23,7 +23,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    private final ModelPartFeatureRenderer modelPartFeatureRenderer = new ModelPartFeatureRenderer();
    private final NameTagFeatureRenderer nameTagFeatureRenderer = new NameTagFeatureRenderer();
    private final TextFeatureRenderer textFeatureRenderer = new TextFeatureRenderer();
-   private final HitboxFeatureRenderer hitboxFeatureRenderer = new HitboxFeatureRenderer();
    private final LeashFeatureRenderer leashFeatureRenderer = new LeashFeatureRenderer();
    private final ItemFeatureRenderer itemFeatureRenderer = new ItemFeatureRenderer();
    private final CustomFeatureRenderer customFeatureRenderer = new CustomFeatureRenderer();
@@ -52,7 +51,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          this.flameFeatureRenderer.render(var2, this.bufferSource, this.atlasManager);
          this.nameTagFeatureRenderer.render(var2, this.bufferSource, this.font);
          this.textFeatureRenderer.render(var2, this.bufferSource);
-         this.hitboxFeatureRenderer.render(var2, this.bufferSource);
          this.leashFeatureRenderer.render(var2, this.bufferSource);
          this.itemFeatureRenderer.render(var2, this.bufferSource, this.outlineBufferSource);
          this.blockFeatureRenderer.render(var2, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);

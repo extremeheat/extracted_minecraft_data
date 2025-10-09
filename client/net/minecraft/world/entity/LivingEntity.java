@@ -12,6 +12,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JavaOps;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
@@ -160,7 +162,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public static final int ARMOR_SLOT_OFFSET = 100;
    public static final int BODY_ARMOR_OFFSET = 105;
    public static final int SADDLE_OFFSET = 106;
-   public static final int SWING_DURATION = 6;
    public static final int PLAYER_HURT_EXPERIENCE_TIME = 100;
    private static final int DAMAGE_SOURCE_TIMEOUT = 40;
    public static final double MIN_MOVEMENT_DISTANCE = 0.003;
@@ -170,6 +171,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private static final int TICKS_PER_ELYTRA_FREE_FALL_EVENT = 10;
    private static final int FREE_FALL_EVENTS_PER_ELYTRA_BREAK = 2;
    public static final float BASE_JUMP_POWER = 0.42F;
+   protected static final float DEFAULT_KNOCKBACK = 0.4F;
+   protected static final int INVULNERABLE_DURATION = 20;
    private static final double MAX_LINE_OF_SIGHT_TEST_RANGE = 128.0;
    protected static final int LIVING_ENTITY_FLAG_IS_USING = 1;
    protected static final int LIVING_ENTITY_FLAG_OFF_HAND = 2;
@@ -203,8 +206,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public float oAttackAnim;
    public float attackAnim;
    protected int attackStrengthTicker;
+   protected int itemSwapTicker;
    public final WalkAnimationState walkAnimation = new WalkAnimationState();
-   public final int invulnerableDuration = 20;
    public float yBodyRot;
    public float yBodyRotO;
    public float yHeadRot;
@@ -245,6 +248,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected float autoSpinAttackDmg;
    @Nullable
    protected ItemStack autoSpinAttackItemStack;
+   @Nullable
+   protected Object2LongMap<Entity> recentKineticEnemies;
    private float swimAmount;
    private float swimAmountO;
    protected Brain<?> brain;
@@ -404,7 +409,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                      var2.broadcastEntityEvent(this, (byte)67);
                      this.hurtServer(var2, this.damageSources().drown(), 2.0F);
                   }
-               } else if (this.getAirSupply() < this.getMaxAirSupply()) {
+               } else if (this.getAirSupply() < this.getMaxAirSupply() && !this.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS)) {
                   this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
                }
 
@@ -762,9 +767,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.activeEffects.clear();
 
       for(MobEffectInstance var4 : var2) {
-         this.activeEffects.put(var4.getEffect(), var4);
+         this.addEffect(var4, this);
       }
 
+      this.updateDirtyEffects();
       this.setHealth(var1.getFloatOr("Health", this.getMaxHealth()));
       this.hurtTime = var1.getShortOr("HurtTime", (short)0);
       this.deathTime = var1.getShortOr("DeathTime", (short)0);
@@ -815,11 +821,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          } catch (ConcurrentModificationException var6) {
          }
 
-         if (this.effectsDirty) {
-            this.updateInvisibilityStatus();
-            this.updateGlowingStatus();
-            this.effectsDirty = false;
-         }
+         this.updateDirtyEffects();
       } else {
          for(MobEffectInstance var10 : this.activeEffects.values()) {
             var10.tickClient();
@@ -834,6 +836,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                this.level().addParticle((ParticleOptions)Util.getRandom(var9, this.random), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 1.0, 1.0, 1.0);
             }
          }
+      }
+
+   }
+
+   private void updateDirtyEffects() {
+      if (this.effectsDirty) {
+         this.updateInvisibilityStatus();
+         this.updateGlowingStatus();
+         this.effectsDirty = false;
       }
 
    }
@@ -1507,9 +1518,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       float var3 = (float)this.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
       Level var5 = this.level();
       if (var5 instanceof ServerLevel var4) {
-         return EnchantmentHelper.modifyKnockback(var4, this.getWeaponItem(), var1, var2, var3);
+         return EnchantmentHelper.modifyKnockback(var4, this.getWeaponItem(), var1, var2, var3) / 2.0F;
       } else {
-         return var3;
+         return var3 / 2.0F;
       }
    }
 
@@ -1619,6 +1630,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return (Map)this.activeLocationDependentEnchantments.computeIfAbsent(var1, (var0) -> new Reference2ObjectArrayMap());
    }
 
+   public void lungeForwardMaybe() {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         EnchantmentHelper.doLungeEffects(var1, this);
+      }
+
+   }
+
    public Fallsounds getFallSounds() {
       return new Fallsounds(SoundEvents.GENERIC_SMALL_FALL, SoundEvents.GENERIC_BIG_FALL);
    }
@@ -1633,7 +1652,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       } else {
          BlockPos var1 = this.blockPosition();
          BlockState var2 = this.getInBlockState();
-         if (var2.is(BlockTags.CLIMBABLE)) {
+         if (this.isFallFlying() && var2.is(BlockTags.CAN_GLIDE_THROUGH)) {
+            return false;
+         } else if (var2.is(BlockTags.CLIMBABLE)) {
             this.lastClimbablePos = Optional.of(var1);
             return true;
          } else if (var2.getBlock() instanceof TrapDoorBlock && this.trapdoorUsableAsLadder(var1, var2)) {
@@ -1867,10 +1888,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private int getCurrentSwingDuration() {
+      ItemStack var1 = this.getItemInHand(InteractionHand.MAIN_HAND);
+      int var2 = var1.getSwingAnimation().duration();
       if (MobEffectUtil.hasDigSpeed(this)) {
-         return 6 - (1 + MobEffectUtil.getDigSpeedAmplification(this));
+         return var2 - (1 + MobEffectUtil.getDigSpeedAmplification(this));
       } else {
-         return this.hasEffect(MobEffects.MINING_FATIGUE) ? 6 + (1 + this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) * 2 : 6;
+         return this.hasEffect(MobEffects.MINING_FATIGUE) ? var2 + (1 + this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) * 2 : var2;
       }
    }
 
@@ -2508,6 +2531,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return false;
    }
 
+   public void causeExtraKnockback(Entity var1, float var2, Vec3 var3) {
+      if (var2 > 0.0F && var1 instanceof LivingEntity var4) {
+         var4.knockback((double)var2, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+         this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
+      }
+
+   }
+
+   protected void playAttackSound() {
+   }
+
    public void tick() {
       super.tick();
       this.updatingUsingItem();
@@ -2620,6 +2654,61 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
       this.refreshDirtyAttributes();
       this.elytraAnimationState.tick();
+   }
+
+   public boolean wasRecentlyStabbed(Entity var1) {
+      if (this.recentKineticEnemies == null) {
+         return false;
+      } else if (this.recentKineticEnemies.containsKey(var1)) {
+         return this.level().getGameTime() - this.recentKineticEnemies.getLong(var1) < 10L;
+      } else {
+         return false;
+      }
+   }
+
+   public void rememberStabbedEntity(Entity var1) {
+      if (this.recentKineticEnemies != null) {
+         this.recentKineticEnemies.put(var1, this.level().getGameTime());
+      }
+
+   }
+
+   public boolean stabAttack(EquipmentSlot var1, Entity var2, float var3, boolean var4, boolean var5, boolean var6) {
+      Level var8 = this.level();
+      if (!(var8 instanceof ServerLevel var7)) {
+         return false;
+      } else {
+         ItemStack var14 = this.getItemBySlot(var1);
+         DamageSource var9 = var14.getDamageSource(this, () -> this.damageSources().mobAttack(this));
+         float var10 = EnchantmentHelper.modifyDamage(var7, var14, var2, var9, var3);
+         Vec3 var11 = var2.getDeltaMovement();
+         boolean var12 = var5 | (var4 && var2.hurtServer(var7, var9, var10));
+         if (var5) {
+            this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var9), var11);
+         }
+
+         if (var6 && var2.isPassenger()) {
+            var12 = true;
+            var2.stopRiding();
+         }
+
+         if (!var12) {
+            return false;
+         } else {
+            this.setLastHurtMob(var2);
+            if (var2 instanceof LivingEntity) {
+               LivingEntity var13 = (LivingEntity)var2;
+               var14.hurtEnemy(var13, this);
+            }
+
+            EnchantmentHelper.doPostAttackEffects(var7, var2, var9);
+            this.playAttackSound();
+            return true;
+         }
+      }
+   }
+
+   public void onAttack() {
    }
 
    private void detectEquipmentUpdates() {
@@ -3201,6 +3290,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.setLivingEntityFlag(1, true);
             this.setLivingEntityFlag(2, var1 == InteractionHand.OFF_HAND);
             this.gameEvent(GameEvent.ITEM_INTERACT_START);
+            if (this.useItem.has(DataComponents.KINETIC_WEAPON)) {
+               this.recentKineticEnemies = new Object2LongOpenHashMap();
+            }
          }
 
       }
@@ -3286,6 +3378,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.isUsingItem() ? this.useItem.getUseDuration(this) - this.getUseItemRemainingTicks() : 0;
    }
 
+   public float getTicksUsingItem(float var1) {
+      return !this.isUsingItem() ? 0.0F : (float)this.getTicksUsingItem() + var1;
+   }
+
    public void releaseUsingItem() {
       ItemStack var1 = this.getItemInHand(this.getUsedItemHand());
       if (!this.useItem.isEmpty() && ItemStack.isSameItem(var1, this.useItem)) {
@@ -3302,6 +3398,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public void stopUsingItem() {
       if (!this.level().isClientSide()) {
          boolean var1 = this.isUsingItem();
+         this.recentKineticEnemies = null;
          this.setLivingEntityFlag(1, false);
          if (var1) {
             this.gameEvent(GameEvent.ITEM_INTERACT_FINISH);

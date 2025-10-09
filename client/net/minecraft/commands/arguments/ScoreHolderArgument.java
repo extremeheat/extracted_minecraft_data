@@ -27,6 +27,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.ScoreHolder;
 
@@ -34,7 +35,7 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (var0, var1) -> {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
-      EntitySelectorParser var3 = new EntitySelectorParser(var2, EntitySelectorParser.allowSelectors((CommandSourceStack)var0.getSource()));
+      EntitySelectorParser var3 = new EntitySelectorParser(var2, ((CommandSourceStack)var0.getSource()).permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
       try {
          var3.parse();

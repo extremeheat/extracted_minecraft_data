@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
@@ -461,6 +462,10 @@ public class CommandSuggestions {
             if (var15 != null) {
                var1.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
             }
+         }
+
+         if (this.rect.contains(var2, var3)) {
+            var1.requestCursor(CursorTypes.POINTING_HAND);
          }
 
       }

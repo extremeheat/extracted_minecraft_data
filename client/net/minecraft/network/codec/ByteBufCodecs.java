@@ -48,8 +48,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.Quaternionfc;
+import org.joml.Vector3fc;
 
 public interface ByteBufCodecs {
    int MAX_INITIAL_COLLECTION_SIZE = 65536;
@@ -307,18 +307,18 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, Vector3f> VECTOR3F = new StreamCodec<ByteBuf, Vector3f>() {
-      public Vector3f decode(ByteBuf var1) {
+   StreamCodec<ByteBuf, Vector3fc> VECTOR3F = new StreamCodec<ByteBuf, Vector3fc>() {
+      public Vector3fc decode(ByteBuf var1) {
          return FriendlyByteBuf.readVector3f(var1);
       }
 
-      public void encode(ByteBuf var1, Vector3f var2) {
+      public void encode(ByteBuf var1, Vector3fc var2) {
          FriendlyByteBuf.writeVector3f(var1, var2);
       }
 
       // $FF: synthetic method
       public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (Vector3f)var2);
+         this.encode((ByteBuf)var1, (Vector3fc)var2);
       }
 
       // $FF: synthetic method
@@ -326,18 +326,18 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, Quaternionf> QUATERNIONF = new StreamCodec<ByteBuf, Quaternionf>() {
-      public Quaternionf decode(ByteBuf var1) {
+   StreamCodec<ByteBuf, Quaternionfc> QUATERNIONF = new StreamCodec<ByteBuf, Quaternionfc>() {
+      public Quaternionfc decode(ByteBuf var1) {
          return FriendlyByteBuf.readQuaternion(var1);
       }
 
-      public void encode(ByteBuf var1, Quaternionf var2) {
+      public void encode(ByteBuf var1, Quaternionfc var2) {
          FriendlyByteBuf.writeQuaternion(var1, var2);
       }
 
       // $FF: synthetic method
       public void encode(final Object var1, final Object var2) {
-         this.encode((ByteBuf)var1, (Quaternionf)var2);
+         this.encode((ByteBuf)var1, (Quaternionfc)var2);
       }
 
       // $FF: synthetic method

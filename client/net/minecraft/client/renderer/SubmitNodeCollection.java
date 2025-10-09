@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelPartFeatureRenderer;
@@ -33,7 +32,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.FlameSubmit> flameSubmits = new ArrayList();
    private final NameTagFeatureRenderer.Storage nameTagSubmits = new NameTagFeatureRenderer.Storage();
    private final List<SubmitNodeStorage.TextSubmit> textSubmits = new ArrayList();
-   private final List<SubmitNodeStorage.HitboxSubmit> hitboxSubmits = new ArrayList();
    private final List<SubmitNodeStorage.LeashSubmit> leashSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BlockSubmit> blockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.MovingBlockSubmit> movingBlockSubmits = new ArrayList();
@@ -49,11 +47,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public SubmitNodeCollection(SubmitNodeStorage var1) {
       super();
       this.submitNodeStorage = var1;
-   }
-
-   public void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3) {
-      this.wasUsed = true;
-      this.hitboxSubmits.add(new SubmitNodeStorage.HitboxSubmit(new Matrix4f(var1.last().pose()), var2, var3));
    }
 
    public void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
@@ -140,10 +133,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.textSubmits;
    }
 
-   public List<SubmitNodeStorage.HitboxSubmit> getHitboxSubmits() {
-      return this.hitboxSubmits;
-   }
-
    public List<SubmitNodeStorage.LeashSubmit> getLeashSubmits() {
       return this.leashSubmits;
    }
@@ -189,7 +178,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.flameSubmits.clear();
       this.nameTagSubmits.clear();
       this.textSubmits.clear();
-      this.hitboxSubmits.clear();
       this.leashSubmits.clear();
       this.blockSubmits.clear();
       this.movingBlockSubmits.clear();

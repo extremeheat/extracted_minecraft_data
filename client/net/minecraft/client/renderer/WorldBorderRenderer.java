@@ -127,7 +127,6 @@ public class WorldBorderRenderer {
 
          TextureManager var18 = Minecraft.getInstance().getTextureManager();
          AbstractTexture var19 = var18.getTexture(FORCEFIELD_LOCATION);
-         var19.setUseMipmaps(false);
          RenderPipeline var20 = RenderPipelines.WORLD_BORDER;
          RenderTarget var21 = Minecraft.getInstance().getMainRenderTarget();
          RenderTarget var22 = Minecraft.getInstance().levelRenderer.getWeatherTarget();
@@ -142,14 +141,14 @@ public class WorldBorderRenderer {
          }
 
          GpuBuffer var25 = this.indices.getBuffer(6);
-         GpuBufferSlice var26 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var12, var13, var14, (float)var1.alpha), new Vector3f((float)(this.lastMinX - var7), (float)(-var2.y), (float)(this.lastMinZ - var9)), (new Matrix4f()).translation(var15, var15, 0.0F), 0.0F);
+         GpuBufferSlice var26 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(var12, var13, var14, (float)var1.alpha), new Vector3f((float)(this.lastMinX - var7), (float)(-var2.y), (float)(this.lastMinZ - var9)), (new Matrix4f()).translation(var15, var15, 0.0F));
 
          try (RenderPass var27 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "World border", var23, OptionalInt.empty(), var24, OptionalDouble.empty())) {
             var27.setPipeline(var20);
             RenderSystem.bindDefaultUniforms(var27);
             var27.setUniform("DynamicTransforms", var26);
             var27.setIndexBuffer(var25, this.indices.type());
-            var27.bindSampler("Sampler0", var19.getTextureView());
+            var27.bindTexture("Sampler0", var19.getTextureView(), var19.getSampler());
             var27.setVertexBuffer(0, this.worldBorderBuffer);
             ArrayList var28 = new ArrayList();
 

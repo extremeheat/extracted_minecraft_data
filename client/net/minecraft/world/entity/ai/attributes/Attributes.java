@@ -6,6 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 public class Attributes {
+   public static final double DEFAULT_ATTACK_SPEED = 4.0;
    public static final Holder<Attribute> ARMOR = register("armor", (new RangedAttribute("attribute.name.armor", 0.0, 0.0, 30.0)).setSyncable(true));
    public static final Holder<Attribute> ARMOR_TOUGHNESS = register("armor_toughness", (new RangedAttribute("attribute.name.armor_toughness", 0.0, 0.0, 20.0)).setSyncable(true));
    public static final Holder<Attribute> ATTACK_DAMAGE = register("attack_damage", new RangedAttribute("attribute.name.attack_damage", 2.0, 0.0, 2048.0));

@@ -86,8 +86,8 @@ public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> i
 
       AbstractIllager.IllagerArmPose var4 = var1.armPose;
       if (var4 == AbstractIllager.IllagerArmPose.ATTACKING) {
-         if (var1.getMainHandItem().isEmpty()) {
-            AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, var1.attackAnim, var1.ageInTicks);
+         if (var1.getMainHandItemState().isEmpty()) {
+            AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, var1);
          } else {
             AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1.mainArm, var1.attackAnim, var1.ageInTicks);
          }

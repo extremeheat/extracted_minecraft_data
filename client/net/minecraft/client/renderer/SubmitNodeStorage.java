@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -34,10 +33,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
 
    public SubmitNodeCollection order(int var1) {
       return (SubmitNodeCollection)this.submitsPerOrder.computeIfAbsent(var1, (var1x) -> new SubmitNodeCollection(this));
-   }
-
-   public void submitHitbox(PoseStack var1, EntityRenderState var2, HitboxesRenderState var3) {
-      this.order(0).submitHitbox(var1, var2, var3);
    }
 
    public void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3) {
@@ -155,15 +150,6 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
          this.color = var8;
          this.backgroundColor = var9;
          this.outlineColor = var10;
-      }
-   }
-
-   public static record HitboxSubmit(Matrix4f pose, EntityRenderState entityRenderState, HitboxesRenderState hitboxesRenderState) {
-      public HitboxSubmit(Matrix4f var1, EntityRenderState var2, HitboxesRenderState var3) {
-         super();
-         this.pose = var1;
-         this.entityRenderState = var2;
-         this.hitboxesRenderState = var3;
       }
    }
 

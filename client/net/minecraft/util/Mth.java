@@ -603,6 +603,10 @@ public class Mth {
       return var0 * var0;
    }
 
+   public static float cube(float var0) {
+      return var0 * var0 * var0;
+   }
+
    public static double square(double var0) {
       return var0 * var0;
    }
@@ -720,10 +724,6 @@ public class Mth {
 
    public static int mulAndTruncate(Fraction var0, int var1) {
       return var0.getNumerator() * var1 / var0.getDenominator();
-   }
-
-   public static float easeInOutSine(float var0) {
-      return -(cos(3.1415927F * var0) - 1.0F) / 2.0F;
    }
 
    static {

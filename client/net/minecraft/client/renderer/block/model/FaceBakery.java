@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -21,7 +20,6 @@ public class FaceBakery {
    public static final int VERTEX_COUNT = 4;
    private static final int COLOR_INDEX = 3;
    public static final int UV_INDEX = 4;
-   private static final Vector3fc NO_RESCALE = new Vector3f(1.0F, 1.0F, 1.0F);
    private static final Vector3fc BLOCK_MIDDLE = new Vector3f(0.5F, 0.5F, 0.5F);
 
    public FaceBakery() {
@@ -97,8 +95,14 @@ public class FaceBakery {
    private static void bakeVertex(int[] var0, int var1, FaceInfo var2, BlockElementFace.UVs var3, Quadrant var4, Matrix4fc var5, float[] var6, TextureAtlasSprite var7, Transformation var8, @Nullable BlockElementRotation var9) {
       FaceInfo.VertexInfo var10 = var2.getVertexInfo(var1);
       Vector3f var11 = new Vector3f(var6[var10.xFace], var6[var10.yFace], var6[var10.zFace]);
-      applyElementRotation(var11, var9);
-      applyModelRotation(var11, var8);
+      if (var9 != null) {
+         rotateVertexBy(var11, var9.origin(), var9.transform());
+      }
+
+      if (var8 != Transformation.identity()) {
+         rotateVertexBy(var11, BLOCK_MIDDLE, var8.getMatrix());
+      }
+
       float var12 = BlockElementFace.getU(var3, var4, var1);
       float var13 = BlockElementFace.getV(var3, var4, var1);
       float var14;
@@ -133,43 +137,9 @@ public class FaceBakery {
       var0[var6 + 4 + 1] = Float.floatToRawIntBits(var3.getV(var5));
    }
 
-   private static void applyElementRotation(Vector3f var0, @Nullable BlockElementRotation var1) {
-      if (var1 != null) {
-         Vector3fc var2 = var1.axis().getPositive().getUnitVec3f();
-         Matrix4f var3 = (new Matrix4f()).rotation(var1.angle() * 0.017453292F, var2);
-         Vector3fc var4 = var1.rescale() ? computeRescale(var1) : NO_RESCALE;
-         rotateVertexBy(var0, var1.origin(), var3, var4);
-      }
-   }
-
-   private static Vector3fc computeRescale(BlockElementRotation var0) {
-      if (var0.angle() == 0.0F) {
-         return NO_RESCALE;
-      } else {
-         float var1 = Math.abs(var0.angle());
-         float var2 = 1.0F / Mth.cos(var1 * 0.017453292F);
-         Vector3f var10000;
-         switch (var0.axis()) {
-            case X -> var10000 = new Vector3f(1.0F, var2, var2);
-            case Y -> var10000 = new Vector3f(var2, 1.0F, var2);
-            case Z -> var10000 = new Vector3f(var2, var2, 1.0F);
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-
-         return var10000;
-      }
-   }
-
-   private static void applyModelRotation(Vector3f var0, Transformation var1) {
-      if (var1 != Transformation.identity()) {
-         rotateVertexBy(var0, BLOCK_MIDDLE, var1.getMatrix(), NO_RESCALE);
-      }
-   }
-
-   private static void rotateVertexBy(Vector3f var0, Vector3fc var1, Matrix4fc var2, Vector3fc var3) {
+   private static void rotateVertexBy(Vector3f var0, Vector3fc var1, Matrix4fc var2) {
       var0.sub(var1);
       var2.transformPosition(var0);
-      var0.mul(var3);
       var0.add(var1);
    }
 

@@ -28,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
@@ -41,7 +42,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
    private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
    private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader;
    private volatile Map<ResourceLocation, List<CommandFunction<CommandSourceStack>>> tags;
-   private final int functionCompilationLevel;
+   private final PermissionSet functionCompilationPermissions;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
    public Optional<CommandFunction<CommandSourceStack>> getFunction(ResourceLocation var1) {
@@ -60,11 +61,11 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       return this.tags.keySet();
    }
 
-   public ServerFunctionLibrary(int var1, CommandDispatcher<CommandSourceStack> var2) {
+   public ServerFunctionLibrary(PermissionSet var1, CommandDispatcher<CommandSourceStack> var2) {
       super();
       this.tagsLoader = new TagLoader<CommandFunction<CommandSourceStack>>((var1x, var2x) -> this.getFunction(var1x), Registries.tagsDirPath(TYPE_KEY));
       this.tags = Map.of();
-      this.functionCompilationLevel = var1;
+      this.functionCompilationPermissions = var1;
       this.dispatcher = var2;
    }
 
@@ -73,7 +74,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       CompletableFuture var6 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var5), var2);
       CompletableFuture var7 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
          HashMap var3 = Maps.newHashMap();
-         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationPermissions, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
 
          for(Map.Entry var6 : var2x.entrySet()) {
             ResourceLocation var7 = (ResourceLocation)var6.getKey();

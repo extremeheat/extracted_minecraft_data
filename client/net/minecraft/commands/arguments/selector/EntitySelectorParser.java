@@ -19,10 +19,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.commands.PermissionSource;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSetSupplier;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ToFloatFunction;
 import net.minecraft.world.entity.Entity;
@@ -113,8 +114,8 @@ public class EntitySelectorParser {
 
    public static <S> boolean allowSelectors(S var0) {
       boolean var10000;
-      if (var0 instanceof PermissionSource var1) {
-         if (var1.allowsSelectors()) {
+      if (var0 instanceof PermissionSetSupplier var1) {
+         if (var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
             var10000 = true;
             return var10000;
          }
@@ -122,6 +123,12 @@ public class EntitySelectorParser {
 
       var10000 = false;
       return var10000;
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public static boolean allowSelectors(PermissionSetSupplier var0) {
+      return var0.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS);
    }
 
    public EntitySelector getSelector() {

@@ -36,6 +36,7 @@ public interface DamageTypes {
    ResourceKey<DamageType> MOB_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("mob_attack"));
    ResourceKey<DamageType> MOB_ATTACK_NO_AGGRO = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("mob_attack_no_aggro"));
    ResourceKey<DamageType> PLAYER_ATTACK = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("player_attack"));
+   ResourceKey<DamageType> SPEAR = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("spear"));
    ResourceKey<DamageType> ARROW = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("arrow"));
    ResourceKey<DamageType> TRIDENT = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("trident"));
    ResourceKey<DamageType> MOB_PROJECTILE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace("mob_projectile"));
@@ -87,6 +88,7 @@ public interface DamageTypes {
       var0.register(MOB_ATTACK, new DamageType("mob", 0.1F));
       var0.register(MOB_ATTACK_NO_AGGRO, new DamageType("mob", 0.1F));
       var0.register(PLAYER_ATTACK, new DamageType("player", 0.1F));
+      var0.register(SPEAR, new DamageType("spear", 0.1F));
       var0.register(ARROW, new DamageType("arrow", 0.1F));
       var0.register(TRIDENT, new DamageType("trident", 0.1F));
       var0.register(MOB_PROJECTILE, new DamageType("mob", 0.1F));

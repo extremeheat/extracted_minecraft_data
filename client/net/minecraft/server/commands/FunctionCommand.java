@@ -37,6 +37,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 
 public class FunctionCommand {
    private static final DynamicCommandExceptionType ERROR_ARGUMENT_NOT_COMPOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.function.error.argument_not_compound", var0));
@@ -73,7 +74,7 @@ public class FunctionCommand {
             })));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
          @Nullable
          protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
             return null;
@@ -95,7 +96,7 @@ public class FunctionCommand {
    }
 
    public static CommandSourceStack modifySenderForExecution(CommandSourceStack var0) {
-      return var0.withSuppressedOutput().withMaximumPermission(2);
+      return var0.withSuppressedOutput().withMaximumPermission(LevelBasedPermissionSet.GAMEMASTER);
    }
 
    public static <T extends ExecutionCommandSource<T>> void queueFunctions(Collection<CommandFunction<T>> var0, @Nullable CompoundTag var1, T var2, T var3, ExecutionControl<T> var4, Callbacks<T> var5, ChainModifiers var6) throws CommandSyntaxException {

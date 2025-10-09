@@ -31,6 +31,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.jsonrpc.security.SecurityConfig;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StrictJsonParser;
@@ -83,8 +85,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean hardcore;
    public final boolean useNativeTransport;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> spawnProtection;
-   public final Settings<DedicatedServerProperties>.MutableValue<Integer> opPermissionLevel;
-   public final int functionPermissionLevel;
+   public final Settings<DedicatedServerProperties>.MutableValue<LevelBasedPermissionSet> opPermissions;
+   public final LevelBasedPermissionSet functionPermissions;
    public final long maxTickTime;
    public final int maxChainedNeighborUpdates;
    public final int rateLimitPacketsPerSecond;
@@ -137,8 +139,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.hardcore = this.get("hardcore", false);
       this.useNativeTransport = this.get("use-native-transport", true);
       this.spawnProtection = this.getMutable("spawn-protection", 16);
-      this.opPermissionLevel = this.getMutable("op-permission-level", 4);
-      this.functionPermissionLevel = this.get("function-permission-level", 2);
+      this.opPermissions = this.getMutable("op-permission-level", DedicatedServerProperties::deserializePermission, DedicatedServerProperties::serializePermission, LevelBasedPermissionSet.OWNER);
+      this.functionPermissions = (LevelBasedPermissionSet)this.get("function-permission-level", DedicatedServerProperties::deserializePermission, DedicatedServerProperties::serializePermission, LevelBasedPermissionSet.GAMEMASTER);
       this.maxTickTime = this.get("max-tick-time", TimeUnit.MINUTES.toMillis(1L));
       this.maxChainedNeighborUpdates = this.get("max-chained-neighbor-updates", 1000000);
       this.rateLimitPacketsPerSecond = this.get("rate-limit", 0);
@@ -240,6 +242,20 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       List var2 = COMMA_SPLITTER.splitToList(var0);
       List var3 = COMMA_SPLITTER.splitToList(var1);
       return new DataPackConfig(var2, var3);
+   }
+
+   @Nullable
+   public static LevelBasedPermissionSet deserializePermission(String var0) {
+      try {
+         PermissionLevel var1 = PermissionLevel.byId(Integer.parseInt(var0));
+         return LevelBasedPermissionSet.forLevel(var1);
+      } catch (NumberFormatException var2) {
+         return null;
+      }
+   }
+
+   public static String serializePermission(LevelBasedPermissionSet var0) {
+      return Integer.toString(var0.level().id());
    }
 
    public WorldDimensions createDimensions(HolderLookup.Provider var1) {

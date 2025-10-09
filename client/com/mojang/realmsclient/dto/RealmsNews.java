@@ -7,25 +7,24 @@ import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
-public class RealmsNews extends ValueObject {
+public record RealmsNews(@Nullable String newsLink) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   public String newsLink;
 
-   public RealmsNews() {
+   public RealmsNews(@Nullable String var1) {
       super();
+      this.newsLink = var1;
    }
 
    public static RealmsNews parse(String var0) {
-      RealmsNews var1 = new RealmsNews();
+      String var1 = null;
 
       try {
          JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
-         var1.newsLink = JsonUtils.getStringOr("newsLink", var2, (String)null);
+         var1 = JsonUtils.getStringOr("newsLink", var2, (String)null);
       } catch (Exception var3) {
-         LOGGER.error("Could not parse RealmsNews: {}", var3.getMessage());
+         LOGGER.error("Could not parse RealmsNews", var3);
       }
 
-      return var1;
+      return new RealmsNews(var1);
    }
 }

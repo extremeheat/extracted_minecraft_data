@@ -142,7 +142,7 @@ public class QuickPlay {
          return;
       }
 
-      RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
+      RealmsServer var6 = (RealmsServer)var5.servers().stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
       if (var6 == null) {
          RealmsMainScreen var12 = new RealmsMainScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var12, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));

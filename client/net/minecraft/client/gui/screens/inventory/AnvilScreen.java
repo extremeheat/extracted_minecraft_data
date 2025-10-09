@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
@@ -39,6 +38,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setCanLoseFocus(false);
       this.name.setTextColor(-1);
       this.name.setTextColorUneditable(-1);
+      this.name.setInvertHighlightedTextColor(false);
       this.name.setBordered(false);
       this.name.setMaxLength(50);
       this.name.setResponder(this::onNameChanged);
@@ -56,10 +56,10 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.setInitialFocus(this.name);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.name.getValue();
-      this.init(var1, var2, var3);
-      this.name.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.name.getValue();
+      this.init(var1, var2);
+      this.name.setValue(var3);
    }
 
    public boolean keyPressed(KeyEvent var1) {

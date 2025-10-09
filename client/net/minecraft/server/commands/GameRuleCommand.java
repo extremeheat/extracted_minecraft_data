@@ -15,7 +15,7 @@ public class GameRuleCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      final LiteralArgumentBuilder var2 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(Commands.hasPermission(2));
+      final LiteralArgumentBuilder var2 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
       (new GameRules(var1.enabledFeatures())).visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
          public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2x) {
             LiteralArgumentBuilder var3 = Commands.literal(var1.getId());
@@ -27,7 +27,7 @@ public class GameRuleCommand {
 
    static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> var0, GameRules.Key<T> var1) {
       CommandSourceStack var2 = (CommandSourceStack)var0.getSource();
-      GameRules.Value var3 = var2.getServer().getGameRules().getRule(var1);
+      GameRules.Value var3 = var2.getLevel().getGameRules().getRule(var1);
       var3.setFromArgument(var0, "value");
       var2.getServer().onGameRuleChanged(var1.getId(), var3);
       var2.sendSuccess(() -> Component.translatable("commands.gamerule.set", var1.getId(), var3.toString()), true);
@@ -35,7 +35,7 @@ public class GameRuleCommand {
    }
 
    static <T extends GameRules.Value<T>> int queryRule(CommandSourceStack var0, GameRules.Key<T> var1) {
-      GameRules.Value var2 = var0.getServer().getGameRules().getRule(var1);
+      GameRules.Value var2 = var0.getLevel().getGameRules().getRule(var1);
       var0.sendSuccess(() -> Component.translatable("commands.gamerule.query", var1.getId(), var2.toString()), false);
       return var2.getCommandResult();
    }

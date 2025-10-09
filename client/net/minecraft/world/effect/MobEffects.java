@@ -51,6 +51,7 @@ public class MobEffects {
    public static final Holder<MobEffect> WEAVING;
    public static final Holder<MobEffect> OOZING;
    public static final Holder<MobEffect> INFESTED;
+   public static final Holder<MobEffect> BREATH_OF_THE_NAUTILUS;
 
    public MobEffects() {
       super();
@@ -104,5 +105,6 @@ public class MobEffects {
       WEAVING = register("weaving", new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> Mth.randomBetweenInclusive(var0, 2, 3)));
       OOZING = register("oozing", new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> 2));
       INFESTED = register("infested", new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> Mth.randomBetweenInclusive(var0, 1, 2)));
+      BREATH_OF_THE_NAUTILUS = register("breath_of_the_nautilus", new MobEffect(MobEffectCategory.BENEFICIAL, 65518));
    }
 }

@@ -244,7 +244,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       int var4 = var1.getY();
       LevelChunkSection var5 = this.getSection(this.getSectionIndex(var4));
       boolean var6 = var5.hasOnlyAir();

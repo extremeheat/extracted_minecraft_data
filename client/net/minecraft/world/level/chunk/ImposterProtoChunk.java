@@ -57,7 +57,7 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return this.allowWrites ? this.wrapped.setBlockState(var1, var2, var3) : null;
    }
 

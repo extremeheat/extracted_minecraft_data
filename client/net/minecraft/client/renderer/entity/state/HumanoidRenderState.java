@@ -6,10 +6,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class HumanoidRenderState extends ArmedEntityRenderState {
    public float swimAmount;
-   public float attackTime;
    public float speedValue = 1.0F;
    public float maxCrossbowChargeDuration;
-   public int ticksUsingItem;
+   public float ticksUsingItem;
    public HumanoidArm attackArm;
    public InteractionHand useItemHand;
    public boolean isCrouching;
@@ -33,5 +32,9 @@ public class HumanoidRenderState extends ArmedEntityRenderState {
       this.chestEquipment = ItemStack.EMPTY;
       this.legsEquipment = ItemStack.EMPTY;
       this.feetEquipment = ItemStack.EMPTY;
+   }
+
+   public float ticksUsingItem(HumanoidArm var1) {
+      return this.isUsingItem && this.useItemHand == InteractionHand.MAIN_HAND == (var1 == this.mainArm) ? this.ticksUsingItem : 0.0F;
    }
 }

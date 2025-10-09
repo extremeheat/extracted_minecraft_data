@@ -148,6 +148,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
@@ -159,6 +160,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.LivingEntity;
@@ -185,6 +187,7 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -222,6 +225,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private static final int NO_BLOCK_UPDATES_TO_ACK = -1;
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
    private static final int MAXIMUM_FLYING_TICKS = 80;
+   private static final int ATTACK_INDICATOR_TOLERANCE_TICKS = 5;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
    private static final Component INVALID_COMMAND_SIGNATURE;
    private static final int MAX_COMMAND_SUGGESTIONS = 1000;
@@ -349,6 +353,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          double var4 = 0.08 / var2;
          return Mth.ceil(80.0 * Math.max(var4, 1.0));
       }
+   }
+
+   public void resetFlyingTicks() {
+      this.aboveGroundTickCount = 0;
+      this.aboveGroundVehicleTickCount = 0;
    }
 
    public void resetPosition() {
@@ -569,9 +578,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSetCommandBlock(ServerboundSetCommandBlockPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (!this.server.isCommandBlockEnabled()) {
-         this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
-      } else if (!this.player.canUseGameMasterBlocks()) {
+      if (!this.player.canUseGameMasterBlocks()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notAllowed"));
       } else {
          BaseCommandBlock var2 = null;
@@ -579,11 +586,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          BlockPos var4 = var1.getPos();
          BlockEntity var5 = this.player.level().getBlockEntity(var4);
          if (var5 instanceof CommandBlockEntity) {
-            var3 = (CommandBlockEntity)var5;
-            var2 = var3.getCommandBlock();
+            CommandBlockEntity var6 = (CommandBlockEntity)var5;
+            var3 = var6;
+            var2 = var6.getCommandBlock();
          }
 
-         String var6 = var1.getCommand();
+         String var13 = var1.getCommand();
          boolean var7 = var1.isTrackOutput();
          if (var2 != null) {
             CommandBlockEntity.Mode var8 = var3.getMode();
@@ -604,7 +612,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.player.level().getChunkAt(var4).setBlockEntity(var5);
             }
 
-            var2.setCommand(var6);
+            var2.setCommand(var13);
             var2.setTrackOutput(var7);
             if (!var7) {
                var2.setLastOutput((Component)null);
@@ -615,9 +623,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                var3.onModeSwitch();
             }
 
-            var2.onUpdated();
-            if (!StringUtil.isNullOrEmpty(var6)) {
-               this.player.sendSystemMessage(Component.translatable("advMode.setCommand.success", var6));
+            if (this.player.level().isCommandBlockEnabled()) {
+               var2.onUpdated(this.player.level());
+            }
+
+            if (!StringUtil.isNullOrEmpty(var13)) {
+               this.player.sendSystemMessage(Component.translatable(this.player.level().isCommandBlockEnabled() ? "advMode.setCommand.success" : "advMode.setCommand.disabled", var13));
             }
          }
 
@@ -626,21 +637,26 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (!this.server.isCommandBlockEnabled()) {
-         this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
-      } else if (!this.player.canUseGameMasterBlocks()) {
+      if (!this.player.canUseGameMasterBlocks()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notAllowed"));
       } else {
          BaseCommandBlock var2 = var1.getCommandBlock(this.player.level());
          if (var2 != null) {
-            var2.setCommand(var1.getCommand());
+            String var3 = var1.getCommand();
+            var2.setCommand(var3);
             var2.setTrackOutput(var1.isTrackOutput());
             if (!var1.isTrackOutput()) {
                var2.setLastOutput((Component)null);
             }
 
-            var2.onUpdated();
-            this.player.sendSystemMessage(Component.translatable("advMode.setCommand.success", var1.getCommand()));
+            boolean var4 = this.player.level().isCommandBlockEnabled();
+            if (var4) {
+               var2.onUpdated(this.player.level());
+            }
+
+            if (!StringUtil.isNullOrEmpty(var3)) {
+               this.player.sendSystemMessage(Component.translatable(var4 ? "advMode.setCommand.success" : "advMode.setCommand.disabled", var3));
+            }
          }
 
       }
@@ -958,7 +974,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleEntityTagQuery(ServerboundEntityTagQueryPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasPermissions(2)) {
+      if (this.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          Entity var2 = this.player.level().getEntity(var1.getEntityId());
          if (var2 != null) {
             try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var2.problemPath(), LOGGER)) {
@@ -990,7 +1006,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleBlockEntityTagQuery(ServerboundBlockEntityTagQueryPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasPermissions(2)) {
+      if (this.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          BlockEntity var2 = this.player.level().getBlockEntity(var1.getPos());
          CompoundTag var3 = var2 != null ? var2.saveWithoutMetadata((HolderLookup.Provider)this.player.registryAccess()) : null;
          this.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
@@ -1179,11 +1195,27 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.player.resetLastActionTime();
          ServerboundPlayerActionPacket.Action var3 = var1.getAction();
          switch (var3) {
+            case STAB:
+               if (this.player.isSpectator()) {
+                  return;
+               } else {
+                  ItemStack var4 = this.player.getItemInHand(InteractionHand.MAIN_HAND);
+                  if (this.player.cannotAttackWithItem(var4, 5)) {
+                     return;
+                  }
+
+                  PiercingWeapon var5 = (PiercingWeapon)var4.get(DataComponents.PIERCING_WEAPON);
+                  if (var5 != null) {
+                     var5.attack(this.player, EquipmentSlot.MAINHAND);
+                  }
+
+                  return;
+               }
             case SWAP_ITEM_WITH_OFFHAND:
                if (!this.player.isSpectator()) {
-                  ItemStack var4 = this.player.getItemInHand(InteractionHand.OFF_HAND);
+                  ItemStack var6 = this.player.getItemInHand(InteractionHand.OFF_HAND);
                   this.player.setItemInHand(InteractionHand.OFF_HAND, this.player.getItemInHand(InteractionHand.MAIN_HAND));
-                  this.player.setItemInHand(InteractionHand.MAIN_HAND, var4);
+                  this.player.setItemInHand(InteractionHand.MAIN_HAND, var6);
                   this.player.stopUsingItem();
                }
 
@@ -1708,16 +1740,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                   public void onAttack() {
                      if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && var3 != ServerGamePacketListenerImpl.this.player) {
-                        label29: {
+                        label33: {
                            if (var3 instanceof AbstractArrow) {
                               AbstractArrow var1 = (AbstractArrow)var3;
                               if (!var1.isAttackable()) {
-                                 break label29;
+                                 break label33;
                               }
                            }
 
                            ItemStack var2x = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
                            if (!var2x.isItemEnabled(var2.enabledFeatures())) {
+                              return;
+                           }
+
+                           if (ServerGamePacketListenerImpl.this.player.cannotAttackWithItem(var2x, 5)) {
                               return;
                            }
 
@@ -1919,7 +1955,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (!this.player.hasPermissions(2) && !this.isSingleplayerOwner()) {
+      if (!this.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) && !this.isSingleplayerOwner()) {
          LOGGER.warn("Player {} tried to change difficulty to {} without required permissions", this.player.getGameProfile().name(), var1.difficulty().getDisplayName());
       } else {
          this.server.setDifficulty(var1.difficulty(), false);
@@ -1928,7 +1964,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleChangeGameMode(ServerboundChangeGameModePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (!this.player.hasPermissions(2)) {
+      if (!GameModeCommand.PERMISSION_CHECK.check(this.player.permissions())) {
          LOGGER.warn("Player {} tried to change game mode to {} without required permissions", this.player.getGameProfile().name(), var1.mode().getShortDisplayName().getString());
       } else {
          GameModeCommand.setGameMode(this.player, var1.mode());
@@ -1937,7 +1973,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleLockDifficulty(ServerboundLockDifficultyPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
+      if (this.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER) || this.isSingleplayerOwner()) {
          this.server.setDifficultyLocked(var1.isLocked());
       }
    }

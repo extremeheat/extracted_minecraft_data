@@ -15,7 +15,7 @@ public class InstantNeighborUpdater implements NeighborUpdater {
       this.level = var1;
    }
 
-   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this.level, var1, var3, var4, var2, var5, var6 - 1);
    }
 

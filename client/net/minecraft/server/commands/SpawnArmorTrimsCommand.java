@@ -46,7 +46,7 @@ public class SpawnArmorTrimsCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(2))).then(Commands.literal("*_lag_my_game").executes((var0x) -> spawnAllArmorTrims((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceKeyArgument.key(Registries.TRIM_PATTERN)).executes((var0x) -> spawnArmorTrim((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ResourceKeyArgument.getRegistryKey(var0x, "pattern", Registries.TRIM_PATTERN, ERROR_INVALID_PATTERN)))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("*_lag_my_game").executes((var0x) -> spawnAllArmorTrims((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceKeyArgument.key(Registries.TRIM_PATTERN)).executes((var0x) -> spawnArmorTrim((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ResourceKeyArgument.getRegistryKey(var0x, "pattern", Registries.TRIM_PATTERN, ERROR_INVALID_PATTERN)))));
    }
 
    private static int spawnAllArmorTrims(CommandSourceStack var0, Player var1) {

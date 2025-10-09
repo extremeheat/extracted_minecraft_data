@@ -3,7 +3,6 @@ package com.mojang.blaze3d.pipeline;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -27,7 +26,6 @@ public abstract class RenderTarget {
    protected GpuTexture depthTexture;
    @Nullable
    protected GpuTextureView depthTextureView;
-   public FilterMode filterMode;
 
    public RenderTarget(@Nullable String var1, boolean var2) {
       super();
@@ -86,32 +84,12 @@ public abstract class RenderTarget {
          if (this.useDepth) {
             this.depthTexture = var3.createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1, var2, 1, 1);
             this.depthTextureView = var3.createTextureView(this.depthTexture);
-            this.depthTexture.setTextureFilter(FilterMode.NEAREST, false);
-            this.depthTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          }
 
          this.colorTexture = var3.createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1, var2, 1, 1);
          this.colorTextureView = var3.createTextureView(this.colorTexture);
-         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         this.setFilterMode(FilterMode.NEAREST, true);
       } else {
          throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var4 + ")");
-      }
-   }
-
-   public void setFilterMode(FilterMode var1) {
-      this.setFilterMode(var1, false);
-   }
-
-   private void setFilterMode(FilterMode var1, boolean var2) {
-      if (this.colorTexture == null) {
-         throw new IllegalStateException("Can't change filter mode, color texture doesn't exist yet");
-      } else {
-         if (var2 || var1 != this.filterMode) {
-            this.filterMode = var1;
-            this.colorTexture.setTextureFilter(var1, false);
-         }
-
       }
    }
 
@@ -129,7 +107,7 @@ public abstract class RenderTarget {
       try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", var1, OptionalInt.empty())) {
          var2.setPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT);
          RenderSystem.bindDefaultUniforms(var2);
-         var2.bindSampler("InSampler", this.colorTextureView);
+         var2.bindTexture("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
          var2.draw(0, 3);
       }
 

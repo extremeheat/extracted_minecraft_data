@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.jetbrains.annotations.Contract;
 
 public class JsonUtils {
    public JsonUtils() {
@@ -49,11 +50,8 @@ public class JsonUtils {
       }
    }
 
-   public static String getRequiredStringOr(String var0, JsonObject var1, String var2) {
-      return getStringOr(var0, var1, var2);
-   }
-
    @Nullable
+   @Contract("_,_,!null->!null;_,_,null->_")
    public static String getStringOr(String var0, JsonObject var1, @Nullable String var2) {
       JsonElement var3 = var1.get(var0);
       if (var3 != null) {
@@ -64,6 +62,7 @@ public class JsonUtils {
    }
 
    @Nullable
+   @Contract("_,_,!null->!null;_,_,null->_")
    public static UUID getUuidOr(String var0, JsonObject var1, @Nullable UUID var2) {
       String var3 = getStringOr(var0, var1, (String)null);
       return var3 == null ? var2 : UndashedUuid.fromStringLenient(var3);

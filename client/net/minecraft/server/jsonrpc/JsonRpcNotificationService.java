@@ -50,6 +50,10 @@ public class JsonRpcNotificationService implements NotificationService {
       this.broadcastNotification(OutgoingRpcMethods.SERVER_SAVE_COMPLETED);
    }
 
+   public void serverActivityOccured() {
+      this.broadcastNotification(OutgoingRpcMethods.SERVER_ACTIVITY_OCCURRED);
+   }
+
    public void playerOped(ServerOpListEntry var1) {
       this.broadcastNotification(OutgoingRpcMethods.PLAYER_OPED, OperatorService.OperatorDto.from(var1));
    }

@@ -237,7 +237,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
             this.minecart.resetFallDistance();
             this.minecart.setOldPosAndRot();
             if (var5.is(Blocks.ACTIVATOR_RAIL)) {
-               this.minecart.activateMinecart(var4.getX(), var4.getY(), var4.getZ(), (Boolean)var5.getValue(PoweredRailBlock.POWERED));
+               this.minecart.activateMinecart(var1, var4.getX(), var4.getY(), var4.getZ(), (Boolean)var5.getValue(PoweredRailBlock.POWERED));
             }
 
             RailShape var7 = (RailShape)var5.getValue(((BaseRailBlock)var5.getBlock()).getShapeProperty());

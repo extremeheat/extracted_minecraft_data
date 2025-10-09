@@ -67,28 +67,35 @@ import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.joml.Vector3i;
+import org.joml.Vector3ic;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 public class ExtraCodecs {
    public static final Codec<JsonElement> JSON;
    public static final Codec<Object> JAVA;
    public static final Codec<Tag> NBT;
-   public static final Codec<Vector2f> VECTOR2F;
-   public static final Codec<Vector3f> VECTOR3F;
-   public static final Codec<Vector3i> VECTOR3I;
-   public static final Codec<Vector4f> VECTOR4F;
-   public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
+   public static final Codec<Vector2fc> VECTOR2F;
+   public static final Codec<Vector3fc> VECTOR3F;
+   public static final Codec<Vector3ic> VECTOR3I;
+   public static final Codec<Vector4fc> VECTOR4F;
+   public static final Codec<Quaternionfc> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
-   public static final Codec<Quaternionf> QUATERNIONF;
+   public static final Codec<Quaternionfc> QUATERNIONF;
    public static final Codec<Matrix4fc> MATRIX4F;
    public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
    public static final Codec<Integer> UNSIGNED_BYTE;
    public static final Codec<Integer> NON_NEGATIVE_INT;
    public static final Codec<Integer> POSITIVE_INT;
+   public static final Codec<Long> NON_NEGATIVE_LONG;
+   public static final Codec<Long> POSITIVE_LONG;
    public static final Codec<Float> NON_NEGATIVE_FLOAT;
    public static final Codec<Float> POSITIVE_FLOAT;
    public static final Codec<Pattern> PATTERN;
@@ -246,6 +253,14 @@ public class ExtraCodecs {
 
    public static Codec<Integer> intRange(int var0, int var1) {
       return intRangeWithMessage(var0, var1, (var2) -> "Value must be within range [" + var0 + ";" + var1 + "]: " + var2);
+   }
+
+   private static Codec<Long> longRangeWithMessage(long var0, long var2, Function<Long, String> var4) {
+      return Codec.LONG.validate((var5) -> (long)var5.compareTo(var0) >= 0L && (long)var5.compareTo(var2) <= 0L ? DataResult.success(var5) : DataResult.error(() -> (String)var4.apply(var5)));
+   }
+
+   public static Codec<Long> longRange(int var0, int var1) {
+      return longRangeWithMessage((long)var0, (long)var1, (var2) -> "Value must be within range [" + var0 + ";" + var1 + "]: " + var2);
    }
 
    private static Codec<Float> floatRangeMinInclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
@@ -445,7 +460,7 @@ public class ExtraCodecs {
       VECTOR3F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 3).map((var0x) -> new Vector3f((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2))), (var0) -> List.of(var0.x(), var0.y(), var0.z()));
       VECTOR3I = Codec.INT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 3).map((var0x) -> new Vector3i((Integer)var0x.get(0), (Integer)var0x.get(1), (Integer)var0x.get(2))), (var0) -> List.of(var0.x(), var0.y(), var0.z()));
       VECTOR4F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> new Vector4f((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))), (var0) -> List.of(var0.x(), var0.y(), var0.z(), var0.w()));
-      QUATERNIONF_COMPONENTS = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> (new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))).normalize()), (var0) -> List.of(var0.x, var0.y, var0.z, var0.w));
+      QUATERNIONF_COMPONENTS = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> (new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))).normalize()), (var0) -> List.of(var0.x(), var0.y(), var0.z(), var0.w()));
       AXISANGLE4F = RecordCodecBuilder.create((var0) -> var0.group(Codec.FLOAT.fieldOf("angle").forGetter((var0x) -> var0x.angle), VECTOR3F.fieldOf("axis").forGetter((var0x) -> new Vector3f(var0x.x, var0x.y, var0x.z))).apply(var0, AxisAngle4f::new));
       QUATERNIONF = Codec.withAlternative(QUATERNIONF_COMPONENTS, AXISANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new));
       MATRIX4F = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 16).map((var0x) -> {
@@ -470,6 +485,8 @@ public class ExtraCodecs {
       UNSIGNED_BYTE = Codec.BYTE.flatComapMap(UnsignedBytes::toInt, (var0) -> var0 > 255 ? DataResult.error(() -> "Unsigned byte was too large: " + var0 + " > 255") : DataResult.success(var0.byteValue()));
       NON_NEGATIVE_INT = intRangeWithMessage(0, 2147483647, (var0) -> "Value must be non-negative: " + var0);
       POSITIVE_INT = intRangeWithMessage(1, 2147483647, (var0) -> "Value must be positive: " + var0);
+      NON_NEGATIVE_LONG = longRangeWithMessage(0L, 9223372036854775807L, (var0) -> "Value must be non-negative: " + var0);
+      POSITIVE_LONG = longRangeWithMessage(1L, 9223372036854775807L, (var0) -> "Value must be positive: " + var0);
       NON_NEGATIVE_FLOAT = floatRangeMinInclusiveWithMessage(0.0F, 3.4028235E38F, (var0) -> "Value must be non-negative: " + var0);
       POSITIVE_FLOAT = floatRangeMinExclusiveWithMessage(0.0F, 3.4028235E38F, (var0) -> "Value must be positive: " + var0);
       PATTERN = Codec.STRING.comapFlatMap((var0) -> {

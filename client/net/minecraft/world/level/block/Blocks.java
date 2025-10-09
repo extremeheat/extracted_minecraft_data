@@ -1286,13 +1286,12 @@ public class Blocks {
    }
 
    private static BlockBehaviour.Properties wallVariant(Block var0, boolean var1) {
-      BlockBehaviour.Properties var2 = var0.properties();
-      BlockBehaviour.Properties var3 = BlockBehaviour.Properties.of().overrideLootTable(var0.getLootTable());
+      BlockBehaviour.Properties var2 = BlockBehaviour.Properties.of().overrideLootTable(var0.getLootTable());
       if (var1) {
-         var3 = var3.overrideDescription(var0.getDescriptionId());
+         var2 = var2.overrideDescription(var0.getDescriptionId());
       }
 
-      return var3;
+      return var2;
    }
 
    private static Block register(ResourceKey<Block> var0, Function<BlockBehaviour.Properties, Block> var1, BlockBehaviour.Properties var2) {
@@ -1495,18 +1494,18 @@ public class Blocks {
       TNT = register("tnt", TntBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.FIRE).instabreak().sound(SoundType.GRASS).ignitedByLava().isRedstoneConductor(Blocks::never));
       BOOKSHELF = register("bookshelf", BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(1.5F).sound(SoundType.WOOD).ignitedByLava());
       CHISELED_BOOKSHELF = register("chiseled_bookshelf", ChiseledBookShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(1.5F).sound(SoundType.CHISELED_BOOKSHELF).ignitedByLava());
-      ACACIA_SHELF = register("acacia_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      BAMBOO_SHELF = register("bamboo_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      BIRCH_SHELF = register("birch_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      CHERRY_SHELF = register("cherry_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      CRIMSON_SHELF = register("crimson_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      DARK_OAK_SHELF = register("dark_oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      JUNGLE_SHELF = register("jungle_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      MANGROVE_SHELF = register("mangrove_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      OAK_SHELF = register("oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      PALE_OAK_SHELF = register("pale_oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      SPRUCE_SHELF = register("spruce_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
-      WARPED_SHELF = register("warped_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      ACACIA_SHELF = register("acacia_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(ACACIA_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      BAMBOO_SHELF = register("bamboo_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(BAMBOO_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      BIRCH_SHELF = register("birch_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(BIRCH_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      CHERRY_SHELF = register("cherry_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(CHERRY_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      CRIMSON_SHELF = register("crimson_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.CRIMSON_STEM).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      DARK_OAK_SHELF = register("dark_oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(DARK_OAK_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      JUNGLE_SHELF = register("jungle_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(JUNGLE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      MANGROVE_SHELF = register("mangrove_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MANGROVE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      OAK_SHELF = register("oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(OAK_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      PALE_OAK_SHELF = register("pale_oak_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(PALE_OAK_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      SPRUCE_SHELF = register("spruce_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(SPRUCE_LOG.defaultMapColor()).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
+      WARPED_SHELF = register("warped_shelf", ShelfBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WARPED_STEM).instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
       MOSSY_COBBLESTONE = register("mossy_cobblestone", BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F));
       OBSIDIAN = register("obsidian", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(50.0F, 1200.0F));
       TORCH = register("torch", (var0) -> new TorchBlock(ParticleTypes.FLAME, var0), BlockBehaviour.Properties.of().noCollision().instabreak().lightLevel((var0) -> 14).sound(SoundType.WOOD).pushReaction(PushReaction.DESTROY));
@@ -1753,19 +1752,19 @@ public class Blocks {
       PALE_OAK_BUTTON = register("pale_oak_button", (var0) -> new ButtonBlock(BlockSetType.PALE_OAK, 30, var0), buttonProperties());
       MANGROVE_BUTTON = register("mangrove_button", (var0) -> new ButtonBlock(BlockSetType.MANGROVE, 30, var0), buttonProperties());
       BAMBOO_BUTTON = register("bamboo_button", (var0) -> new ButtonBlock(BlockSetType.BAMBOO, 30, var0), buttonProperties());
-      SKELETON_SKULL = register("skeleton_skull", (var0) -> new SkullBlock(SkullBlock.Types.SKELETON, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      SKELETON_SKULL = register("skeleton_skull", (var0) -> new SkullBlock(SkullBlock.Types.SKELETON, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       SKELETON_WALL_SKULL = register("skeleton_wall_skull", (var0) -> new WallSkullBlock(SkullBlock.Types.SKELETON, var0), wallVariant(SKELETON_SKULL, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      WITHER_SKELETON_SKULL = register("wither_skeleton_skull", WitherSkullBlock::new, BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.WITHER_SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      WITHER_SKELETON_SKULL = register("wither_skeleton_skull", WitherSkullBlock::new, BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.WITHER_SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       WITHER_SKELETON_WALL_SKULL = register("wither_skeleton_wall_skull", WitherWallSkullBlock::new, wallVariant(WITHER_SKELETON_SKULL, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      ZOMBIE_HEAD = register("zombie_head", (var0) -> new SkullBlock(SkullBlock.Types.ZOMBIE, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.ZOMBIE).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      ZOMBIE_HEAD = register("zombie_head", (var0) -> new SkullBlock(SkullBlock.Types.ZOMBIE, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.ZOMBIE).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       ZOMBIE_WALL_HEAD = register("zombie_wall_head", (var0) -> new WallSkullBlock(SkullBlock.Types.ZOMBIE, var0), wallVariant(ZOMBIE_HEAD, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      PLAYER_HEAD = register("player_head", PlayerHeadBlock::new, BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.CUSTOM_HEAD).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      PLAYER_HEAD = register("player_head", PlayerHeadBlock::new, BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.CUSTOM_HEAD).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       PLAYER_WALL_HEAD = register("player_wall_head", PlayerWallHeadBlock::new, wallVariant(PLAYER_HEAD, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      CREEPER_HEAD = register("creeper_head", (var0) -> new SkullBlock(SkullBlock.Types.CREEPER, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.CREEPER).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      CREEPER_HEAD = register("creeper_head", (var0) -> new SkullBlock(SkullBlock.Types.CREEPER, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.CREEPER).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       CREEPER_WALL_HEAD = register("creeper_wall_head", (var0) -> new WallSkullBlock(SkullBlock.Types.CREEPER, var0), wallVariant(CREEPER_HEAD, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      DRAGON_HEAD = register("dragon_head", (var0) -> new SkullBlock(SkullBlock.Types.DRAGON, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.DRAGON).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      DRAGON_HEAD = register("dragon_head", (var0) -> new SkullBlock(SkullBlock.Types.DRAGON, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.DRAGON).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       DRAGON_WALL_HEAD = register("dragon_wall_head", (var0) -> new WallSkullBlock(SkullBlock.Types.DRAGON, var0), wallVariant(DRAGON_HEAD, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
-      PIGLIN_HEAD = register("piglin_head", (var0) -> new SkullBlock(SkullBlock.Types.PIGLIN, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.PIGLIN).strength(1.0F).pushReaction(PushReaction.DESTROY));
+      PIGLIN_HEAD = register("piglin_head", (var0) -> new SkullBlock(SkullBlock.Types.PIGLIN, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.PIGLIN).strength(1.0F).pushReaction(PushReaction.DESTROY).noOcclusion());
       PIGLIN_WALL_HEAD = register("piglin_wall_head", PiglinWallSkullBlock::new, wallVariant(PIGLIN_HEAD, true).strength(1.0F).pushReaction(PushReaction.DESTROY));
       ANVIL = register("anvil", AnvilBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).sound(SoundType.ANVIL).pushReaction(PushReaction.BLOCK));
       CHIPPED_ANVIL = register("chipped_anvil", AnvilBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(5.0F, 1200.0F).sound(SoundType.ANVIL).pushReaction(PushReaction.BLOCK));
@@ -2382,7 +2381,7 @@ public class Blocks {
       WAXED_EXPOSED_COPPER_CHEST = register("waxed_exposed_copper_chest", (var0) -> new CopperChestBlock(WeatheringCopper.WeatherState.EXPOSED, SoundEvents.COPPER_CHEST_OPEN, SoundEvents.COPPER_CHEST_CLOSE, var0), BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER_CHEST));
       WAXED_WEATHERED_COPPER_CHEST = register("waxed_weathered_copper_chest", (var0) -> new CopperChestBlock(WeatheringCopper.WeatherState.WEATHERED, SoundEvents.COPPER_CHEST_WEATHERED_OPEN, SoundEvents.COPPER_CHEST_WEATHERED_CLOSE, var0), BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER_CHEST));
       WAXED_OXIDIZED_COPPER_CHEST = register("waxed_oxidized_copper_chest", (var0) -> new CopperChestBlock(WeatheringCopper.WeatherState.OXIDIZED, SoundEvents.COPPER_CHEST_OXIDIZED_OPEN, SoundEvents.COPPER_CHEST_OXIDIZED_CLOSE, var0), BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER_CHEST));
-      COPPER_GOLEM_STATUE = register("copper_golem_statue", (var0) -> new WeatheringCopperGolemStatueBlock(WeatheringCopper.WeatherState.UNAFFECTED, var0), BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).sound(SoundType.COPPER_GOLEM_STATUE).pushReaction(PushReaction.DESTROY));
+      COPPER_GOLEM_STATUE = register("copper_golem_statue", (var0) -> new WeatheringCopperGolemStatueBlock(WeatheringCopper.WeatherState.UNAFFECTED, var0), BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).sound(SoundType.COPPER_GOLEM_STATUE).pushReaction(PushReaction.DESTROY).noOcclusion());
       EXPOSED_COPPER_GOLEM_STATUE = register("exposed_copper_golem_statue", (var0) -> new WeatheringCopperGolemStatueBlock(WeatheringCopper.WeatherState.EXPOSED, var0), BlockBehaviour.Properties.ofFullCopy(COPPER_GOLEM_STATUE).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY));
       WEATHERED_COPPER_GOLEM_STATUE = register("weathered_copper_golem_statue", (var0) -> new WeatheringCopperGolemStatueBlock(WeatheringCopper.WeatherState.WEATHERED, var0), BlockBehaviour.Properties.ofFullCopy(COPPER_GOLEM_STATUE).mapColor(MapColor.WARPED_STEM));
       OXIDIZED_COPPER_GOLEM_STATUE = register("oxidized_copper_golem_statue", (var0) -> new WeatheringCopperGolemStatueBlock(WeatheringCopper.WeatherState.OXIDIZED, var0), BlockBehaviour.Properties.ofFullCopy(COPPER_GOLEM_STATUE).mapColor(MapColor.WARPED_NYLIUM));
@@ -2398,7 +2397,7 @@ public class Blocks {
       WAXED_EXPOSED_LIGHTNING_ROD = register("waxed_exposed_lightning_rod", LightningRodBlock::new, BlockBehaviour.Properties.ofFullCopy(EXPOSED_LIGHTNING_ROD));
       WAXED_WEATHERED_LIGHTNING_ROD = register("waxed_weathered_lightning_rod", LightningRodBlock::new, BlockBehaviour.Properties.ofFullCopy(WEATHERED_LIGHTNING_ROD));
       WAXED_OXIDIZED_LIGHTNING_ROD = register("waxed_oxidized_lightning_rod", LightningRodBlock::new, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_LIGHTNING_ROD));
-      POINTED_DRIPSTONE = register("pointed_dripstone", PointedDripstoneBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().sound(SoundType.POINTED_DRIPSTONE).randomTicks().strength(1.5F, 3.0F).dynamicShape().offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).isRedstoneConductor(Blocks::never));
+      POINTED_DRIPSTONE = register("pointed_dripstone", PointedDripstoneBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).forceSolidOn().instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().sound(SoundType.POINTED_DRIPSTONE).randomTicks().strength(1.5F, 3.0F).dynamicShape().offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).isRedstoneConductor(Blocks::never).noOcclusion());
       DRIPSTONE_BLOCK = register("dripstone_block", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DRIPSTONE_BLOCK).requiresCorrectToolForDrops().strength(1.5F, 1.0F));
       CAVE_VINES = register("cave_vines", CaveVinesBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).randomTicks().noCollision().lightLevel(CaveVines.emission(14)).instabreak().sound(SoundType.CAVE_VINES).pushReaction(PushReaction.DESTROY));
       CAVE_VINES_PLANT = register("cave_vines_plant", CaveVinesPlantBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().lightLevel(CaveVines.emission(14)).instabreak().sound(SoundType.CAVE_VINES).pushReaction(PushReaction.DESTROY));
@@ -2454,7 +2453,7 @@ public class Blocks {
       VAULT = register("vault", VaultBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().sound(SoundType.VAULT).lightLevel((var0) -> ((VaultState)var0.getValue(VaultBlock.STATE)).lightLevel()).strength(50.0F).isViewBlocking(Blocks::never));
       HEAVY_CORE = register("heavy_core", HeavyCoreBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.SNARE).sound(SoundType.HEAVY_CORE).strength(10.0F).pushReaction(PushReaction.NORMAL).explosionResistance(1200.0F));
       PALE_MOSS_BLOCK = register("pale_moss_block", (var0) -> new BonemealableFeaturePlacerBlock(VegetationFeatures.PALE_MOSS_PATCH_BONEMEAL, var0), BlockBehaviour.Properties.of().ignitedByLava().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(0.1F).sound(SoundType.MOSS).pushReaction(PushReaction.DESTROY));
-      PALE_MOSS_CARPET = register("pale_moss_carpet", MossyCarpetBlock::new, BlockBehaviour.Properties.of().ignitedByLava().mapColor(PALE_MOSS_BLOCK.defaultMapColor()).strength(0.1F).sound(SoundType.MOSS_CARPET).pushReaction(PushReaction.DESTROY));
+      PALE_MOSS_CARPET = register("pale_moss_carpet", MossyCarpetBlock::new, BlockBehaviour.Properties.of().ignitedByLava().mapColor(PALE_MOSS_BLOCK.defaultMapColor()).strength(0.1F).sound(SoundType.MOSS_CARPET).pushReaction(PushReaction.DESTROY).noOcclusion());
       PALE_HANGING_MOSS = register("pale_hanging_moss", HangingMossBlock::new, BlockBehaviour.Properties.of().ignitedByLava().mapColor(PALE_MOSS_BLOCK.defaultMapColor()).noCollision().sound(SoundType.MOSS_CARPET).pushReaction(PushReaction.DESTROY));
       OPEN_EYEBLOSSOM = register("open_eyeblossom", (var0) -> new EyeblossomBlock(EyeblossomBlock.Type.OPEN, var0), BlockBehaviour.Properties.of().mapColor(CREAKING_HEART.defaultMapColor()).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
       CLOSED_EYEBLOSSOM = register("closed_eyeblossom", (var0) -> new EyeblossomBlock(EyeblossomBlock.Type.CLOSED, var0), BlockBehaviour.Properties.of().mapColor(PALE_OAK_LEAVES.defaultMapColor()).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());

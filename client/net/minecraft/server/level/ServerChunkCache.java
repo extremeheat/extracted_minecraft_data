@@ -52,7 +52,6 @@ import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
@@ -92,7 +91,7 @@ public class ServerChunkCache extends ChunkSource {
          LOGGER.error("Failed to create dimension data storage directory", var14);
       }
 
-      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var12, var3, var1.registryAccess());
+      this.dataStorage = new DimensionDataStorage(var12, var3, var1.registryAccess());
       this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
       this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
@@ -350,7 +349,7 @@ public class ServerChunkCache extends ChunkSource {
       int var7 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
       List var8;
       if (var6) {
-         boolean var9 = this.level.getLevelData().getGameTime() % 400L == 0L;
+         boolean var9 = this.level.getGameTime() % 400L == 0L;
          var8 = NaturalSpawner.getFilteredSpawningCategories(var5, true, this.spawnEnemies, var9);
       } else {
          var8 = List.of();

@@ -37,7 +37,7 @@ public class WorkAtPoi extends Behavior<Villager> {
       var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> var5.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var1x.pos())));
       var2.playWorkSound();
       this.useWorkstation(var1, var2);
-      if (var2.shouldRestock()) {
+      if (var2.shouldRestock(var1)) {
          var2.restock();
       }
 

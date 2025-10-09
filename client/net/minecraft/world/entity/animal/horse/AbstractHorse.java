@@ -428,6 +428,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          var4 = 3.0F;
          var5 = 60;
          var6 = 3;
+      } else if (var2.is(Items.RED_MUSHROOM)) {
+         var4 = 3.0F;
+         var5 = 0;
+         var6 = 3;
       } else if (var2.is(Items.CARROT)) {
          var4 = 3.0F;
          var5 = 60;
@@ -795,6 +799,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return !this.isVehicle() && !this.isPassenger() && this.isTamed() && !this.isBaby() && this.getHealth() >= this.getMaxHealth() && this.isInLove();
    }
 
+   public boolean isMobControlled() {
+      return false;
+   }
+
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
@@ -855,12 +863,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
             this.standIfPossible();
          }
 
-         if (var1 >= 90) {
-            this.playerJumpPendingScale = 1.0F;
-         } else {
-            this.playerJumpPendingScale = 0.4F + 0.4F * (float)var1 / 90.0F;
-         }
-
+         this.playerJumpPendingScale = this.getPlayerJumpPendingScale(var1);
       }
    }
 

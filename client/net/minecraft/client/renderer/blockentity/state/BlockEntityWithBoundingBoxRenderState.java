@@ -20,14 +20,14 @@ public class BlockEntityWithBoundingBoxRenderState extends BlockEntityRenderStat
       AIR,
       BARRIER,
       LIGHT,
-      STRUCUTRE_VOID;
+      STRUCTURE_VOID;
 
       private InvisibleBlockType() {
       }
 
       // $FF: synthetic method
       private static InvisibleBlockType[] $values() {
-         return new InvisibleBlockType[]{AIR, BARRIER, LIGHT, STRUCUTRE_VOID};
+         return new InvisibleBlockType[]{AIR, BARRIER, LIGHT, STRUCTURE_VOID};
       }
    }
 }

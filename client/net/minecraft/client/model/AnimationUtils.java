@@ -1,8 +1,10 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.state.UndeadRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.SwingAnimationType;
 
 public class AnimationUtils {
    public AnimationUtils() {
@@ -18,13 +20,13 @@ public class AnimationUtils {
       var5.xRot = -1.5F + var2.xRot;
    }
 
-   public static void animateCrossbowCharge(ModelPart var0, ModelPart var1, float var2, int var3, boolean var4) {
+   public static void animateCrossbowCharge(ModelPart var0, ModelPart var1, float var2, float var3, boolean var4) {
       ModelPart var5 = var4 ? var0 : var1;
       ModelPart var6 = var4 ? var1 : var0;
       var5.yRot = var4 ? -0.8F : 0.8F;
       var5.xRot = -0.97079635F;
       var6.xRot = var5.xRot;
-      float var7 = Mth.clamp((float)var3, 0.0F, var2);
+      float var7 = Mth.clamp(var3, 0.0F, var2);
       float var8 = var7 / var2;
       var6.yRot = Mth.lerp(var8, 0.4F, 0.85F) * (float)(var4 ? 1 : -1);
       var6.xRot = Mth.lerp(var8, var6.xRot, -1.5707964F);
@@ -62,18 +64,23 @@ public class AnimationUtils {
       bobModelPart(var1, var2, -1.0F);
    }
 
-   public static void animateZombieArms(ModelPart var0, ModelPart var1, boolean var2, float var3, float var4) {
-      float var5 = Mth.sin(var3 * 3.1415927F);
-      float var6 = Mth.sin((1.0F - (1.0F - var3) * (1.0F - var3)) * 3.1415927F);
-      var1.zRot = 0.0F;
-      var0.zRot = 0.0F;
-      var1.yRot = -(0.1F - var5 * 0.6F);
-      var0.yRot = 0.1F - var5 * 0.6F;
-      float var7 = -3.1415927F / (var2 ? 1.5F : 2.25F);
-      var1.xRot = var7;
-      var0.xRot = var7;
-      var1.xRot += var5 * 1.2F - var6 * 0.4F;
-      var0.xRot += var5 * 1.2F - var6 * 0.4F;
-      bobArms(var1, var0, var4);
+   public static <T extends UndeadRenderState> void animateZombieArms(ModelPart var0, ModelPart var1, boolean var2, T var3) {
+      boolean var4 = var3.swingAnimationType != SwingAnimationType.STAB;
+      if (var4) {
+         float var5 = var3.attackTime;
+         float var6 = -3.1415927F / (var2 ? 1.5F : 2.25F);
+         float var7 = Mth.sin(var5 * 3.1415927F);
+         float var8 = Mth.sin((1.0F - (1.0F - var5) * (1.0F - var5)) * 3.1415927F);
+         var1.zRot = 0.0F;
+         var1.yRot = -(0.1F - var7 * 0.6F);
+         var1.xRot = var6;
+         var1.xRot += var7 * 1.2F - var8 * 0.4F;
+         var0.zRot = 0.0F;
+         var0.yRot = 0.1F - var7 * 0.6F;
+         var0.xRot = var6;
+         var0.xRot += var7 * 1.2F - var8 * 0.4F;
+      }
+
+      bobArms(var1, var0, var3.ageInTicks);
    }
 }

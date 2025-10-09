@@ -108,12 +108,12 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       }
    }
 
-   protected void updateTrades() {
-      MerchantOffers var1 = this.getOffers();
+   protected void updateTrades(ServerLevel var1) {
+      MerchantOffers var2 = this.getOffers();
 
-      for(Pair var3 : VillagerTrades.WANDERING_TRADER_TRADES) {
-         VillagerTrades.ItemListing[] var4 = (VillagerTrades.ItemListing[])var3.getLeft();
-         this.addOffersFromItemListings(var1, var4, (Integer)var3.getRight());
+      for(Pair var4 : VillagerTrades.WANDERING_TRADER_TRADES) {
+         VillagerTrades.ItemListing[] var5 = (VillagerTrades.ItemListing[])var4.getLeft();
+         this.addOffersFromItemListings(var1, var2, var5, (Integer)var4.getRight());
       }
 
    }

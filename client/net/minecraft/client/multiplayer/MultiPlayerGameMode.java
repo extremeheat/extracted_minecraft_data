@@ -48,6 +48,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
@@ -485,6 +486,14 @@ public class MultiPlayerGameMode {
       this.ensureHasSentCarriedItem();
       this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.RELEASE_USE_ITEM, BlockPos.ZERO, Direction.DOWN));
       var1.releaseUsingItem();
+   }
+
+   public void piercingAttack(PiercingWeapon var1) {
+      this.ensureHasSentCarriedItem();
+      this.minecraft.player.onAttack();
+      this.minecraft.player.lungeForwardMaybe();
+      var1.makeSound(this.minecraft.player);
+      this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
    }
 
    public boolean hasExperience() {

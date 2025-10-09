@@ -13,6 +13,7 @@ public abstract class AbstractHorseRenderer<T extends AbstractHorse, S extends E
    public void extractRenderState(T var1, S var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.saddle = var1.getItemBySlot(EquipmentSlot.SADDLE).copy();
+      var2.bodyArmorItem = var1.getBodyArmorItem().copy();
       var2.isRidden = var1.isVehicle();
       var2.eatAnimation = var1.getEatAnim(var3);
       var2.standAnimation = var1.getStandAnim(var3);

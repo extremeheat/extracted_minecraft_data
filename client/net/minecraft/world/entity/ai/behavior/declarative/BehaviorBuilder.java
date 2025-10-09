@@ -93,6 +93,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
    static final class PureMemory<E extends LivingEntity, F extends K1, Value> extends BehaviorBuilder<E, MemoryAccessor<F, Value>> {
       PureMemory(final MemoryCondition<F, Value> var1) {
          super(new TriggerWithResult<E, MemoryAccessor<F, Value>>() {
+            @Nullable
             public MemoryAccessor<F, Value> tryTrigger(ServerLevel var1x, E var2, long var3) {
                Brain var5 = var2.getBrain();
                Optional var6 = var5.getMemoryInternal(var1.memory());
@@ -108,6 +109,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
             }
 
             // $FF: synthetic method
+            @Nullable
             public Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
                return this.tryTrigger(var1x, var2, var3);
             }

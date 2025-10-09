@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -200,10 +199,10 @@ public class PresetFlatWorldScreen extends Screen {
       return this.list.mouseScrolled(var1, var3, var5, var7);
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.export.getValue();
-      this.init(var1, var2, var3);
-      this.export.setValue(var4);
+   public void resize(int var1, int var2) {
+      String var3 = this.export.getValue();
+      this.init(var1, var2);
+      this.export.setValue(var3);
    }
 
    public void onClose() {

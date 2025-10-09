@@ -93,6 +93,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
       MutableComponent var1 = Component.translatable("mco.configure.world.loading");
       this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), RealmsWorldsTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsPlayersTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsSubscriptionTab.TITLE, var1), new LoadingTab(this.getFont(), RealmsSettingsTab.TITLE, var1)).build();
+      this.tabNavigationBar.setTabActiveState(3, false);
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       this.playButton = (Button)var2.addChild(Button.builder(PLAY_TEXT, (var1x) -> {

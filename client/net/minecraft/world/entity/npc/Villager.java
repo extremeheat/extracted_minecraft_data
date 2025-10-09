@@ -124,7 +124,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private int villagerXp;
    private long lastRestockGameTime;
    private int numberOfRestocksToday;
-   private long lastRestockCheckDayTime;
+   private long lastRestockCheckDay;
    private boolean assignProfessionWhenSpawned;
    private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
    private static final ImmutableList<SensorType<? extends Sensor<? super Villager>>> SENSOR_TYPES;
@@ -228,7 +228,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          --this.updateMerchantTimer;
          if (this.updateMerchantTimer <= 0) {
             if (this.increaseProfessionLevelOnUpdate) {
-               this.increaseMerchantCareer();
+               this.increaseMerchantCareer(var1);
                this.increaseProfessionLevelOnUpdate = false;
             }
 
@@ -372,20 +372,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.numberOfRestocksToday == 0 || this.numberOfRestocksToday < 2 && this.level().getGameTime() > this.lastRestockGameTime + 2400L;
    }
 
-   public boolean shouldRestock() {
-      long var1 = this.lastRestockGameTime + 12000L;
-      long var3 = this.level().getGameTime();
-      boolean var5 = var3 > var1;
-      long var6 = this.level().getDayTime();
-      if (this.lastRestockCheckDayTime > 0L) {
-         long var8 = this.lastRestockCheckDayTime / 24000L;
-         long var10 = var6 / 24000L;
-         var5 |= var10 > var8;
-      }
-
-      this.lastRestockCheckDayTime = var6;
-      if (var5) {
-         this.lastRestockGameTime = var3;
+   public boolean shouldRestock(ServerLevel var1) {
+      long var2 = this.lastRestockGameTime + 12000L;
+      long var4 = this.level().getGameTime();
+      boolean var6 = var4 > var2;
+      long var7 = var1.getDayCount();
+      var6 |= this.lastRestockCheckDay > 0L && var7 > this.lastRestockCheckDay;
+      this.lastRestockCheckDay = var7;
+      if (var6) {
+         this.lastRestockGameTime = var4;
          this.resetNumberOfRestocks();
       }
 
@@ -646,9 +641,9 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return VillagerData.canLevelUp(var1) && this.villagerXp >= VillagerData.getMaxXpPerLevel(var1);
    }
 
-   private void increaseMerchantCareer() {
+   private void increaseMerchantCareer(ServerLevel var1) {
       this.setVillagerData(this.getVillagerData().withLevel(this.getVillagerData().level() + 1));
-      this.updateTrades();
+      this.updateTrades(var1);
    }
 
    protected Component getTypeName() {
@@ -747,25 +742,25 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return this.getInventory().hasAnyMatching((var0) -> var0.is(ItemTags.VILLAGER_PLANTABLE_SEEDS));
    }
 
-   protected void updateTrades() {
-      VillagerData var1 = this.getVillagerData();
-      ResourceKey var2 = (ResourceKey)var1.profession().unwrapKey().orElse((Object)null);
-      if (var2 != null) {
-         Int2ObjectMap var3;
+   protected void updateTrades(ServerLevel var1) {
+      VillagerData var2 = this.getVillagerData();
+      ResourceKey var3 = (ResourceKey)var2.profession().unwrapKey().orElse((Object)null);
+      if (var3 != null) {
+         Int2ObjectMap var4;
          if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
-            Int2ObjectMap var4 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var2);
-            var3 = var4 != null ? var4 : (Int2ObjectMap)VillagerTrades.TRADES.get(var2);
+            Int2ObjectMap var5 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var3);
+            var4 = var5 != null ? var5 : (Int2ObjectMap)VillagerTrades.TRADES.get(var3);
          } else {
-            var3 = (Int2ObjectMap)VillagerTrades.TRADES.get(var2);
+            var4 = (Int2ObjectMap)VillagerTrades.TRADES.get(var3);
          }
 
-         if (var3 != null && !var3.isEmpty()) {
-            VillagerTrades.ItemListing[] var6 = (VillagerTrades.ItemListing[])var3.get(var1.level());
-            if (var6 != null) {
-               MerchantOffers var5 = this.getOffers();
-               this.addOffersFromItemListings(var5, var6, 2);
-               if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && var1.level() < var3.size()) {
-                  this.increaseMerchantCareer();
+         if (var4 != null && !var4.isEmpty()) {
+            VillagerTrades.ItemListing[] var7 = (VillagerTrades.ItemListing[])var4.get(var2.level());
+            if (var7 != null) {
+               MerchantOffers var6 = this.getOffers();
+               this.addOffersFromItemListings(var1, var6, var7, 2);
+               if (SharedConstants.DEBUG_UNLOCK_ALL_TRADES && var2.level() < var4.size()) {
+                  this.increaseMerchantCareer(var1);
                }
 
             }

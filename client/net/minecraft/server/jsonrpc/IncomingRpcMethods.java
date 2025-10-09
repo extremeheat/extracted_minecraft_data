@@ -16,6 +16,7 @@ import net.minecraft.server.jsonrpc.methods.OperatorService;
 import net.minecraft.server.jsonrpc.methods.PlayerService;
 import net.minecraft.server.jsonrpc.methods.ServerSettingsService;
 import net.minecraft.server.jsonrpc.methods.ServerStateService;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 
@@ -113,8 +114,8 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(ServerSettingsService::setAcceptTransfers, Codec.BOOL, Codec.BOOL).description("Enable or disable accepting player transfers from other servers").param(new ParamInfo("accept", Schema.BOOL_SCHEMA)).response(new ResultInfo("accepted", Schema.BOOL_SCHEMA)).register(var0, "serversettings/accept_transfers/set");
       IncomingRpcMethod.method(ServerSettingsService::statusHeartbeatInterval, Codec.INT).description("Get the interval in seconds between server status heartbeats").response(new ResultInfo("seconds", Schema.INT_SCHEMA)).register(var0, "serversettings/status_heartbeat_interval");
       IncomingRpcMethod.method(ServerSettingsService::setStatusHeartbeatInterval, Codec.INT, Codec.INT).description("Set the interval in seconds between server status heartbeats").param(new ParamInfo("seconds", Schema.INT_SCHEMA)).response(new ResultInfo("seconds", Schema.INT_SCHEMA)).register(var0, "serversettings/status_heartbeat_interval/set");
-      IncomingRpcMethod.method(ServerSettingsService::operatorUserPermissionLevel, Codec.INT).description("Get default operator permission level").response(new ResultInfo("level", Schema.INT_SCHEMA)).register(var0, "serversettings/operator_user_permission_level");
-      IncomingRpcMethod.method(ServerSettingsService::setOperatorUserPermissionLevel, Codec.INT, Codec.INT).description("Set default operator permission level").param(new ParamInfo("level", Schema.INT_SCHEMA)).response(new ResultInfo("level", Schema.INT_SCHEMA)).register(var0, "serversettings/operator_user_permission_level/set");
+      IncomingRpcMethod.method(ServerSettingsService::operatorUserPermissionLevel, PermissionLevel.INT_CODEC).description("Get default operator permission level").response(new ResultInfo("level", Schema.INT_SCHEMA)).register(var0, "serversettings/operator_user_permission_level");
+      IncomingRpcMethod.method(ServerSettingsService::setOperatorUserPermissionLevel, PermissionLevel.INT_CODEC, PermissionLevel.INT_CODEC).description("Set default operator permission level").param(new ParamInfo("level", Schema.INT_SCHEMA)).response(new ResultInfo("level", Schema.INT_SCHEMA)).register(var0, "serversettings/operator_user_permission_level/set");
       IncomingRpcMethod.method(ServerSettingsService::hidesOnlinePlayers, Codec.BOOL).description("Get whether the server hides online player information from status queries").response(new ResultInfo("hidden", Schema.BOOL_SCHEMA)).register(var0, "serversettings/hide_online_players");
       IncomingRpcMethod.method(ServerSettingsService::setHidesOnlinePlayers, Codec.BOOL, Codec.BOOL).description("Enable or disable hiding online player information from status queries").param(new ParamInfo("hide", Schema.BOOL_SCHEMA)).response(new ResultInfo("hidden", Schema.BOOL_SCHEMA)).register(var0, "serversettings/hide_online_players/set");
       IncomingRpcMethod.method(ServerSettingsService::repliesToStatus, Codec.BOOL).description("Get whether the server responds to connection status requests").response(new ResultInfo("enabled", Schema.BOOL_SCHEMA)).register(var0, "serversettings/status_replies");

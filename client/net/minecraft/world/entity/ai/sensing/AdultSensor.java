@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
@@ -23,9 +22,7 @@ public class AdultSensor extends Sensor<LivingEntity> {
    }
 
    protected void setNearestVisibleAdult(LivingEntity var1, NearestVisibleLivingEntities var2) {
-      Optional var10000 = var2.findClosest((var1x) -> var1x.getType() == var1.getType() && !var1x.isBaby());
-      Objects.requireNonNull(LivingEntity.class);
-      Optional var3 = var10000.map(LivingEntity.class::cast);
+      Optional var3 = var2.findClosest((var1x) -> var1x.getType() == var1.getType() && !var1x.isBaby());
       var1.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, var3);
    }
 }

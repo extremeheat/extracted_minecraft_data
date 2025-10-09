@@ -33,7 +33,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -45,7 +44,6 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
@@ -87,8 +85,7 @@ public class WorldUpgrader implements AutoCloseable {
       this.eraseCache = var5;
       this.dataFixer = var2;
       this.levelStorage = var1;
-      SavedData.Context var7 = new SavedData.Context((ServerLevel)null, var3.worldGenOptions().seed());
-      this.overworldDataStorage = new DimensionDataStorage(var7, this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var4);
+      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var4);
       this.recreateRegionFiles = var6;
       this.thread = THREAD_FACTORY.newThread(this::work);
       this.thread.setUncaughtExceptionHandler((var1x, var2x) -> {

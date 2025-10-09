@@ -131,12 +131,12 @@ public class TurtleEggBlock extends Block {
    }
 
    private boolean shouldUpdateHatchLevel(Level var1) {
-      float var2 = var1.getTimeOfDay(1.0F);
-      if ((double)var2 < 0.69 && (double)var2 > 0.65) {
-         return true;
-      } else {
-         return var1.random.nextInt(500) == 0;
-      }
+      return isVeryEarlyMorning(var1) || var1.random.nextInt(500) == 0;
+   }
+
+   private static boolean isVeryEarlyMorning(Level var0) {
+      long var1 = var0.getDayTime() % 24000L;
+      return var1 > 21061L && var1 < 21905L;
    }
 
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {

@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -43,7 +44,6 @@ public class LightTexture implements AutoCloseable {
       this.minecraft = var2;
       GpuDevice var3 = RenderSystem.getDevice();
       this.texture = var3.createTexture("Light Texture", 12, TextureFormat.RGBA8, 16, 16, 1, 1);
-      this.texture.setTextureFilter(FilterMode.LINEAR, false);
       this.textureView = var3.createTextureView(this.texture);
       var3.createCommandEncoder().clearColorTexture(this.texture, -1);
       this.ubo = new MappableRingBuffer(() -> "Lightmap UBO", 130, LIGHTMAP_UBO_SIZE);
@@ -66,11 +66,11 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void turnOffLightLayer() {
-      RenderSystem.setShaderTexture(2, (GpuTextureView)null);
+      RenderSystem.setShaderTexture(2, (GpuTextureView)null, (GpuSampler)null);
    }
 
    public void turnOnLightLayer() {
-      RenderSystem.setShaderTexture(2, this.textureView);
+      RenderSystem.setShaderTexture(2, this.textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
    }
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {

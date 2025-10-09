@@ -16,7 +16,7 @@ public record MouseButtonEvent(double x, double y, MouseButtonInfo buttonInfo) i
       return this.buttonInfo().button();
    }
 
-   public int modifiers() {
+   public @InputWithModifiers.Modifiers int modifiers() {
       return this.buttonInfo().modifiers();
    }
 }

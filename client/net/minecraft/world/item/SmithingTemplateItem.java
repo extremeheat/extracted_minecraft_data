@@ -31,6 +31,7 @@ public class SmithingTemplateItem extends Item {
    private static final ResourceLocation EMPTY_SLOT_AXE;
    private static final ResourceLocation EMPTY_SLOT_SWORD;
    private static final ResourceLocation EMPTY_SLOT_SHOVEL;
+   private static final ResourceLocation EMPTY_SLOT_SPEAR;
    private static final ResourceLocation EMPTY_SLOT_PICKAXE;
    private static final ResourceLocation EMPTY_SLOT_INGOT;
    private static final ResourceLocation EMPTY_SLOT_REDSTONE_DUST;
@@ -39,6 +40,7 @@ public class SmithingTemplateItem extends Item {
    private static final ResourceLocation EMPTY_SLOT_DIAMOND;
    private static final ResourceLocation EMPTY_SLOT_LAPIS_LAZULI;
    private static final ResourceLocation EMPTY_SLOT_AMETHYST_SHARD;
+   private static final ResourceLocation EMPTY_SLOT_NAUTILUS_ARMOR;
    private final Component appliesTo;
    private final Component ingredients;
    private final Component baseSlotDescription;
@@ -73,7 +75,7 @@ public class SmithingTemplateItem extends Item {
    }
 
    private static List<ResourceLocation> createNetheriteUpgradeIconList() {
-      return List.of(EMPTY_SLOT_HELMET, EMPTY_SLOT_SWORD, EMPTY_SLOT_CHESTPLATE, EMPTY_SLOT_PICKAXE, EMPTY_SLOT_LEGGINGS, EMPTY_SLOT_AXE, EMPTY_SLOT_BOOTS, EMPTY_SLOT_HOE, EMPTY_SLOT_SHOVEL);
+      return List.of(EMPTY_SLOT_HELMET, EMPTY_SLOT_SWORD, EMPTY_SLOT_CHESTPLATE, EMPTY_SLOT_PICKAXE, EMPTY_SLOT_LEGGINGS, EMPTY_SLOT_AXE, EMPTY_SLOT_BOOTS, EMPTY_SLOT_HOE, EMPTY_SLOT_SHOVEL, EMPTY_SLOT_NAUTILUS_ARMOR, EMPTY_SLOT_SPEAR);
    }
 
    private static List<ResourceLocation> createNetheriteUpgradeMaterialList() {
@@ -127,6 +129,7 @@ public class SmithingTemplateItem extends Item {
       EMPTY_SLOT_AXE = ResourceLocation.withDefaultNamespace("container/slot/axe");
       EMPTY_SLOT_SWORD = ResourceLocation.withDefaultNamespace("container/slot/sword");
       EMPTY_SLOT_SHOVEL = ResourceLocation.withDefaultNamespace("container/slot/shovel");
+      EMPTY_SLOT_SPEAR = ResourceLocation.withDefaultNamespace("container/slot/spear");
       EMPTY_SLOT_PICKAXE = ResourceLocation.withDefaultNamespace("container/slot/pickaxe");
       EMPTY_SLOT_INGOT = ResourceLocation.withDefaultNamespace("container/slot/ingot");
       EMPTY_SLOT_REDSTONE_DUST = ResourceLocation.withDefaultNamespace("container/slot/redstone_dust");
@@ -135,5 +138,6 @@ public class SmithingTemplateItem extends Item {
       EMPTY_SLOT_DIAMOND = ResourceLocation.withDefaultNamespace("container/slot/diamond");
       EMPTY_SLOT_LAPIS_LAZULI = ResourceLocation.withDefaultNamespace("container/slot/lapis_lazuli");
       EMPTY_SLOT_AMETHYST_SHARD = ResourceLocation.withDefaultNamespace("container/slot/amethyst_shard");
+      EMPTY_SLOT_NAUTILUS_ARMOR = ResourceLocation.withDefaultNamespace("container/slot/nautilus_armor");
    }
 }

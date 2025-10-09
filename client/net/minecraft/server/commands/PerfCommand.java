@@ -36,7 +36,7 @@ public class PerfCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(4))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {

@@ -15,7 +15,7 @@ public class SaveOnCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-on").requires(Commands.hasPermission(4))).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-on").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
          boolean var2 = var1.getServer().setAutoSave(true);
          if (!var2) {

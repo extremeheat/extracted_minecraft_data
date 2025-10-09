@@ -133,7 +133,7 @@ public class LoadingOverlay extends Overlay {
          this.fadeOutStart = Util.getMillis();
          if (this.minecraft.screen != null) {
             Window var1 = this.minecraft.getWindow();
-            this.minecraft.screen.init(this.minecraft, var1.getGuiScaledWidth(), var1.getGuiScaledHeight());
+            this.minecraft.screen.init(var1.getGuiScaledWidth(), var1.getGuiScaledHeight());
          }
       }
 
@@ -169,7 +169,7 @@ public class LoadingOverlay extends Overlay {
 
          TextureContents var4;
          try {
-            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true));
+            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, false));
          } catch (Throwable var7) {
             if (var3 != null) {
                try {

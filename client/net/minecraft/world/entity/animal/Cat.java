@@ -583,14 +583,18 @@ public class Cat extends TamableAnimal {
 
       public void stop() {
          this.cat.setLying(false);
-         float var1 = this.cat.level().getTimeOfDay(1.0F);
-         if (this.ownerPlayer.getSleepTimer() >= 100 && (double)var1 > 0.77 && (double)var1 < 0.8 && (double)this.cat.level().getRandom().nextFloat() < 0.7) {
+         if (this.ownerPlayer.getSleepTimer() >= 100 && this.isMorning() && (double)this.cat.level().getRandom().nextFloat() < 0.7) {
             this.giveMorningGift();
          }
 
          this.onBedTicks = 0;
          this.cat.setRelaxStateOne(false);
          this.cat.getNavigation().stop();
+      }
+
+      private boolean isMorning() {
+         long var1 = this.cat.level().getDayTime() % 24000L;
+         return var1 >= 23667L || var1 < 362L;
       }
 
       private void giveMorningGift() {

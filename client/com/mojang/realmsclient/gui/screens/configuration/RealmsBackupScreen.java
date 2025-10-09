@@ -104,7 +104,7 @@ public class RealmsBackupScreen extends RealmsScreen {
             RealmsClient var1 = RealmsClient.getOrCreate();
 
             try {
-               List var2 = var1.backupsFor(RealmsBackupScreen.this.serverData.id).backups;
+               List var2 = var1.backupsFor(RealmsBackupScreen.this.serverData.id).backups();
                RealmsBackupScreen.this.minecraft.execute(() -> {
                   RealmsBackupScreen.this.backups = var2;
                   RealmsBackupScreen.this.noBackups = RealmsBackupScreen.this.backups.isEmpty();
@@ -201,7 +201,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          if (var1.contains("uploaded")) {
             String var2 = DateFormat.getDateTimeInstance(3, 3).format(this.backup.lastModifiedDate);
             this.backup.changeList.put(var1, var2);
-            this.backup.setUploadedVersion(true);
+            this.backup.uploadedVersion = true;
          } else {
             this.backup.changeList.put(var1, (String)this.backup.metadata.get(var1));
          }
@@ -234,7 +234,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          Objects.requireNonNull(RealmsBackupScreen.this.font);
          int var7 = var6 - 9 - 2;
          int var8 = var6 + 2;
-         int var9 = this.backup.isUploadedVersion() ? -8388737 : -1;
+         int var9 = this.backup.uploadedVersion ? -8388737 : -1;
          var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), this.getContentX(), var7, var9);
          var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), this.getContentX(), var8, -11776948);
          int var10 = 0;

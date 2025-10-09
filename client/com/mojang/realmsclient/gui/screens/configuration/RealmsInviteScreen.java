@@ -66,7 +66,7 @@ public class RealmsInviteScreen extends RealmsScreen {
       if (this.inviteButton != null && this.profileName != null) {
          if (StringUtil.isBlank(this.profileName.getValue())) {
             this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
-         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.getName().equalsIgnoreCase(this.profileName.getValue()))) {
+         } else if (this.serverData.players.stream().anyMatch((var1x) -> var1x.name.equalsIgnoreCase(this.profileName.getValue()))) {
             this.showMessage(DUPLICATE_PLAYER_TEXT);
          } else {
             long var1 = this.serverData.id;

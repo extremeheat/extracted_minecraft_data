@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.GameRules;
@@ -195,7 +196,7 @@ public interface TestEnvironmentDefinition {
          ServerFunctionManager var3 = var2.getFunctions();
          Optional var4 = var3.get(var1);
          if (var4.isPresent()) {
-            CommandSourceStack var5 = var2.createCommandSourceStack().withPermission(2).withSuppressedOutput().withLevel(var0);
+            CommandSourceStack var5 = var2.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withLevel(var0);
             var3.execute((CommandFunction)var4.get(), var5);
          } else {
             LOGGER.error("Test Batch failed for non-existent function {}", var1);

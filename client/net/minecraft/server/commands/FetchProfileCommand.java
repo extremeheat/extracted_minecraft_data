@@ -31,7 +31,7 @@ public class FetchProfileCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(2))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((var0x) -> resolveName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((var0x) -> resolveId((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "id"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((var0x) -> resolveName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((var0x) -> resolveId((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "id"))))));
    }
 
    private static void reportResolvedProfile(CommandSourceStack var0, GameProfile var1, String var2, Component var3) {

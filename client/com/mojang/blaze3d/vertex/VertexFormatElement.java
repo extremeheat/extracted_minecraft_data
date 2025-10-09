@@ -18,6 +18,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
    public static final VertexFormatElement UV1;
    public static final VertexFormatElement UV2;
    public static final VertexFormatElement NORMAL;
+   public static final VertexFormatElement LINE_WIDTH;
 
    public VertexFormatElement(int var1, int var2, Type var3, Usage var4, int var5) {
       super();
@@ -81,6 +82,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       UV1 = register(3, 1, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       UV2 = register(4, 2, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
+      LINE_WIDTH = register(6, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
    }
 
    @DontObfuscate

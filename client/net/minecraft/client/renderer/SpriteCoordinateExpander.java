@@ -21,6 +21,10 @@ public class SpriteCoordinateExpander implements VertexConsumer {
       return this.delegate.setColor(var1, var2, var3, var4);
    }
 
+   public VertexConsumer setColor(int var1) {
+      return this.delegate.setColor(var1);
+   }
+
    public VertexConsumer setUv(float var1, float var2) {
       return this.delegate.setUv(this.sprite.getU(var1), this.sprite.getV(var2));
    }
@@ -35,6 +39,11 @@ public class SpriteCoordinateExpander implements VertexConsumer {
 
    public VertexConsumer setNormal(float var1, float var2, float var3) {
       return this.delegate.setNormal(var1, var2, var3);
+   }
+
+   public VertexConsumer setLineWidth(float var1) {
+      this.delegate.setLineWidth(var1);
+      return this;
    }
 
    public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {

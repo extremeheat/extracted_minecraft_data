@@ -27,7 +27,7 @@ public record RealmsJoinInformation(@Nullable String address, @Nullable String r
             return var2;
          }
       } catch (Exception var3) {
-         LOGGER.error("Could not parse RealmsServerAddress: {}", var3.getMessage());
+         LOGGER.error("Could not parse RealmsServerAddress", var3);
          return EMPTY;
       }
    }

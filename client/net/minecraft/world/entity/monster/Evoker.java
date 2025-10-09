@@ -246,7 +246,7 @@ public class Evoker extends SpellcasterIllager {
             Vex var5 = EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
             if (var5 != null) {
                var5.snapTo(var4, 0.0F, 0.0F);
-               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
+               var5.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
                var5.setOwner(Evoker.this);
                var5.setBoundOrigin(var4);
                var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));

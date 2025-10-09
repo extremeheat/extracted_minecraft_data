@@ -7,7 +7,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -39,6 +38,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -98,7 +98,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public static final float FLAP_DEGREES_PER_TICK = 120.32113F;
    public static final int TICKS_PER_FLAP = Mth.ceil(1.4959966F);
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
-   private static final EntityDataAccessor<Integer> DATA_REMAINING_ANGER_TIME;
+   private static final EntityDataAccessor<Long> DATA_ANGER_END_TIME;
    private static final int FLAG_ROLL = 2;
    private static final int FLAG_HAS_STUNG = 4;
    private static final int FLAG_HAS_NECTAR = 8;
@@ -129,7 +129,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    private static final int DEFAULT_CROPS_GROWN_SINCE_POLLINATION = 0;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    @Nullable
-   private UUID persistentAngerTarget;
+   private EntityReference<LivingEntity> persistentAngerTarget;
    private float rollAmount;
    private float rollAmountO;
    private int timeSinceSting;
@@ -166,7 +166,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
-      var1.define(DATA_REMAINING_ANGER_TIME, 0);
+      var1.define(DATA_ANGER_END_TIME, -1L);
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -392,25 +392,25 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       return var1 != null && var1.isFireNearby();
    }
 
-   public int getRemainingPersistentAngerTime() {
-      return (Integer)this.entityData.get(DATA_REMAINING_ANGER_TIME);
+   public long getPersistentAngerEndTime() {
+      return (Long)this.entityData.get(DATA_ANGER_END_TIME);
    }
 
-   public void setRemainingPersistentAngerTime(int var1) {
-      this.entityData.set(DATA_REMAINING_ANGER_TIME, var1);
+   public void setPersistentAngerEndTime(long var1) {
+      this.entityData.set(DATA_ANGER_END_TIME, var1);
    }
 
    @Nullable
-   public UUID getPersistentAngerTarget() {
+   public EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
-   public void setPersistentAngerTarget(@Nullable UUID var1) {
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
       this.persistentAngerTarget = var1;
    }
 
    public void startPersistentAngerTimer() {
-      this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
    private boolean doesHiveHaveSpace(BlockPos var1) {
@@ -675,7 +675,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    static {
       DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Bee.class, EntityDataSerializers.BYTE);
-      DATA_REMAINING_ANGER_TIME = SynchedEntityData.<Integer>defineId(Bee.class, EntityDataSerializers.INT);
+      DATA_ANGER_END_TIME = SynchedEntityData.<Long>defineId(Bee.class, EntityDataSerializers.LONG);
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 

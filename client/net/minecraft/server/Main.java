@@ -224,7 +224,7 @@ public class Main {
          };
          var38.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
          Runtime.getRuntime().addShutdownHook(var38);
-      } catch (Exception var42) {
+      } catch (Throwable var42) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
       }
 
@@ -272,7 +272,7 @@ public class Main {
       }
 
       WorldLoader.PackConfig var7 = new WorldLoader.PackConfig(var3, var5, var2, var4);
-      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissionLevel);
+      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissions);
    }
 
    private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, WorldData var1, DataFixer var2, boolean var3, BooleanSupplier var4, RegistryAccess var5, boolean var6) {

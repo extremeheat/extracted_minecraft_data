@@ -506,7 +506,7 @@ public class SoundEngine {
 
    public void updateSource(Camera var1) {
       if (this.loaded && var1.isInitialized()) {
-         ListenerTransform var2 = new ListenerTransform(var1.getPosition(), new Vec3(var1.getLookVector()), new Vec3(var1.getUpVector()));
+         ListenerTransform var2 = new ListenerTransform(var1.position(), new Vec3(var1.forwardVector()), new Vec3(var1.upVector()));
          this.executor.execute(() -> this.listener.setTransform(var2));
       }
    }

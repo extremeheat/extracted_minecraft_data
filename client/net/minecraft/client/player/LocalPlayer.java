@@ -51,6 +51,8 @@ import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.dialog.Dialog;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -71,11 +73,12 @@ import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
-import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -107,7 +110,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private final ClientRecipeBook recipeBook;
    private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
    private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
-   private int permissionLevel = 0;
+   private PermissionSet permissions;
    private double xLast;
    private double yLast;
    private double zLast;
@@ -119,10 +122,12 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
-   public ClientInput input = new ClientInput();
+   public ClientInput input;
    private Input lastSentInput;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
+   private static final int EXPERIENCE_DISPLAY_UNREADY_TO_SET = -2147483648;
+   private static final int EXPERIENCE_DISPLAY_READY_TO_SET = -2147483647;
    public int experienceDisplayStartTick;
    public float yBob;
    public float xBob;
@@ -136,15 +141,21 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Nullable
    private InteractionHand usingItemHand;
    private boolean handsBusy;
-   private boolean autoJumpEnabled = true;
+   private boolean autoJumpEnabled;
    private int autoJumpTime;
    private boolean wasFallFlying;
    private int waterVisionTime;
-   private boolean showDeathScreen = true;
-   private boolean doLimitedCrafting = false;
+   private boolean showDeathScreen;
+   private boolean doLimitedCrafting;
 
    public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, Input var6, boolean var7) {
       super(var2, var3.getLocalGameProfile());
+      this.permissions = PermissionSet.NO_PERMISSIONS;
+      this.input = new ClientInput();
+      this.experienceDisplayStartTick = -2147483648;
+      this.autoJumpEnabled = true;
+      this.showDeathScreen = true;
+      this.doLimitedCrafting = false;
       this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
@@ -369,12 +380,12 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public int getPermissionLevel() {
-      return this.permissionLevel;
+   public PermissionSet permissions() {
+      return this.permissions;
    }
 
-   public void setPermissionLevel(int var1) {
-      this.permissionLevel = var1;
+   public void setPermissions(PermissionSet var1) {
+      this.permissions = var1;
    }
 
    public void displayClientMessage(Component var1, boolean var2) {
@@ -418,17 +429,32 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void setExperienceValues(float var1, int var2, int var3) {
+      if (var1 != this.experienceProgress) {
+         this.setExperienceDisplayStartTickToTickCount(var1);
+      }
+
       this.experienceProgress = var1;
       this.totalExperience = var2;
       this.experienceLevel = var3;
-      this.experienceDisplayStartTick = this.tickCount;
+   }
+
+   private void setExperienceDisplayStartTickToTickCount(float var1) {
+      if (this.experienceDisplayStartTick == -2147483648) {
+         this.experienceDisplayStartTick = -2147483647;
+      } else {
+         this.experienceDisplayStartTick = this.tickCount;
+      }
+
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 >= 24 && var1 <= 28) {
-         this.setPermissionLevel(var1 - 24);
-      } else {
-         super.handleEntityEvent(var1);
+      switch (var1) {
+         case 24 -> this.setPermissions(PermissionSet.NO_PERMISSIONS);
+         case 25 -> this.setPermissions(LevelBasedPermissionSet.MODERATOR);
+         case 26 -> this.setPermissions(LevelBasedPermissionSet.GAMEMASTER);
+         case 27 -> this.setPermissions(LevelBasedPermissionSet.ADMIN);
+         case 28 -> this.setPermissions(LevelBasedPermissionSet.OWNER);
+         default -> super.handleEntityEvent(var1);
       }
 
    }
@@ -468,6 +494,14 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public boolean isUsingItem() {
       return this.startedUsingItem;
+   }
+
+   private boolean isSlowDueToUsingItem() {
+      return this.isUsingItem() && !((UseEffects)this.useItem.getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT)).canSprint();
+   }
+
+   private float itemUseSpeedMultiplier() {
+      return ((UseEffects)this.useItem.getOrDefault(DataComponents.USE_EFFECTS, UseEffects.DEFAULT)).speedMultiplier();
    }
 
    public void stopUsingItem() {
@@ -529,7 +563,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public void openMinecartCommandBlock(BaseCommandBlock var1) {
+   public void openMinecartCommandBlock(MinecartCommandBlock var1) {
       this.minecraft.setScreen(new MinecartCommandBlockEditScreen(var1));
    }
 
@@ -607,7 +641,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       } else {
          Vec2 var2 = var1.scale(0.98F);
          if (this.isUsingItem() && !this.isPassenger()) {
-            var2 = var2.scale(0.2F);
+            var2 = var2.scale(this.itemUseSpeedMultiplier());
          }
 
          if (this.isMovingSlowly()) {
@@ -691,7 +725,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
       }
 
-      if (var2 || this.isUsingItem() && !this.isPassenger() || this.input.keyPresses.backward()) {
+      if (var2 || this.isSlowDueToUsingItem() && !this.isPassenger() || this.input.keyPresses.backward()) {
          this.sprintTriggerTime = 0;
       }
 
@@ -1016,7 +1050,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
+      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isSlowDueToUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {

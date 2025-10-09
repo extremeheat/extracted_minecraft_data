@@ -102,6 +102,7 @@ import net.minecraft.server.level.progress.LevelLoadListener;
 import net.minecraft.server.network.ServerConnectionListener;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.notifications.NotificationManager;
+import net.minecraft.server.notifications.ServerActivityMonitor;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -109,6 +110,8 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.ServerOpListEntry;
@@ -142,6 +145,7 @@ import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RandomSequences;
+import net.minecraft.world.Stopwatches;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.CatSpawner;
@@ -183,6 +187,7 @@ import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.ScoreboardSaveData;
 import org.slf4j.Logger;
 
 public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, CommandSource, ChunkIOErrorReporter {
@@ -198,6 +203,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final long PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
    public static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
+   private static final int SERVER_ACTIVITY_MONITOR_SECONDS_BETWEEN_NOTIFICATIONS = 30;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -248,6 +254,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private long lastOverloadWarningNanos;
    protected final Services services;
    private final NotificationManager notificationManager;
+   private final ServerActivityMonitor serverActivityMonitor;
    private long lastServerStatus;
    private final Thread serverThread;
    private long lastTickNanos;
@@ -259,6 +266,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private boolean mayHaveDelayedTasks;
    private final PackRepository packRepository;
    private final ServerScoreboard scoreboard;
+   @Nullable
+   private Stopwatches stopwatches;
    @Nullable
    private CommandStorage commandStorage;
    private final CustomBossEvents customBossEvents;
@@ -345,12 +354,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
          this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
          this.notificationManager = new NotificationManager();
+         this.serverActivityMonitor = new ServerActivityMonitor(this.notificationManager, 30);
          this.packetProcessor = new PacketProcessor(var1);
       }
-   }
-
-   private void readScoreboard(DimensionDataStorage var1) {
-      var1.computeIfAbsent(ServerScoreboard.TYPE);
    }
 
    protected abstract boolean initServer() throws IOException;
@@ -416,8 +422,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       ServerLevel var11 = new ServerLevel(this, this.executor, this.storageSource, var1, Level.OVERWORLD, var10, var2, var7, var9, true, (RandomSequences)null);
       this.levels.put(Level.OVERWORLD, var11);
       DimensionDataStorage var12 = var11.getDataStorage();
-      this.readScoreboard(var12);
+      this.scoreboard.load(((ScoreboardSaveData)var12.computeIfAbsent(ScoreboardSaveData.TYPE)).getData());
       this.commandStorage = new CommandStorage(var12);
+      this.stopwatches = (Stopwatches)var12.computeIfAbsent(Stopwatches.TYPE);
       if (!var1.isInitialized()) {
          try {
             setInitialSpawn(var11, var1, var4.generateBonusChest(), var2, this.levelLoadListener);
@@ -581,13 +588,14 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.worldData.isHardcore();
    }
 
-   public abstract int operatorUserPermissionLevel();
+   public abstract LevelBasedPermissionSet operatorUserPermissions();
 
-   public abstract int getFunctionCompilationLevel();
+   public abstract PermissionSet getFunctionCompilationPermissions();
 
    public abstract boolean shouldRconBroadcast();
 
    public boolean saveAllChunks(boolean var1, boolean var2, boolean var3) {
+      this.scoreboard.storeToSaveDataIfDirty((ScoreboardSaveData)this.overworld().getDataStorage().computeIfAbsent(ScoreboardSaveData.TYPE));
       boolean var4 = false;
 
       for(ServerLevel var6 : this.getAllLevels()) {
@@ -891,10 +899,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    protected void waitUntilNextTick() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("scheduledPacketProcessing");
-      this.packetProcessor.processQueuedPackets();
-      var1.pop();
       this.runAllTasks();
       this.waitingForNextTick = true;
 
@@ -975,6 +979,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public Path getServerDirectory() {
       return Path.of("");
+   }
+
+   public ServerActivityMonitor getServerActivityMonitor() {
+      return this.serverActivityMonitor;
    }
 
    public void onServerCrash(CrashReport var1) {
@@ -1158,6 +1166,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       var2.pop();
+      this.serverActivityMonitor.tick();
    }
 
    private void updateEffectiveRespawnData() {
@@ -1183,10 +1192,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       var1.pop();
-   }
-
-   public boolean isAllowedToEnterPortal(Level var1) {
-      return var1.dimension() == Level.NETHER ? this.getGameRules().getBoolean(GameRules.RULE_ALLOW_NETHER) : true;
    }
 
    public void addTickable(Runnable var1) {
@@ -1322,7 +1327,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public void updateMobSpawningFlags() {
       for(ServerLevel var2 : this.getAllLevels()) {
-         var2.setSpawnSettings(this.isSpawningMonsters());
+         var2.setSpawnSettings(var2.isSpawningMonsters());
       }
 
    }
@@ -1335,10 +1340,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private void sendDifficultyUpdate(ServerPlayer var1) {
       LevelData var2 = var1.level().getLevelData();
       var1.connection.send(new ClientboundChangeDifficultyPacket(var2.getDifficulty(), var2.isDifficultyLocked()));
-   }
-
-   public boolean isSpawningMonsters() {
-      return this.worldData.getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
    }
 
    public boolean isDemo() {
@@ -1383,20 +1384,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public abstract boolean isEpollEnabled();
 
-   public boolean isPvpAllowed() {
-      return this.getGameRules().getBoolean(GameRules.RULE_PVP);
-   }
-
    public boolean allowFlight() {
       return true;
-   }
-
-   public boolean isCommandBlockEnabled() {
-      return this.getGameRules().getBoolean(GameRules.RULE_COMMAND_BLOCKS_ENABLED);
-   }
-
-   public boolean isSpawnerBlockEnabled() {
-      return this.getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED);
    }
 
    public String getMotd() {
@@ -1551,7 +1540,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }, this).thenCompose((var1x) -> {
          MultiPackResourceManager var2 = new MultiPackResourceManager(PackType.SERVER_DATA, var1x);
          List var3 = TagLoader.loadTagsForExistingRegistries(var2, this.registries.compositeAccess());
-         return ReloadableServerResources.loadResources(var2, this.registries, var3, this.worldData.enabledFeatures(), this.isDedicatedServer() ? Commands.CommandSelection.DEDICATED : Commands.CommandSelection.INTEGRATED, this.getFunctionCompilationLevel(), this.executor, this).whenComplete((var1, var2x) -> {
+         return ReloadableServerResources.loadResources(var2, this.registries, var3, this.worldData.enabledFeatures(), this.isDedicatedServer() ? Commands.CommandSelection.DEDICATED : Commands.CommandSelection.INTEGRATED, this.getFunctionCompilationPermissions(), this.executor, this).whenComplete((var1, var2x) -> {
             if (var2x != null) {
                var2.close();
             }
@@ -1695,7 +1684,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel var1 = this.findRespawnDimension();
-      return new CommandSourceStack(this, var1 == null ? Vec3.ZERO : Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, var1, 4, "Server", Component.literal("Server"), this, (Entity)null);
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, var1, LevelBasedPermissionSet.OWNER, "Server", Component.literal("Server"), this, (Entity)null);
    }
 
    public ServerLevel findRespawnDimension() {
@@ -1746,8 +1735,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   public GameRules getGameRules() {
-      return this.overworld().getGameRules();
+   public Stopwatches getStopwatches() {
+      if (this.stopwatches == null) {
+         throw new NullPointerException("Called before server init");
+      } else {
+         return this.stopwatches;
+      }
    }
 
    public CustomBossEvents getCustomBossEvents() {
@@ -1786,20 +1779,20 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.tickTimesNanos;
    }
 
-   public int getProfilePermissions(NameAndId var1) {
+   public LevelBasedPermissionSet getProfilePermissions(NameAndId var1) {
       if (this.getPlayerList().isOp(var1)) {
          ServerOpListEntry var2 = (ServerOpListEntry)this.getPlayerList().getOps().get(var1);
          if (var2 != null) {
-            return var2.getLevel();
+            return var2.permissions();
          } else if (this.isSingleplayerOwner(var1)) {
-            return 4;
+            return LevelBasedPermissionSet.OWNER;
          } else if (this.isSingleplayer()) {
-            return this.getPlayerList().isAllowCommandsForAllPlayers() ? 4 : 0;
+            return this.getPlayerList().isAllowCommandsForAllPlayers() ? LevelBasedPermissionSet.OWNER : LevelBasedPermissionSet.ALL;
          } else {
-            return this.operatorUserPermissionLevel();
+            return this.operatorUserPermissions();
          }
       } else {
-         return 0;
+         return LevelBasedPermissionSet.ALL;
       }
    }
 
@@ -1862,7 +1855,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       try {
          final ArrayList var3 = Lists.newArrayList();
-         final GameRules var4 = this.getGameRules();
+         final GameRules var4 = this.worldData.getGameRules();
          var4.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2) {
                var3.add(String.format(Locale.ROOT, "%s=%s\n", var1.getId(), var4.getRule(var1)));

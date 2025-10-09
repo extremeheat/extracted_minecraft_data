@@ -17,6 +17,7 @@ import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
@@ -92,7 +93,7 @@ public class ServerFunctionManager {
    }
 
    public CommandSourceStack getGameLoopSender() {
-      return this.server.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+      return this.server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
    }
 
    public Optional<CommandFunction<CommandSourceStack>> get(ResourceLocation var1) {

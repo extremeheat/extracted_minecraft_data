@@ -1,56 +1,55 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 public class Backup extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public String backupId;
-   public Date lastModifiedDate;
-   public long size;
-   private boolean uploadedVersion;
-   public Map<String, String> metadata = Maps.newHashMap();
-   public Map<String, String> changeList = Maps.newHashMap();
+   public final String backupId;
+   public final Date lastModifiedDate;
+   public final long size;
+   public boolean uploadedVersion;
+   public final Map<String, String> metadata;
+   public final Map<String, String> changeList = new HashMap();
 
-   public Backup() {
+   private Backup(String var1, Date var2, long var3, Map<String, String> var5) {
       super();
+      this.backupId = var1;
+      this.lastModifiedDate = var2;
+      this.size = var3;
+      this.metadata = var5;
    }
 
+   @Nullable
    public static Backup parse(JsonElement var0) {
       JsonObject var1 = var0.getAsJsonObject();
-      Backup var2 = new Backup();
 
       try {
-         var2.backupId = JsonUtils.getStringOr("backupId", var1, "");
-         var2.lastModifiedDate = JsonUtils.getDateOr("lastModifiedDate", var1);
-         var2.size = JsonUtils.getLongOr("size", var1, 0L);
+         String var2 = JsonUtils.getStringOr("backupId", var1, "");
+         Date var3 = JsonUtils.getDateOr("lastModifiedDate", var1);
+         long var4 = JsonUtils.getLongOr("size", var1, 0L);
+         HashMap var6 = new HashMap();
          if (var1.has("metadata")) {
-            JsonObject var3 = var1.getAsJsonObject("metadata");
+            JsonObject var7 = var1.getAsJsonObject("metadata");
 
-            for(Map.Entry var6 : var3.entrySet()) {
-               if (!((JsonElement)var6.getValue()).isJsonNull()) {
-                  var2.metadata.put((String)var6.getKey(), ((JsonElement)var6.getValue()).getAsString());
+            for(Map.Entry var10 : var7.entrySet()) {
+               if (!((JsonElement)var10.getValue()).isJsonNull()) {
+                  var6.put((String)var10.getKey(), ((JsonElement)var10.getValue()).getAsString());
                }
             }
          }
-      } catch (Exception var7) {
-         LOGGER.error("Could not parse Backup: {}", var7.getMessage());
+
+         return new Backup(var2, var3, var4, var6);
+      } catch (Exception var11) {
+         LOGGER.error("Could not parse Backup", var11);
+         return null;
       }
-
-      return var2;
-   }
-
-   public boolean isUploadedVersion() {
-      return this.uploadedVersion;
-   }
-
-   public void setUploadedVersion(boolean var1) {
-      this.uploadedVersion = var1;
    }
 }

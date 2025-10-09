@@ -16,6 +16,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.CubeMapTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -50,7 +51,7 @@ public class CubeMap implements AutoCloseable {
       var10.rotationX(3.1415927F);
       var10.rotateX(var2 * 0.017453292F);
       var10.rotateY(var3 * 0.017453292F);
-      GpuBufferSlice var11 = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(var10), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+      GpuBufferSlice var11 = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(var10), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
       var10.popMatrix();
 
       try (RenderPass var12 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
@@ -59,7 +60,8 @@ public class CubeMap implements AutoCloseable {
          var12.setVertexBuffer(0, this.vertexBuffer);
          var12.setIndexBuffer(var9, var8.type());
          var12.setUniform("DynamicTransforms", var11);
-         var12.bindSampler("Sampler0", var1.getTextureManager().getTexture(this.location).getTextureView());
+         AbstractTexture var13 = var1.getTextureManager().getTexture(this.location);
+         var12.bindTexture("Sampler0", var13.getTextureView(), var13.getSampler());
          var12.drawIndexed(0, 0, 36, 1);
       }
 

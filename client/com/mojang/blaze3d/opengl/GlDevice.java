@@ -9,6 +9,9 @@ import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -74,6 +77,7 @@ public class GlDevice implements GpuDevice {
       this.encoder = new GlCommandEncoder(this);
       this.uniformOffsetAlignment = GL11.glGetInteger(35380);
       GL11.glEnable(34895);
+      GL11.glEnable(34370);
    }
 
    public GlDebugLabel debugLabels() {
@@ -84,11 +88,15 @@ public class GlDevice implements GpuDevice {
       return this.encoder;
    }
 
-   public GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+   public GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4) {
+      return new GlSampler(var1, var2, var3, var4);
+   }
+
+   public GpuTexture createTexture(@Nullable Supplier<String> var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
       return this.createTexture(this.debugLabels.exists() && var1 != null ? (String)var1.get() : null, var2, var3, var4, var5, var6, var7);
    }
 
-   public GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
+   public GpuTexture createTexture(@Nullable String var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
       if (var7 < 1) {
          throw new IllegalArgumentException("mipLevels must be at least 1");
       } else if (var6 < 1) {
@@ -172,7 +180,7 @@ public class GlDevice implements GpuDevice {
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, int var3) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, int var3) {
       if (var3 <= 0) {
          throw new IllegalArgumentException("Buffer size must be greater than zero");
       } else {
@@ -190,7 +198,7 @@ public class GlDevice implements GpuDevice {
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, ByteBuffer var3) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, ByteBuffer var3) {
       if (!var3.hasRemaining()) {
          throw new IllegalArgumentException("Buffer source must not be empty");
       } else {

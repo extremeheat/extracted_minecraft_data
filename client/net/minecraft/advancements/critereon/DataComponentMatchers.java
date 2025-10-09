@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -63,6 +64,12 @@ public record DataComponentMatchers(DataComponentExactPredicate exact, Map<DataC
 
       public static Builder components() {
          return new Builder();
+      }
+
+      public <T extends DataComponentType<?>> Builder any(DataComponentType<?> var1) {
+         DataComponentPredicate.AnyValueType var2 = DataComponentPredicate.AnyValueType.create(var1);
+         this.partial.put(var2, var2.predicate());
+         return this;
       }
 
       public <T extends DataComponentPredicate> Builder partial(DataComponentPredicate.Type<T> var1, T var2) {

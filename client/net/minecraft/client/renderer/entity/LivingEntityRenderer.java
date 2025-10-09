@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -14,7 +13,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
@@ -328,13 +326,6 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
       Minecraft var11 = Minecraft.getInstance();
       var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
-   }
-
-   protected void extractAdditionalHitboxes(T var1, ImmutableList.Builder<HitboxRenderState> var2, float var3) {
-      AABB var4 = var1.getBoundingBox();
-      float var5 = 0.01F;
-      HitboxRenderState var6 = new HitboxRenderState(var4.minX - var1.getX(), (double)(var1.getEyeHeight() - 0.01F), var4.minZ - var1.getZ(), var4.maxX - var1.getX(), (double)(var1.getEyeHeight() + 0.01F), var4.maxZ - var1.getZ(), 1.0F, 0.0F, 0.0F);
-      var2.add(var6);
    }
 
    private static float solveBodyRot(LivingEntity var0, float var1, float var2) {

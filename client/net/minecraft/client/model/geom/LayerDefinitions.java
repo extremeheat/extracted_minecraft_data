@@ -60,6 +60,9 @@ import net.minecraft.client.model.LeashKnotModel;
 import net.minecraft.client.model.LlamaModel;
 import net.minecraft.client.model.LlamaSpitModel;
 import net.minecraft.client.model.MinecartModel;
+import net.minecraft.client.model.NautilusArmorModel;
+import net.minecraft.client.model.NautilusModel;
+import net.minecraft.client.model.NautilusSaddleModel;
 import net.minecraft.client.model.PandaModel;
 import net.minecraft.client.model.ParrotModel;
 import net.minecraft.client.model.PhantomModel;
@@ -191,6 +194,7 @@ public class LayerDefinitions {
       LayerDefinition var58 = SquidModel.createBodyLayer();
       LayerDefinition var59 = DolphinModel.createBodyLayer();
       LayerDefinition var60 = SalmonModel.createBodyLayer();
+      LayerDefinition var61 = NautilusSaddleModel.createSaddleLayer();
       var0.put(ModelLayers.ALLAY, AllayModel.createBodyLayer());
       var0.put(ModelLayers.ARMADILLO, var37);
       var0.put(ModelLayers.ARMADILLO_BABY, var37.apply(ArmadilloModel.BABY_TRANSFORMER));
@@ -289,9 +293,9 @@ public class LayerDefinitions {
       var0.put(ModelLayers.FROG, FrogModel.createBodyLayer());
       var0.put(ModelLayers.FURNACE_MINECART, var7);
       var0.put(ModelLayers.GHAST, GhastModel.createBodyLayer());
-      MeshTransformer var61 = MeshTransformer.scaling(6.0F);
-      var0.put(ModelLayers.GIANT, var1.apply(var61));
-      ModelLayers.GIANT_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var61)), var0);
+      MeshTransformer var62 = MeshTransformer.scaling(6.0F);
+      var0.put(ModelLayers.GIANT, var1.apply(var62));
+      ModelLayers.GIANT_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var62)), var0);
       var0.put(ModelLayers.GLOW_SQUID, var58);
       var0.put(ModelLayers.GLOW_SQUID_BABY, var58.apply(SquidModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.GOAT, var41);
@@ -306,18 +310,18 @@ public class LayerDefinitions {
       var0.put(ModelLayers.HOGLIN, var31);
       var0.put(ModelLayers.HOGLIN_BABY, var32);
       var0.put(ModelLayers.HOPPER_MINECART, var7);
-      MeshTransformer var62 = MeshTransformer.scaling(1.1F);
-      var0.put(ModelLayers.HORSE, var9.apply(var62));
-      var0.put(ModelLayers.HORSE_BABY, var10.apply(var62));
-      var0.put(ModelLayers.HORSE_ARMOR, LayerDefinition.create(AbstractEquineModel.createBodyMesh(new CubeDeformation(0.1F)), 64, 64).apply(var62));
-      var0.put(ModelLayers.HORSE_BABY_ARMOR, LayerDefinition.create(AbstractEquineModel.createBabyMesh(new CubeDeformation(0.1F)), 64, 64).apply(var62));
-      var0.put(ModelLayers.HORSE_SADDLE, var11.apply(var62));
-      var0.put(ModelLayers.HORSE_BABY_SADDLE, var12.apply(var62));
-      MeshTransformer var63 = MeshTransformer.scaling(1.0625F);
-      var0.put(ModelLayers.HUSK, var1.apply(var63));
-      ModelLayers.HUSK_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var63)), var0);
-      var0.put(ModelLayers.HUSK_BABY, var1.apply(HumanoidModel.BABY_TRANSFORMER).apply(var63));
-      ModelLayers.HUSK_BABY_ARMOR.putFrom(var3.map((var1x) -> var1x.apply(var63)), var0);
+      MeshTransformer var63 = MeshTransformer.scaling(1.1F);
+      var0.put(ModelLayers.HORSE, var9.apply(var63));
+      var0.put(ModelLayers.HORSE_BABY, var10.apply(var63));
+      var0.put(ModelLayers.HORSE_ARMOR, LayerDefinition.create(AbstractEquineModel.createBodyMesh(new CubeDeformation(0.1F)), 64, 64).apply(var63));
+      var0.put(ModelLayers.HORSE_BABY_ARMOR, LayerDefinition.create(AbstractEquineModel.createBabyMesh(new CubeDeformation(0.1F)), 64, 64).apply(var63));
+      var0.put(ModelLayers.HORSE_SADDLE, var11.apply(var63));
+      var0.put(ModelLayers.HORSE_BABY_SADDLE, var12.apply(var63));
+      MeshTransformer var64 = MeshTransformer.scaling(1.0625F);
+      var0.put(ModelLayers.HUSK, var1.apply(var64));
+      ModelLayers.HUSK_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var64)), var0);
+      var0.put(ModelLayers.HUSK_BABY, var1.apply(HumanoidModel.BABY_TRANSFORMER).apply(var64));
+      ModelLayers.HUSK_BABY_ARMOR.putFrom(var3.map((var1x) -> var1x.apply(var64)), var0);
       var0.put(ModelLayers.ILLUSIONER, var14);
       var0.put(ModelLayers.IRON_GOLEM, IronGolemModel.createBodyLayer());
       var0.put(ModelLayers.LEASH_KNOT, LeashKnotModel.createBodyLayer());
@@ -334,6 +338,11 @@ public class LayerDefinitions {
       var0.put(ModelLayers.MULE_BABY, DonkeyModel.createBabyLayer(0.92F));
       var0.put(ModelLayers.MULE_SADDLE, DonkeyModel.createSaddleLayer(0.92F, false));
       var0.put(ModelLayers.MULE_BABY_SADDLE, DonkeyModel.createSaddleLayer(0.92F, true));
+      var0.put(ModelLayers.NAUTILUS, NautilusModel.createBodyLayer());
+      var0.put(ModelLayers.NAUTILUS_BABY, NautilusModel.createBabyBodyLayer());
+      var0.put(ModelLayers.NAUTILUS_SADDLE, var61);
+      var0.put(ModelLayers.NAUTILUS_ARMOR, NautilusArmorModel.createBodyLayer());
+      var0.put(ModelLayers.ZOMBIE_NAUTILUS, NautilusModel.createBodyLayer());
       var0.put(ModelLayers.OCELOT, var22);
       var0.put(ModelLayers.OCELOT_BABY, var23);
       var0.put(ModelLayers.PANDA, var42);
@@ -416,6 +425,8 @@ public class LayerDefinitions {
       var0.put(ModelLayers.TROPICAL_FISH_SMALL_PATTERN, TropicalFishModelA.createBodyLayer(FISH_PATTERN_DEFORMATION));
       var0.put(ModelLayers.TURTLE, var48);
       var0.put(ModelLayers.TURTLE_BABY, var48.apply(TurtleModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.UNDEAD_HORSE_ARMOR, LayerDefinition.create(AbstractEquineModel.createBodyMesh(new CubeDeformation(0.1F)), 64, 64));
+      var0.put(ModelLayers.UNDEAD_HORSE_BABY_ARMOR, LayerDefinition.create(AbstractEquineModel.createBabyMesh(new CubeDeformation(0.1F)), 64, 64));
       var0.put(ModelLayers.VEX, VexModel.createBodyLayer());
       var0.put(ModelLayers.VILLAGER, var34);
       var0.put(ModelLayers.VILLAGER_NO_HAT, var35);
@@ -435,9 +446,9 @@ public class LayerDefinitions {
       var0.put(ModelLayers.WITHER, WitherBossModel.createBodyLayer(CubeDeformation.NONE));
       var0.put(ModelLayers.WITHER_ARMOR, WitherBossModel.createBodyLayer(INNER_ARMOR_DEFORMATION));
       var0.put(ModelLayers.WITHER_SKULL, WitherSkullRenderer.createSkullLayer());
-      MeshTransformer var64 = MeshTransformer.scaling(1.2F);
-      var0.put(ModelLayers.WITHER_SKELETON, var33.apply(var64));
-      ModelLayers.WITHER_SKELETON_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var64)), var0);
+      MeshTransformer var65 = MeshTransformer.scaling(1.2F);
+      var0.put(ModelLayers.WITHER_SKELETON, var33.apply(var65));
+      ModelLayers.WITHER_SKELETON_ARMOR.putFrom(var2.map((var1x) -> var1x.apply(var65)), var0);
       var0.put(ModelLayers.WITHER_SKELETON_SKULL, var8);
       var0.put(ModelLayers.WOLF, var50);
       var0.put(ModelLayers.WOLF_ARMOR, var51);
@@ -456,42 +467,42 @@ public class LayerDefinitions {
       var0.put(ModelLayers.ZOMBIE_HORSE_BABY_SADDLE, var12);
       var0.put(ModelLayers.ZOMBIE_VILLAGER, var52);
       var0.put(ModelLayers.ZOMBIE_VILLAGER_NO_HAT, var53);
-      ArmorModelSet var65 = ZombieVillagerModel.createArmorLayerSet(INNER_ARMOR_DEFORMATION, OUTER_ARMOR_DEFORMATION);
-      ModelLayers.ZOMBIE_VILLAGER_ARMOR.putFrom(var65, var0);
+      ArmorModelSet var66 = ZombieVillagerModel.createArmorLayerSet(INNER_ARMOR_DEFORMATION, OUTER_ARMOR_DEFORMATION);
+      ModelLayers.ZOMBIE_VILLAGER_ARMOR.putFrom(var66, var0);
       var0.put(ModelLayers.ZOMBIE_VILLAGER_BABY, var52.apply(HumanoidModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.ZOMBIE_VILLAGER_BABY_NO_HAT, var53.apply(HumanoidModel.BABY_TRANSFORMER));
-      ModelLayers.ZOMBIE_VILLAGER_BABY_ARMOR.putFrom(var65.map((var0x) -> var0x.apply(HumanoidModel.BABY_TRANSFORMER)), var0);
+      ModelLayers.ZOMBIE_VILLAGER_BABY_ARMOR.putFrom(var66.map((var0x) -> var0x.apply(HumanoidModel.BABY_TRANSFORMER)), var0);
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN, var25);
       ModelLayers.ZOMBIFIED_PIGLIN_ARMOR.putFrom(var5, var0);
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_BABY, var25.apply(HumanoidModel.BABY_TRANSFORMER));
       ModelLayers.ZOMBIFIED_PIGLIN_BABY_ARMOR.putFrom(var6, var0);
       var0.put(ModelLayers.BAMBOO_RAFT, RaftModel.createRaftModel());
       var0.put(ModelLayers.BAMBOO_CHEST_RAFT, RaftModel.createChestRaftModel());
-      LayerDefinition var66 = BoatModel.createBoatModel();
-      LayerDefinition var67 = BoatModel.createChestBoatModel();
-      var0.put(ModelLayers.OAK_BOAT, var66);
-      var0.put(ModelLayers.OAK_CHEST_BOAT, var67);
-      var0.put(ModelLayers.SPRUCE_BOAT, var66);
-      var0.put(ModelLayers.SPRUCE_CHEST_BOAT, var67);
-      var0.put(ModelLayers.BIRCH_BOAT, var66);
-      var0.put(ModelLayers.BIRCH_CHEST_BOAT, var67);
-      var0.put(ModelLayers.JUNGLE_BOAT, var66);
-      var0.put(ModelLayers.JUNGLE_CHEST_BOAT, var67);
-      var0.put(ModelLayers.ACACIA_BOAT, var66);
-      var0.put(ModelLayers.ACACIA_CHEST_BOAT, var67);
-      var0.put(ModelLayers.CHERRY_BOAT, var66);
-      var0.put(ModelLayers.CHERRY_CHEST_BOAT, var67);
-      var0.put(ModelLayers.DARK_OAK_BOAT, var66);
-      var0.put(ModelLayers.DARK_OAK_CHEST_BOAT, var67);
-      var0.put(ModelLayers.PALE_OAK_BOAT, var66);
-      var0.put(ModelLayers.PALE_OAK_CHEST_BOAT, var67);
-      var0.put(ModelLayers.MANGROVE_BOAT, var66);
-      var0.put(ModelLayers.MANGROVE_CHEST_BOAT, var67);
-      LayerDefinition var68 = SignRenderer.createSignLayer(true);
-      LayerDefinition var69 = SignRenderer.createSignLayer(false);
+      LayerDefinition var67 = BoatModel.createBoatModel();
+      LayerDefinition var68 = BoatModel.createChestBoatModel();
+      var0.put(ModelLayers.OAK_BOAT, var67);
+      var0.put(ModelLayers.OAK_CHEST_BOAT, var68);
+      var0.put(ModelLayers.SPRUCE_BOAT, var67);
+      var0.put(ModelLayers.SPRUCE_CHEST_BOAT, var68);
+      var0.put(ModelLayers.BIRCH_BOAT, var67);
+      var0.put(ModelLayers.BIRCH_CHEST_BOAT, var68);
+      var0.put(ModelLayers.JUNGLE_BOAT, var67);
+      var0.put(ModelLayers.JUNGLE_CHEST_BOAT, var68);
+      var0.put(ModelLayers.ACACIA_BOAT, var67);
+      var0.put(ModelLayers.ACACIA_CHEST_BOAT, var68);
+      var0.put(ModelLayers.CHERRY_BOAT, var67);
+      var0.put(ModelLayers.CHERRY_CHEST_BOAT, var68);
+      var0.put(ModelLayers.DARK_OAK_BOAT, var67);
+      var0.put(ModelLayers.DARK_OAK_CHEST_BOAT, var68);
+      var0.put(ModelLayers.PALE_OAK_BOAT, var67);
+      var0.put(ModelLayers.PALE_OAK_CHEST_BOAT, var68);
+      var0.put(ModelLayers.MANGROVE_BOAT, var67);
+      var0.put(ModelLayers.MANGROVE_CHEST_BOAT, var68);
+      LayerDefinition var69 = SignRenderer.createSignLayer(true);
+      LayerDefinition var70 = SignRenderer.createSignLayer(false);
       WoodType.values().forEach((var3x) -> {
-         var0.put(ModelLayers.createStandingSignModelName(var3x), var68);
-         var0.put(ModelLayers.createWallSignModelName(var3x), var69);
+         var0.put(ModelLayers.createStandingSignModelName(var3x), var69);
+         var0.put(ModelLayers.createWallSignModelName(var3x), var70);
 
          for(HangingSignRenderer.AttachmentType var7 : HangingSignRenderer.AttachmentType.values()) {
             LayerDefinition var8 = HangingSignRenderer.createHangingSignLayer(var7);
@@ -499,12 +510,12 @@ public class LayerDefinitions {
          }
 
       });
-      ImmutableMap var70 = var0.build();
-      List var71 = ModelLayers.getKnownLocations().filter((var1x) -> !var70.containsKey(var1x)).toList();
-      if (!var71.isEmpty()) {
-         throw new IllegalStateException("Missing layer definitions: " + String.valueOf(var71));
+      ImmutableMap var71 = var0.build();
+      List var72 = ModelLayers.getKnownLocations().filter((var1x) -> !var71.containsKey(var1x)).toList();
+      if (!var72.isEmpty()) {
+         throw new IllegalStateException("Missing layer definitions: " + String.valueOf(var72));
       } else {
-         return var70;
+         return var71;
       }
    }
 }

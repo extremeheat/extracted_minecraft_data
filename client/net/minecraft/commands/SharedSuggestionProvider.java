@@ -23,11 +23,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 
-public interface SharedSuggestionProvider {
+public interface SharedSuggestionProvider extends PermissionSetSupplier {
    CharMatcher MATCH_SPLITTER = CharMatcher.anyOf("._/");
 
    Collection<String> getOnlinePlayerNames();

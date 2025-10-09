@@ -137,11 +137,11 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
                return InteractionResult.PASS;
             }
 
+            Inventory var10 = var5.getInventory();
             if (var3.isClientSide()) {
-               return InteractionResult.SUCCESS;
+               return (InteractionResult)(var10.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
             }
 
-            Inventory var10 = var5.getInventory();
             if (!(Boolean)var2.getValue(POWERED)) {
                boolean var14 = swapSingleItem(var1, var5, var8, var13.getAsInt(), var10);
                if (var14) {

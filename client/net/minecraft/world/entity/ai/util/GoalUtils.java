@@ -16,8 +16,8 @@ public class GoalUtils {
       return var0.getNavigation().canNavigateGround();
    }
 
-   public static boolean mobRestricted(PathfinderMob var0, int var1) {
-      return var0.hasHome() && var0.getHomePosition().closerToCenterThan(var0.position(), (double)(var0.getHomeRadius() + var1 + 1));
+   public static boolean mobRestricted(PathfinderMob var0, double var1) {
+      return var0.hasHome() && var0.getHomePosition().closerToCenterThan(var0.position(), (double)var0.getHomeRadius() + var1 + 1.0);
    }
 
    public static boolean isOutsideLimits(BlockPos var0, PathfinderMob var1) {

@@ -124,7 +124,7 @@ public class BufferBuilder implements VertexConsumer {
             String var3 = (String)var10000.map(var10001::getElementName).collect(Collectors.joining(", "));
             throw new IllegalStateException("Missing elements in vertex: " + var3);
          } else {
-            if (this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP) {
+            if (this.mode == VertexFormat.Mode.LINES) {
                long var1 = this.buffer.reserve(this.vertexSize);
                MemoryUtil.memCopy(var1 - (long)this.vertexSize, var1, (long)this.vertexSize);
                ++this.vertices;
@@ -231,6 +231,15 @@ public class BufferBuilder implements VertexConsumer {
          MemoryUtil.memPutByte(var4, normalIntValue(var1));
          MemoryUtil.memPutByte(var4 + 1L, normalIntValue(var2));
          MemoryUtil.memPutByte(var4 + 2L, normalIntValue(var3));
+      }
+
+      return this;
+   }
+
+   public VertexConsumer setLineWidth(float var1) {
+      long var2 = this.beginElement(VertexFormatElement.LINE_WIDTH);
+      if (var2 != -1L) {
+         MemoryUtil.memPutFloat(var2, var1);
       }
 
       return this;

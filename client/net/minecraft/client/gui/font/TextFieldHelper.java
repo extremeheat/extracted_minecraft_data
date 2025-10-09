@@ -68,7 +68,7 @@ public class TextFieldHelper {
          this.cut();
          return true;
       } else {
-         CursorStep var2 = var1.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
+         CursorStep var2 = var1.hasControlDownWithQuirk() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
          if (var1.key() == 259) {
             this.removeFromCursor(-1, var2);
             return true;

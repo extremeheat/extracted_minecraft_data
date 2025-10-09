@@ -12,17 +12,13 @@ import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
-public class UploadInfo extends ValueObject {
+public record UploadInfo(boolean worldClosed, @Nullable String token, URI uploadEndpoint) {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String DEFAULT_SCHEMA = "http://";
    private static final int DEFAULT_PORT = 8080;
    private static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("^[a-zA-Z][-a-zA-Z0-9+.]+:");
-   private final boolean worldClosed;
-   @Nullable
-   private final String token;
-   private final URI uploadEndpoint;
 
-   private UploadInfo(boolean var1, @Nullable String var2, URI var3) {
+   public UploadInfo(boolean var1, @Nullable String var2, URI var3) {
       super();
       this.worldClosed = var1;
       this.token = var2;
@@ -44,7 +40,7 @@ public class UploadInfo extends ValueObject {
             }
          }
       } catch (Exception var7) {
-         LOGGER.error("Could not parse UploadInfo: {}", var7.getMessage());
+         LOGGER.error("Could not parse UploadInfo", var7);
       }
 
       return null;
@@ -85,18 +81,5 @@ public class UploadInfo extends ValueObject {
       }
 
       return var1.toString();
-   }
-
-   @Nullable
-   public String getToken() {
-      return this.token;
-   }
-
-   public URI getUploadEndpoint() {
-      return this.uploadEndpoint;
-   }
-
-   public boolean isWorldClosed() {
-      return this.worldClosed;
    }
 }

@@ -325,20 +325,6 @@ public class Creaking extends Monster {
       return this.isHeartBound() || super.fireImmune();
    }
 
-   protected boolean canAddPassenger(Entity var1) {
-      return !this.isHeartBound() && super.canAddPassenger(var1);
-   }
-
-   protected boolean couldAcceptPassenger() {
-      return !this.isHeartBound() && super.couldAcceptPassenger();
-   }
-
-   protected void addPassenger(Entity var1) {
-      if (this.isHeartBound()) {
-         throw new IllegalStateException("Should never addPassenger without checking couldAcceptPassenger()");
-      }
-   }
-
    public boolean canUsePortal(boolean var1) {
       return !this.isHeartBound() && super.canUsePortal(var1);
    }

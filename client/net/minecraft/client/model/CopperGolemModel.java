@@ -122,7 +122,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       super.setupAnim(var1);
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      if (var1.rightHandItem.isEmpty() && var1.leftHandItem.isEmpty()) {
+      if (var1.rightHandItemState.isEmpty() && var1.leftHandItemState.isEmpty()) {
          this.walkAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
       } else {
          this.walkWithItemAnimation.applyWalk(var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);

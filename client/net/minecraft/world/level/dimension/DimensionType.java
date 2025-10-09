@@ -20,6 +20,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.level.block.Block;
 
 public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean hasCeiling, boolean ultraWarm, boolean natural, double coordinateScale, boolean bedWorks, boolean respawnAnchorWorks, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, ResourceLocation effectsLocation, float ambientLight, Optional<Integer> cloudHeight, MonsterSettings monsterSettings) {
@@ -32,7 +33,7 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
    public static final int WAY_BELOW_MIN_Y;
    public static final Codec<DimensionType> DIRECT_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<DimensionType>> STREAM_CODEC;
-   public static final int MOON_PHASES = 8;
+   private static final MoonPhase[] MOON_PHASES;
    public static final float[] MOON_BRIGHTNESS_PER_PHASE;
    public static final Codec<Holder<DimensionType>> CODEC;
 
@@ -94,8 +95,9 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
       return (float)(var3 * 2.0 + var5) / 3.0F;
    }
 
-   public int moonPhase(long var1) {
-      return (int)(var1 / 24000L % 8L + 8L) % 8;
+   public MoonPhase moonPhase(long var1) {
+      int var3 = (int)(var1 / 24000L % (long)MOON_PHASES.length + (long)MOON_PHASES.length) % MOON_PHASES.length;
+      return MOON_PHASES[var3];
    }
 
    public boolean piglinSafe() {
@@ -123,6 +125,7 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
       WAY_BELOW_MIN_Y = MIN_Y << 4;
       DIRECT_CODEC = ExtraCodecs.<DimensionType>catchDecoderException(RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.asOptionalLong(Codec.LONG.lenientOptionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime), Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight), Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling), Codec.BOOL.fieldOf("ultrawarm").forGetter(DimensionType::ultraWarm), Codec.BOOL.fieldOf("natural").forGetter(DimensionType::natural), Codec.doubleRange(9.999999747378752E-6, 3.0E7).fieldOf("coordinate_scale").forGetter(DimensionType::coordinateScale), Codec.BOOL.fieldOf("bed_works").forGetter(DimensionType::bedWorks), Codec.BOOL.fieldOf("respawn_anchor_works").forGetter(DimensionType::respawnAnchorWorks), Codec.intRange(MIN_Y, MAX_Y).fieldOf("min_y").forGetter(DimensionType::minY), Codec.intRange(16, Y_SIZE).fieldOf("height").forGetter(DimensionType::height), Codec.intRange(0, Y_SIZE).fieldOf("logical_height").forGetter(DimensionType::logicalHeight), TagKey.hashedCodec(Registries.BLOCK).fieldOf("infiniburn").forGetter(DimensionType::infiniburn), ResourceLocation.CODEC.fieldOf("effects").orElse(BuiltinDimensionTypes.OVERWORLD_EFFECTS).forGetter(DimensionType::effectsLocation), Codec.FLOAT.fieldOf("ambient_light").forGetter(DimensionType::ambientLight), Codec.intRange(MIN_Y, MAX_Y).optionalFieldOf("cloud_height").forGetter(DimensionType::cloudHeight), DimensionType.MonsterSettings.CODEC.forGetter(DimensionType::monsterSettings)).apply(var0, DimensionType::new)));
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.DIMENSION_TYPE);
+      MOON_PHASES = MoonPhase.values();
       MOON_BRIGHTNESS_PER_PHASE = new float[]{1.0F, 0.75F, 0.5F, 0.25F, 0.0F, 0.25F, 0.5F, 0.75F};
       CODEC = RegistryFileCodec.<Holder<DimensionType>>create(Registries.DIMENSION_TYPE, DIRECT_CODEC);
    }

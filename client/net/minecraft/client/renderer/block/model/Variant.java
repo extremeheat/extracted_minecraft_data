@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.block.model;
 
+import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Quadrant;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -72,7 +73,7 @@ public record Variant(ResourceLocation modelLocation, SimpleModelState modelStat
       }
 
       public ModelState asModelState() {
-         BlockModelRotation var1 = BlockModelRotation.by(this.x, this.y);
+         BlockModelRotation var1 = BlockModelRotation.get(OctahedralGroup.fromXYAngles(this.x, this.y));
          return (ModelState)(this.uvLock ? var1.withUvLock() : var1);
       }
 

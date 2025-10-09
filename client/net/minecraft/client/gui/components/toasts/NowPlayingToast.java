@@ -39,20 +39,20 @@ public class NowPlayingToast implements Toast {
       this.minecraft = Minecraft.getInstance();
    }
 
-   public static void renderToast(GuiGraphics var0, Font var1) {
+   public static void renderToast(Minecraft var0, GuiGraphics var1, Font var2) {
+      currentSong = var0.getMusicManager().getCurrentMusicTranslationKey();
       if (currentSong != null) {
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, var1), 30);
-         boolean var2 = true;
-         var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, var2), 30);
+         boolean var3 = true;
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
          Component var10002 = getNowPlayingString(currentSong);
-         Objects.requireNonNull(var1);
-         var0.drawString(var1, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
+         Objects.requireNonNull(var2);
+         var1.drawString(var2, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
       }
 
    }
 
    public static void tickMusicNotes() {
-      currentSong = Minecraft.getInstance().getMusicManager().getCurrentMusicTranslationKey();
       if (currentSong != null) {
          long var0 = System.currentTimeMillis();
          if (var0 > lastMusicNoteColorChange + 25L) {
@@ -83,7 +83,7 @@ public class NowPlayingToast implements Toast {
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {
-      renderToast(var1, var2);
+      renderToast(this.minecraft, var1, var2);
    }
 
    public void onFinishedRendering() {

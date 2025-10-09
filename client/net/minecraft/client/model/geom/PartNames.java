@@ -54,6 +54,8 @@ public class PartNames {
    public static final String NECK = "neck";
    public static final String MOUTH = "mouth";
    public static final String UPPER_MOUTH = "upper_mouth";
+   public static final String INNER_MOUTH = "inner_mouth";
+   public static final String LOWER_MOUTH = "lower_mouth";
    public static final String HEAD = "head";
    public static final String HAT = "hat";
    public static final String BODY = "body";
@@ -63,6 +65,7 @@ public class PartNames {
    public static final String GOGGLES = "goggles";
    public static final String JACKET = "jacket";
    public static final String HARNESS = "harness";
+   public static final String SHELL = "shell";
    public static final String TOP_GILLS = "top_gills";
    public static final String LEFT_GILLS = "left_gills";
    public static final String RIGHT_GILLS = "right_gills";

@@ -31,6 +31,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
 public class GlCommandEncoder implements CommandEncoder {
@@ -686,20 +687,25 @@ public class GlCommandEncoder implements CommandEncoder {
             }
          }
 
-         for(Map.Entry var34 : var1.pipeline.program().getUniforms().entrySet()) {
-            if (var34.getValue() instanceof Uniform.Sampler) {
-               String var36 = (String)var34.getKey();
-               GlTextureView var6 = (GlTextureView)var1.samplers.get(var36);
+         for(Map.Entry var35 : var1.pipeline.program().getUniforms().entrySet()) {
+            if (var35.getValue() instanceof Uniform.Sampler) {
+               String var37 = (String)var35.getKey();
+               GlRenderPass.TextureViewAndSampler var6 = (GlRenderPass.TextureViewAndSampler)var1.samplers.get(var37);
                if (var6 == null) {
-                  throw new IllegalStateException("Missing sampler " + var36);
+                  throw new IllegalStateException("Missing sampler " + var37);
                }
 
-               if (var6.isClosed()) {
-                  throw new IllegalStateException("Sampler " + var36 + " (" + var6.texture().getLabel() + ") has been closed!");
+               GlTextureView var7 = var6.view();
+               if (var7.isClosed()) {
+                  throw new IllegalStateException("Texture view " + var37 + " (" + var7.texture().getLabel() + ") has been closed!");
                }
 
-               if ((var6.texture().usage() & 4) == 0) {
-                  throw new IllegalStateException("Sampler " + var36 + " (" + var6.texture().getLabel() + ") must have USAGE_TEXTURE_BINDING!");
+               if ((var7.texture().usage() & 4) == 0) {
+                  throw new IllegalStateException("Texture view " + var37 + " (" + var7.texture().getLabel() + ") must have USAGE_TEXTURE_BINDING!");
+               }
+
+               if (var6.sampler().isClosed()) {
+                  throw new IllegalStateException("Sampler for " + var37 + " (" + var7.texture().getLabel() + ") has been closed!");
                }
             }
          }
@@ -709,19 +715,19 @@ public class GlCommandEncoder implements CommandEncoder {
          }
       }
 
-      RenderPipeline var33 = var1.pipeline.info();
-      GlProgram var35 = var1.pipeline.program();
-      this.applyPipelineState(var33);
-      boolean var37 = this.lastProgram != var35;
-      if (var37) {
-         GlStateManager._glUseProgram(var35.getProgramId());
-         this.lastProgram = var35;
+      RenderPipeline var34 = var1.pipeline.info();
+      GlProgram var36 = var1.pipeline.program();
+      this.applyPipelineState(var34);
+      boolean var38 = this.lastProgram != var36;
+      if (var38) {
+         GlStateManager._glUseProgram(var36.getProgramId());
+         this.lastProgram = var36;
       }
 
-      for(Map.Entry var7 : var35.getUniforms().entrySet()) {
-         String var8 = (String)var7.getKey();
+      for(Map.Entry var40 : var36.getUniforms().entrySet()) {
+         String var8 = (String)var40.getKey();
          boolean var9 = var1.dirtyUniforms.contains(var8);
-         Uniform.Ubo var10000 = (Uniform)var7.getValue();
+         Uniform.Ubo var10000 = (Uniform)var40.getValue();
          Objects.requireNonNull(var10000);
          Uniform var10 = var10000;
          byte var11 = 0;
@@ -735,115 +741,116 @@ public class GlCommandEncoder implements CommandEncoder {
                var10000 = var12;
 
                try {
-                  var61 = var10000.blockBinding();
-               } catch (Throwable var31) {
-                  throw new MatchException(var31.toString(), var31);
+                  var63 = var10000.blockBinding();
+               } catch (Throwable var32) {
+                  throw new MatchException(var32.toString(), var32);
                }
 
-               int var39 = var61;
-               int var13 = var39;
+               int var41 = var63;
+               int var13 = var41;
                if (var9) {
-                  GpuBufferSlice var40 = (GpuBufferSlice)var1.uniforms.get(var8);
-                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var40.buffer()).handle, (long)var40.offset(), (long)var40.length());
+                  GpuBufferSlice var42 = (GpuBufferSlice)var1.uniforms.get(var8);
+                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var42.buffer()).handle, (long)var42.offset(), (long)var42.length());
                }
                break;
             case 1:
                Uniform.Utb var14 = (Uniform.Utb)var10;
-               Uniform.Utb var52 = var14;
+               Uniform.Utb var54 = var14;
 
                try {
-                  var53 = var52.location();
+                  var55 = var54.location();
+               } catch (Throwable var31) {
+                  throw new MatchException(var31.toString(), var31);
+               }
+
+               int var43 = var55;
+               int var15 = var43;
+               var54 = var14;
+
+               try {
+                  var57 = var54.samplerIndex();
                } catch (Throwable var30) {
                   throw new MatchException(var30.toString(), var30);
                }
 
-               int var41 = var53;
-               int var15 = var41;
-               var52 = var14;
+               var43 = var57;
+               int var16 = var43;
+               var54 = var14;
 
                try {
-                  var55 = var52.samplerIndex();
+                  var59 = var54.format();
                } catch (Throwable var29) {
                   throw new MatchException(var29.toString(), var29);
                }
 
-               var41 = var55;
-               int var16 = var41;
-               var52 = var14;
+               TextureFormat var45 = var59;
+               TextureFormat var17 = var45;
+               var54 = var14;
 
                try {
-                  var57 = var52.format();
+                  var61 = var54.texture();
                } catch (Throwable var28) {
                   throw new MatchException(var28.toString(), var28);
                }
 
-               TextureFormat var43 = var57;
-               TextureFormat var17 = var43;
-               var52 = var14;
-
-               try {
-                  var59 = var52.texture();
-               } catch (Throwable var27) {
-                  throw new MatchException(var27.toString(), var27);
-               }
-
-               int var44 = var59;
-               if (var37 || var9) {
+               int var46 = var61;
+               if (var38 || var9) {
                   GlStateManager._glUniform1i(var15, var16);
                }
 
                GlStateManager._activeTexture('\u84c0' + var16);
-               GL11C.glBindTexture(35882, var44);
+               GL11C.glBindTexture(35882, var46);
                if (var9) {
-                  GpuBufferSlice var45 = (GpuBufferSlice)var1.uniforms.get(var8);
-                  GL31.glTexBuffer(35882, GlConst.toGlInternalId(var17), ((GlBuffer)var45.buffer()).handle);
+                  GpuBufferSlice var47 = (GpuBufferSlice)var1.uniforms.get(var8);
+                  GL31.glTexBuffer(35882, GlConst.toGlInternalId(var17), ((GlBuffer)var47.buffer()).handle);
                }
                break;
             case 2:
                Uniform.Sampler var19 = (Uniform.Sampler)var10;
-               Uniform.Sampler var48 = var19;
+               Uniform.Sampler var50 = var19;
 
                try {
-                  var49 = var48.location();
+                  var51 = var50.location();
+               } catch (Throwable var27) {
+                  throw new MatchException(var27.toString(), var27);
+               }
+
+               int var22 = var51;
+               int var20 = var22;
+               var50 = var19;
+
+               try {
+                  var53 = var50.samplerIndex();
                } catch (Throwable var26) {
                   throw new MatchException(var26.toString(), var26);
                }
 
-               int var22 = var49;
-               int var20 = var22;
-               var48 = var19;
-
-               try {
-                  var51 = var48.samplerIndex();
-               } catch (Throwable var25) {
-                  throw new MatchException(var25.toString(), var25);
-               }
-
-               var22 = var51;
+               var22 = var53;
                int var21 = var22;
-               GlTextureView var47 = (GlTextureView)var1.samplers.get(var8);
-               if (var47 == null) {
+               GlRenderPass.TextureViewAndSampler var49 = (GlRenderPass.TextureViewAndSampler)var1.samplers.get(var8);
+               if (var49 == null) {
                   break;
                }
 
-               if (var37 || var9) {
+               GlTextureView var23 = var49.view();
+               if (var38 || var9) {
                   GlStateManager._glUniform1i(var20, var21);
                }
 
                GlStateManager._activeTexture('\u84c0' + var21);
-               GlTexture var23 = var47.texture();
-               char var24;
-               if ((var23.usage() & 16) != 0) {
-                  var24 = '\u8513';
-                  GL11.glBindTexture(34067, var23.id);
+               GlTexture var24 = var23.texture();
+               char var25;
+               if ((var24.usage() & 16) != 0) {
+                  var25 = '\u8513';
+                  GL11.glBindTexture(34067, var24.id);
                } else {
-                  var24 = 3553;
-                  GlStateManager._bindTexture(var23.id);
+                  var25 = 3553;
+                  GlStateManager._bindTexture(var24.id);
                }
 
-               GlStateManager._texParameter(var24, 33084, var47.baseMipLevel());
-               GlStateManager._texParameter(var24, 33085, var47.baseMipLevel() + var47.mipLevels() - 1);
-               var23.flushModeChanges(var24);
+               GL33C.glBindSampler(var21, var49.sampler().getId());
+               GlStateManager._texParameter(var25, 33084, var23.baseMipLevel());
+               GlStateManager._texParameter(var25, 33085, var23.baseMipLevel() + var23.mipLevels() - 1);
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);

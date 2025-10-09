@@ -204,6 +204,13 @@ public class EnchantmentHelper {
 
    }
 
+   public static void doLungeEffects(ServerLevel var0, Entity var1) {
+      if (var1 instanceof LivingEntity var2) {
+         runIterationOnItem(var1.getWeaponItem(), EquipmentSlot.MAINHAND, var2, (var2x, var3, var4) -> ((Enchantment)var2x.value()).doLunge(var0, var3, var4, var1));
+      }
+
+   }
+
    public static void doPostAttackEffectsWithItemSource(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3) {
       doPostAttackEffectsWithItemSourceOnBreak(var0, var1, var2, var3, (Consumer)null);
    }

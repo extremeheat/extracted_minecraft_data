@@ -3,6 +3,9 @@ package net.minecraft.world.entity.projectile;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -255,15 +258,17 @@ public abstract class AbstractArrow extends Projectile {
       while(true) {
          if (this.isAlive()) {
             Vec3 var2 = this.position();
-            EntityHitResult var3 = this.findHitEntity(var2, var1.getLocation());
-            Vec3 var4 = ((HitResult)Objects.requireNonNullElse(var3, var1)).getLocation();
-            this.setPos(var4);
-            this.applyEffectsFromBlocks(var2, var4);
+            ArrayList var3 = new ArrayList(this.findHitEntities(var2, var1.getLocation()));
+            var3.sort(Comparator.comparingDouble((var1x) -> var2.distanceToSqr(var1x.getEntity().position())));
+            EntityHitResult var4 = var3.isEmpty() ? null : (EntityHitResult)var3.getFirst();
+            Vec3 var5 = ((HitResult)Objects.requireNonNullElse(var4, var1)).getLocation();
+            this.setPos(var5);
+            this.applyEffectsFromBlocks(var2, var5);
             if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
                this.handlePortal();
             }
 
-            if (var3 == null) {
+            if (var3.isEmpty()) {
                if (this.isAlive() && var1.getType() != HitResult.Type.MISS) {
                   this.hitTargetOrDeflectSelf(var1);
                   this.hasImpulse = true;
@@ -273,9 +278,9 @@ public abstract class AbstractArrow extends Projectile {
                   continue;
                }
 
-               ProjectileDeflection var5 = this.hitTargetOrDeflectSelf(var3);
+               ProjectileDeflection var6 = this.hitTargetsOrDeflectSelf(var3);
                this.hasImpulse = true;
-               if (this.getPierceLevel() > 0 && var5 == ProjectileDeflection.NONE) {
+               if (this.getPierceLevel() > 0 && var6 == ProjectileDeflection.NONE) {
                   continue;
                }
             }
@@ -283,6 +288,17 @@ public abstract class AbstractArrow extends Projectile {
 
          return;
       }
+   }
+
+   private ProjectileDeflection hitTargetsOrDeflectSelf(Collection<EntityHitResult> var1) {
+      for(EntityHitResult var3 : var1) {
+         ProjectileDeflection var4 = this.hitTargetOrDeflectSelf(var3);
+         if (!this.isAlive() || var4 != ProjectileDeflection.NONE) {
+            return var4;
+         }
+      }
+
+      return ProjectileDeflection.NONE;
    }
 
    private void applyInertia(float var1) {
@@ -570,6 +586,10 @@ public abstract class AbstractArrow extends Projectile {
    @Nullable
    protected EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
       return ProjectileUtil.getEntityHitResult(this.level(), this, var1, var2, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity);
+   }
+
+   protected Collection<EntityHitResult> findHitEntities(Vec3 var1, Vec3 var2) {
+      return ProjectileUtil.getManyEntityHitResult(this.level(), this, var1, var2, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity);
    }
 
    protected boolean canHitEntity(Entity var1) {

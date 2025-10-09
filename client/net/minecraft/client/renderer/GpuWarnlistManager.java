@@ -30,7 +30,6 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
    private ImmutableMap<String, String> warnings = ImmutableMap.of();
    private boolean showWarning;
    private boolean warningDismissed;
-   private boolean skipFabulous;
 
    public GpuWarnlistManager() {
       super();
@@ -52,23 +51,13 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       this.warningDismissed = true;
    }
 
-   public void dismissWarningAndSkipFabulous() {
-      this.warningDismissed = true;
-      this.skipFabulous = true;
-   }
-
    public boolean isShowingWarning() {
       return this.showWarning && !this.warningDismissed;
-   }
-
-   public boolean isSkippingFabulous() {
-      return this.skipFabulous;
    }
 
    public void resetWarnings() {
       this.showWarning = false;
       this.warningDismissed = false;
-      this.skipFabulous = false;
    }
 
    @Nullable

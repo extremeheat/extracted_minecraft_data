@@ -13,6 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class Vec3 implements Position {
    public static final Codec<Vec3> CODEC;
@@ -59,7 +60,7 @@ public class Vec3 implements Position {
       this.z = var5;
    }
 
-   public Vec3(Vector3f var1) {
+   public Vec3(Vector3fc var1) {
       this((double)var1.x(), (double)var1.y(), (double)var1.z());
    }
 
@@ -164,6 +165,10 @@ public class Vec3 implements Position {
       return this.add((double)((var1.nextFloat() - 0.5F) * var2), (double)((var1.nextFloat() - 0.5F) * var2), (double)((var1.nextFloat() - 0.5F) * var2));
    }
 
+   public Vec3 offsetRandomXZ(RandomSource var1, float var2) {
+      return this.add((double)((var1.nextFloat() - 0.5F) * var2), 0.0, (double)((var1.nextFloat() - 0.5F) * var2));
+   }
+
    public double length() {
       return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
    }
@@ -258,6 +263,12 @@ public class Vec3 implements Position {
       return new Vec3((double)(var3 * var4), (double)var5, (double)(var2 * var4));
    }
 
+   public Vec2 rotation() {
+      float var1 = (float)Math.atan2(-this.x, this.z) * 57.295776F;
+      float var2 = (float)Math.asin(-this.y / Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)) * 57.295776F;
+      return new Vec2(var2, var1);
+   }
+
    public Vec3 align(EnumSet<Direction.Axis> var1) {
       double var2 = var1.contains(Direction.Axis.X) ? (double)Mth.floor(this.x) : this.x;
       double var4 = var1.contains(Direction.Axis.Y) ? (double)Mth.floor(this.y) : this.y;
@@ -299,6 +310,26 @@ public class Vec3 implements Position {
 
    public Vec3 projectedOn(Vec3 var1) {
       return var1.lengthSqr() == 0.0 ? var1 : var1.scale(this.dot(var1)).scale(1.0 / var1.lengthSqr());
+   }
+
+   public static Vec3 applyLocalCoordinatesToRotation(Vec2 var0, Vec3 var1) {
+      float var2 = Mth.cos((var0.y + 90.0F) * 0.017453292F);
+      float var3 = Mth.sin((var0.y + 90.0F) * 0.017453292F);
+      float var4 = Mth.cos(-var0.x * 0.017453292F);
+      float var5 = Mth.sin(-var0.x * 0.017453292F);
+      float var6 = Mth.cos((-var0.x + 90.0F) * 0.017453292F);
+      float var7 = Mth.sin((-var0.x + 90.0F) * 0.017453292F);
+      Vec3 var8 = new Vec3((double)(var2 * var4), (double)var5, (double)(var3 * var4));
+      Vec3 var9 = new Vec3((double)(var2 * var6), (double)var7, (double)(var3 * var6));
+      Vec3 var10 = var8.cross(var9).scale(-1.0);
+      double var11 = var8.x * var1.z + var9.x * var1.y + var10.x * var1.x;
+      double var13 = var8.y * var1.z + var9.y * var1.y + var10.y * var1.x;
+      double var15 = var8.z * var1.z + var9.z * var1.y + var10.z * var1.x;
+      return new Vec3(var11, var13, var15);
+   }
+
+   public Vec3 addLocalCoordinates(Vec3 var1) {
+      return applyLocalCoordinatesToRotation(this.rotation(), var1);
    }
 
    static {

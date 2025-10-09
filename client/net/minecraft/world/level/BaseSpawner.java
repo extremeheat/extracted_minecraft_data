@@ -89,7 +89,7 @@ public abstract class BaseSpawner {
    }
 
    public void serverTick(ServerLevel var1, BlockPos var2) {
-      if (this.isNearPlayer(var1, var2) && var1.getServer().isSpawnerBlockEnabled()) {
+      if (this.isNearPlayer(var1, var2) && var1.isSpawnerBlockEnabled()) {
          if (this.spawnDelay == -1) {
             this.delay(var1, var2);
          }

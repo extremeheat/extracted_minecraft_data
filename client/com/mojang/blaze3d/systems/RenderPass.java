@@ -4,6 +4,7 @@ import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Collection;
@@ -19,7 +20,7 @@ public interface RenderPass extends AutoCloseable {
 
    void setPipeline(RenderPipeline var1);
 
-   void bindSampler(String var1, @Nullable GpuTextureView var2);
+   void bindTexture(String var1, @Nullable GpuTextureView var2, GpuSampler var3);
 
    void setUniform(String var1, GpuBuffer var2);
 

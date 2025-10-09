@@ -1,20 +1,21 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.debug.DebugPoiInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
 
 public class PoiDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int MAX_RENDER_DIST_FOR_POI_INFO = 30;
-   private static final float TEXT_SCALE = 0.02F;
+   private static final float TEXT_SCALE = 0.32F;
    private static final int ORANGE = -23296;
    private final BrainDebugRenderer brainRenderer;
 
@@ -23,65 +24,65 @@ public class PoiDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.brainRenderer = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7, DebugValueAccess var9, Frustum var10) {
-      BlockPos var11 = BlockPos.containing(var3, var5, var7);
-      var9.forEachBlock(DebugSubscriptions.POIS, (var5x, var6) -> {
-         if (var11.closerThan(var5x, 30.0)) {
-            highlightPoi(var1, var2, var5x);
-            this.renderPoiInfo(var1, var2, var6, var9);
+   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
+      BlockPos var10 = BlockPos.containing(var1, var3, var5);
+      var7.forEachBlock(DebugSubscriptions.POIS, (var3x, var4) -> {
+         if (var10.closerThan(var3x, 30.0)) {
+            highlightPoi(var3x);
+            this.renderPoiInfo(var4, var7);
          }
 
       });
-      this.brainRenderer.getGhostPois(var9).forEach((var5x, var6) -> {
-         if (var9.getBlockValue(DebugSubscriptions.POIS, var5x) == null) {
-            if (var11.closerThan(var5x, 30.0)) {
-               this.renderGhostPoi(var1, var2, var5x, var6);
+      this.brainRenderer.getGhostPois(var7).forEach((var3x, var4) -> {
+         if (var7.getBlockValue(DebugSubscriptions.POIS, var3x) == null) {
+            if (var10.closerThan(var3x, 30.0)) {
+               this.renderGhostPoi(var3x, var4);
             }
 
          }
       });
    }
 
-   private static void highlightPoi(PoseStack var0, MultiBufferSource var1, BlockPos var2) {
+   private static void highlightPoi(BlockPos var0) {
+      float var1 = 0.05F;
+      Gizmos.cuboid(var0, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+   }
+
+   private void renderGhostPoi(BlockPos var1, List<String> var2) {
       float var3 = 0.05F;
-      DebugRenderer.renderFilledBox(var0, var1, var2, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
+      Gizmos.cuboid(var1, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+      Gizmos.billboardTextOverBlock(var2.toString(), var1, 0, -256, 0.32F);
+      Gizmos.billboardTextOverBlock("Ghost POI", var1, 1, -65536, 0.32F);
    }
 
-   private void renderGhostPoi(PoseStack var1, MultiBufferSource var2, BlockPos var3, List<String> var4) {
-      float var5 = 0.05F;
-      DebugRenderer.renderFilledBox(var1, var2, var3, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
-      DebugRenderer.renderTextOverBlock(var1, var2, var4.toString(), var3, 0, -256, 0.02F);
-      DebugRenderer.renderTextOverBlock(var1, var2, "Ghost POI", var3, 1, -65536, 0.02F);
-   }
-
-   private void renderPoiInfo(PoseStack var1, MultiBufferSource var2, DebugPoiInfo var3, DebugValueAccess var4) {
-      int var5 = 0;
+   private void renderPoiInfo(DebugPoiInfo var1, DebugValueAccess var2) {
+      int var3 = 0;
       if (SharedConstants.DEBUG_BRAIN) {
-         List var6 = this.getTicketHolderNames(var3, false, var4);
-         if (var6.size() < 4) {
-            renderTextOverPoi(var1, var2, "Owners: " + String.valueOf(var6), var3, var5, -256);
+         List var4 = this.getTicketHolderNames(var1, false, var2);
+         if (var4.size() < 4) {
+            renderTextOverPoi("Owners: " + String.valueOf(var4), var1, var3, -256);
          } else {
-            renderTextOverPoi(var1, var2, var6.size() + " ticket holders", var3, var5, -256);
+            renderTextOverPoi(var4.size() + " ticket holders", var1, var3, -256);
          }
 
-         ++var5;
-         List var7 = this.getTicketHolderNames(var3, true, var4);
-         if (var7.size() < 4) {
-            renderTextOverPoi(var1, var2, "Candidates: " + String.valueOf(var7), var3, var5, -23296);
+         ++var3;
+         List var5 = this.getTicketHolderNames(var1, true, var2);
+         if (var5.size() < 4) {
+            renderTextOverPoi("Candidates: " + String.valueOf(var5), var1, var3, -23296);
          } else {
-            renderTextOverPoi(var1, var2, var7.size() + " potential owners", var3, var5, -23296);
+            renderTextOverPoi(var5.size() + " potential owners", var1, var3, -23296);
          }
 
-         ++var5;
+         ++var3;
       }
 
-      renderTextOverPoi(var1, var2, "Free tickets: " + var3.freeTicketCount(), var3, var5, -256);
-      ++var5;
-      renderTextOverPoi(var1, var2, var3.poiType().getRegisteredName(), var3, var5, -1);
+      renderTextOverPoi("Free tickets: " + var1.freeTicketCount(), var1, var3, -256);
+      ++var3;
+      renderTextOverPoi(var1.poiType().getRegisteredName(), var1, var3, -1);
    }
 
-   private static void renderTextOverPoi(PoseStack var0, MultiBufferSource var1, String var2, DebugPoiInfo var3, int var4, int var5) {
-      DebugRenderer.renderTextOverBlock(var0, var1, var2, var3.pos(), var4, var5, 0.02F);
+   private static void renderTextOverPoi(String var0, DebugPoiInfo var1, int var2, int var3) {
+      Gizmos.billboardTextOverBlock(var0, var1.pos(), var2, var3, 0.32F);
    }
 
    private List<String> getTicketHolderNames(DebugPoiInfo var1, boolean var2, DebugValueAccess var3) {

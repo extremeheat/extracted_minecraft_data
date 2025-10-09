@@ -35,6 +35,7 @@ public class Sheets {
    public static final ResourceLocation GUI_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/gui.png");
    public static final ResourceLocation MAP_DECORATIONS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/map_decorations.png");
    public static final ResourceLocation PAINTINGS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/paintings.png");
+   public static final ResourceLocation CELESTIAL_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/celestials.png");
    private static final RenderType SHULKER_BOX_SHEET_TYPE;
    private static final RenderType BED_SHEET_TYPE;
    private static final RenderType BANNER_SHEET_TYPE;

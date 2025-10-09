@@ -102,6 +102,7 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.sounds.SoundEvent;
@@ -534,18 +535,25 @@ public class ServerPlayer extends Player {
    public void setExperiencePoints(int var1) {
       float var2 = (float)this.getXpNeededForNextLevel();
       float var3 = (var2 - 1.0F) / var2;
-      this.experienceProgress = Mth.clamp((float)var1 / var2, 0.0F, var3);
-      this.lastSentExp = -1;
+      float var4 = Mth.clamp((float)var1 / var2, 0.0F, var3);
+      if (var4 != this.experienceProgress) {
+         this.experienceProgress = var4;
+         this.lastSentExp = -1;
+      }
    }
 
    public void setExperienceLevels(int var1) {
-      this.experienceLevel = var1;
-      this.lastSentExp = -1;
+      if (var1 != this.experienceLevel) {
+         this.experienceLevel = var1;
+         this.lastSentExp = -1;
+      }
    }
 
    public void giveExperienceLevels(int var1) {
-      super.giveExperienceLevels(var1);
-      this.lastSentExp = -1;
+      if (var1 != 0) {
+         super.giveExperienceLevels(var1);
+         this.lastSentExp = -1;
+      }
    }
 
    public void onEnchantmentPerformed(ItemStack var1, int var2) {
@@ -995,7 +1003,7 @@ public class ServerPlayer extends Player {
    }
 
    private boolean isPvpAllowed() {
-      return this.server.isPvpAllowed();
+      return this.level().isPvpAllowed();
    }
 
    public TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean var1, TeleportTransition.PostTeleportTransition var2) {
@@ -1471,8 +1479,10 @@ public class ServerPlayer extends Player {
    }
 
    public void giveExperiencePoints(int var1) {
-      super.giveExperiencePoints(var1);
-      this.lastSentExp = -1;
+      if (var1 != 0) {
+         super.giveExperiencePoints(var1);
+         this.lastSentExp = -1;
+      }
    }
 
    public void disconnect() {
@@ -1614,6 +1624,7 @@ public class ServerPlayer extends Player {
       boolean var12 = super.teleportTo(var1, var2, var4, var6, var8, var9, var10, var11);
       if (var12) {
          this.setYHeadRot(var8.contains(Relative.Y_ROT) ? this.getYHeadRot() + var9 : var9);
+         this.connection.resetFlyingTicks();
       }
 
       return var12;
@@ -1676,7 +1687,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.getPermissionLevel(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
+      return new CommandSourceStack(this.commandSource(), this.position(), this.getRotationVector(), this.level(), this.permissions(), this.getPlainTextName(), this.getDisplayName(), this.server, this);
    }
 
    public void sendSystemMessage(Component var1) {
@@ -1756,7 +1767,7 @@ public class ServerPlayer extends Player {
       this.connection.send(new ClientboundServerDataPacket(var1.description(), var1.favicon().map(ServerStatus.Favicon::iconBytes)));
    }
 
-   public int getPermissionLevel() {
+   public PermissionSet permissions() {
       return this.server.getProfilePermissions(this.nameAndId());
    }
 

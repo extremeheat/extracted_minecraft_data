@@ -1215,6 +1215,7 @@ public class Items {
    public static final Item MAGMA_CUBE_SPAWN_EGG;
    public static final Item MOOSHROOM_SPAWN_EGG;
    public static final Item MULE_SPAWN_EGG;
+   public static final Item NAUTILUS_SPAWN_EGG;
    public static final Item OCELOT_SPAWN_EGG;
    public static final Item PANDA_SPAWN_EGG;
    public static final Item PARROT_SPAWN_EGG;
@@ -1259,6 +1260,7 @@ public class Items {
    public static final Item ZOMBIE_HORSE_SPAWN_EGG;
    public static final Item ZOMBIE_VILLAGER_SPAWN_EGG;
    public static final Item ZOMBIFIED_PIGLIN_SPAWN_EGG;
+   public static final Item ZOMBIE_NAUTILUS_SPAWN_EGG;
    public static final Item EXPERIENCE_BOTTLE;
    public static final Item FIRE_CHARGE;
    public static final Item WIND_CHARGE;
@@ -1337,6 +1339,13 @@ public class Items {
    public static final Item TIPPED_ARROW;
    public static final Item LINGERING_POTION;
    public static final Item SHIELD;
+   public static final Item WOODEN_SPEAR;
+   public static final Item STONE_SPEAR;
+   public static final Item COPPER_SPEAR;
+   public static final Item IRON_SPEAR;
+   public static final Item GOLDEN_SPEAR;
+   public static final Item DIAMOND_SPEAR;
+   public static final Item NETHERITE_SPEAR;
    public static final Item TOTEM_OF_UNDYING;
    public static final Item SHULKER_SHELL;
    public static final Item IRON_NUGGET;
@@ -1367,6 +1376,11 @@ public class Items {
    public static final Item DISC_FRAGMENT_5;
    public static final Item TRIDENT;
    public static final Item NAUTILUS_SHELL;
+   public static final Item IRON_NAUTILUS_ARMOR;
+   public static final Item GOLDEN_NAUTILUS_ARMOR;
+   public static final Item DIAMOND_NAUTILUS_ARMOR;
+   public static final Item NETHERITE_NAUTILUS_ARMOR;
+   public static final Item COPPER_NAUTILUS_ARMOR;
    public static final Item HEART_OF_THE_SEA;
    public static final Item CROSSBOW;
    public static final Item SUSPICIOUS_STEW;
@@ -2759,6 +2773,7 @@ public class Items {
       MAGMA_CUBE_SPAWN_EGG = registerItem("magma_cube_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.MAGMA_CUBE));
       MOOSHROOM_SPAWN_EGG = registerItem("mooshroom_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.MOOSHROOM));
       MULE_SPAWN_EGG = registerItem("mule_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.MULE));
+      NAUTILUS_SPAWN_EGG = registerItem("nautilus_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.NAUTILUS));
       OCELOT_SPAWN_EGG = registerItem("ocelot_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.OCELOT));
       PANDA_SPAWN_EGG = registerItem("panda_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PANDA));
       PARROT_SPAWN_EGG = registerItem("parrot_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PARROT));
@@ -2803,6 +2818,7 @@ public class Items {
       ZOMBIE_HORSE_SPAWN_EGG = registerItem("zombie_horse_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.ZOMBIE_HORSE));
       ZOMBIE_VILLAGER_SPAWN_EGG = registerItem("zombie_villager_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.ZOMBIE_VILLAGER));
       ZOMBIFIED_PIGLIN_SPAWN_EGG = registerItem("zombified_piglin_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.ZOMBIFIED_PIGLIN));
+      ZOMBIE_NAUTILUS_SPAWN_EGG = registerItem("zombie_nautilus_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.ZOMBIE_NAUTILUS));
       EXPERIENCE_BOTTLE = registerItem("experience_bottle", ExperienceBottleItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       FIRE_CHARGE = registerItem("fire_charge", FireChargeItem::new);
       WIND_CHARGE = registerItem("wind_charge", WindChargeItem::new, (new Item.Properties()).useCooldown(0.5F));
@@ -2881,6 +2897,13 @@ public class Items {
       TIPPED_ARROW = registerItem("tipped_arrow", TippedArrowItem::new, (new Item.Properties()).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.125F));
       LINGERING_POTION = registerItem("lingering_potion", LingeringPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.25F));
       SHIELD = registerItem("shield", ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(DamageTypeTags.BYPASSES_SHIELD), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
+      WOODEN_SPEAR = registerItem("wooden_spear", (new Item.Properties()).spear(ToolMaterial.WOOD, 0.65F, 0.7F, 0.75F, 5.0F, 14.0F, 6.0F, 5.1F, 15.0F, 4.6F));
+      STONE_SPEAR = registerItem("stone_spear", (new Item.Properties()).spear(ToolMaterial.STONE, 0.75F, 0.82F, 0.7F, 4.5F, 10.0F, 5.5F, 5.1F, 13.75F, 4.6F));
+      COPPER_SPEAR = registerItem("copper_spear", (new Item.Properties()).spear(ToolMaterial.COPPER, 0.85F, 0.82F, 0.65F, 4.0F, 9.0F, 5.0F, 5.1F, 12.5F, 4.6F));
+      IRON_SPEAR = registerItem("iron_spear", (new Item.Properties()).spear(ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 8.0F, 4.5F, 5.1F, 11.25F, 4.6F));
+      GOLDEN_SPEAR = registerItem("golden_spear", (new Item.Properties()).spear(ToolMaterial.GOLD, 0.95F, 0.7F, 0.7F, 3.5F, 10.0F, 5.5F, 5.1F, 13.75F, 4.6F));
+      DIAMOND_SPEAR = registerItem("diamond_spear", (new Item.Properties()).spear(ToolMaterial.DIAMOND, 1.05F, 1.075F, 0.5F, 3.0F, 7.5F, 4.0F, 5.1F, 10.0F, 4.6F));
+      NETHERITE_SPEAR = registerItem("netherite_spear", (new Item.Properties()).spear(ToolMaterial.NETHERITE, 1.15F, 1.2F, 0.4F, 2.5F, 7.0F, 3.5F, 5.1F, 8.75F, 4.6F).fireResistant());
       TOTEM_OF_UNDYING = registerItem("totem_of_undying", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING));
       SHULKER_SHELL = registerItem("shulker_shell");
       IRON_NUGGET = registerItem("iron_nugget");
@@ -2911,6 +2934,11 @@ public class Items {
       DISC_FRAGMENT_5 = registerItem("disc_fragment_5", DiscFragmentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       TRIDENT = registerItem("trident", TridentItem::new, (new Item.Properties()).rarity(Rarity.RARE).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties()).enchantable(1).component(DataComponents.WEAPON, new Weapon(1)));
       NAUTILUS_SHELL = registerItem("nautilus_shell", (new Item.Properties()).rarity(Rarity.UNCOMMON));
+      IRON_NAUTILUS_ARMOR = registerItem("iron_nautilus_armor", (new Item.Properties()).nautilusArmor(ArmorMaterials.IRON));
+      GOLDEN_NAUTILUS_ARMOR = registerItem("golden_nautilus_armor", (new Item.Properties()).nautilusArmor(ArmorMaterials.GOLD));
+      DIAMOND_NAUTILUS_ARMOR = registerItem("diamond_nautilus_armor", (new Item.Properties()).nautilusArmor(ArmorMaterials.DIAMOND));
+      NETHERITE_NAUTILUS_ARMOR = registerItem("netherite_nautilus_armor", (new Item.Properties()).nautilusArmor(ArmorMaterials.NETHERITE).fireResistant());
+      COPPER_NAUTILUS_ARMOR = registerItem("copper_nautilus_armor", (new Item.Properties()).nautilusArmor(ArmorMaterials.COPPER));
       HEART_OF_THE_SEA = registerItem("heart_of_the_sea", (new Item.Properties()).rarity(Rarity.UNCOMMON));
       CROSSBOW = registerItem("crossbow", CrossbowItem::new, (new Item.Properties()).stacksTo(1).durability(465).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).enchantable(1));
       SUSPICIOUS_STEW = registerItem("suspicious_stew", (new Item.Properties()).stacksTo(1).food(Foods.SUSPICIOUS_STEW).component(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY).usingConvertsTo(BOWL));

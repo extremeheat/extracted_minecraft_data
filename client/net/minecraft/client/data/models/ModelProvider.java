@@ -123,8 +123,8 @@ public class ModelProvider implements DataProvider {
          super();
       }
 
-      public void accept(Item var1, ItemModel.Unbaked var2) {
-         this.register(var1, new ClientItem(var2, ClientItem.Properties.DEFAULT));
+      public void accept(Item var1, ItemModel.Unbaked var2, ClientItem.Properties var3) {
+         this.register(var1, new ClientItem(var2, var3));
       }
 
       private void register(Item var1, ClientItem var2) {

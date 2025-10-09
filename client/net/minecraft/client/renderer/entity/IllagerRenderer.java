@@ -15,12 +15,12 @@ public abstract class IllagerRenderer<T extends AbstractIllager, S extends Illag
 
    public void extractRenderState(T var1, S var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver, var3);
       var2.isRiding = var1.isPassenger();
       var2.mainArm = var1.getMainArm();
       var2.armPose = var1.getArmPose();
       var2.maxCrossbowChargeDuration = var2.armPose == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE ? CrossbowItem.getChargeDuration(var1.getUseItem(), var1) : 0;
-      var2.ticksUsingItem = var1.getTicksUsingItem();
+      var2.ticksUsingItem = var1.getTicksUsingItem(var3);
       var2.attackAnim = var1.getAttackAnim(var3);
       var2.isAggressive = var1.isAggressive();
    }

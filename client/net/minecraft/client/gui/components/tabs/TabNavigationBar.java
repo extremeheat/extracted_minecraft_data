@@ -188,7 +188,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    public boolean keyPressed(KeyEvent var1) {
-      if (var1.hasControlDown()) {
+      if (var1.hasControlDownWithQuirk()) {
          int var2 = this.getNextTabIndex(var1);
          if (var2 != -1) {
             this.selectTab(Mth.clamp(var2, 0, this.tabs.size() - 1), true);

@@ -36,6 +36,15 @@ public class DebugScreenEntries {
    public static final ResourceLocation GPU_UTILIZATION = register((String)"gpu_utilization", new DebugEntryGpuUtilization());
    public static final ResourceLocation SIMPLE_PERFORMANCE_IMPACTORS = register((String)"simple_performance_impactors", new DebugEntrySimplePerformanceImpactors());
    public static final ResourceLocation CHUNK_SECTION_OCTREE = register((String)"chunk_section_octree", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_WATER_LEVELS = register((String)"visualize_water_levels", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_HEIGHTMAP = register((String)"visualize_heightmap", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_COLLISION_BOXES = register((String)"visualize_collision_boxes", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_ENTITY_SUPPORTING_BLOCKS = register((String)"visualize_entity_supporting_blocks", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_BLOCK_LIGHT_LEVELS = register((String)"visualize_block_light_levels", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_SKY_LIGHT_LEVELS = register((String)"visualize_sky_light_levels", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_SOLID_FACES = register((String)"visualize_solid_faces", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_CHUNKS_ON_SERVER = register((String)"visualize_chunks_on_server", new DebugEntryNoop());
+   public static final ResourceLocation VISUALIZE_SKY_LIGHT_SECTIONS = register((String)"visualize_sky_light_sections", new DebugEntryNoop());
    public static final ResourceLocation CHUNK_SECTION_VISIBILITY = register((String)"chunk_section_visibility", new DebugEntryNoop());
    public static final Map<DebugScreenProfile, Map<ResourceLocation, DebugScreenEntryStatus>> PROFILES;
 
@@ -62,8 +71,8 @@ public class DebugScreenEntries {
    }
 
    static {
-      Map var0 = Map.of(THREE_DIMENSIONAL_CROSSHAIR, DebugScreenEntryStatus.IN_F3, GAME_VERSION, DebugScreenEntryStatus.IN_F3, TPS, DebugScreenEntryStatus.IN_F3, FPS, DebugScreenEntryStatus.IN_F3, MEMORY, DebugScreenEntryStatus.IN_F3, SYSTEM_SPECS, DebugScreenEntryStatus.IN_F3, PLAYER_POSITION, DebugScreenEntryStatus.IN_F3, PLAYER_SECTION_POSITION, DebugScreenEntryStatus.IN_F3, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_F3);
-      Map var1 = Map.of(TPS, DebugScreenEntryStatus.IN_F3, FPS, DebugScreenEntryStatus.ALWAYS_ON, GPU_UTILIZATION, DebugScreenEntryStatus.IN_F3, MEMORY, DebugScreenEntryStatus.IN_F3, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_F3);
+      Map var0 = Map.of(THREE_DIMENSIONAL_CROSSHAIR, DebugScreenEntryStatus.IN_OVERLAY, GAME_VERSION, DebugScreenEntryStatus.IN_OVERLAY, TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SYSTEM_SPECS, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_POSITION, DebugScreenEntryStatus.IN_OVERLAY, PLAYER_SECTION_POSITION, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
+      Map var1 = Map.of(TPS, DebugScreenEntryStatus.IN_OVERLAY, FPS, DebugScreenEntryStatus.ALWAYS_ON, GPU_UTILIZATION, DebugScreenEntryStatus.IN_OVERLAY, MEMORY, DebugScreenEntryStatus.IN_OVERLAY, SIMPLE_PERFORMANCE_IMPACTORS, DebugScreenEntryStatus.IN_OVERLAY);
       PROFILES = Map.of(DebugScreenProfile.DEFAULT, var0, DebugScreenProfile.PERFORMANCE, var1);
    }
 }

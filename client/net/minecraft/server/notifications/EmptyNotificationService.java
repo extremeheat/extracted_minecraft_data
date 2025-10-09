@@ -30,6 +30,9 @@ public class EmptyNotificationService implements NotificationService {
    public void serverSaveCompleted() {
    }
 
+   public void serverActivityOccured() {
+   }
+
    public void playerOped(ServerOpListEntry var1) {
    }
 

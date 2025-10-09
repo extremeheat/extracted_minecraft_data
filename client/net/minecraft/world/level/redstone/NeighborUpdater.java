@@ -33,7 +33,7 @@ public interface NeighborUpdater {
 
    }
 
-   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       BlockState var7 = var0.getBlockState(var2);
       if ((var5 & 128) == 0 || !var7.is(Blocks.REDSTONE_WIRE)) {
          BlockState var8 = var7.updateShape(var0, var0, var2, var1, var3, var4, var0.getRandom());

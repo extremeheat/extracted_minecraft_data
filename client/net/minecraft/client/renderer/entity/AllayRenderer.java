@@ -29,7 +29,7 @@ public class AllayRenderer extends MobRenderer<Allay, AllayRenderState, AllayMod
 
    public void extractRenderState(Allay var1, AllayRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver, var3);
       var2.isDancing = var1.isDancing();
       var2.isSpinning = var1.isSpinning();
       var2.spinningProgress = var1.getSpinningProgress(var3);

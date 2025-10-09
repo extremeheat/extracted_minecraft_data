@@ -180,7 +180,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean removeWhenFarAway(double var1) {
-      return !this.isPersistenceRequired();
+      return true;
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {

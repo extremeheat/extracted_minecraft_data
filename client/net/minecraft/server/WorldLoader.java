@@ -16,6 +16,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.level.WorldDataConfiguration;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class WorldLoader {
          HolderLookup.Provider var15 = HolderLookup.Provider.create(var12.stream());
          DataLoadOutput var16 = var1.get(new DataLoadContext(var6, var14, var15, var13));
          LayeredRegistryAccess var17 = var7.replaceFrom(RegistryLayer.WORLDGEN, var11, var16.finalDimensions);
-         return ReloadableServerResources.loadResources(var6, var17, var8, var14.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4).whenComplete((var1x, var2x) -> {
+         return ReloadableServerResources.loadResources(var6, var17, var8, var14.enabledFeatures(), var0.commandSelection(), var0.functionCompilationPermissions(), var3, var4).whenComplete((var1x, var2x) -> {
             if (var2x != null) {
                var6.close();
             }
@@ -94,14 +95,14 @@ public class WorldLoader {
       }
    }
 
-   public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
+   public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, PermissionSet functionCompilationPermissions) {
       final PackConfig packConfig;
 
-      public InitConfig(PackConfig var1, Commands.CommandSelection var2, int var3) {
+      public InitConfig(PackConfig var1, Commands.CommandSelection var2, PermissionSet var3) {
          super();
          this.packConfig = var1;
          this.commandSelection = var2;
-         this.functionCompilationLevel = var3;
+         this.functionCompilationPermissions = var3;
       }
    }
 

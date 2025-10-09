@@ -73,6 +73,7 @@ import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -2527,6 +2528,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       return this.calculateViewVector(this.getXRot(), this.getYRot());
    }
 
+   public Vec3 getHeadLookAngle() {
+      return this.calculateViewVector(this.getXRot(), this.getYHeadRot());
+   }
+
    public Vec3 getHandHoldingItemAngle(Item var1) {
       if (!(this instanceof Player var2)) {
          return Vec3.ZERO;
@@ -2573,7 +2578,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
                TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.getServer().isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                  if (var1.isAllowedToEnterPortal(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
                      this.teleport(var3);
                   }
                }
@@ -3554,7 +3559,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public CommandSourceStack createCommandSourceStackForNameResolution(ServerLevel var1) {
-      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, 0, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
+      return new CommandSourceStack(CommandSource.NULL, this.position(), this.getRotationVector(), var1, PermissionSet.NO_PERMISSIONS, this.getPlainTextName(), this.getDisplayName(), var1.getServer(), this);
    }
 
    public void lookAt(EntityAnchorArgument.Anchor var1, Vec3 var2) {

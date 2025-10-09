@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public class ParticleFeatureRenderer implements AutoCloseable {
    private void prepareRenderPass(RenderPass var1) {
       var1.setUniform("Projection", RenderSystem.getProjectionMatrixBuffer());
       var1.setUniform("Fog", RenderSystem.getShaderFog());
-      var1.bindSampler("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView());
+      var1.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
    }
 
    public void close() {

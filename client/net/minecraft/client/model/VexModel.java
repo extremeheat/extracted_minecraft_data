@@ -53,7 +53,7 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
       this.leftArm.zRot = -(0.62831855F + var2);
       if (var1.isCharging) {
          this.body.xRot = 0.0F;
-         this.setArmsCharging(!var1.rightHandItem.isEmpty(), !var1.leftHandItem.isEmpty(), var2);
+         this.setArmsCharging(!var1.rightHandItemState.isEmpty(), !var1.leftHandItemState.isEmpty(), var2);
       } else {
          this.body.xRot = 0.15707964F;
       }

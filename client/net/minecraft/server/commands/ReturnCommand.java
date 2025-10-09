@@ -22,7 +22,7 @@ public class ReturnCommand {
    }
 
    public static <T extends ExecutionCommandSource<T>> void register(CommandDispatcher<T> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires(Commands.hasPermission(2))).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(var0.getRoot(), new ReturnFromCommandCustomModifier(), false)));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(var0.getRoot(), new ReturnFromCommandCustomModifier(), false)));
    }
 
    static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {

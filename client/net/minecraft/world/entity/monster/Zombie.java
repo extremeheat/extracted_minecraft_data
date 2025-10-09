@@ -43,6 +43,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RemoveBlockGoal;
+import net.minecraft.world.entity.ai.goal.SpearUseGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -53,7 +54,6 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -109,7 +109,8 @@ public class Zombie extends Monster {
    }
 
    protected void addBehaviourGoals() {
-      this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
+      this.goalSelector.addGoal(2, new SpearUseGoal(this, 1.0, 1.0, 10.0F, 2.0F));
+      this.goalSelector.addGoal(3, new ZombieAttackGoal(this, 1.0, false));
       this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers(ZombifiedPiglin.class));
@@ -193,20 +194,23 @@ public class Zombie extends Monster {
    }
 
    public void tick() {
-      if (!this.level().isClientSide() && this.isAlive() && !this.isNoAi()) {
-         if (this.isUnderWaterConverting()) {
-            --this.conversionTime;
-            if (this.conversionTime < 0) {
-               this.doUnderWaterConversion();
-            }
-         } else if (this.convertsInWater()) {
-            if (this.isEyeInFluid(FluidTags.WATER)) {
-               ++this.inWaterTime;
-               if (this.inWaterTime >= 600) {
-                  this.startUnderWaterConversion(300);
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (this.isAlive() && !this.isNoAi()) {
+            if (this.isUnderWaterConverting()) {
+               --this.conversionTime;
+               if (this.conversionTime < 0) {
+                  this.doUnderWaterConversion(var1);
                }
-            } else {
-               this.inWaterTime = -1;
+            } else if (this.convertsInWater()) {
+               if (this.isEyeInFluid(FluidTags.WATER)) {
+                  ++this.inWaterTime;
+                  if (this.inWaterTime >= 600) {
+                     this.startUnderWaterConversion(300);
+                  }
+               } else {
+                  this.inWaterTime = -1;
+               }
             }
          }
       }
@@ -214,48 +218,21 @@ public class Zombie extends Monster {
       super.tick();
    }
 
-   public void aiStep() {
-      if (this.isAlive()) {
-         boolean var1 = this.isSunSensitive() && this.isSunBurnTick();
-         if (var1) {
-            ItemStack var2 = this.getItemBySlot(EquipmentSlot.HEAD);
-            if (!var2.isEmpty()) {
-               if (var2.isDamageableItem()) {
-                  Item var3 = var2.getItem();
-                  var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
-                  if (var2.getDamageValue() >= var2.getMaxDamage()) {
-                     this.onEquippedItemBroken(var3, EquipmentSlot.HEAD);
-                     this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-                  }
-               }
-
-               var1 = false;
-            }
-
-            if (var1) {
-               this.igniteForSeconds(8.0F);
-            }
-         }
-      }
-
-      super.aiStep();
-   }
-
    private void startUnderWaterConversion(int var1) {
       this.conversionTime = var1;
       this.getEntityData().set(DATA_DROWNED_CONVERSION_ID, true);
    }
 
-   protected void doUnderWaterConversion() {
-      this.convertToZombieType(EntityType.DROWNED);
+   protected void doUnderWaterConversion(ServerLevel var1) {
+      this.convertToZombieType(var1, EntityType.DROWNED);
       if (!this.isSilent()) {
-         this.level().levelEvent((Entity)null, 1040, this.blockPosition(), 0);
+         var1.levelEvent((Entity)null, 1040, this.blockPosition(), 0);
       }
 
    }
 
-   protected void convertToZombieType(EntityType<? extends Zombie> var1) {
-      this.convertTo(var1, ConversionParams.single(this, true, true), (var0) -> var0.handleAttributes(var0.level().getCurrentDifficultyAt(var0.blockPosition()).getSpecialMultiplier()));
+   protected void convertToZombieType(ServerLevel var1, EntityType<? extends Zombie> var2) {
+      this.convertTo(var2, ConversionParams.single(this, true, true), (var1x) -> var1x.handleAttributes(var1.getCurrentDifficultyAt(var1x.blockPosition()).getSpecialMultiplier()));
    }
 
    @VisibleForTesting
@@ -327,7 +304,7 @@ public class Zombie extends Monster {
    public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       boolean var3 = super.doHurtTarget(var1, var2);
       if (var3) {
-         float var4 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         float var4 = var1.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
          if (this.getMainHandItem().isEmpty() && this.isOnFire() && this.random.nextFloat() < var4 * 0.3F) {
             var2.igniteForSeconds((float)(2 * (int)var4));
          }
@@ -367,9 +344,11 @@ public class Zombie extends Monster {
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       super.populateDefaultEquipmentSlots(var1, var2);
       if (var1.nextFloat() < (this.level().getDifficulty() == Difficulty.HARD ? 0.05F : 0.01F)) {
-         int var3 = var1.nextInt(3);
+         int var3 = var1.nextInt(6);
          if (var3 == 0) {
             this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+         } else if (var3 == 1) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
          } else {
             this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SHOVEL));
          }

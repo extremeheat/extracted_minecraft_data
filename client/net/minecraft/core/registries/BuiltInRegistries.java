@@ -50,6 +50,10 @@ import net.minecraft.server.jsonrpc.IncomingRpcMethods;
 import net.minecraft.server.jsonrpc.OutgoingRpcMethod;
 import net.minecraft.server.jsonrpc.OutgoingRpcMethods;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.PermissionCheckTypes;
+import net.minecraft.server.permissions.PermissionTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
@@ -244,6 +248,8 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends Action>> DIALOG_ACTION_TYPE;
    public static final Registry<MapCodec<? extends InputControl>> INPUT_CONTROL_TYPE;
    public static final Registry<MapCodec<? extends DialogBody>> DIALOG_BODY_TYPE;
+   public static final Registry<MapCodec<? extends Permission>> PERMISSION_TYPE;
+   public static final Registry<MapCodec<? extends PermissionCheck>> PERMISSION_CHECK_TYPE;
    public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
@@ -414,6 +420,8 @@ public class BuiltInRegistries {
       DIALOG_ACTION_TYPE = registerSimple(Registries.DIALOG_ACTION_TYPE, ActionTypes::bootstrap);
       INPUT_CONTROL_TYPE = registerSimple(Registries.INPUT_CONTROL_TYPE, InputControlTypes::bootstrap);
       DIALOG_BODY_TYPE = registerSimple(Registries.DIALOG_BODY_TYPE, DialogBodyTypes::bootstrap);
+      PERMISSION_TYPE = registerSimple(Registries.PERMISSION_TYPE, PermissionTypes::bootstrap);
+      PERMISSION_CHECK_TYPE = registerSimple(Registries.PERMISSION_CHECK_TYPE, PermissionCheckTypes::bootstrap);
       TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }

@@ -3,8 +3,6 @@ package com.mojang.blaze3d.pipeline;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.GpuOutOfMemoryException;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
@@ -25,10 +23,6 @@ public class MainTarget extends RenderTarget {
    private void createFrameBuffer(int var1, int var2) {
       Dimension var3 = this.allocateAttachments(var1, var2);
       if (this.colorTexture != null && this.depthTexture != null) {
-         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
-         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-         this.colorTexture.setTextureFilter(FilterMode.NEAREST, false);
-         this.colorTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
          this.width = var3.width;
          this.height = var3.height;
       } else {

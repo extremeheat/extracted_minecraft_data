@@ -27,7 +27,7 @@ public class RideCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ride").requires(Commands.hasPermission(2))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.literal("mount").then(Commands.argument("vehicle", EntityArgument.entity()).executes((var0x) -> mount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getEntity(var0x, "vehicle")))))).then(Commands.literal("dismount").executes((var0x) -> dismount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ride").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).then(Commands.literal("mount").then(Commands.argument("vehicle", EntityArgument.entity()).executes((var0x) -> mount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getEntity(var0x, "vehicle")))))).then(Commands.literal("dismount").executes((var0x) -> dismount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"))))));
    }
 
    private static int mount(CommandSourceStack var0, Entity var1, Entity var2) throws CommandSyntaxException {

@@ -172,7 +172,7 @@ public class OldUsersConverter {
                public void onProfileLookupSucceeded(String var1x, UUID var2) {
                   NameAndId var3 = new NameAndId(var2, var1x);
                   var0.services().nameToIdCache().add(var3);
-                  var1.add(new ServerOpListEntry(var3, var0.operatorUserPermissionLevel(), false));
+                  var1.add(new ServerOpListEntry(var3, var0.operatorUserPermissions(), false));
                }
 
                public void onProfileLookupFailed(String var1x, Exception var2) {

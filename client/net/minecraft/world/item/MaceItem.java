@@ -180,7 +180,7 @@ public class MaceItem extends Item {
    }
 
    @Nullable
-   public DamageSource getDamageSource(LivingEntity var1) {
-      return canSmashAttack(var1) ? var1.damageSources().mace(var1) : super.getDamageSource(var1);
+   public DamageSource getItemDamageSource(LivingEntity var1) {
+      return canSmashAttack(var1) ? var1.damageSources().mace(var1) : super.getItemDamageSource(var1);
    }
 }

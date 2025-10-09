@@ -79,8 +79,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
       var4.addChild(SpacerElement.height(2));
       this.deleteButton = (Button)var4.addChild(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var3x) -> var2.setScreen(RealmsPopups.warningPopupScreen(var1, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> this.deleteRealm()))).bounds(0, 0, 200, 20).build());
       var4.addChild(SpacerElement.height(2));
-      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(new FocusableTextWidget(200, Component.empty(), var5), LayoutSettings.defaults().alignHorizontallyCenter());
-      this.subscriptionInfo.setMaxWidth(200);
+      this.subscriptionInfo = (FocusableTextWidget)var4.addChild(FocusableTextWidget.builder(Component.empty(), var5).maxWidth(200).build(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.subscriptionInfo.setCentered(false);
       this.updateData(var3);
    }
@@ -98,9 +97,9 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
 
       try {
          Subscription var4 = var3.subscriptionFor(var1);
-         this.daysLeft = this.daysLeftPresentation(var4.daysLeft);
-         this.startDate = localPresentation(var4.startDate);
-         this.type = var4.type;
+         this.daysLeft = this.daysLeftPresentation(var4.daysLeft());
+         this.startDate = localPresentation(var4.startDate());
+         this.type = var4.type();
       } catch (RealmsServiceException var5) {
          LOGGER.error("Couldn't get subscription", var5);
          this.minecraft.setScreen(this.configurationScreen.createErrorScreen(var5));

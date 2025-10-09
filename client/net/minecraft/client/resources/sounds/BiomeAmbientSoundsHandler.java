@@ -63,20 +63,20 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
       }
 
       this.additionsSettings.ifPresent((var1x) -> {
-         if (this.random.nextDouble() < var1x.getTickChance()) {
-            this.soundManager.play(SimpleSoundInstance.forAmbientAddition((SoundEvent)var1x.getSoundEvent().value()));
+         if (this.random.nextDouble() < var1x.tickChance()) {
+            this.soundManager.play(SimpleSoundInstance.forAmbientAddition((SoundEvent)var1x.soundEvent().value()));
          }
 
       });
       this.moodSettings.ifPresent((var1x) -> {
          Level var2 = this.player.level();
-         int var3 = var1x.getBlockSearchExtent() * 2 + 1;
-         BlockPos var4 = BlockPos.containing(this.player.getX() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent(), this.player.getEyeY() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent(), this.player.getZ() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent());
+         int var3 = var1x.blockSearchExtent() * 2 + 1;
+         BlockPos var4 = BlockPos.containing(this.player.getX() + (double)this.random.nextInt(var3) - (double)var1x.blockSearchExtent(), this.player.getEyeY() + (double)this.random.nextInt(var3) - (double)var1x.blockSearchExtent(), this.player.getZ() + (double)this.random.nextInt(var3) - (double)var1x.blockSearchExtent());
          int var5 = var2.getBrightness(LightLayer.SKY, var4);
          if (var5 > 0) {
             this.moodiness -= (float)var5 / 15.0F * 0.001F;
          } else {
-            this.moodiness -= (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.getTickDelay();
+            this.moodiness -= (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.tickDelay();
          }
 
          if (this.moodiness >= 1.0F) {
@@ -87,8 +87,8 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
             double var14 = var8 - this.player.getEyeY();
             double var16 = var10 - this.player.getZ();
             double var18 = Math.sqrt(var12 * var12 + var14 * var14 + var16 * var16);
-            double var20 = var18 + var1x.getSoundPositionOffset();
-            SimpleSoundInstance var22 = SimpleSoundInstance.forAmbientMood((SoundEvent)var1x.getSoundEvent().value(), this.random, this.player.getX() + var12 / var18 * var20, this.player.getEyeY() + var14 / var18 * var20, this.player.getZ() + var16 / var18 * var20);
+            double var20 = var18 + var1x.soundPositionOffset();
+            SimpleSoundInstance var22 = SimpleSoundInstance.forAmbientMood((SoundEvent)var1x.soundEvent().value(), this.random, this.player.getX() + var12 / var18 * var20, this.player.getEyeY() + var14 / var18 * var20, this.player.getZ() + var16 / var18 * var20);
             this.soundManager.play(var22);
             this.moodiness = 0.0F;
          } else {

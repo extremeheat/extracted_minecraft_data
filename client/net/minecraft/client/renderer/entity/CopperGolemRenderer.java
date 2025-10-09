@@ -48,7 +48,7 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
 
    public void extractRenderState(CopperGolem var1, CopperGolemRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver, var3);
       var2.weathering = var1.getWeatherState();
       var2.copperGolemState = var1.getState();
       var2.idleAnimationState.copyFrom(var1.getIdleAnimationState());

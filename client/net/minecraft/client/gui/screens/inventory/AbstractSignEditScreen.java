@@ -58,7 +58,7 @@ public abstract class AbstractSignEditScreen extends Screen {
    }
 
    private boolean isValid() {
-      return this.minecraft != null && this.minecraft.player != null && !this.sign.isRemoved() && !this.sign.playerIsTooFarAwayToEdit(this.minecraft.player.getUUID());
+      return this.minecraft.player != null && !this.sign.isRemoved() && !this.sign.playerIsTooFarAwayToEdit(this.minecraft.player.getUUID());
    }
 
    public boolean keyPressed(KeyEvent var1) {
@@ -167,7 +167,7 @@ public abstract class AbstractSignEditScreen extends Screen {
                int var16 = this.font.width(var20.substring(0, var14)) - this.font.width(var20) / 2;
                int var17 = Math.min(var15, var16);
                int var18 = Math.max(var15, var16);
-               var1.textHighlight(var17, var8, var18, var8 + this.sign.getTextLineHeight());
+               var1.textHighlight(var17, var8, var18, var8 + this.sign.getTextLineHeight(), true);
             }
          }
       }

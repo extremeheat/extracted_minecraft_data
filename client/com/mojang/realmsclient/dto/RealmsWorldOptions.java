@@ -115,12 +115,7 @@ public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSe
       return I18n.get("mco.configure.world.slot", var1);
    }
 
-   public RealmsWorldOptions clone() {
+   public RealmsWorldOptions copy() {
       return new RealmsWorldOptions(this.spawnProtection, this.difficulty, this.gameMode, this.forceGameMode, this.slotName, this.version, this.compatibility);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 }

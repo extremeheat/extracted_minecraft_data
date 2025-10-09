@@ -66,8 +66,8 @@ public class LevelEventHandler {
          case 1038:
             Camera var4 = this.minecraft.gameRenderer.getMainCamera();
             if (var4.isInitialized()) {
-               Vec3 var5 = Vec3.atCenterOf(var2).subtract(var4.getPosition()).normalize();
-               Vec3 var6 = var4.getPosition().add(var5.scale(2.0));
+               Vec3 var5 = Vec3.atCenterOf(var2).subtract(var4.position()).normalize();
+               Vec3 var6 = var4.position().add(var5.scale(2.0));
                if (var1 == 1023) {
                   this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
                } else if (var1 == 1038) {

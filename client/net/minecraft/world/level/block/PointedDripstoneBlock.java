@@ -230,10 +230,6 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1) {
-      return Shapes.empty();
-   }
-
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       VoxelShape var10000;
       switch ((DripstoneThickness)var1.getValue(THICKNESS)) {

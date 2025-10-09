@@ -29,7 +29,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.BinaryAnimator;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.Mth;
+import net.minecraft.util.Ease;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
@@ -87,10 +87,10 @@ public class Axolotl extends Animal implements Bucketable {
    private static final int REHYDRATE_AIR_SUPPLY = 1800;
    private static final int REGEN_BUFF_MAX_DURATION = 2400;
    private static final boolean DEFAULT_FROM_BUCKET = false;
-   public final BinaryAnimator playingDeadAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
-   public final BinaryAnimator inWaterAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
-   public final BinaryAnimator onGroundAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
-   public final BinaryAnimator movingAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
+   public final BinaryAnimator playingDeadAnimator = new BinaryAnimator(10, Ease::inOutSine);
+   public final BinaryAnimator inWaterAnimator = new BinaryAnimator(10, Ease::inOutSine);
+   public final BinaryAnimator onGroundAnimator = new BinaryAnimator(10, Ease::inOutSine);
+   public final BinaryAnimator movingAnimator = new BinaryAnimator(10, Ease::inOutSine);
    private static final int REGEN_BUFF_BASE_DURATION = 100;
 
    public Axolotl(EntityType<? extends Axolotl> var1, Level var2) {

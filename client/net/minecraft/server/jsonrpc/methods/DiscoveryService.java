@@ -39,7 +39,7 @@ public class DiscoveryService {
          var2.put(var4.name(), var4.schema());
       }
 
-      DiscoverInfo var5 = new DiscoverInfo("Minecraft Server JSON-RPC", "1.0.0");
+      DiscoverInfo var5 = new DiscoverInfo("Minecraft Server JSON-RPC", "1.1.0");
       return new DiscoverResponse("1.3.2", var5, var1, new DiscoverComponents(var2));
    }
 

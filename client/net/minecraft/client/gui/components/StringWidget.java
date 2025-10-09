@@ -80,7 +80,7 @@ public class StringWidget extends AbstractStringWidget {
       boolean var11 = var8 > var7;
       if (var11) {
          switch (this.textOverflow.ordinal()) {
-            case 0 -> var1.drawString(var6, this.clipText(var5, var7), var9, var10, this.getColor());
+            case 0 -> var1.drawString(var6, clipText(var5, this.getFont(), var7), var9, var10, this.getColor());
             case 1 -> this.renderScrollingString(var1, var6, 2, this.getColor());
          }
       } else {
@@ -89,10 +89,9 @@ public class StringWidget extends AbstractStringWidget {
 
    }
 
-   private FormattedCharSequence clipText(Component var1, int var2) {
-      Font var3 = this.getFont();
-      FormattedText var4 = var3.substrByWidth(var1, var2 - var3.width((FormattedText)CommonComponents.ELLIPSIS));
-      return Language.getInstance().getVisualOrder(FormattedText.composite(var4, CommonComponents.ELLIPSIS));
+   public static FormattedCharSequence clipText(Component var0, Font var1, int var2) {
+      FormattedText var3 = var1.substrByWidth(var0, var2 - var1.width((FormattedText)CommonComponents.ELLIPSIS));
+      return Language.getInstance().getVisualOrder(FormattedText.composite(var3, CommonComponents.ELLIPSIS));
    }
 
    // $FF: synthetic method

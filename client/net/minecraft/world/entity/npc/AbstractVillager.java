@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -89,15 +90,16 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public MerchantOffers getOffers() {
-      if (this.level().isClientSide()) {
-         throw new IllegalStateException("Cannot load Villager offers on the client");
-      } else {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
          if (this.offers == null) {
             this.offers = new MerchantOffers();
-            this.updateTrades();
+            this.updateTrades(var1);
          }
 
          return this.offers;
+      } else {
+         throw new IllegalStateException("Cannot load Villager offers on the client");
       }
    }
 
@@ -199,17 +201,17 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       return var2 >= 0 && var2 < this.inventory.getContainerSize() ? SlotAccess.forContainer(this.inventory, var2) : super.getSlot(var1);
    }
 
-   protected abstract void updateTrades();
+   protected abstract void updateTrades(ServerLevel var1);
 
-   protected void addOffersFromItemListings(MerchantOffers var1, VillagerTrades.ItemListing[] var2, int var3) {
-      ArrayList var4 = Lists.newArrayList(var2);
-      int var5 = 0;
+   protected void addOffersFromItemListings(ServerLevel var1, MerchantOffers var2, VillagerTrades.ItemListing[] var3, int var4) {
+      ArrayList var5 = Lists.newArrayList(var3);
+      int var6 = 0;
 
-      while(var5 < var3 && !var4.isEmpty()) {
-         MerchantOffer var6 = ((VillagerTrades.ItemListing)var4.remove(this.random.nextInt(var4.size()))).getOffer(this, this.random);
-         if (var6 != null) {
-            var1.add(var6);
-            ++var5;
+      while(var6 < var4 && !var5.isEmpty()) {
+         MerchantOffer var7 = ((VillagerTrades.ItemListing)var5.remove(this.random.nextInt(var5.size()))).getOffer(var1, this, this.random);
+         if (var7 != null) {
+            var2.add(var7);
+            ++var6;
          }
       }
 

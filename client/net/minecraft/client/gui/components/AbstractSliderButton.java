@@ -23,10 +23,10 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    private static final ResourceLocation SLIDER_HANDLE_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle_highlighted");
    protected static final int TEXT_MARGIN = 2;
    public static final int DEFAULT_HEIGHT = 20;
-   private static final int HANDLE_WIDTH = 8;
+   protected static final int HANDLE_WIDTH = 8;
    private static final int HANDLE_HALF_WIDTH = 4;
    protected double value;
-   private boolean canChangeValue;
+   protected boolean canChangeValue;
    private boolean dragging;
 
    public AbstractSliderButton(int var1, int var2, int var3, int var4, Component var5, double var6) {
@@ -115,7 +115,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.setValue((var1.x() - (double)(this.getX() + 4)) / (double)(this.width - 8));
    }
 
-   private void setValue(double var1) {
+   protected void setValue(double var1) {
       double var3 = this.value;
       this.value = Mth.clamp(var1, 0.0, 1.0);
       if (var3 != this.value) {

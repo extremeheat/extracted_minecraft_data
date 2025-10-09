@@ -97,7 +97,7 @@ public class FileDownload {
 
             try {
                this.tempFile = File.createTempFile("backup", ".tar.gz");
-               this.request = new HttpGet(var1.downloadLink);
+               this.request = new HttpGet(var1.downloadLink());
                var5 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
                CloseableHttpResponse var6 = var5.execute(this.request);
                var3.totalBytes = Long.parseLong(var6.getFirstHeader("Content-Length").getValue());
@@ -113,7 +113,7 @@ public class FileDownload {
                this.error = true;
                this.request.abort();
             } catch (Exception var93) {
-               LOGGER.error("Caught exception while downloading: {}", var93.getMessage());
+               LOGGER.error("Caught exception while downloading", var93);
                this.error = true;
                return;
             } finally {
@@ -123,10 +123,10 @@ public class FileDownload {
                }
 
                if (!this.error) {
-                  if (!var1.resourcePackUrl.isEmpty() && !var1.resourcePackHash.isEmpty()) {
+                  if (!var1.resourcePackUrl().isEmpty() && !var1.resourcePackHash().isEmpty()) {
                      try {
                         this.tempFile = File.createTempFile("resources", ".tar.gz");
-                        this.request = new HttpGet(var1.resourcePackUrl);
+                        this.request = new HttpGet(var1.resourcePackUrl());
                         CloseableHttpResponse var15 = var5.execute(this.request);
                         var3.totalBytes = Long.parseLong(var15.getFirstHeader("Content-Length").getValue());
                         if (var15.getStatusLine().getStatusCode() != 200) {
@@ -307,7 +307,7 @@ public class FileDownload {
          } catch (NbtException | ReportedNbtException | IOException var39) {
             LOGGER.error("Failed to modify unpacked realms level {}", var5, var39);
          } catch (ContentValidationException var40) {
-            LOGGER.warn("{}", var40.getMessage());
+            LOGGER.warn("Failed to download file", var40);
          }
 
          this.resourcePackPath = new File(var49, var5 + File.separator + "resources.zip");
@@ -361,11 +361,11 @@ public class FileDownload {
          if (this.downloadStatus.bytesWritten >= this.downloadStatus.totalBytes && !FileDownload.this.cancelled) {
             try {
                String var2 = Hashing.sha1().hashBytes(Files.toByteArray(this.tempFile)).toString();
-               if (var2.equals(this.worldDownload.resourcePackHash)) {
+               if (var2.equals(this.worldDownload.resourcePackHash())) {
                   FileUtils.copyFile(this.tempFile, FileDownload.this.resourcePackPath);
                   FileDownload.this.finished = true;
                } else {
-                  FileDownload.LOGGER.error("Resourcepack had wrong hash (expected {}, found {}). Deleting it.", this.worldDownload.resourcePackHash, var2);
+                  FileDownload.LOGGER.error("Resourcepack had wrong hash (expected {}, found {}). Deleting it.", this.worldDownload.resourcePackHash(), var2);
                   FileUtils.deleteQuietly(this.tempFile);
                   FileDownload.this.error = true;
                }

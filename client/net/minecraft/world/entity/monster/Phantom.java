@@ -123,14 +123,6 @@ public class Phantom extends Mob implements Enemy {
 
    }
 
-   public void aiStep() {
-      if (this.isAlive() && this.isSunBurnTick()) {
-         this.igniteForSeconds(8.0F);
-      }
-
-      super.aiStep();
-   }
-
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
    }
 

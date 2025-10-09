@@ -124,8 +124,8 @@ public class MinecartTNT extends AbstractMinecart {
       return super.causeFallDamage(var1, var3, var4);
    }
 
-   public void activateMinecart(int var1, int var2, int var3, boolean var4) {
-      if (var4 && this.fuse < 0) {
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+      if (var5 && this.fuse < 0) {
          this.primeFuse((DamageSource)null);
       }
 

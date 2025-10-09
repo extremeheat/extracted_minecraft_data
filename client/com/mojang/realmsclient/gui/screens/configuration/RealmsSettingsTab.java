@@ -16,6 +16,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.EqualSpacingLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -32,13 +33,14 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private static final Component NAME_LABEL = Component.translatable("mco.configure.world.name");
    private static final Component DESCRIPTION_LABEL = Component.translatable("mco.configure.world.description");
    private static final Component REGION_PREFERENCE_LABEL = Component.translatable("mco.configure.world.region_preference");
+   private static final Tooltip REALM_NAME_VALIDATION_ERROR_TOOLTIP = Tooltip.create(Component.translatable("mco.configure.world.name.validation.whitespace"));
    private final RealmsConfigureWorldScreen configurationScreen;
    private final Minecraft minecraft;
    private RealmsServer serverData;
    private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    final Button closeOpenButton;
-   private EditBox descEdit;
-   private EditBox nameEdit;
+   private final EditBox descEdit;
+   private final EditBox nameEdit;
    private final StringWidget selectedRegionStringWidget;
    private final ImageWidget selectedRegionImageWidget;
    private RegionSelection preferredRegionSelection;
@@ -53,6 +55,15 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       var5.addChild(new StringWidget(NAME_LABEL, var1.getFont()));
       this.nameEdit = new EditBox(var2.font, 0, 0, 212, 20, Component.translatable("mco.configure.world.name"));
       this.nameEdit.setMaxLength(32);
+      this.nameEdit.setResponder((var1x) -> {
+         if (!this.isRealmNameValid()) {
+            this.nameEdit.setTextColor(-2142128);
+            this.nameEdit.setTooltip(REALM_NAME_VALIDATION_ERROR_TOOLTIP);
+         } else {
+            this.nameEdit.setTooltip((Tooltip)null);
+            this.nameEdit.setTextColor(-2039584);
+         }
+      });
       var5.addChild(this.nameEdit);
       var5.addChild(SpacerElement.height(2));
       var5.addChild(new StringWidget(DESCRIPTION_LABEL, var1.getFont()));
@@ -96,6 +107,12 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       } else {
          return ServiceQuality.UNKNOWN.getIcon();
       }
+   }
+
+   private boolean isRealmNameValid() {
+      String var1 = this.nameEdit.getValue();
+      String var2 = var1.trim();
+      return !var2.isEmpty() && var1.length() == var2.length();
    }
 
    private void openPreferenceSelector() {
@@ -143,7 +160,10 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
 
    public void save() {
       if (this.serverData.regionSelectionPreference == null || !Objects.equals(this.nameEdit.getValue(), this.serverData.name) || !Objects.equals(this.descEdit.getValue(), this.serverData.motd) || this.preferredRegionSelection.preference() != this.serverData.regionSelectionPreference.regionSelectionPreference || this.preferredRegionSelection.region() != this.serverData.regionSelectionPreference.preferredRegion) {
-         this.configurationScreen.saveSettings(this.nameEdit.getValue(), this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
+         if (this.isRealmNameValid()) {
+            this.configurationScreen.saveSettings(this.nameEdit.getValue(), this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
+         }
+
       }
    }
 

@@ -208,10 +208,10 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
          if (this.quadCount != 0) {
             try (GpuBuffer.MappedView var44 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var44.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
+               Std140Builder.intoBuffer(var44.data()).putVec4(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), ARGB.alphaFloat(var1)).putVec3(-var22, var9, -var23).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice var45 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 0.0F);
+            GpuBufferSlice var45 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
             RenderTarget var27 = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget var28 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
             RenderSystem.AutoStorageIndexBuffer var31 = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);

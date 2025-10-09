@@ -25,9 +25,10 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
@@ -40,7 +41,6 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
-import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -65,7 +65,7 @@ import org.joml.Vector4f;
 
 public class DebugScreenOverlay {
    private static final float CROSSHAIR_SCALE = 0.01F;
-   private static final int CROSHAIR_INDEX_COUNT = 18;
+   private static final int CROSSHAIR_INDEX_COUNT = 36;
    private static final int COLOR_GREY = -2039584;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
@@ -110,14 +110,20 @@ public class DebugScreenOverlay {
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
 
-      try (ByteBufferBuilder var2 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
-         BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
-         var3.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
-         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
-         var3.addVertex(0.0F, 1.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
-         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
-         var3.addVertex(0.0F, 0.0F, 1.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+      try (ByteBufferBuilder var2 = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH.getVertexSize() * 12 * 2)) {
+         BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         var3.addVertex(1.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         var3.addVertex(0.0F, 1.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         var3.addVertex(0.0F, 0.0F, 1.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         var3.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         var3.addVertex(0.0F, 1.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
+         var3.addVertex(0.0F, 0.0F, 1.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
 
          try (MeshData var4 = var3.buildOrThrow()) {
             this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", 32, var4.vertexBuffer());
@@ -132,151 +138,154 @@ public class DebugScreenOverlay {
    }
 
    public void render(GuiGraphics var1) {
-      if (this.minecraft.isGameLoadFinished() && (!this.minecraft.options.hideGui || this.minecraft.screen != null)) {
-         Collection var2 = this.minecraft.debugEntries.getCurrentlyEnabled();
-         if (!var2.isEmpty()) {
+      Options var2 = this.minecraft.options;
+      if (this.minecraft.isGameLoadFinished() && (!var2.hideGui || this.minecraft.screen != null)) {
+         Collection var3 = this.minecraft.debugEntries.getCurrentlyEnabled();
+         if (!var3.isEmpty()) {
             var1.nextStratum();
-            ProfilerFiller var3 = Profiler.get();
-            var3.push("debug");
-            ChunkPos var4;
+            ProfilerFiller var4 = Profiler.get();
+            var4.push("debug");
+            ChunkPos var5;
             if (this.minecraft.getCameraEntity() != null && this.minecraft.level != null) {
-               BlockPos var5 = this.minecraft.getCameraEntity().blockPosition();
-               var4 = new ChunkPos(var5);
+               BlockPos var6 = this.minecraft.getCameraEntity().blockPosition();
+               var5 = new ChunkPos(var6);
             } else {
-               var4 = null;
+               var5 = null;
             }
 
-            if (!Objects.equals(this.lastPos, var4)) {
-               this.lastPos = var4;
+            if (!Objects.equals(this.lastPos, var5)) {
+               this.lastPos = var5;
                this.clearChunkCache();
             }
 
-            final ArrayList var17 = new ArrayList();
-            final ArrayList var6 = new ArrayList();
-            final LinkedHashMap var7 = new LinkedHashMap();
-            final ArrayList var8 = new ArrayList();
-            DebugScreenDisplayer var9 = new DebugScreenDisplayer() {
+            final ArrayList var23 = new ArrayList();
+            final ArrayList var7 = new ArrayList();
+            final LinkedHashMap var8 = new LinkedHashMap();
+            final ArrayList var9 = new ArrayList();
+            DebugScreenDisplayer var10 = new DebugScreenDisplayer() {
                public void addPriorityLine(String var1) {
-                  if (var17.size() > var6.size()) {
-                     var6.add(var1);
+                  if (var23.size() > var7.size()) {
+                     var7.add(var1);
                   } else {
-                     var17.add(var1);
+                     var23.add(var1);
                   }
 
                }
 
                public void addLine(String var1) {
-                  var8.add(var1);
+                  var9.add(var1);
                }
 
                public void addToGroup(ResourceLocation var1, Collection<String> var2) {
-                  ((Collection)var7.computeIfAbsent(var1, (var0) -> new ArrayList())).addAll(var2);
+                  ((Collection)var8.computeIfAbsent(var1, (var0) -> new ArrayList())).addAll(var2);
                }
 
                public void addToGroup(ResourceLocation var1, String var2) {
-                  ((Collection)var7.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
+                  ((Collection)var8.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
                }
             };
-            Level var10 = this.getLevel();
+            Level var11 = this.getLevel();
 
-            for(ResourceLocation var12 : var2) {
-               DebugScreenEntry var13 = DebugScreenEntries.getEntry(var12);
-               if (var13 != null) {
-                  var13.display(var9, var10, this.getClientChunk(), this.getServerChunk());
+            for(ResourceLocation var13 : var3) {
+               DebugScreenEntry var14 = DebugScreenEntries.getEntry(var13);
+               if (var14 != null) {
+                  var14.display(var10, var11, this.getClientChunk(), this.getServerChunk());
                }
             }
 
-            if (!var17.isEmpty()) {
-               var17.add("");
+            if (!var23.isEmpty()) {
+               var23.add("");
             }
 
-            if (!var6.isEmpty()) {
-               var6.add("");
+            if (!var7.isEmpty()) {
+               var7.add("");
             }
 
-            if (!var8.isEmpty()) {
-               int var18 = (var8.size() + 1) / 2;
-               var17.addAll(var8.subList(0, var18));
-               var6.addAll(var8.subList(var18, var8.size()));
-               var17.add("");
-               if (var18 < var8.size()) {
-                  var6.add("");
+            if (!var9.isEmpty()) {
+               int var24 = (var9.size() + 1) / 2;
+               var23.addAll(var9.subList(0, var24));
+               var7.addAll(var9.subList(var24, var9.size()));
+               var23.add("");
+               if (var24 < var9.size()) {
+                  var7.add("");
                }
             }
 
-            ArrayList var19 = new ArrayList(var7.values());
-            if (!var19.isEmpty()) {
-               int var20 = (var19.size() + 1) / 2;
+            ArrayList var25 = new ArrayList(var8.values());
+            if (!var25.isEmpty()) {
+               int var26 = (var25.size() + 1) / 2;
 
-               for(int var26 = 0; var26 < var19.size(); ++var26) {
-                  Collection var14 = (Collection)var19.get(var26);
-                  if (!var14.isEmpty()) {
-                     if (var26 < var20) {
-                        var17.addAll(var14);
-                        var17.add("");
+               for(int var32 = 0; var32 < var25.size(); ++var32) {
+                  Collection var15 = (Collection)var25.get(var32);
+                  if (!var15.isEmpty()) {
+                     if (var32 < var26) {
+                        var23.addAll(var15);
+                        var23.add("");
                      } else {
-                        var6.addAll(var14);
-                        var6.add("");
+                        var7.addAll(var15);
+                        var7.add("");
                      }
                   }
                }
             }
 
-            if (this.minecraft.debugEntries.isF3Visible()) {
-               var17.add("");
-               boolean var21 = this.minecraft.getSingleplayerServer() != null;
-               String var10001 = this.renderProfilerChart ? "visible" : "hidden";
-               var17.add("Debug charts: [F3+1] Profiler " + var10001 + "; [F3+2] " + (var21 ? "FPS + TPS " : "FPS ") + (this.renderFpsCharts ? "visible" : "hidden") + "; [F3+3] " + (!this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping") + (this.renderNetworkCharts ? " visible" : " hidden"));
-               boolean var27 = this.minecraft.screen == null || this.minecraft.gui.getChat().isChatFocused();
-               if (this.minecraft.level != null && var27 && this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
-                  var17.add("To edit: press F3 + F6. For help: press F3 + Q");
-               } else {
-                  var17.add("To edit: press F3 + F6");
-               }
+            if (this.minecraft.debugEntries.isOverlayVisible()) {
+               var23.add("");
+               boolean var27 = this.minecraft.getSingleplayerServer() != null;
+               KeyMapping var33 = var2.keyDebugModifier;
+               String var37 = var33.getTranslatedKeyMessage().getString();
+               String var10000 = var33.isUnbound() ? "" : var37 + "+";
+               String var16 = "[" + var10000;
+               String var17 = var16 + var2.keyDebugPofilingChart.getTranslatedKeyMessage().getString() + "]";
+               String var18 = var16 + var2.keyDebugFpsCharts.getTranslatedKeyMessage().getString() + "]";
+               String var19 = var16 + var2.keyDebugNetworkCharts.getTranslatedKeyMessage().getString() + "]";
+               var23.add("Debug charts: " + var17 + " Profiler " + (this.renderProfilerChart ? "visible" : "hidden") + "; " + var18 + " " + (var27 ? "FPS + TPS " : "FPS ") + (this.renderFpsCharts ? "visible" : "hidden") + "; " + var19 + " " + (!this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping") + (this.renderNetworkCharts ? " visible" : " hidden"));
+               String var20 = var16 + var2.keyDebugDebugOptions.getTranslatedKeyMessage().getString() + "]";
+               var23.add("To edit: press " + var20);
             }
 
-            this.renderLines(var1, var17, true);
-            this.renderLines(var1, var6, false);
+            this.renderLines(var1, var23, true);
+            this.renderLines(var1, var7, false);
             var1.nextStratum();
             this.profilerPieChart.setBottomOffset(10);
             if (this.showFpsCharts()) {
-               int var22 = var1.guiWidth();
-               int var28 = var22 / 2;
-               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var28));
+               int var28 = var1.guiWidth();
+               int var34 = var28 / 2;
+               this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var34));
                if (this.tickTimeLogger.size() > 0) {
-                  int var31 = this.tpsChart.getWidth(var28);
-                  this.tpsChart.drawChart(var1, var22 - var31, var31);
+                  int var38 = this.tpsChart.getWidth(var34);
+                  this.tpsChart.drawChart(var1, var28 - var38, var38);
                }
 
                this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
             }
 
             if (this.showNetworkCharts() && this.minecraft.getConnection() != null) {
-               int var23 = var1.guiWidth();
-               int var29 = var23 / 2;
+               int var29 = var1.guiWidth();
+               int var35 = var29 / 2;
                if (!this.minecraft.isLocalServer()) {
-                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var29));
+                  this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var35));
                }
 
-               int var32 = this.pingChart.getWidth(var29);
-               this.pingChart.drawChart(var1, var23 - var32, var32);
+               int var39 = this.pingChart.getWidth(var35);
+               this.pingChart.drawChart(var1, var29 - var39, var39);
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 
-            if (SharedConstants.DEBUG_CHUNKS) {
-               IntegratedServer var24 = this.minecraft.getSingleplayerServer();
-               if (var24 != null) {
-                  ChunkLoadStatusView var30 = var24.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
-                  var30.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
-                  LevelLoadingScreen.renderChunks(var1, var1.guiWidth() / 2, var1.guiHeight() / 2, 4, 1, var30);
+            if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_CHUNKS_ON_SERVER)) {
+               IntegratedServer var30 = this.minecraft.getSingleplayerServer();
+               if (var30 != null && this.minecraft.player != null) {
+                  ChunkLoadStatusView var36 = var30.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
+                  var36.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
+                  LevelLoadingScreen.renderChunks(var1, var1.guiWidth() / 2, var1.guiHeight() / 2, 4, 1, var36);
                }
             }
 
-            try (Zone var25 = var3.zone("profilerPie")) {
+            try (Zone var31 = var4.zone("profilerPie")) {
                this.profilerPieChart.render(var1);
             }
 
-            var3.pop();
+            var4.pop();
          }
       }
    }
@@ -355,43 +364,43 @@ public class DebugScreenOverlay {
 
    public boolean showDebugScreen() {
       DebugScreenEntryList var1 = this.minecraft.debugEntries;
-      return (var1.isF3Visible() || !var1.getCurrentlyEnabled().isEmpty()) && (!this.minecraft.options.hideGui || this.minecraft.screen != null);
+      return (var1.isOverlayVisible() || !var1.getCurrentlyEnabled().isEmpty()) && (!this.minecraft.options.hideGui || this.minecraft.screen != null);
    }
 
    public boolean showProfilerChart() {
-      return this.minecraft.debugEntries.isF3Visible() && this.renderProfilerChart;
+      return this.minecraft.debugEntries.isOverlayVisible() && this.renderProfilerChart;
    }
 
    public boolean showNetworkCharts() {
-      return this.minecraft.debugEntries.isF3Visible() && this.renderNetworkCharts;
+      return this.minecraft.debugEntries.isOverlayVisible() && this.renderNetworkCharts;
    }
 
    public boolean showFpsCharts() {
-      return this.minecraft.debugEntries.isF3Visible() && this.renderFpsCharts;
+      return this.minecraft.debugEntries.isOverlayVisible() && this.renderFpsCharts;
    }
 
    public void toggleNetworkCharts() {
-      this.renderNetworkCharts = !this.minecraft.debugEntries.isF3Visible() || !this.renderNetworkCharts;
+      this.renderNetworkCharts = !this.minecraft.debugEntries.isOverlayVisible() || !this.renderNetworkCharts;
       if (this.renderNetworkCharts) {
-         this.minecraft.debugEntries.setF3Visible(true);
+         this.minecraft.debugEntries.setOverlayVisible(true);
          this.renderFpsCharts = false;
       }
 
    }
 
    public void toggleFpsCharts() {
-      this.renderFpsCharts = !this.minecraft.debugEntries.isF3Visible() || !this.renderFpsCharts;
+      this.renderFpsCharts = !this.minecraft.debugEntries.isOverlayVisible() || !this.renderFpsCharts;
       if (this.renderFpsCharts) {
-         this.minecraft.debugEntries.setF3Visible(true);
+         this.minecraft.debugEntries.setOverlayVisible(true);
          this.renderNetworkCharts = false;
       }
 
    }
 
    public void toggleProfilerChart() {
-      this.renderProfilerChart = !this.minecraft.debugEntries.isF3Visible() || !this.renderProfilerChart;
+      this.renderProfilerChart = !this.minecraft.debugEntries.isOverlayVisible() || !this.renderProfilerChart;
       if (this.renderProfilerChart) {
-         this.minecraft.debugEntries.setF3Visible(true);
+         this.minecraft.debugEntries.setOverlayVisible(true);
       }
 
    }
@@ -434,26 +443,24 @@ public class DebugScreenOverlay {
       Matrix4fStack var2 = RenderSystem.getModelViewStack();
       var2.pushMatrix();
       var2.translate(0.0F, 0.0F, -1.0F);
-      var2.rotateX(var1.getXRot() * 0.017453292F);
-      var2.rotateY(var1.getYRot() * 0.017453292F);
+      var2.rotateX(var1.xRot() * 0.017453292F);
+      var2.rotateY(var1.yRot() * 0.017453292F);
       float var3 = 0.01F * (float)this.minecraft.getWindow().getGuiScale();
       var2.scale(-var3, var3, -var3);
       RenderPipeline var4 = RenderPipelines.LINES;
       RenderTarget var5 = Minecraft.getInstance().getMainRenderTarget();
       GpuTextureView var6 = var5.getColorTextureView();
       GpuTextureView var7 = var5.getDepthTextureView();
-      GpuBuffer var8 = this.crosshairIndicies.getBuffer(18);
-      GpuBufferSlice[] var9 = RenderSystem.getDynamicUniforms().writeTransforms(new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f(), 4.0F), new DynamicUniforms.Transform(new Matrix4f(var2), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 2.0F));
+      GpuBuffer var8 = this.crosshairIndicies.getBuffer(36);
+      GpuBufferSlice var9 = RenderSystem.getDynamicUniforms().writeTransform(var2, new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
 
       try (RenderPass var10 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", var6, OptionalInt.empty(), var7, OptionalDouble.empty())) {
          var10.setPipeline(var4);
          RenderSystem.bindDefaultUniforms(var10);
          var10.setVertexBuffer(0, this.crosshairBuffer);
          var10.setIndexBuffer(var8, this.crosshairIndicies.type());
-         var10.setUniform("DynamicTransforms", var9[0]);
-         var10.drawIndexed(0, 0, 18, 1);
-         var10.setUniform("DynamicTransforms", var9[1]);
-         var10.drawIndexed(0, 0, 18, 1);
+         var10.setUniform("DynamicTransforms", var9);
+         var10.drawIndexed(0, 0, 36, 1);
       }
 
       var2.popMatrix();

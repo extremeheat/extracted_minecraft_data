@@ -50,7 +50,7 @@ public abstract class SingleQuadParticle extends Particle {
    }
 
    protected void extractRotatedQuad(QuadParticleRenderState var1, Camera var2, Quaternionf var3, float var4) {
-      Vec3 var5 = var2.getPosition();
+      Vec3 var5 = var2.position();
       float var6 = (float)(Mth.lerp((double)var4, this.xo, this.x) - var5.x());
       float var7 = (float)(Mth.lerp((double)var4, this.yo, this.y) - var5.y());
       float var8 = (float)(Mth.lerp((double)var4, this.zo, this.z) - var5.z());

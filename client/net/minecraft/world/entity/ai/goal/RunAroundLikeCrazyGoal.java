@@ -22,7 +22,7 @@ public class RunAroundLikeCrazyGoal extends Goal {
    }
 
    public boolean canUse() {
-      if (!this.horse.isTamed() && this.horse.isVehicle()) {
+      if (!this.horse.isMobControlled() && !this.horse.isTamed() && this.horse.isVehicle()) {
          Vec3 var1 = DefaultRandomPos.getPos(this.horse, 5, 4);
          if (var1 == null) {
             return false;

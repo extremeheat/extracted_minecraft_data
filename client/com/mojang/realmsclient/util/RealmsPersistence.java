@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import org.slf4j.Logger;
 
@@ -60,6 +61,7 @@ public class RealmsPersistence {
    }
 
    public static class RealmsPersistenceData implements ReflectionBasedSerialization {
+      @Nullable
       @SerializedName("newsLink")
       public String newsLink;
       @SerializedName("hasUnreadNews")

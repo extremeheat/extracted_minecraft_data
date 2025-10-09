@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.GraphicsWorkarounds;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -26,20 +27,20 @@ public abstract class DirectStateAccess {
 
    abstract int createBuffer();
 
-   abstract void bufferData(int var1, long var2, int var4);
+   abstract void bufferData(int var1, long var2, @GpuBuffer.Usage int var4);
 
-   abstract void bufferData(int var1, ByteBuffer var2, int var3);
+   abstract void bufferData(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3);
 
-   abstract void bufferSubData(int var1, int var2, ByteBuffer var3, int var4);
+   abstract void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4);
 
-   abstract void bufferStorage(int var1, long var2, int var4);
+   abstract void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4);
 
-   abstract void bufferStorage(int var1, ByteBuffer var2, int var3);
+   abstract void bufferStorage(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3);
 
    @Nullable
-   abstract ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, int var5);
+   abstract ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5);
 
-   abstract void unmapBuffer(int var1, int var2);
+   abstract void unmapBuffer(int var1, @GpuBuffer.Usage int var2);
 
    abstract int createFrameBufferObject();
 
@@ -47,7 +48,7 @@ public abstract class DirectStateAccess {
 
    abstract void blitFrameBuffers(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12);
 
-   abstract void flushMappedBufferRange(int var1, int var2, int var3, int var4);
+   abstract void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4);
 
    abstract void copyBufferSubData(int var1, int var2, int var3, int var4, int var5);
 
@@ -61,28 +62,28 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glCreateBuffers();
       }
 
-      void bufferData(int var1, long var2, int var4) {
+      void bufferData(int var1, long var2, @GpuBuffer.Usage int var4) {
          ARBDirectStateAccess.glNamedBufferData(var1, var2, GlConst.bufferUsageToGlEnum(var4));
       }
 
-      void bufferData(int var1, ByteBuffer var2, int var3) {
+      void bufferData(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3) {
          ARBDirectStateAccess.glNamedBufferData(var1, var2, GlConst.bufferUsageToGlEnum(var3));
       }
 
-      void bufferSubData(int var1, int var2, ByteBuffer var3, int var4) {
+      void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4) {
          ARBDirectStateAccess.glNamedBufferSubData(var1, (long)var2, var3);
       }
 
-      void bufferStorage(int var1, long var2, int var4) {
+      void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4) {
          ARBDirectStateAccess.glNamedBufferStorage(var1, var2, GlConst.bufferUsageToGlFlag(var4));
       }
 
-      void bufferStorage(int var1, ByteBuffer var2, int var3) {
+      void bufferStorage(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3) {
          ARBDirectStateAccess.glNamedBufferStorage(var1, var2, GlConst.bufferUsageToGlFlag(var3));
       }
 
       @Nullable
-      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, int var5) {
+      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
          return ARBDirectStateAccess.glMapNamedBufferRange(var1, (long)var2, (long)var3, var4);
       }
 
@@ -94,7 +95,7 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glCreateFramebuffers();
       }
 
-      public void bindFrameBufferTextures(int var1, int var2, int var3, int var4, int var5) {
+      public void bindFrameBufferTextures(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
          ARBDirectStateAccess.glNamedFramebufferTexture(var1, 36064, var2, var4);
          ARBDirectStateAccess.glNamedFramebufferTexture(var1, 36096, var3, var4);
          if (var5 != 0) {
@@ -107,7 +108,7 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glBlitNamedFramebuffer(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12);
       }
 
-      void flushMappedBufferRange(int var1, int var2, int var3, int var4) {
+      void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4) {
          ARBDirectStateAccess.glFlushMappedNamedBufferRange(var1, (long)var2, (long)var3);
       }
 
@@ -121,7 +122,7 @@ public abstract class DirectStateAccess {
          super();
       }
 
-      private int selectBufferBindTarget(int var1) {
+      private int selectBufferBindTarget(@GpuBuffer.Usage int var1) {
          if ((var1 & 32) != 0) {
             return 34962;
          } else if ((var1 & 64) != 0) {
@@ -135,35 +136,35 @@ public abstract class DirectStateAccess {
          return GlStateManager._glGenBuffers();
       }
 
-      void bufferData(int var1, long var2, int var4) {
+      void bufferData(int var1, long var2, @GpuBuffer.Usage int var4) {
          int var5 = this.selectBufferBindTarget(var4);
          GlStateManager._glBindBuffer(var5, var1);
          GlStateManager._glBufferData(var5, var2, GlConst.bufferUsageToGlEnum(var4));
          GlStateManager._glBindBuffer(var5, 0);
       }
 
-      void bufferData(int var1, ByteBuffer var2, int var3) {
+      void bufferData(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3) {
          int var4 = this.selectBufferBindTarget(var3);
          GlStateManager._glBindBuffer(var4, var1);
          GlStateManager._glBufferData(var4, var2, GlConst.bufferUsageToGlEnum(var3));
          GlStateManager._glBindBuffer(var4, 0);
       }
 
-      void bufferSubData(int var1, int var2, ByteBuffer var3, int var4) {
+      void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4) {
          int var5 = this.selectBufferBindTarget(var4);
          GlStateManager._glBindBuffer(var5, var1);
          GlStateManager._glBufferSubData(var5, var2, var3);
          GlStateManager._glBindBuffer(var5, 0);
       }
 
-      void bufferStorage(int var1, long var2, int var4) {
+      void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4) {
          int var5 = this.selectBufferBindTarget(var4);
          GlStateManager._glBindBuffer(var5, var1);
          ARBBufferStorage.glBufferStorage(var5, var2, GlConst.bufferUsageToGlFlag(var4));
          GlStateManager._glBindBuffer(var5, 0);
       }
 
-      void bufferStorage(int var1, ByteBuffer var2, int var3) {
+      void bufferStorage(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3) {
          int var4 = this.selectBufferBindTarget(var3);
          GlStateManager._glBindBuffer(var4, var1);
          ARBBufferStorage.glBufferStorage(var4, var2, GlConst.bufferUsageToGlFlag(var3));
@@ -171,7 +172,7 @@ public abstract class DirectStateAccess {
       }
 
       @Nullable
-      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, int var5) {
+      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
          int var6 = this.selectBufferBindTarget(var5);
          GlStateManager._glBindBuffer(var6, var1);
          ByteBuffer var7 = GlStateManager._glMapBufferRange(var6, var2, var3, var4);
@@ -179,14 +180,14 @@ public abstract class DirectStateAccess {
          return var7;
       }
 
-      void unmapBuffer(int var1, int var2) {
+      void unmapBuffer(int var1, @GpuBuffer.Usage int var2) {
          int var3 = this.selectBufferBindTarget(var2);
          GlStateManager._glBindBuffer(var3, var1);
          GlStateManager._glUnmapBuffer(var3);
          GlStateManager._glBindBuffer(var3, 0);
       }
 
-      void flushMappedBufferRange(int var1, int var2, int var3, int var4) {
+      void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4) {
          int var5 = this.selectBufferBindTarget(var4);
          GlStateManager._glBindBuffer(var5, var1);
          GL30.glFlushMappedBufferRange(var5, (long)var2, (long)var3);

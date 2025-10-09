@@ -3,7 +3,6 @@ package net.minecraft.commands.arguments.coordinates;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -18,21 +17,8 @@ public record LocalCoordinates(double left, double up, double forwards) implemen
    }
 
    public Vec3 getPosition(CommandSourceStack var1) {
-      Vec2 var2 = var1.getRotation();
-      Vec3 var3 = var1.getAnchor().apply(var1);
-      float var4 = Mth.cos((var2.y + 90.0F) * 0.017453292F);
-      float var5 = Mth.sin((var2.y + 90.0F) * 0.017453292F);
-      float var6 = Mth.cos(-var2.x * 0.017453292F);
-      float var7 = Mth.sin(-var2.x * 0.017453292F);
-      float var8 = Mth.cos((-var2.x + 90.0F) * 0.017453292F);
-      float var9 = Mth.sin((-var2.x + 90.0F) * 0.017453292F);
-      Vec3 var10 = new Vec3((double)(var4 * var6), (double)var7, (double)(var5 * var6));
-      Vec3 var11 = new Vec3((double)(var4 * var8), (double)var9, (double)(var5 * var8));
-      Vec3 var12 = var10.cross(var11).scale(-1.0);
-      double var13 = var10.x * this.forwards + var11.x * this.up + var12.x * this.left;
-      double var15 = var10.y * this.forwards + var11.y * this.up + var12.y * this.left;
-      double var17 = var10.z * this.forwards + var11.z * this.up + var12.z * this.left;
-      return new Vec3(var3.x + var13, var3.y + var15, var3.z + var17);
+      Vec3 var2 = var1.getAnchor().apply(var1);
+      return Vec3.applyLocalCoordinatesToRotation(var1.getRotation(), new Vec3(this.left, this.up, this.forwards)).add(var2.x, var2.y, var2.z);
    }
 
    public Vec2 getRotation(CommandSourceStack var1) {

@@ -51,7 +51,6 @@ import net.minecraft.world.item.enchantment.providers.TradeRebalanceEnchantmentP
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -146,7 +145,7 @@ public class VillagerTrades {
          this.priceMultiplier = 0.05F;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          return new MerchantOffer(this.itemStack, new ItemStack(Items.EMERALD, this.emeraldAmount), this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
@@ -163,14 +162,14 @@ public class VillagerTrades {
       }
 
       @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (var1 instanceof VillagerDataHolder var3) {
-            ResourceKey var4 = (ResourceKey)var3.getVillagerData().type().unwrapKey().orElse((Object)null);
-            if (var4 == null) {
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         if (var2 instanceof VillagerDataHolder var4) {
+            ResourceKey var5 = (ResourceKey)var4.getVillagerData().type().unwrapKey().orElse((Object)null);
+            if (var5 == null) {
                return null;
             } else {
-               ItemListing var5 = (ItemListing)this.trades.get(var4);
-               return var5 == null ? null : var5.getOffer(var1, var2);
+               ItemListing var6 = (ItemListing)this.trades.get(var5);
+               return var6 == null ? null : var6.getOffer(var1, var2, var3);
             }
          } else {
             return null;
@@ -196,14 +195,14 @@ public class VillagerTrades {
       }
 
       @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (var1 instanceof VillagerDataHolder var3) {
-            ResourceKey var4 = (ResourceKey)var3.getVillagerData().type().unwrapKey().orElse((Object)null);
-            if (var4 == null) {
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         if (var2 instanceof VillagerDataHolder var4) {
+            ResourceKey var5 = (ResourceKey)var4.getVillagerData().type().unwrapKey().orElse((Object)null);
+            if (var5 == null) {
                return null;
             } else {
-               ItemCost var5 = new ItemCost((ItemLike)this.trades.get(var4), this.cost);
-               return new MerchantOffer(var5, new ItemStack(Items.EMERALD), this.maxUses, this.villagerXp, 0.05F);
+               ItemCost var6 = new ItemCost((ItemLike)this.trades.get(var5), this.cost);
+               return new MerchantOffer(var6, new ItemStack(Items.EMERALD), this.maxUses, this.villagerXp, 0.05F);
             }
          } else {
             return null;
@@ -258,11 +257,10 @@ public class VillagerTrades {
          this.enchantmentProvider = var7;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemStack var3 = this.itemStack.copy();
-         Level var4 = var1.level();
-         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2));
-         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), var3, this.maxUses, this.villagerXp, this.priceMultiplier);
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         ItemStack var4 = this.itemStack.copy();
+         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), var4x, var1.getCurrentDifficultyAt(var2.blockPosition()), var3));
+         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), var4, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
 
@@ -283,10 +281,10 @@ public class VillagerTrades {
       }
 
       @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemStack var3 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
-         var3.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.effects);
-         return new MerchantOffer(new ItemCost(Items.EMERALD), var3, 12, this.xp, this.priceMultiplier);
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         ItemStack var4 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
+         var4.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.effects);
+         return new MerchantOffer(new ItemCost(Items.EMERALD), var4, 12, this.xp, this.priceMultiplier);
       }
    }
 
@@ -310,14 +308,14 @@ public class VillagerTrades {
          this.priceMultiplier = var5;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         int var3 = 5 + var2.nextInt(15);
-         RegistryAccess var4 = var1.level().registryAccess();
-         Optional var5 = var4.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.ON_TRADED_EQUIPMENT);
-         ItemStack var6 = EnchantmentHelper.enchantItem(var2, new ItemStack(this.itemStack.getItem()), var3, var4, var5);
-         int var7 = Math.min(this.baseEmeraldCost + var3, 64);
-         ItemCost var8 = new ItemCost(Items.EMERALD, var7);
-         return new MerchantOffer(var8, var6, this.maxUses, this.villagerXp, this.priceMultiplier);
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         int var4 = 5 + var3.nextInt(15);
+         RegistryAccess var5 = var1.registryAccess();
+         Optional var6 = var5.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.ON_TRADED_EQUIPMENT);
+         ItemStack var7 = EnchantmentHelper.enchantItem(var3, new ItemStack(this.itemStack.getItem()), var4, var5, var6);
+         int var8 = Math.min(this.baseEmeraldCost + var4, 64);
+         ItemCost var9 = new ItemCost(Items.EMERALD, var8);
+         return new MerchantOffer(var9, var7, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
 
@@ -343,13 +341,13 @@ public class VillagerTrades {
          this.priceMultiplier = 0.05F;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
-         List var4 = (List)BuiltInRegistries.POTION.listElements().filter((var1x) -> !((Potion)var1x.value()).getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x)).collect(Collectors.toList());
-         Holder var5 = (Holder)Util.getRandom(var4, var2);
-         ItemStack var6 = new ItemStack(this.toItem.getItem(), this.toCount);
-         var6.set(DataComponents.POTION_CONTENTS, new PotionContents(var5));
-         return new MerchantOffer(var3, Optional.of(new ItemCost(this.fromItem, this.fromCount)), var6, this.maxUses, this.villagerXp, this.priceMultiplier);
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         ItemCost var4 = new ItemCost(Items.EMERALD, this.emeraldCost);
+         List var5 = (List)BuiltInRegistries.POTION.listElements().filter((var1x) -> !((Potion)var1x.value()).getEffects().isEmpty() && var1.potionBrewing().isBrewablePotion(var1x)).collect(Collectors.toList());
+         Holder var6 = (Holder)Util.getRandom(var5, var3);
+         ItemStack var7 = new ItemStack(this.toItem.getItem(), this.toCount);
+         var7.set(DataComponents.POTION_CONTENTS, new PotionContents(var6));
+         return new MerchantOffer(var4, Optional.of(new ItemCost(this.fromItem, this.fromCount)), var7, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
 
@@ -371,24 +369,24 @@ public class VillagerTrades {
          this.villagerXp = var4;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemCost var3 = new ItemCost(Items.EMERALD, this.value);
-         ItemStack var4 = new ItemStack(this.item);
-         if (var4.is(ItemTags.DYEABLE)) {
-            ArrayList var5 = Lists.newArrayList();
-            var5.add(getRandomDye(var2));
-            if (var2.nextFloat() > 0.7F) {
-               var5.add(getRandomDye(var2));
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         ItemCost var4 = new ItemCost(Items.EMERALD, this.value);
+         ItemStack var5 = new ItemStack(this.item);
+         if (var5.is(ItemTags.DYEABLE)) {
+            ArrayList var6 = Lists.newArrayList();
+            var6.add(getRandomDye(var3));
+            if (var3.nextFloat() > 0.7F) {
+               var6.add(getRandomDye(var3));
             }
 
-            if (var2.nextFloat() > 0.8F) {
-               var5.add(getRandomDye(var2));
+            if (var3.nextFloat() > 0.8F) {
+               var6.add(getRandomDye(var3));
             }
 
-            var4 = DyedItemColor.applyDyes(var4, var5);
+            var5 = DyedItemColor.applyDyes(var5, var6);
          }
 
-         return new MerchantOffer(var3, var4, this.maxUses, this.villagerXp, 0.2F);
+         return new MerchantOffer(var4, var5, this.maxUses, this.villagerXp, 0.2F);
       }
 
       private static DyeItem getRandomDye(RandomSource var0) {
@@ -414,31 +412,31 @@ public class VillagerTrades {
          this.tradeableEnchantments = var4;
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Optional var3 = var1.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
-         int var4;
-         ItemStack var5;
-         if (!var3.isEmpty()) {
-            Holder var6 = (Holder)var3.get();
-            Enchantment var7 = (Enchantment)var6.value();
-            int var8 = Math.max(var7.getMinLevel(), this.minLevel);
-            int var9 = Math.min(var7.getMaxLevel(), this.maxLevel);
-            int var10 = Mth.nextInt(var2, var8, var9);
-            var5 = EnchantmentHelper.createBook(new EnchantmentInstance(var6, var10));
-            var4 = 2 + var2.nextInt(5 + var10 * 10) + 3 * var10;
-            if (var6.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
-               var4 *= 2;
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         Optional var4 = var1.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var3);
+         int var5;
+         ItemStack var6;
+         if (!var4.isEmpty()) {
+            Holder var7 = (Holder)var4.get();
+            Enchantment var8 = (Enchantment)var7.value();
+            int var9 = Math.max(var8.getMinLevel(), this.minLevel);
+            int var10 = Math.min(var8.getMaxLevel(), this.maxLevel);
+            int var11 = Mth.nextInt(var3, var9, var10);
+            var6 = EnchantmentHelper.createBook(new EnchantmentInstance(var7, var11));
+            var5 = 2 + var3.nextInt(5 + var11 * 10) + 3 * var11;
+            if (var7.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+               var5 *= 2;
             }
 
-            if (var4 > 64) {
-               var4 = 64;
+            if (var5 > 64) {
+               var5 = 64;
             }
          } else {
-            var4 = 1;
-            var5 = new ItemStack(Items.BOOK);
+            var5 = 1;
+            var6 = new ItemStack(Items.BOOK);
          }
 
-         return new MerchantOffer(new ItemCost(Items.EMERALD, var4), Optional.of(new ItemCost(Items.BOOK)), var5, 12, this.villagerXp, 0.2F);
+         return new MerchantOffer(new ItemCost(Items.EMERALD, var5), Optional.of(new ItemCost(Items.BOOK)), var6, 12, this.villagerXp, 0.2F);
       }
    }
 
@@ -447,7 +445,7 @@ public class VillagerTrades {
          super();
       }
 
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          return null;
       }
    }
@@ -471,19 +469,14 @@ public class VillagerTrades {
       }
 
       @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Level var4 = var1.level();
-         if (var4 instanceof ServerLevel var3) {
-            BlockPos var6 = var3.findNearestMapStructure(this.destination, var1.blockPosition(), 100, true);
-            if (var6 != null) {
-               ItemStack var5 = MapItem.create(var3, var6.getX(), var6.getZ(), (byte)2, true, true);
-               MapItem.renderBiomePreviewMap(var3, var5);
-               MapItemSavedData.addTargetDecoration(var5, var6, "+", this.destinationType);
-               var5.set(DataComponents.ITEM_NAME, Component.translatable(this.displayName));
-               return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(new ItemCost(Items.COMPASS)), var5, this.maxUses, this.villagerXp, 0.2F);
-            } else {
-               return null;
-            }
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         BlockPos var4 = var1.findNearestMapStructure(this.destination, var2.blockPosition(), 100, true);
+         if (var4 != null) {
+            ItemStack var5 = MapItem.create(var1, var4.getX(), var4.getZ(), (byte)2, true, true);
+            MapItem.renderBiomePreviewMap(var1, var5);
+            MapItemSavedData.addTargetDecoration(var5, var4, "+", this.destinationType);
+            var5.set(DataComponents.ITEM_NAME, Component.translatable(this.displayName));
+            return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(new ItemCost(Items.COMPASS)), var5, this.maxUses, this.villagerXp, 0.2F);
          } else {
             return null;
          }
@@ -523,16 +516,15 @@ public class VillagerTrades {
       }
 
       @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemStack var3 = this.toItem.copy();
-         Level var4 = var1.level();
-         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2));
-         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var3, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
+      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+         ItemStack var4 = this.toItem.copy();
+         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), var4x, var1.getCurrentDifficultyAt(var2.blockPosition()), var3));
+         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var4, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
 
    public interface ItemListing {
       @Nullable
-      MerchantOffer getOffer(Entity var1, RandomSource var2);
+      MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3);
    }
 }

@@ -252,7 +252,7 @@ public class Gui {
    }
 
    private void renderCameraOverlays(GuiGraphics var1, DeltaTracker var2) {
-      if (Minecraft.useFancyGraphics()) {
+      if ((Boolean)this.minecraft.options.vignette().get()) {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
 

@@ -78,7 +78,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void checkDownloadSize() {
       if (!this.finished && !this.checked) {
          this.checked = true;
-         if (this.getContentLength(this.worldDownload.downloadLink) >= 5368709120L) {
+         if (this.getContentLength(this.worldDownload.downloadLink()) >= 5368709120L) {
             MutableComponent var1 = Component.translatable("mco.download.confirmation.oversized", Unit.humanReadable(5368709120L));
             this.minecraft.setScreen(RealmsPopups.warningAcknowledgePopupScreen(this, var1, (var1x) -> {
                this.minecraft.setScreen(this);
@@ -208,7 +208,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
 
                this.status = Component.translatable("mco.download.downloading", this.worldName);
                FileDownload var1 = new FileDownload();
-               var1.contentLength(this.worldDownload.downloadLink);
+               var1.contentLength(this.worldDownload.downloadLink());
                var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
 
                while(!var1.isFinished()) {

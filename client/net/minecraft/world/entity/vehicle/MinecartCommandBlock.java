@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -21,7 +22,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.Vec3;
 
 public class MinecartCommandBlock extends AbstractMinecart {
    static final EntityDataAccessor<String> DATA_ID_COMMAND_NAME;
@@ -68,16 +68,24 @@ public class MinecartCommandBlock extends AbstractMinecart {
       return this.commandBlock;
    }
 
-   public void activateMinecart(int var1, int var2, int var3, boolean var4) {
-      if (var4 && this.tickCount - this.lastActivated >= 4) {
-         this.getCommandBlock().performCommand(this.level());
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+      if (var5 && this.tickCount - this.lastActivated >= 4) {
+         this.getCommandBlock().performCommand(var1);
          this.lastActivated = this.tickCount;
       }
 
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      return this.commandBlock.usedBy(var1);
+      if (!var1.canUseGameMasterBlocks()) {
+         return InteractionResult.PASS;
+      } else {
+         if (var1.level().isClientSide()) {
+            var1.openMinecartCommandBlock(this);
+         }
+
+         return InteractionResult.SUCCESS;
+      }
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -98,30 +106,18 @@ public class MinecartCommandBlock extends AbstractMinecart {
       DATA_ID_LAST_OUTPUT = SynchedEntityData.<Component>defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
    }
 
-   public class MinecartCommandBase extends BaseCommandBlock {
-      public MinecartCommandBase() {
+   class MinecartCommandBase extends BaseCommandBlock {
+      MinecartCommandBase() {
          super();
       }
 
-      public ServerLevel getLevel() {
-         return (ServerLevel)MinecartCommandBlock.this.level();
-      }
-
-      public void onUpdated() {
+      public void onUpdated(ServerLevel var1) {
          MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_COMMAND_NAME, this.getCommand());
          MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_LAST_OUTPUT, this.getLastOutput());
       }
 
-      public Vec3 getPosition() {
-         return MinecartCommandBlock.this.position();
-      }
-
-      public MinecartCommandBlock getMinecart() {
-         return MinecartCommandBlock.this;
-      }
-
-      public CommandSourceStack createCommandSourceStack(CommandSource var1) {
-         return new CommandSourceStack(var1, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().getServer(), MinecartCommandBlock.this);
+      public CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2) {
+         return new CommandSourceStack(var2, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), var1, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), var1.getServer(), MinecartCommandBlock.this);
       }
 
       public boolean isValid() {

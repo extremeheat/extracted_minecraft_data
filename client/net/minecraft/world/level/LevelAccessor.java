@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,16 +31,18 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    long nextSubTickCount();
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
-      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, var4, this.nextSubTickCount());
    }
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
-      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, this.nextSubTickCount());
    }
 
    LevelData getLevelData();
 
-   DifficultyInstance getCurrentDifficultyAt(BlockPos var1);
+   default long getGameTime() {
+      return this.getLevelData().getGameTime();
+   }
 
    @Nullable
    MinecraftServer getServer();
@@ -61,7 +62,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    default void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
-   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
    }
 

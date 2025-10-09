@@ -37,6 +37,11 @@ public class SheetedDecalTextureGenerator implements VertexConsumer {
       return this;
    }
 
+   public VertexConsumer setColor(int var1) {
+      this.delegate.setColor(-1);
+      return this;
+   }
+
    public VertexConsumer setUv(float var1, float var2) {
       return this;
    }
@@ -60,6 +65,11 @@ public class SheetedDecalTextureGenerator implements VertexConsumer {
       var6.rotateX(-1.5707964F);
       var6.rotate(var5.getRotation());
       this.delegate.setUv(-var6.x() * this.textureScale, -var6.y() * this.textureScale);
+      return this;
+   }
+
+   public VertexConsumer setLineWidth(float var1) {
+      this.delegate.setLineWidth(var1);
       return this;
    }
 }

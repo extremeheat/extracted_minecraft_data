@@ -92,31 +92,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    abstract SoundEvent getStepSound();
 
-   public void aiStep() {
-      boolean var1 = this.isSunBurnTick();
-      if (var1) {
-         ItemStack var2 = this.getItemBySlot(EquipmentSlot.HEAD);
-         if (!var2.isEmpty()) {
-            if (var2.isDamageableItem()) {
-               Item var3 = var2.getItem();
-               var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
-               if (var2.getDamageValue() >= var2.getMaxDamage()) {
-                  this.onEquippedItemBroken(var3, EquipmentSlot.HEAD);
-                  this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
-               }
-            }
-
-            var1 = false;
-         }
-
-         if (var1) {
-            this.igniteForSeconds(8.0F);
-         }
-      }
-
-      super.aiStep();
-   }
-
    public void rideTick() {
       super.rideTick();
       Entity var2 = this.getControlledVehicle();

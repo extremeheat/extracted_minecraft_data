@@ -363,6 +363,10 @@ public class Scoreboard {
       }
    }
 
+   protected List<PlayerTeam.Packed> packPlayerTeams() {
+      return this.getPlayerTeams().stream().map(PlayerTeam::pack).toList();
+   }
+
    protected void loadPlayerTeam(PlayerTeam.Packed var1) {
       PlayerTeam var2 = this.addPlayerTeam(var1.name());
       Optional var10000 = var1.displayName();
@@ -385,8 +389,25 @@ public class Scoreboard {
 
    }
 
+   protected List<Objective.Packed> packObjectives() {
+      return this.getObjectives().stream().map(Objective::pack).toList();
+   }
+
    protected void loadObjective(Objective.Packed var1) {
       this.addObjective(var1.name(), var1.criteria(), var1.displayName(), var1.renderType(), var1.displayAutoUpdate(), (NumberFormat)var1.numberFormat().orElse((Object)null));
+   }
+
+   protected Map<DisplaySlot, String> packDisplaySlots() {
+      EnumMap var1 = new EnumMap(DisplaySlot.class);
+
+      for(DisplaySlot var5 : DisplaySlot.values()) {
+         Objective var6 = this.getDisplayObjective(var5);
+         if (var6 != null) {
+            var1.put(var5, var6.getName());
+         }
+      }
+
+      return var1;
    }
 
    public static record PackedScore(String owner, String objective, Score score) {

@@ -51,6 +51,10 @@ public class OutlineBufferSource implements MultiBufferSource {
          return this;
       }
 
+      public VertexConsumer setColor(int var1) {
+         return this;
+      }
+
       public VertexConsumer setUv(float var1, float var2) {
          this.delegate.setUv(var1, var2);
          return this;
@@ -65,6 +69,10 @@ public class OutlineBufferSource implements MultiBufferSource {
       }
 
       public VertexConsumer setNormal(float var1, float var2, float var3) {
+         return this;
+      }
+
+      public VertexConsumer setLineWidth(float var1) {
          return this;
       }
    }

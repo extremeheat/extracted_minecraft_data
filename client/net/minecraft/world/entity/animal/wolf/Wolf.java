@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.wolf;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -34,6 +33,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -91,7 +91,7 @@ import net.minecraft.world.phys.Vec3;
 public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Boolean> DATA_INTERESTED_ID;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
-   private static final EntityDataAccessor<Integer> DATA_REMAINING_ANGER_TIME;
+   private static final EntityDataAccessor<Long> DATA_ANGER_END_TIME;
    private static final EntityDataAccessor<Holder<WolfVariant>> DATA_VARIANT_ID;
    private static final EntityDataAccessor<Holder<WolfSoundVariant>> DATA_SOUND_VARIANT_ID;
    public static final TargetingConditions.Selector PREY_SELECTOR;
@@ -108,7 +108,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private float shakeAnimO;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    @Nullable
-   private UUID persistentAngerTarget;
+   private EntityReference<LivingEntity> persistentAngerTarget;
 
    public Wolf(EntityType<? extends Wolf> var1, Level var2) {
       super(var1, var2);
@@ -212,7 +212,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.define(var10001, (Holder)var10002.or(var2::getAny).orElseThrow());
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DEFAULT_COLLAR_COLOR.getId());
-      var1.define(DATA_REMAINING_ANGER_TIME, 0);
+      var1.define(DATA_ANGER_END_TIME, -1L);
    }
 
    protected void playStepSound(BlockPos var1, BlockState var2) {
@@ -516,24 +516,24 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       return 8;
    }
 
-   public int getRemainingPersistentAngerTime() {
-      return (Integer)this.entityData.get(DATA_REMAINING_ANGER_TIME);
+   public long getPersistentAngerEndTime() {
+      return (Long)this.entityData.get(DATA_ANGER_END_TIME);
    }
 
-   public void setRemainingPersistentAngerTime(int var1) {
-      this.entityData.set(DATA_REMAINING_ANGER_TIME, var1);
+   public void setPersistentAngerEndTime(long var1) {
+      this.entityData.set(DATA_ANGER_END_TIME, var1);
    }
 
    public void startPersistentAngerTimer() {
-      this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
    @Nullable
-   public UUID getPersistentAngerTarget() {
+   public EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
-   public void setPersistentAngerTarget(@Nullable UUID var1) {
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
       this.persistentAngerTarget = var1;
    }
 
@@ -657,7 +657,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    static {
       DATA_INTERESTED_ID = SynchedEntityData.<Boolean>defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
-      DATA_REMAINING_ANGER_TIME = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
+      DATA_ANGER_END_TIME = SynchedEntityData.<Long>defineId(Wolf.class, EntityDataSerializers.LONG);
       DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
       DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<WolfSoundVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_SOUND_VARIANT);
       PREY_SELECTOR = (var0, var1) -> {

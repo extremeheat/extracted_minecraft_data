@@ -279,6 +279,10 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
 
    }
 
+   public void doLunge(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4) {
+      applyEffects(this.getEffects(EnchantmentEffectComponents.POST_PIERCING_ATTACK), entityContext(var1, var2, var4, var4.position()), (var4x) -> var4x.apply(var1, var2, var3, var4, var4.position()));
+   }
+
    public void modifyProjectileCount(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.PROJECTILE_COUNT, var1, var2, var3, var4, var5);
    }

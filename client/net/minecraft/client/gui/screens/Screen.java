@@ -62,37 +62,49 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
    protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
-   private final List<GuiEventListener> children = Lists.newArrayList();
-   private final List<NarratableEntry> narratables = Lists.newArrayList();
-   @Nullable
-   protected Minecraft minecraft;
+   private final List<GuiEventListener> children;
+   private final List<NarratableEntry> narratables;
+   protected final Minecraft minecraft;
    private boolean initialized;
    public int width;
    public int height;
-   private final List<Renderable> renderables = Lists.newArrayList();
-   protected Font font;
+   private final List<Renderable> renderables;
+   protected final Font font;
    private static final long NARRATE_SUPPRESS_AFTER_INIT_TIME;
    private static final long NARRATE_DELAY_NARRATOR_ENABLED;
    private static final long NARRATE_DELAY_MOUSE_MOVE = 750L;
    private static final long NARRATE_DELAY_MOUSE_ACTION = 200L;
    private static final long NARRATE_DELAY_KEYBOARD_ACTION = 200L;
-   private final ScreenNarrationCollector narrationState = new ScreenNarrationCollector();
-   private long narrationSuppressTime = -9223372036854775808L;
-   private long nextNarrationTime = 9223372036854775807L;
+   private final ScreenNarrationCollector narrationState;
+   private long narrationSuppressTime;
+   private long nextNarrationTime;
    @Nullable
    protected CycleButton<NarratorStatus> narratorButton;
    @Nullable
    private NarratableEntry lastNarratable;
-   protected final Executor screenExecutor = (var1x) -> this.minecraft.execute(() -> {
-         if (this.minecraft.screen == this) {
-            var1x.run();
-         }
-
-      });
+   protected final Executor screenExecutor;
 
    protected Screen(Component var1) {
+      this(Minecraft.getInstance(), Minecraft.getInstance().font, var1);
+   }
+
+   protected Screen(Minecraft var1, Font var2, Component var3) {
       super();
-      this.title = var1;
+      this.children = Lists.newArrayList();
+      this.narratables = Lists.newArrayList();
+      this.renderables = Lists.newArrayList();
+      this.narrationState = new ScreenNarrationCollector();
+      this.narrationSuppressTime = -9223372036854775808L;
+      this.nextNarrationTime = 9223372036854775807L;
+      this.minecraft = var1;
+      this.font = var2;
+      this.title = var3;
+      this.screenExecutor = (var2x) -> var1.execute(() -> {
+            if (var1.screen == this) {
+               var2x.run();
+            }
+
+         });
    }
 
    public Component getTitle() {
@@ -413,11 +425,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       var0.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(var1), var2);
    }
 
-   public final void init(Minecraft var1, int var2, int var3) {
-      this.minecraft = var1;
-      this.font = var1.font;
-      this.width = var2;
-      this.height = var3;
+   public final void init(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
       if (!this.initialized) {
          this.init();
          this.setInitialFocus();
@@ -427,7 +437,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
       this.initialized = true;
       this.triggerImmediateNarration(false);
-      if (var1.getLastInputType().isKeyboard()) {
+      if (this.minecraft.getLastInputType().isKeyboard()) {
          this.setNarrationSuppressTime(9223372036854775807L);
       } else {
          this.suppressNarration(NARRATE_SUPPRESS_AFTER_INIT_TIME);
@@ -531,9 +541,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.rebuildWidgets();
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      this.width = var2;
-      this.height = var3;
+   public void resize(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
       this.repositionElements();
    }
 

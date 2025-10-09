@@ -26,7 +26,7 @@ public class BanPlayerCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(3))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
    }
 
    private static int banPlayers(CommandSourceStack var0, Collection<NameAndId> var1, @Nullable Component var2) throws CommandSyntaxException {

@@ -94,7 +94,7 @@ public class FogRenderer implements AutoCloseable {
 
    private Vector4f computeFogColor(Camera var1, float var2, ClientLevel var3, int var4, float var5, boolean var6) {
       FogType var7 = this.getFogType(var1, var6);
-      Entity var8 = var1.getEntity();
+      Entity var8 = var1.entity();
       FogEnvironment var9 = null;
       FogEnvironment var10 = null;
 
@@ -107,17 +107,15 @@ public class FogRenderer implements AutoCloseable {
             if (var10 == null && var12.modifiesDarkness()) {
                var10 = var12;
             }
-         } else {
-            var12.onNotApplicable();
          }
       }
 
       if (var9 == null) {
          throw new IllegalStateException("No color source environment found");
       } else {
-         int var19 = var9.getBaseColor(var3, var1, var4, var5);
+         int var19 = var9.getBaseColor(var3, var1, var4, var2);
          float var20 = var3.getLevelData().voidDarknessOnsetRange();
-         float var13 = Mth.clamp((var20 + (float)var3.getMinY() - (float)var1.getPosition().y) / var20, 0.0F, 1.0F);
+         float var13 = Mth.clamp((var20 + (float)var3.getMinY() - (float)var1.position().y) / var20, 0.0F, 1.0F);
          if (var10 != null) {
             LivingEntity var14 = (LivingEntity)var8;
             var13 = var10.getModifiedDarkness(var14, var13, var2);
@@ -147,12 +145,12 @@ public class FogRenderer implements AutoCloseable {
                var22 = 1.0F;
             }
          } else {
-            label58: {
+            label57: {
                if (var8 instanceof LivingEntity) {
                   LivingEntity var18 = (LivingEntity)var8;
                   if (var18.hasEffect(MobEffects.NIGHT_VISION) && !var18.hasEffect(MobEffects.DARKNESS)) {
                      var22 = GameRenderer.getNightVisionScale(var18, var2);
-                     break label58;
+                     break label57;
                   }
                }
 
@@ -180,12 +178,12 @@ public class FogRenderer implements AutoCloseable {
       Vector4f var8 = this.computeFogColor(var1, var7, var6, var2, var5, var3);
       float var9 = (float)(var2 * 16);
       FogType var10 = this.getFogType(var1, var3);
-      Entity var11 = var1.getEntity();
+      Entity var11 = var1.entity();
       FogData var12 = new FogData();
 
       for(FogEnvironment var14 : FOG_ENVIRONMENTS) {
          if (var14.isApplicable(var10, var11)) {
-            var14.setupFog(var12, var11, var1.getBlockPosition(), var6, var9, var4);
+            var14.setupFog(var12, var1, var6, var9, var4);
             break;
          }
       }

@@ -236,7 +236,7 @@ public class StructureTemplate {
       return transform(var1, var0.getMirror(), var0.getRotation(), var0.getRotationPivot());
    }
 
-   public boolean placeInWorld(ServerLevelAccessor var1, BlockPos var2, BlockPos var3, StructurePlaceSettings var4, RandomSource var5, int var6) {
+   public boolean placeInWorld(ServerLevelAccessor var1, BlockPos var2, BlockPos var3, StructurePlaceSettings var4, RandomSource var5, @Block.UpdateFlags int var6) {
       if (this.palettes.isEmpty()) {
          return false;
       } else {
@@ -376,11 +376,11 @@ public class StructureTemplate {
       }
    }
 
-   public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, BlockPos var3) {
+   public static void updateShapeAtEdge(LevelAccessor var0, @Block.UpdateFlags int var1, DiscreteVoxelShape var2, BlockPos var3) {
       updateShapeAtEdge(var0, var1, var2, var3.getX(), var3.getY(), var3.getZ());
    }
 
-   public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, int var3, int var4, int var5) {
+   public static void updateShapeAtEdge(LevelAccessor var0, @Block.UpdateFlags int var1, DiscreteVoxelShape var2, int var3, int var4, int var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
       var2.forAllFaces((var7x, var8, var9, var10) -> {

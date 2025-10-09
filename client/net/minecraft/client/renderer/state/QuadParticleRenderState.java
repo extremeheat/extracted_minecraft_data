@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -64,7 +65,7 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
          if (var12 != null) {
             var1.write(var12.vertexBuffer());
             RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).getBuffer(var12.drawState().indexCount());
-            GpuBufferSlice var14 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), RenderSystem.getTextureMatrix(), RenderSystem.getShaderLineWidth());
+            GpuBufferSlice var14 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), RenderSystem.getTextureMatrix());
             return new PreparedBuffers(var12.drawState().indexCount(), var14, var5);
          } else {
             return null;
@@ -81,7 +82,8 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
       for(Map.Entry var8 : var1.layers.entrySet()) {
          if (var5 == ((SingleQuadParticle.Layer)var8.getKey()).translucent()) {
             var3.setPipeline(((SingleQuadParticle.Layer)var8.getKey()).pipeline());
-            var3.bindSampler("Sampler0", var4.getTexture(((SingleQuadParticle.Layer)var8.getKey()).textureAtlasLocation()).getTextureView());
+            AbstractTexture var9 = var4.getTexture(((SingleQuadParticle.Layer)var8.getKey()).textureAtlasLocation());
+            var3.bindTexture("Sampler0", var9.getTextureView(), var9.getSampler());
             var3.drawIndexed(((PreparedLayer)var8.getValue()).vertexOffset, 0, ((PreparedLayer)var8.getValue()).indexCount, 1);
          }
       }

@@ -12,4 +12,8 @@ public interface PlayerRideableJumping extends PlayerRideable {
    default int getJumpCooldown() {
       return 0;
    }
+
+   default float getPlayerJumpPendingScale(int var1) {
+      return var1 >= 90 ? 1.0F : 0.4F + 0.4F * (float)var1 / 90.0F;
+   }
 }

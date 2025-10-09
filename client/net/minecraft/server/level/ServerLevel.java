@@ -89,6 +89,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.TickRateManager;
@@ -141,6 +142,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.EntityStorage;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
@@ -413,7 +415,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          Profiler.get().push("scheduledFunctions");
          this.serverLevelData.getScheduledEvents().tick(this.server, var1);
          Profiler.get().pop();
-         if (this.serverLevelData.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
+         if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
             this.setDayTime(this.levelData.getDayTime() + 1L);
          }
 
@@ -422,6 +424,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public void setDayTime(long var1) {
       this.serverLevelData.setDayTime(var1);
+   }
+
+   public long getDayCount() {
+      return this.getDayTime() / 24000L;
    }
 
    public void tickCustomSpawners(boolean var1) {
@@ -614,6 +620,18 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public ServerWaypointManager getWaypointManager() {
       return this.waypointManager;
+   }
+
+   public DifficultyInstance getCurrentDifficultyAt(BlockPos var1) {
+      long var2 = 0L;
+      float var4 = 0.0F;
+      ChunkAccess var5 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false);
+      if (var5 != null) {
+         var2 = var5.getInhabitedTime();
+         var4 = this.getMoonBrightness();
+      }
+
+      return new DifficultyInstance(this.getDifficulty(), this.getDayTime(), var2, var4);
    }
 
    private void advanceWeatherCycle() {
@@ -1626,7 +1644,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void startTickingChunk(LevelChunk var1) {
-      var1.unpackTicks(this.getLevelData().getGameTime());
+      var1.unpackTicks(this.getGameTime());
    }
 
    public void onStructureStartsAvailable(ChunkAccess var1) {
@@ -1653,7 +1671,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public boolean isSpawningMonsters() {
-      return this.server.isSpawningMonsters();
+      return this.getLevelData().getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
    }
 
    public void close() throws IOException {
@@ -1707,7 +1725,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public RandomSource getRandomSequence(ResourceLocation var1) {
-      return this.randomSequences.get(var1);
+      return this.randomSequences.get(var1, this.getSeed());
    }
 
    public RandomSequences getRandomSequences() {
@@ -1735,6 +1753,22 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public LevelDebugSynchronizers debugSynchronizers() {
       return this.debugSynchronizers;
+   }
+
+   public boolean isAllowedToEnterPortal(Level var1) {
+      return var1.dimension() == Level.NETHER ? this.getGameRules().getBoolean(GameRules.RULE_ALLOW_NETHER) : true;
+   }
+
+   public boolean isPvpAllowed() {
+      return this.getGameRules().getBoolean(GameRules.RULE_PVP);
+   }
+
+   public boolean isCommandBlockEnabled() {
+      return this.getGameRules().getBoolean(GameRules.RULE_COMMAND_BLOCKS_ENABLED);
+   }
+
+   public boolean isSpawnerBlockEnabled() {
+      return this.getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED);
    }
 
    // $FF: synthetic method

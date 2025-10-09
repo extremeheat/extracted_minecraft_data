@@ -30,8 +30,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WeatherEffectRenderer {
+   private static final float RAIN_PARTICLES_PER_BLOCK = 0.225F;
    private static final int RAIN_RADIUS = 10;
-   private static final int RAIN_DIAMETER = 21;
    private static final ResourceLocation RAIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/rain.png");
    private static final ResourceLocation SNOW_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/snow.png");
    private static final int RAIN_TABLE_SIZE = 32;
@@ -58,7 +58,7 @@ public class WeatherEffectRenderer {
    public void extractRenderState(Level var1, int var2, float var3, Vec3 var4, WeatherRenderState var5) {
       var5.intensity = var1.getRainLevel(var3);
       if (!(var5.intensity <= 0.0F)) {
-         var5.radius = Minecraft.useFancyGraphics() ? 10 : 5;
+         var5.radius = (Integer)Minecraft.getInstance().options.weatherRadius().get();
          int var6 = Mth.floor(var4.x);
          int var7 = Mth.floor(var4.y);
          int var8 = Mth.floor(var4.z);
@@ -122,70 +122,74 @@ public class WeatherEffectRenderer {
    }
 
    private void renderInstances(VertexConsumer var1, List<ColumnInstance> var2, Vec3 var3, float var4, int var5, float var6) {
-      for(ColumnInstance var8 : var2) {
-         float var9 = (float)((double)var8.x + 0.5 - var3.x);
-         float var10 = (float)((double)var8.z + 0.5 - var3.z);
-         float var11 = (float)Mth.lengthSquared((double)var9, (double)var10);
-         float var12 = Mth.lerp(var11 / (float)(var5 * var5), var4, 0.5F) * var6;
-         int var13 = ARGB.white(var12);
-         int var14 = (var8.z - Mth.floor(var3.z) + 16) * 32 + var8.x - Mth.floor(var3.x) + 16;
-         float var15 = this.columnSizeX[var14] / 2.0F;
-         float var16 = this.columnSizeZ[var14] / 2.0F;
-         float var17 = var9 - var15;
-         float var18 = var9 + var15;
-         float var19 = (float)((double)var8.topY - var3.y);
-         float var20 = (float)((double)var8.bottomY - var3.y);
-         float var21 = var10 - var16;
-         float var22 = var10 + var16;
-         float var23 = var8.uOffset + 0.0F;
-         float var24 = var8.uOffset + 1.0F;
-         float var25 = (float)var8.bottomY * 0.25F + var8.vOffset;
-         float var26 = (float)var8.topY * 0.25F + var8.vOffset;
-         var1.addVertex(var17, var19, var21).setUv(var23, var25).setColor(var13).setLight(var8.lightCoords);
-         var1.addVertex(var18, var19, var22).setUv(var24, var25).setColor(var13).setLight(var8.lightCoords);
-         var1.addVertex(var18, var20, var22).setUv(var24, var26).setColor(var13).setLight(var8.lightCoords);
-         var1.addVertex(var17, var20, var21).setUv(var23, var26).setColor(var13).setLight(var8.lightCoords);
+      float var7 = (float)(var5 * var5);
+
+      for(ColumnInstance var9 : var2) {
+         float var10 = (float)((double)var9.x + 0.5 - var3.x);
+         float var11 = (float)((double)var9.z + 0.5 - var3.z);
+         float var12 = (float)Mth.lengthSquared((double)var10, (double)var11);
+         float var13 = Mth.lerp(Math.min(var12 / var7, 1.0F), var4, 0.5F) * var6;
+         int var14 = ARGB.white(var13);
+         int var15 = (var9.z - Mth.floor(var3.z) + 16) * 32 + var9.x - Mth.floor(var3.x) + 16;
+         float var16 = this.columnSizeX[var15] / 2.0F;
+         float var17 = this.columnSizeZ[var15] / 2.0F;
+         float var18 = var10 - var16;
+         float var19 = var10 + var16;
+         float var20 = (float)((double)var9.topY - var3.y);
+         float var21 = (float)((double)var9.bottomY - var3.y);
+         float var22 = var11 - var17;
+         float var23 = var11 + var17;
+         float var24 = var9.uOffset + 0.0F;
+         float var25 = var9.uOffset + 1.0F;
+         float var26 = (float)var9.bottomY * 0.25F + var9.vOffset;
+         float var27 = (float)var9.topY * 0.25F + var9.vOffset;
+         var1.addVertex(var18, var20, var22).setUv(var24, var26).setColor(var14).setLight(var9.lightCoords);
+         var1.addVertex(var19, var20, var23).setUv(var25, var26).setColor(var14).setLight(var9.lightCoords);
+         var1.addVertex(var19, var21, var23).setUv(var25, var27).setColor(var14).setLight(var9.lightCoords);
+         var1.addVertex(var18, var21, var22).setUv(var24, var27).setColor(var14).setLight(var9.lightCoords);
       }
 
    }
 
-   public void tickRainParticles(ClientLevel var1, Camera var2, int var3, ParticleStatus var4) {
-      float var5 = var1.getRainLevel(1.0F) / (Minecraft.useFancyGraphics() ? 1.0F : 2.0F);
-      if (!(var5 <= 0.0F)) {
-         RandomSource var6 = RandomSource.create((long)var3 * 312987231L);
-         BlockPos var7 = BlockPos.containing(var2.getPosition());
-         BlockPos var8 = null;
-         int var9 = (int)(100.0F * var5 * var5) / (var4 == ParticleStatus.DECREASED ? 2 : 1);
+   public void tickRainParticles(ClientLevel var1, Camera var2, int var3, ParticleStatus var4, int var5) {
+      float var6 = var1.getRainLevel(1.0F);
+      if (!(var6 <= 0.0F)) {
+         RandomSource var7 = RandomSource.create((long)var3 * 312987231L);
+         BlockPos var8 = BlockPos.containing(var2.position());
+         BlockPos var9 = null;
+         int var10 = 2 * var5 + 1;
+         int var11 = var10 * var10;
+         int var12 = (int)(0.225F * (float)var11 * var6 * var6) / (var4 == ParticleStatus.DECREASED ? 2 : 1);
 
-         for(int var10 = 0; var10 < var9; ++var10) {
-            int var11 = var6.nextInt(21) - 10;
-            int var12 = var6.nextInt(21) - 10;
-            BlockPos var13 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var7.offset(var11, 0, var12));
-            if (var13.getY() > var1.getMinY() && var13.getY() <= var7.getY() + 10 && var13.getY() >= var7.getY() - 10 && this.getPrecipitationAt(var1, var13) == Biome.Precipitation.RAIN) {
-               var8 = var13.below();
+         for(int var13 = 0; var13 < var12; ++var13) {
+            int var14 = var7.nextInt(var10) - var5;
+            int var15 = var7.nextInt(var10) - var5;
+            BlockPos var16 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var8.offset(var14, 0, var15));
+            if (var16.getY() > var1.getMinY() && var16.getY() <= var8.getY() + 10 && var16.getY() >= var8.getY() - 10 && this.getPrecipitationAt(var1, var16) == Biome.Precipitation.RAIN) {
+               var9 = var16.below();
                if (var4 == ParticleStatus.MINIMAL) {
                   break;
                }
 
-               double var14 = var6.nextDouble();
-               double var16 = var6.nextDouble();
-               BlockState var18 = var1.getBlockState(var8);
-               FluidState var19 = var1.getFluidState(var8);
-               VoxelShape var20 = var18.getCollisionShape(var1, var8);
-               double var21 = var20.max(Direction.Axis.Y, var14, var16);
-               double var23 = (double)var19.getHeight(var1, var8);
-               double var25 = Math.max(var21, var23);
-               SimpleParticleType var27 = !var19.is(FluidTags.LAVA) && !var18.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(var18) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
-               var1.addParticle(var27, (double)var8.getX() + var14, (double)var8.getY() + var25, (double)var8.getZ() + var16, 0.0, 0.0, 0.0);
+               double var17 = var7.nextDouble();
+               double var19 = var7.nextDouble();
+               BlockState var21 = var1.getBlockState(var9);
+               FluidState var22 = var1.getFluidState(var9);
+               VoxelShape var23 = var21.getCollisionShape(var1, var9);
+               double var24 = var23.max(Direction.Axis.Y, var17, var19);
+               double var26 = (double)var22.getHeight(var1, var9);
+               double var28 = Math.max(var24, var26);
+               SimpleParticleType var30 = !var22.is(FluidTags.LAVA) && !var21.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(var21) ? ParticleTypes.RAIN : ParticleTypes.SMOKE;
+               var1.addParticle(var30, (double)var9.getX() + var17, (double)var9.getY() + var28, (double)var9.getZ() + var19, 0.0, 0.0, 0.0);
             }
          }
 
-         if (var8 != null && var6.nextInt(3) < this.rainSoundTime++) {
+         if (var9 != null && var7.nextInt(3) < this.rainSoundTime++) {
             this.rainSoundTime = 0;
-            if (var8.getY() > var7.getY() + 1 && var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var7).getY() > Mth.floor((float)var7.getY())) {
-               var1.playLocalSound(var8, SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.WEATHER, 0.1F, 0.5F, false);
+            if (var9.getY() > var8.getY() + 1 && var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var8).getY() > Mth.floor((float)var8.getY())) {
+               var1.playLocalSound(var9, SoundEvents.WEATHER_RAIN_ABOVE, SoundSource.WEATHER, 0.1F, 0.5F, false);
             } else {
-               var1.playLocalSound(var8, SoundEvents.WEATHER_RAIN, SoundSource.WEATHER, 0.2F, 1.0F, false);
+               var1.playLocalSound(var9, SoundEvents.WEATHER_RAIN, SoundSource.WEATHER, 0.2F, 1.0F, false);
             }
          }
 

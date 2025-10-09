@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -16,6 +15,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -55,9 +55,9 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    private int attackAnimationTick;
    private int offerFlowerTick;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   private int remainingPersistentAngerTime;
+   private long persistentAngerEndTime;
    @Nullable
-   private UUID persistentAngerTarget;
+   private EntityReference<LivingEntity> persistentAngerTarget;
 
    public IronGolem(EntityType<? extends IronGolem> var1, Level var2) {
       super(var1, var2);
@@ -140,23 +140,23 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    public void startPersistentAngerTimer() {
-      this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
+      this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   public void setRemainingPersistentAngerTime(int var1) {
-      this.remainingPersistentAngerTime = var1;
+   public void setPersistentAngerEndTime(long var1) {
+      this.persistentAngerEndTime = var1;
    }
 
-   public int getRemainingPersistentAngerTime() {
-      return this.remainingPersistentAngerTime;
+   public long getPersistentAngerEndTime() {
+      return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(@Nullable UUID var1) {
+   public void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1) {
       this.persistentAngerTarget = var1;
    }
 
    @Nullable
-   public UUID getPersistentAngerTarget() {
+   public EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

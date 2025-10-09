@@ -1,6 +1,10 @@
 package com.mojang.blaze3d.buffers;
 
 import com.mojang.blaze3d.DontObfuscate;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 
 @DontObfuscate
@@ -14,10 +18,10 @@ public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_INDEX = 64;
    public static final int USAGE_UNIFORM = 128;
    public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
-   private final int usage;
+   private final @GpuBuffer.Usage int usage;
    private final int size;
 
-   public GpuBuffer(int var1, int var2) {
+   public GpuBuffer(@GpuBuffer.Usage int var1, int var2) {
       super();
       this.size = var2;
       this.usage = var1;
@@ -27,7 +31,7 @@ public abstract class GpuBuffer implements AutoCloseable {
       return this.size;
    }
 
-   public int usage() {
+   public @GpuBuffer.Usage int usage() {
       return this.usage;
    }
 
@@ -52,5 +56,10 @@ public abstract class GpuBuffer implements AutoCloseable {
       ByteBuffer data();
 
       void close();
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Usage {
    }
 }

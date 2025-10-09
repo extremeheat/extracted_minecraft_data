@@ -20,6 +20,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -301,8 +302,10 @@ public class WinScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.poem) {
          TextureManager var5 = Minecraft.getInstance().getTextureManager();
-         TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
-         var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
+         AbstractTexture var6 = var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+         AbstractTexture var7 = var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+         TextureSetup var8 = TextureSetup.doubleTexture(var6.getTextureView(), var6.getSampler(), var7.getTextureView(), var7.getSampler());
+         var1.fill(RenderPipelines.END_PORTAL, var8, 0, 0, this.width, this.height);
       } else {
          super.renderBackground(var1, var2, var3, var4);
       }

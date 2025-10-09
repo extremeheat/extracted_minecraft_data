@@ -3,6 +3,6 @@
 @FieldsAreNonnullByDefault
 package com.mojang.blaze3d.platform.cursor;
 
+import com.mojang.blaze3d.FieldsAreNonnullByDefault;
+import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
 import javax.annotation.ParametersAreNonnullByDefault;
-import net.minecraft.FieldsAreNonnullByDefault;
-import net.minecraft.MethodsReturnNonnullByDefault;

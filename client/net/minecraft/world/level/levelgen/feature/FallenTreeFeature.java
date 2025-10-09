@@ -22,7 +22,6 @@ public class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
    private static final int FALLEN_LOG_MAX_FALL_HEIGHT_TO_GROUND = 5;
    private static final int FALLEN_LOG_MAX_GROUND_GAP = 2;
    private static final int FALLEN_LOG_MAX_SPACE_FROM_STUMP = 2;
-   private static final int BLOCK_UPDATE_FLAGS = 19;
 
    public FallenTreeFeature(Codec<FallenTreeConfiguration> var1) {
       super(var1);

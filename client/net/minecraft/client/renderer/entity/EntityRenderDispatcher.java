@@ -174,10 +174,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             var9.translate(-var12.x(), -var12.y(), -var12.z());
          }
 
-         if (var1.hitboxesRenderState != null) {
-            var10.submitHitbox(var9, var1, var1.hitboxesRenderState);
-         }
-
          var9.popPose();
       } catch (Throwable var19) {
          CrashReport var13 = CrashReport.forThrowable(var19, "Rendering entity in world");
@@ -199,7 +195,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public double distanceToSqr(Entity var1) {
-      return this.camera.getPosition().distanceToSqr(var1.position());
+      return this.camera.position().distanceToSqr(var1.position());
    }
 
    public ItemInHandRenderer getItemInHandRenderer() {

@@ -32,6 +32,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -47,6 +48,11 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
    private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
    static final Map<ResourceLocation, ComponentWrapper> PSEUDO_COMPONENTS;
    static final Map<ResourceLocation, PredicateWrapper> PSEUDO_PREDICATES;
+
+   private static PredicateWrapper createComponentExistencePredicate(Holder.Reference<DataComponentType<?>> var0) {
+      Predicate var1 = (var1x) -> var1x.has((DataComponentType)var0.value());
+      return new PredicateWrapper(var0.key().location(), Unit.CODEC.map((var1x) -> var1));
+   }
 
    public ItemPredicateArgument(CommandBuildContext var1) {
       super(ComponentPredicateParser.createGrammar(new Context(var1)).mapResult((var0) -> {
@@ -165,7 +171,7 @@ public class ItemPredicateArgument extends ParserBasedArgument<Result> {
 
       public PredicateWrapper lookupPredicateType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
          PredicateWrapper var3 = (PredicateWrapper)ItemPredicateArgument.PSEUDO_PREDICATES.get(var2);
-         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
+         return var3 != null ? var3 : (PredicateWrapper)this.predicates.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, var2)).map(PredicateWrapper::new).or(() -> this.components.get(ResourceKey.create(Registries.DATA_COMPONENT_TYPE, var2)).map(ItemPredicateArgument::createComponentExistencePredicate)).orElseThrow(() -> ItemPredicateArgument.ERROR_UNKNOWN_PREDICATE.createWithContext(var1, var2));
       }
 
       public Predicate<ItemStack> createPredicateTest(ImmutableStringReader var1, PredicateWrapper var2, Dynamic<?> var3) throws CommandSyntaxException {

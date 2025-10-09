@@ -47,7 +47,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -94,7 +93,6 @@ import net.minecraft.server.commands.PardonCommand;
 import net.minecraft.server.commands.PardonIpCommand;
 import net.minecraft.server.commands.ParticleCommand;
 import net.minecraft.server.commands.PerfCommand;
-import net.minecraft.server.commands.PermissionCheck;
 import net.minecraft.server.commands.PlaceCommand;
 import net.minecraft.server.commands.PlaySoundCommand;
 import net.minecraft.server.commands.PublishCommand;
@@ -122,6 +120,7 @@ import net.minecraft.server.commands.SpectateCommand;
 import net.minecraft.server.commands.SpreadPlayersCommand;
 import net.minecraft.server.commands.StopCommand;
 import net.minecraft.server.commands.StopSoundCommand;
+import net.minecraft.server.commands.StopwatchCommand;
 import net.minecraft.server.commands.SummonCommand;
 import net.minecraft.server.commands.TagCommand;
 import net.minecraft.server.commands.TeamCommand;
@@ -141,6 +140,10 @@ import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.PermissionProviderCheck;
+import net.minecraft.server.permissions.PermissionSetSupplier;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
@@ -153,36 +156,12 @@ public class Commands {
    public static final String COMMAND_PREFIX = "/";
    private static final ThreadLocal<ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int LEVEL_ALL = 0;
-   public static final int LEVEL_MODERATORS = 1;
-   public static final int LEVEL_GAMEMASTERS = 2;
-   public static final int LEVEL_ADMINS = 3;
-   public static final int LEVEL_OWNERS = 4;
-   private static final ClientboundCommandsPacket.NodeInspector<CommandSourceStack> COMMAND_NODE_INSPECTOR = new ClientboundCommandsPacket.NodeInspector<CommandSourceStack>() {
-      @Nullable
-      public ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
-         SuggestionProvider var2 = var1.getCustomSuggestions();
-         return var2 != null ? SuggestionProviders.getName(var2) : null;
-      }
-
-      public boolean isExecutable(CommandNode<CommandSourceStack> var1) {
-         return var1.getCommand() != null;
-      }
-
-      public boolean isRestricted(CommandNode<CommandSourceStack> var1) {
-         Predicate var3 = var1.getRequirement();
-         boolean var10000;
-         if (var3 instanceof PermissionCheck var2) {
-            if (var2.requiredLevel() > 0) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      }
-   };
+   public static final PermissionCheck LEVEL_ALL;
+   public static final PermissionCheck LEVEL_MODERATORS;
+   public static final PermissionCheck LEVEL_GAMEMASTERS;
+   public static final PermissionCheck LEVEL_ADMINS;
+   public static final PermissionCheck LEVEL_OWNERS;
+   private static final ClientboundCommandsPacket.NodeInspector<CommandSourceStack> COMMAND_NODE_INSPECTOR;
    private final CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher();
 
    public Commands(CommandSelection var1, CommandBuildContext var2) {
@@ -240,6 +219,7 @@ public class Commands {
       SpectateCommand.register(this.dispatcher);
       SpreadPlayersCommand.register(this.dispatcher);
       StopSoundCommand.register(this.dispatcher);
+      StopwatchCommand.register(this.dispatcher);
       SummonCommand.register(this.dispatcher, var2);
       TagCommand.register(this.dispatcher);
       TeamCommand.register(this.dispatcher, var2);
@@ -374,12 +354,12 @@ public class Commands {
    }
 
    public static void executeCommandInContext(CommandSourceStack var0, Consumer<ExecutionContext<CommandSourceStack>> var1) {
-      MinecraftServer var2 = var0.getServer();
-      ExecutionContext var3 = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
-      boolean var4 = var3 == null;
-      if (var4) {
-         int var5 = Math.max(1, var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH));
-         int var6 = var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_FORK_COUNT);
+      ExecutionContext var2 = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
+      boolean var3 = var2 == null;
+      if (var3) {
+         GameRules var4 = var0.getLevel().getGameRules();
+         int var5 = Math.max(1, var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH));
+         int var6 = var4.getInt(GameRules.RULE_MAX_COMMAND_FORK_COUNT);
 
          try {
             ExecutionContext var7 = new ExecutionContext(var5, var6, Profiler.get());
@@ -403,7 +383,7 @@ public class Commands {
             CURRENT_EXECUTION_CONTEXT.set((Object)null);
          }
       } else {
-         var1.accept(var3);
+         var1.accept(var2);
       }
 
    }
@@ -522,8 +502,45 @@ public class Commands {
       }
    }
 
-   public static <T extends PermissionSource> PermissionCheck<T> hasPermission(int var0) {
-      return new PermissionSource.Check<T>(var0);
+   public static <T extends PermissionSetSupplier> PermissionProviderCheck<T> hasPermission(PermissionCheck var0) {
+      return new PermissionProviderCheck<T>(var0);
+   }
+
+   static {
+      LEVEL_ALL = PermissionCheck.AlwaysPass.INSTANCE;
+      LEVEL_MODERATORS = new PermissionCheck.Require(Permissions.COMMANDS_MODERATOR);
+      LEVEL_GAMEMASTERS = new PermissionCheck.Require(Permissions.COMMANDS_GAMEMASTER);
+      LEVEL_ADMINS = new PermissionCheck.Require(Permissions.COMMANDS_ADMIN);
+      LEVEL_OWNERS = new PermissionCheck.Require(Permissions.COMMANDS_OWNER);
+      COMMAND_NODE_INSPECTOR = new ClientboundCommandsPacket.NodeInspector<CommandSourceStack>() {
+         @Nullable
+         public ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
+            SuggestionProvider var2 = var1.getCustomSuggestions();
+            return var2 != null ? SuggestionProviders.getName(var2) : null;
+         }
+
+         public boolean isExecutable(CommandNode<CommandSourceStack> var1) {
+            return var1.getCommand() != null;
+         }
+
+         public boolean isRestricted(CommandNode<CommandSourceStack> var1) {
+            Predicate var2 = var1.getRequirement();
+            if (var2 instanceof PermissionProviderCheck var3) {
+               PermissionProviderCheck var10000 = var3;
+
+               try {
+                  var7 = var10000.test();
+               } catch (Throwable var6) {
+                  throw new MatchException(var6.toString(), var6);
+               }
+
+               PermissionCheck var5 = var7;
+               return var5 != PermissionCheck.AlwaysPass.INSTANCE;
+            } else {
+               return true;
+            }
+         }
+      };
    }
 
    public static enum CommandSelection {

@@ -3,41 +3,39 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
-public class Subscription extends ValueObject {
+public record Subscription(long startDate, int daysLeft, SubscriptionType type) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public long startDate;
-   public int daysLeft;
-   public SubscriptionType type;
 
-   public Subscription() {
+   public Subscription(long var1, int var3, SubscriptionType var4) {
       super();
-      this.type = Subscription.SubscriptionType.NORMAL;
+      this.startDate = var1;
+      this.daysLeft = var3;
+      this.type = var4;
    }
 
    public static Subscription parse(String var0) {
-      Subscription var1 = new Subscription();
-
       try {
-         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
-         var1.startDate = JsonUtils.getLongOr("startDate", var2, 0L);
-         var1.daysLeft = JsonUtils.getIntOr("daysLeft", var2, 0);
-         var1.type = typeFrom(JsonUtils.getStringOr("subscriptionType", var2, Subscription.SubscriptionType.NORMAL.name()));
-      } catch (Exception var3) {
-         LOGGER.error("Could not parse Subscription: {}", var3.getMessage());
+         JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
+         return new Subscription(JsonUtils.getLongOr("startDate", var1, 0L), JsonUtils.getIntOr("daysLeft", var1, 0), typeFrom(JsonUtils.getStringOr("subscriptionType", var1, (String)null)));
+      } catch (Exception var2) {
+         LOGGER.error("Could not parse Subscription", var2);
+         return new Subscription(0L, 0, Subscription.SubscriptionType.NORMAL);
       }
-
-      return var1;
    }
 
-   private static SubscriptionType typeFrom(String var0) {
+   private static SubscriptionType typeFrom(@Nullable String var0) {
       try {
-         return Subscription.SubscriptionType.valueOf(var0);
+         if (var0 != null) {
+            return Subscription.SubscriptionType.valueOf(var0);
+         }
       } catch (Exception var2) {
-         return Subscription.SubscriptionType.NORMAL;
       }
+
+      return Subscription.SubscriptionType.NORMAL;
    }
 
    public static enum SubscriptionType {

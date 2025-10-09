@@ -32,9 +32,9 @@ public class RealmsNewsManager {
 
    private RealmsPersistence.RealmsPersistenceData updateNewsStorage(RealmsNews var1) {
       RealmsPersistence.RealmsPersistenceData var2 = this.newsLocalStorage.read();
-      if (var1.newsLink != null && !var1.newsLink.equals(var2.newsLink)) {
+      if (var1.newsLink() != null && !var1.newsLink().equals(var2.newsLink)) {
          RealmsPersistence.RealmsPersistenceData var3 = new RealmsPersistence.RealmsPersistenceData();
-         var3.newsLink = var1.newsLink;
+         var3.newsLink = var1.newsLink();
          var3.hasUnreadNews = true;
          this.newsLocalStorage.save(var3);
          return var3;

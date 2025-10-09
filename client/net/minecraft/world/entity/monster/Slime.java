@@ -263,16 +263,19 @@ public class Slime extends Mob implements Enemy {
             return checkMobSpawnRules(var0, var1, var2, var3, var4);
          }
 
-         if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70 && var4.nextFloat() < 0.5F && var4.nextFloat() < var1.getMoonBrightness() && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
-            return checkMobSpawnRules(var0, var1, var2, var3, var4);
+         if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70) {
+            float var5 = var1.getMoonBrightness() * 0.5F;
+            if (var4.nextFloat() < var5 && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
+               return checkMobSpawnRules(var0, var1, var2, var3, var4);
+            }
          }
 
          if (!(var1 instanceof WorldGenLevel)) {
             return false;
          }
 
-         ChunkPos var5 = new ChunkPos(var3);
-         boolean var6 = WorldgenRandom.seedSlimeChunk(var5.x, var5.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
+         ChunkPos var7 = new ChunkPos(var3);
+         boolean var6 = WorldgenRandom.seedSlimeChunk(var7.x, var7.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
          if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
             return checkMobSpawnRules(var0, var1, var2, var3, var4);
          }

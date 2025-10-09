@@ -555,6 +555,10 @@ public final class Window implements AutoCloseable {
 
    }
 
+   public float getAppropriateLineWidth() {
+      return Math.max(2.5F, (float)this.getWidth() / 1920.0F * 2.5F);
+   }
+
    public static class WindowInitFailed extends SilentInitException {
       WindowInitFailed(String var1) {
          super(var1);

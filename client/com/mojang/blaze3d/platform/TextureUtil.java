@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -13,8 +14,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
+import net.minecraft.util.ARGB;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -23,6 +26,7 @@ public class TextureUtil {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MIN_MIPMAP_LEVEL = 0;
    private static final int DEFAULT_IMAGE_BUFFER_SIZE = 8192;
+   private static final int[][] DIRECTIONS = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
    public TextureUtil() {
       super();
@@ -114,5 +118,67 @@ public class TextureUtil {
 
    public static Path getDebugTexturePath() {
       return getDebugTexturePath(Path.of("."));
+   }
+
+   public static void solidify(NativeImage var0) {
+      int var1 = var0.getWidth();
+      int var2 = var0.getHeight();
+      int[] var3 = new int[var1 * var2];
+      int[] var4 = new int[var1 * var2];
+      Arrays.fill(var4, 2147483647);
+      IntArrayFIFOQueue var5 = new IntArrayFIFOQueue();
+
+      for(int var6 = 0; var6 < var1; ++var6) {
+         for(int var7 = 0; var7 < var2; ++var7) {
+            int var8 = var0.getPixel(var6, var7);
+            if (ARGB.alpha(var8) != 0) {
+               int var9 = pack(var6, var7, var1);
+               var4[var9] = 0;
+               var3[var9] = var8;
+               var5.enqueue(var9);
+            }
+         }
+      }
+
+      while(!var5.isEmpty()) {
+         int var16 = var5.dequeueInt();
+         int var18 = x(var16, var1);
+         int var20 = y(var16, var1);
+
+         for(int[] var12 : DIRECTIONS) {
+            int var13 = var18 + var12[0];
+            int var14 = var20 + var12[1];
+            int var15 = pack(var13, var14, var1);
+            if (var13 >= 0 && var14 >= 0 && var13 < var1 && var14 < var2 && var4[var15] > var4[var16] + 1) {
+               var4[var15] = var4[var16] + 1;
+               var3[var15] = var3[var16];
+               var5.enqueue(var15);
+            }
+         }
+      }
+
+      for(int var17 = 0; var17 < var1; ++var17) {
+         for(int var19 = 0; var19 < var2; ++var19) {
+            int var21 = var0.getPixel(var17, var19);
+            if (ARGB.alpha(var21) == 0) {
+               var0.setPixel(var17, var19, ARGB.color(0, var3[pack(var17, var19, var1)]));
+            } else {
+               var0.setPixel(var17, var19, var21);
+            }
+         }
+      }
+
+   }
+
+   private static int pack(int var0, int var1, int var2) {
+      return var0 + var1 * var2;
+   }
+
+   private static int x(int var0, int var1) {
+      return var0 % var1;
+   }
+
+   private static int y(int var0, int var1) {
+      return var0 / var1;
    }
 }

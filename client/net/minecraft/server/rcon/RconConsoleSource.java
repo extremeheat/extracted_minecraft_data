@@ -5,6 +5,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -30,7 +31,7 @@ public class RconConsoleSource implements CommandSource {
 
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel var1 = this.server.overworld();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(var1.getRespawnData().pos()), Vec2.ZERO, var1, 4, "Rcon", RCON_COMPONENT, this.server, (Entity)null);
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(var1.getRespawnData().pos()), Vec2.ZERO, var1, LevelBasedPermissionSet.OWNER, "Rcon", RCON_COMPONENT, this.server, (Entity)null);
    }
 
    public void sendSystemMessage(Component var1) {

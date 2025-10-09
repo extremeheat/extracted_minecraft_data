@@ -48,7 +48,7 @@ public class PopupScreen extends Screen {
    }
 
    protected void init() {
-      this.backgroundScreen.init(this.minecraft, this.width, this.height);
+      this.backgroundScreen.init(this.width, this.height);
       this.layout.spacing(12).defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild((new MultiLineTextWidget(this.title.copy().withStyle(ChatFormatting.BOLD), this.font)).setMaxWidth(this.contentWidth).setCentered(true));
       if (this.image != null) {
@@ -77,7 +77,7 @@ public class PopupScreen extends Screen {
    }
 
    protected void repositionElements() {
-      this.backgroundScreen.resize(this.minecraft, this.width, this.height);
+      this.backgroundScreen.resize(this.width, this.height);
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }

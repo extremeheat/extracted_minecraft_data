@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -145,7 +146,7 @@ public class RealmsMainScreen extends RealmsScreen {
    RealmSelectionList realmSelectionList;
    RealmsServerList serverList;
    List<RealmsServer> availableSnapshotServers = List.of();
-   RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists();
+   RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists(Map.of());
    private volatile boolean trialsAvailable;
    @Nullable
    private volatile String newsLink;
@@ -189,7 +190,7 @@ public class RealmsMainScreen extends RealmsScreen {
       this.addRealmButton = Button.builder(Component.translatable("mco.selectServer.purchase"), (var1x) -> this.openTrialAvailablePopup()).size(100, 20).build();
       this.backButton = Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(100).build();
       if (RealmsClient.ENVIRONMENT == RealmsClient.Environment.STAGE) {
-         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release")).create(5, 5, 100, 20, Component.literal("Realm"), (var1x, var2x) -> {
+         this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("Snapshot"), Component.literal("Release"), snapshotToggle).create(5, 5, 100, 20, Component.literal("Realm"), (var1x, var2x) -> {
             snapshotToggle = var2x;
             this.availableSnapshotServers = List.of();
             this.debugRefreshDataFetchers();
@@ -299,8 +300,7 @@ public class RealmsMainScreen extends RealmsScreen {
       LinearLayout var1 = LinearLayout.vertical().spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(ImageWidget.texture(130, 64, NO_REALMS_LOCATION, 130, 64));
-      FocusableTextWidget var2 = new FocusableTextWidget(308, NO_REALMS_TEXT, this.font, false, FocusableTextWidget.BackgroundFill.NEVER, 4);
-      var1.addChild(var2);
+      var1.addChild(FocusableTextWidget.builder(NO_REALMS_TEXT, this.font).maxWidth(308).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build());
       return var1;
    }
 
@@ -453,9 +453,7 @@ public class RealmsMainScreen extends RealmsScreen {
       (new Thread(() -> {
          List var1 = Ping.pingAllRegions();
          RealmsClient var2 = RealmsClient.getOrCreate();
-         PingResult var3 = new PingResult();
-         var3.pingResults = var1;
-         var3.realmIds = this.getOwnedNonExpiredRealmIds();
+         PingResult var3 = new PingResult(var1, this.getOwnedNonExpiredRealmIds());
 
          try {
             var2.sendPingResults(var3);

@@ -1,7 +1,5 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -13,10 +11,9 @@ public class GlTexture extends GpuTexture {
    protected final int id;
    private final Int2IntMap fboCache = new Int2IntOpenHashMap();
    protected boolean closed;
-   protected boolean modesDirty = true;
    private int views;
 
-   protected GlTexture(int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
+   protected GlTexture(@GpuTexture.Usage int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
       super(var1, var2, var3, var4, var5, var6, var7);
       this.id = var8;
    }
@@ -55,42 +52,8 @@ public class GlTexture extends GpuTexture {
       });
    }
 
-   public void flushModeChanges(int var1) {
-      if (this.modesDirty) {
-         GlStateManager._texParameter(var1, 10242, GlConst.toGl(this.addressModeU));
-         GlStateManager._texParameter(var1, 10243, GlConst.toGl(this.addressModeV));
-         switch (this.minFilter) {
-            case NEAREST -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9986 : 9728);
-            case LINEAR -> GlStateManager._texParameter(var1, 10241, this.useMipmaps ? 9987 : 9729);
-         }
-
-         switch (this.magFilter) {
-            case NEAREST -> GlStateManager._texParameter(var1, 10240, 9728);
-            case LINEAR -> GlStateManager._texParameter(var1, 10240, 9729);
-         }
-
-         this.modesDirty = false;
-      }
-
-   }
-
    public int glId() {
       return this.id;
-   }
-
-   public void setAddressMode(AddressMode var1, AddressMode var2) {
-      super.setAddressMode(var1, var2);
-      this.modesDirty = true;
-   }
-
-   public void setTextureFilter(FilterMode var1, FilterMode var2, boolean var3) {
-      super.setTextureFilter(var1, var2, var3);
-      this.modesDirty = true;
-   }
-
-   public void setUseMipmaps(boolean var1) {
-      super.setUseMipmaps(var1);
-      this.modesDirty = true;
    }
 
    public void addViews() {

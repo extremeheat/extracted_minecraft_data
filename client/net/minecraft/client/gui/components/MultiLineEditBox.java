@@ -180,7 +180,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                      int var10001 = var21 + var25;
                      int var26 = var21 + var18;
                      Objects.requireNonNull(this.font);
-                     var1.textHighlight(var10001, var11, var26, var11 + 9);
+                     var1.textHighlight(var10001, var11, var26, var11 + 9, true);
                   }
 
                   Objects.requireNonNull(this.font);

@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -81,7 +82,7 @@ public class TracyFrameCapture implements AutoCloseable {
 
          try (RenderPass var3 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
             var3.setPipeline(RenderPipelines.TRACY_BLIT);
-            var3.bindSampler("InSampler", var1.getColorTextureView());
+            var3.bindTexture("InSampler", var1.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             var3.draw(0, 3);
          }
 

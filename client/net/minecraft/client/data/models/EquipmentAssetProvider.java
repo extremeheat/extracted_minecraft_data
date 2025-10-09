@@ -29,16 +29,16 @@ public class EquipmentAssetProvider implements DataProvider {
    private static void bootstrap(BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> var0) {
       var0.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(ResourceLocation.withDefaultNamespace("leather"), true).addHumanoidLayers(ResourceLocation.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(ResourceLocation.withDefaultNamespace("leather"), true)).build());
       var0.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail"));
-      var0.accept(EquipmentAssets.COPPER, humanoidAndHorse("copper"));
-      var0.accept(EquipmentAssets.IRON, humanoidAndHorse("iron"));
-      var0.accept(EquipmentAssets.GOLD, humanoidAndHorse("gold"));
-      var0.accept(EquipmentAssets.DIAMOND, humanoidAndHorse("diamond"));
+      var0.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper"));
+      var0.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron"));
+      var0.accept(EquipmentAssets.GOLD, humanoidAndMountArmor("gold"));
+      var0.accept(EquipmentAssets.DIAMOND, humanoidAndMountArmor("diamond"));
       var0.accept(EquipmentAssets.TURTLE_SCUTE, EquipmentClientInfo.builder().addMainHumanoidLayer(ResourceLocation.withDefaultNamespace("turtle_scute"), false).build());
-      var0.accept(EquipmentAssets.NETHERITE, onlyHumanoid("netherite"));
+      var0.accept(EquipmentAssets.NETHERITE, EquipmentClientInfo.builder().addHumanoidLayers(ResourceLocation.withDefaultNamespace("netherite")).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("netherite"))).build());
       var0.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
       var0.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
       EquipmentClientInfo.Layer var1 = new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("saddle"));
-      var0.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, var1).build());
+      var0.accept(EquipmentAssets.SADDLE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.PIG_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.STRIDER_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.CAMEL_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.DONKEY_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.MULE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, var1).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_SADDLE, var1).build());
 
       for(Map.Entry var3 : EquipmentAssets.HARNESSES.entrySet()) {
          DyeColor var4 = (DyeColor)var3.getKey();
@@ -59,8 +59,8 @@ public class EquipmentAssetProvider implements DataProvider {
       return EquipmentClientInfo.builder().addHumanoidLayers(ResourceLocation.withDefaultNamespace(var0)).build();
    }
 
-   private static EquipmentClientInfo humanoidAndHorse(String var0) {
-      return EquipmentClientInfo.builder().addHumanoidLayers(ResourceLocation.withDefaultNamespace(var0)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(ResourceLocation.withDefaultNamespace(var0), false)).build();
+   private static EquipmentClientInfo humanoidAndMountArmor(String var0) {
+      return EquipmentClientInfo.builder().addHumanoidLayers(ResourceLocation.withDefaultNamespace(var0)).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(ResourceLocation.withDefaultNamespace(var0), false)).addLayers(EquipmentClientInfo.LayerType.NAUTILUS_BODY, EquipmentClientInfo.Layer.leatherDyeable(ResourceLocation.withDefaultNamespace(var0), false)).build();
    }
 
    public CompletableFuture<?> run(CachedOutput var1) {

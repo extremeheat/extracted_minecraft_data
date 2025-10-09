@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
@@ -108,7 +107,7 @@ public class JigsawBlockEditScreen extends Screen {
       this.placementPriorityEdit.setTooltip(Tooltip.create(PLACEMENT_PRIORITY_TOOLTIP));
       this.addWidget(this.placementPriorityEdit);
       this.joint = this.jigsawEntity.getJoint();
-      this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName).withValues(JigsawBlockEntity.JointType.values()).withInitialValue(this.joint).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (var1x, var2) -> this.joint = var2));
+      this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName, this.joint).withValues(JigsawBlockEntity.JointType.values()).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (var1x, var2) -> this.joint = var2));
       boolean var1 = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
       this.jointButton.active = var1;
       this.jointButton.visible = var1;
@@ -153,25 +152,25 @@ public class JigsawBlockEditScreen extends Screen {
       return true;
    }
 
-   public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.nameEdit.getValue();
-      String var5 = this.targetEdit.getValue();
-      String var6 = this.poolEdit.getValue();
-      String var7 = this.finalStateEdit.getValue();
-      String var8 = this.selectionPriorityEdit.getValue();
-      String var9 = this.placementPriorityEdit.getValue();
-      int var10 = this.levels;
-      JigsawBlockEntity.JointType var11 = this.joint;
-      this.init(var1, var2, var3);
-      this.nameEdit.setValue(var4);
-      this.targetEdit.setValue(var5);
-      this.poolEdit.setValue(var6);
-      this.finalStateEdit.setValue(var7);
-      this.levels = var10;
-      this.joint = var11;
-      this.jointButton.setValue(var11);
-      this.selectionPriorityEdit.setValue(var8);
-      this.placementPriorityEdit.setValue(var9);
+   public void resize(int var1, int var2) {
+      String var3 = this.nameEdit.getValue();
+      String var4 = this.targetEdit.getValue();
+      String var5 = this.poolEdit.getValue();
+      String var6 = this.finalStateEdit.getValue();
+      String var7 = this.selectionPriorityEdit.getValue();
+      String var8 = this.placementPriorityEdit.getValue();
+      int var9 = this.levels;
+      JigsawBlockEntity.JointType var10 = this.joint;
+      this.init(var1, var2);
+      this.nameEdit.setValue(var3);
+      this.targetEdit.setValue(var4);
+      this.poolEdit.setValue(var5);
+      this.finalStateEdit.setValue(var6);
+      this.levels = var9;
+      this.joint = var10;
+      this.jointButton.setValue(var10);
+      this.selectionPriorityEdit.setValue(var7);
+      this.placementPriorityEdit.setValue(var8);
    }
 
    public boolean keyPressed(KeyEvent var1) {

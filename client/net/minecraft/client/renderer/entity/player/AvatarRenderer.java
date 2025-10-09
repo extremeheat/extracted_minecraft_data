@@ -31,7 +31,9 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Avatar;
@@ -44,6 +46,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwingAnimationType;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
@@ -99,8 +103,8 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
                return HumanoidModel.ArmPose.BOW_AND_ARROW;
             }
 
-            if (var3 == ItemUseAnimation.SPEAR) {
-               return HumanoidModel.ArmPose.THROW_SPEAR;
+            if (var3 == ItemUseAnimation.TRIDENT) {
+               return HumanoidModel.ArmPose.THROW_TRIDENT;
             }
 
             if (var3 == ItemUseAnimation.CROSSBOW) {
@@ -118,9 +122,18 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
             if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
+
+            if (var3 == ItemUseAnimation.SPEAR) {
+               return HumanoidModel.ArmPose.SPEAR;
+            }
          }
 
-         return HumanoidModel.ArmPose.ITEM;
+         SwingAnimation var4 = (SwingAnimation)var1.get(DataComponents.SWING_ANIMATION);
+         if (var4 != null && var4.type() == SwingAnimationType.STAB && var0.swinging) {
+            return HumanoidModel.ArmPose.SPEAR;
+         } else {
+            return var1.is(ItemTags.SPEARS) ? HumanoidModel.ArmPose.SPEAR : HumanoidModel.ArmPose.ITEM;
+         }
       }
    }
 

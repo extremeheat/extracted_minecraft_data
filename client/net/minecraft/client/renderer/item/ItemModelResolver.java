@@ -64,4 +64,9 @@ public class ItemModelResolver {
       ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
       return var2 == null ? true : ((ClientItem.Properties)this.clientProperties.apply(var2)).handAnimationOnSwap();
    }
+
+   public float swapAnimationScale(ItemStack var1) {
+      ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
+      return var2 == null ? 1.0F : ((ClientItem.Properties)this.clientProperties.apply(var2)).swapAnimationScale();
+   }
 }

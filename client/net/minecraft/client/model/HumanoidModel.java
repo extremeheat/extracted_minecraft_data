@@ -14,9 +14,11 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemStack;
 
 public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T> implements ArmedModel<T>, HeadedModel {
    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.0F, 0.0F, 2.0F, 2.0F, 24.0F, Set.of("head"));
@@ -133,22 +135,24 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       if (var1.isUsingItem) {
          boolean var9 = var1.useItemHand == InteractionHand.MAIN_HAND;
          if (var9 == var8) {
-            this.poseRightArm(var1, var3);
+            this.poseRightArm(var1);
+            this.poseLeftArm(var1);
          } else {
-            this.poseLeftArm(var1, var2);
+            this.poseLeftArm(var1);
+            this.poseRightArm(var1);
          }
       } else {
          boolean var15 = var8 ? var2.isTwoHanded() : var3.isTwoHanded();
          if (var8 != var15) {
-            this.poseLeftArm(var1, var2);
-            this.poseRightArm(var1, var3);
+            this.poseLeftArm(var1);
+            this.poseRightArm(var1);
          } else {
-            this.poseRightArm(var1, var3);
-            this.poseLeftArm(var1, var2);
+            this.poseRightArm(var1);
+            this.poseLeftArm(var1);
          }
       }
 
-      this.setupAttackAnimation(var1, var1.ageInTicks);
+      this.setupAttackAnimation(var1);
       if (var1.isCrouching) {
          this.body.xRot = 0.5F;
          ModelPart var20 = this.rightArm;
@@ -180,8 +184,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       if (var4 > 0.0F) {
          float var16 = var6 % 26.0F;
          HumanoidArm var10 = var1.attackArm;
-         float var11 = var10 == HumanoidArm.RIGHT && var1.attackTime > 0.0F ? 0.0F : var4;
-         float var12 = var10 == HumanoidArm.LEFT && var1.attackTime > 0.0F ? 0.0F : var4;
+         float var11 = var1.rightArmPose != HumanoidModel.ArmPose.SPEAR && (var10 != HumanoidArm.RIGHT || !(var1.attackTime > 0.0F)) ? var4 : 0.0F;
+         float var12 = var1.leftArmPose != HumanoidModel.ArmPose.SPEAR && (var10 != HumanoidArm.LEFT || !(var1.attackTime > 0.0F)) ? var4 : 0.0F;
          if (!var1.isUsingItem) {
             if (var16 < 14.0F) {
                this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 0.0F);
@@ -217,8 +221,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
    }
 
-   private void poseRightArm(T var1, ArmPose var2) {
-      switch (var2.ordinal()) {
+   private void poseRightArm(T var1) {
+      switch (var1.rightArmPose.ordinal()) {
          case 0:
             this.rightArm.yRot = 0.0F;
             break;
@@ -256,12 +260,15 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          case 9:
             this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.62831855F;
             this.rightArm.yRot = 0.0F;
+            break;
+         case 10:
+            SpearAnimations.thirdPersonHandUse(this.rightArm, this.head, true, var1.getUseItemStackForArm(HumanoidArm.RIGHT), var1);
       }
 
    }
 
-   private void poseLeftArm(T var1, ArmPose var2) {
-      switch (var2.ordinal()) {
+   private void poseLeftArm(T var1) {
+      switch (var1.leftArmPose.ordinal()) {
          case 0:
             this.leftArm.yRot = 0.0F;
             break;
@@ -299,6 +306,9 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          case 9:
             this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.62831855F;
             this.leftArm.yRot = 0.0F;
+            break;
+         case 10:
+            SpearAnimations.thirdPersonHandUse(this.leftArm, this.head, false, var1.getUseItemStackForArm(HumanoidArm.LEFT), var1);
       }
 
    }
@@ -308,37 +318,42 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       var1.yRot = (var2 ? -30.0F : 30.0F) * 0.017453292F + Mth.clamp(this.head.yRot, -0.5235988F, 0.5235988F);
    }
 
-   protected void setupAttackAnimation(T var1, float var2) {
-      float var3 = var1.attackTime;
-      if (!(var3 <= 0.0F)) {
-         HumanoidArm var4 = var1.attackArm;
-         ModelPart var5 = this.getArm(var4);
-         this.body.yRot = Mth.sin(Mth.sqrt(var3) * 6.2831855F) * 0.2F;
-         if (var4 == HumanoidArm.LEFT) {
+   protected void setupAttackAnimation(T var1) {
+      float var2 = var1.attackTime;
+      if (!(var2 <= 0.0F)) {
+         this.body.yRot = Mth.sin(Mth.sqrt(var2) * 6.2831855F) * 0.2F;
+         if (var1.attackArm == HumanoidArm.LEFT) {
             ModelPart var10000 = this.body;
             var10000.yRot *= -1.0F;
          }
 
-         float var7 = var1.ageScale;
-         this.rightArm.z = Mth.sin(this.body.yRot) * 5.0F * var7;
-         this.rightArm.x = -Mth.cos(this.body.yRot) * 5.0F * var7;
-         this.leftArm.z = -Mth.sin(this.body.yRot) * 5.0F * var7;
-         this.leftArm.x = Mth.cos(this.body.yRot) * 5.0F * var7;
-         ModelPart var13 = this.rightArm;
-         var13.yRot += this.body.yRot;
-         var13 = this.leftArm;
-         var13.yRot += this.body.yRot;
-         var13 = this.leftArm;
-         var13.xRot += this.body.yRot;
-         float var6 = 1.0F - var3;
-         var6 *= var6;
-         var6 *= var6;
-         var6 = 1.0F - var6;
-         float var8 = Mth.sin(var6 * 3.1415927F);
-         float var9 = Mth.sin(var3 * 3.1415927F) * -(this.head.xRot - 0.7F) * 0.75F;
-         var5.xRot -= var8 * 1.2F + var9;
-         var5.yRot += this.body.yRot * 2.0F;
-         var5.zRot += Mth.sin(var3 * 3.1415927F) * -0.4F;
+         float var3 = var1.ageScale;
+         this.rightArm.z = Mth.sin(this.body.yRot) * 5.0F * var3;
+         this.rightArm.x = -Mth.cos(this.body.yRot) * 5.0F * var3;
+         this.leftArm.z = -Mth.sin(this.body.yRot) * 5.0F * var3;
+         this.leftArm.x = Mth.cos(this.body.yRot) * 5.0F * var3;
+         ModelPart var8 = this.rightArm;
+         var8.yRot += this.body.yRot;
+         var8 = this.leftArm;
+         var8.yRot += this.body.yRot;
+         var8 = this.leftArm;
+         var8.xRot += this.body.yRot;
+         switch (var1.swingAnimationType) {
+            case WHACK:
+               float var4 = Ease.outQuart(var2);
+               float var5 = Mth.sin(var4 * 3.1415927F);
+               float var6 = Mth.sin(var2 * 3.1415927F) * -(this.head.xRot - 0.7F) * 0.75F;
+               ModelPart var7 = this.getArm(var1.attackArm);
+               var7.xRot -= var5 * 1.2F + var6;
+               var7.yRot += this.body.yRot * 2.0F;
+               var7.zRot += Mth.sin(var2 * 3.1415927F) * -0.4F;
+            case NONE:
+            default:
+               break;
+            case STAB:
+               SpearAnimations.thirdPersonAttackHand(this, var1);
+         }
+
       }
    }
 
@@ -374,16 +389,21 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       ITEM(false),
       BLOCK(false),
       BOW_AND_ARROW(true),
-      THROW_SPEAR(false),
+      THROW_TRIDENT(false),
       CROSSBOW_CHARGE(true),
       CROSSBOW_HOLD(true),
       SPYGLASS(false),
       TOOT_HORN(false),
-      BRUSH(false);
+      BRUSH(false),
+      SPEAR(false) {
+         public void animateUseItem(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
+            SpearAnimations.thirdPersonUseItem(var1, var2, var3, var4);
+         }
+      };
 
       private final boolean twoHanded;
 
-      private ArmPose(final boolean var3) {
+      ArmPose(final boolean var3) {
          this.twoHanded = var3;
       }
 
@@ -391,9 +411,12 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          return this.twoHanded;
       }
 
+      public void animateUseItem(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
+      }
+
       // $FF: synthetic method
       private static ArmPose[] $values() {
-         return new ArmPose[]{EMPTY, ITEM, BLOCK, BOW_AND_ARROW, THROW_SPEAR, CROSSBOW_CHARGE, CROSSBOW_HOLD, SPYGLASS, TOOT_HORN, BRUSH};
+         return new ArmPose[]{EMPTY, ITEM, BLOCK, BOW_AND_ARROW, THROW_TRIDENT, CROSSBOW_CHARGE, CROSSBOW_HOLD, SPYGLASS, TOOT_HORN, BRUSH, SPEAR};
       }
    }
 }

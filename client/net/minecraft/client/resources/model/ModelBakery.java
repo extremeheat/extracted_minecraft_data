@@ -135,7 +135,7 @@ public class ModelBakery {
          boolean var4 = var0.getTopAmbientOcclusion();
          boolean var5 = var0.getTopGuiLight().lightLikeBlock();
          ItemTransforms var6 = var0.getTopTransforms();
-         QuadCollection var7 = var0.bakeTopGeometry(var3, var2, BlockModelRotation.X0_Y0);
+         QuadCollection var7 = var0.bakeTopGeometry(var3, var2, BlockModelRotation.IDENTITY);
          TextureAtlasSprite var8 = var0.resolveParticleSprite(var3, var2);
          SingleVariant var9 = new SingleVariant(new SimpleModelWrapper(var7, var4, var8));
          MissingItemModel var10 = new MissingItemModel(var7.getAll(), new ModelRenderProperties(var5, var8, var6));

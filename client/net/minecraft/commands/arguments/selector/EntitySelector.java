@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -92,7 +93,7 @@ public class EntitySelector {
    }
 
    private void checkPermissions(CommandSourceStack var1) throws CommandSyntaxException {
-      if (this.usesSelector && !var1.allowsSelectors()) {
+      if (this.usesSelector && !var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
          throw EntityArgument.ERROR_SELECTORS_NOT_ALLOWED.create();
       }
    }

@@ -37,7 +37,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.LECTERN_BOOKS).add(Items.WRITTEN_BOOK, Items.WRITABLE_BOOK);
       this.tag(ItemTags.BEACON_PAYMENT_ITEMS).add(Items.NETHERITE_INGOT, Items.EMERALD, Items.DIAMOND, Items.GOLD_INGOT, Items.IRON_INGOT);
       this.tag(ItemTags.PIGLIN_REPELLENTS).add(Items.SOUL_TORCH).add(Items.SOUL_LANTERN).add(Items.SOUL_CAMPFIRE);
-      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK);
+      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_SPEAR, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK);
       this.tag(ItemTags.IGNORED_BY_PIGLIN_BABIES).add(Items.LEATHER);
       this.tag(ItemTags.PIGLIN_FOOD).add(Items.PORKCHOP, Items.COOKED_PORKCHOP);
       this.tag(ItemTags.PIGLIN_SAFE_ARMOR).add(Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
@@ -72,6 +72,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.PICKAXES).add(Items.DIAMOND_PICKAXE).add(Items.STONE_PICKAXE).add(Items.GOLDEN_PICKAXE).add(Items.NETHERITE_PICKAXE).add(Items.WOODEN_PICKAXE).add(Items.IRON_PICKAXE).add(Items.COPPER_PICKAXE);
       this.tag(ItemTags.SHOVELS).add(Items.DIAMOND_SHOVEL).add(Items.STONE_SHOVEL).add(Items.GOLDEN_SHOVEL).add(Items.NETHERITE_SHOVEL).add(Items.WOODEN_SHOVEL).add(Items.IRON_SHOVEL).add(Items.COPPER_SHOVEL);
       this.tag(ItemTags.HOES).add(Items.DIAMOND_HOE).add(Items.STONE_HOE).add(Items.GOLDEN_HOE).add(Items.NETHERITE_HOE).add(Items.WOODEN_HOE).add(Items.IRON_HOE).add(Items.COPPER_HOE);
+      this.tag(ItemTags.SPEARS).add(Items.DIAMOND_SPEAR, Items.STONE_SPEAR, Items.GOLDEN_SPEAR, Items.NETHERITE_SPEAR, Items.WOODEN_SPEAR, Items.IRON_SPEAR, Items.COPPER_SPEAR);
       this.tag(ItemTags.BREAKS_DECORATED_POTS).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.TRIDENT).add(Items.MACE);
       this.tag(ItemTags.SKELETON_PREFERRED_WEAPONS).add(Items.BOW);
       this.tag(ItemTags.DROWNED_PREFERRED_WEAPONS).add(Items.TRIDENT);
@@ -98,16 +99,18 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR);
       this.tag(ItemTags.HEAD_ARMOR_ENCHANTABLE).addTag(ItemTags.HEAD_ARMOR);
       this.tag(ItemTags.ARMOR_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR_ENCHANTABLE).addTag(ItemTags.LEG_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.HEAD_ARMOR_ENCHANTABLE);
-      this.tag(ItemTags.SWORD_ENCHANTABLE).addTag(ItemTags.SWORDS);
-      this.tag(ItemTags.FIRE_ASPECT_ENCHANTABLE).addTag(ItemTags.SWORD_ENCHANTABLE).add(Items.MACE);
-      this.tag(ItemTags.SHARP_WEAPON_ENCHANTABLE).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES);
+      this.tag(ItemTags.SWEEPING_ENCHANTABLE).addTag(ItemTags.SWORDS);
+      this.tag(ItemTags.MELEE_WEAPON_ENCHANTABLE).addTag(ItemTags.SWORDS).addTag(ItemTags.SPEARS);
+      this.tag(ItemTags.FIRE_ASPECT_ENCHANTABLE).addTag(ItemTags.MELEE_WEAPON_ENCHANTABLE).add(Items.MACE);
+      this.tag(ItemTags.SHARP_WEAPON_ENCHANTABLE).addTag(ItemTags.MELEE_WEAPON_ENCHANTABLE).addTag(ItemTags.AXES);
       this.tag(ItemTags.WEAPON_ENCHANTABLE).addTag(ItemTags.SHARP_WEAPON_ENCHANTABLE).add(Items.MACE);
       this.tag(ItemTags.MACE_ENCHANTABLE).add(Items.MACE);
       this.tag(ItemTags.MINING_ENCHANTABLE).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.SHEARS);
       this.tag(ItemTags.MINING_LOOT_ENCHANTABLE).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES);
       this.tag(ItemTags.FISHING_ENCHANTABLE).add(Items.FISHING_ROD);
       this.tag(ItemTags.TRIDENT_ENCHANTABLE).add(Items.TRIDENT);
-      this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).add(Items.SHIELD).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.BOW).add(Items.CROSSBOW).add(Items.TRIDENT).add(Items.FLINT_AND_STEEL).add(Items.SHEARS).add(Items.BRUSH).add(Items.FISHING_ROD).add(Items.CARROT_ON_A_STICK, Items.WARPED_FUNGUS_ON_A_STICK).add(Items.MACE);
+      this.tag(ItemTags.LUNGE_ENCHANTABLE).addTag(ItemTags.SPEARS);
+      this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).add(Items.SHIELD).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add(Items.BOW).add(Items.CROSSBOW).add(Items.TRIDENT).add(Items.FLINT_AND_STEEL).add(Items.SHEARS).add(Items.BRUSH).add(Items.FISHING_ROD).add(Items.CARROT_ON_A_STICK, Items.WARPED_FUNGUS_ON_A_STICK).add(Items.MACE).addTag(ItemTags.SPEARS);
       this.tag(ItemTags.BOW_ENCHANTABLE).add(Items.BOW);
       this.tag(ItemTags.EQUIPPABLE_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).addTag(ItemTags.SKULLS).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.CROSSBOW_ENCHANTABLE).add(Items.CROSSBOW);
@@ -119,6 +122,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.OCELOT_FOOD).add(Items.COD, Items.SALMON);
       this.tag(ItemTags.CAT_FOOD).add(Items.COD, Items.SALMON);
       this.tag(ItemTags.HORSE_FOOD).add(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.CARROT, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+      this.tag(ItemTags.ZOMBIE_HORSE_FOOD).add(Items.RED_MUSHROOM);
       this.tag(ItemTags.HORSE_TEMPT_ITEMS).add(Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
       this.tag(ItemTags.HARNESSES).add(Items.WHITE_HARNESS, Items.ORANGE_HARNESS, Items.MAGENTA_HARNESS, Items.LIGHT_BLUE_HARNESS, Items.YELLOW_HARNESS, Items.LIME_HARNESS, Items.PINK_HARNESS, Items.GRAY_HARNESS, Items.LIGHT_GRAY_HARNESS, Items.CYAN_HARNESS, Items.PURPLE_HARNESS, Items.BLUE_HARNESS, Items.BROWN_HARNESS, Items.GREEN_HARNESS, Items.RED_HARNESS, Items.BLACK_HARNESS);
       this.tag(ItemTags.HAPPY_GHAST_FOOD).add(Items.SNOWBALL);
@@ -130,6 +134,9 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.HOGLIN_FOOD).add(Items.CRIMSON_FUNGUS);
       this.tag(ItemTags.LLAMA_FOOD).add(Items.WHEAT, Items.HAY_BLOCK);
       this.tag(ItemTags.LLAMA_TEMPT_ITEMS).add(Items.HAY_BLOCK);
+      this.tag(ItemTags.NAUTILUS_TAMING_ITEMS).add(Items.PUFFERFISH_BUCKET, Items.PUFFERFISH);
+      this.tag(ItemTags.NAUTILUS_BUCKET_FOOD).add(Items.PUFFERFISH_BUCKET, Items.COD_BUCKET, Items.SALMON_BUCKET, Items.TROPICAL_FISH_BUCKET);
+      this.tag(ItemTags.NAUTILUS_FOOD).addTag(ItemTags.FISHES).addTag(ItemTags.NAUTILUS_BUCKET_FOOD);
       this.tag(ItemTags.PANDA_FOOD).add(Items.BAMBOO);
       this.tag(ItemTags.PANDA_EATS_FROM_GROUND).addTag(ItemTags.PANDA_FOOD).add(Items.CAKE);
       this.tag(ItemTags.PIG_FOOD).add(Items.CARROT, Items.POTATO, Items.BEETROOT);

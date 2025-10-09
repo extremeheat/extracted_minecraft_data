@@ -264,34 +264,35 @@ public final class Shapes {
          if (var0 instanceof CubeVoxelShape && BLOCK_CENTER.equals(var2)) {
             return new CubeVoxelShape(var3);
          } else {
-            Direction.Axis var4 = var1.permute(Direction.Axis.X);
-            Direction.Axis var5 = var1.permute(Direction.Axis.Y);
-            Direction.Axis var6 = var1.permute(Direction.Axis.Z);
+            Direction.Axis var4 = var1.permutation().permuteAxis(Direction.Axis.X);
+            Direction.Axis var5 = var1.permutation().permuteAxis(Direction.Axis.Y);
+            Direction.Axis var6 = var1.permutation().permuteAxis(Direction.Axis.Z);
             DoubleList var7 = var0.getCoords(var4);
             DoubleList var8 = var0.getCoords(var5);
             DoubleList var9 = var0.getCoords(var6);
-            boolean var10 = var1.inverts(var4);
-            boolean var11 = var1.inverts(var5);
-            boolean var12 = var1.inverts(var6);
-            boolean var13 = var4.choose(var10, var11, var12);
-            boolean var14 = var5.choose(var10, var11, var12);
-            boolean var15 = var6.choose(var10, var11, var12);
-            return new ArrayVoxelShape(var3, makeAxis(var7, var13, var2.get(var4), var2.x), makeAxis(var8, var14, var2.get(var5), var2.y), makeAxis(var9, var15, var2.get(var6), var2.z));
+            boolean var10 = var1.inverts(Direction.Axis.X);
+            boolean var11 = var1.inverts(Direction.Axis.Y);
+            boolean var12 = var1.inverts(Direction.Axis.Z);
+            return new ArrayVoxelShape(var3, flipAxisIfNeeded(var7, var10, var2.get(var4), var2.x), flipAxisIfNeeded(var8, var11, var2.get(var5), var2.y), flipAxisIfNeeded(var9, var12, var2.get(var6), var2.z));
          }
       }
    }
 
    @VisibleForTesting
-   static DoubleList makeAxis(DoubleList var0, boolean var1, double var2, double var4) {
+   static DoubleList flipAxisIfNeeded(DoubleList var0, boolean var1, double var2, double var4) {
       if (!var1 && var2 == var4) {
          return var0;
       } else {
          int var6 = var0.size();
          DoubleArrayList var7 = new DoubleArrayList(var6);
-         int var8 = var1 ? -1 : 1;
-
-         for(int var9 = var1 ? var6 - 1 : 0; var9 >= 0 && var9 < var6; var9 += var8) {
-            var7.add(var4 + (double)var8 * (var0.getDouble(var9) - var2));
+         if (var1) {
+            for(int var8 = var6 - 1; var8 >= 0; --var8) {
+               var7.add(-(var0.getDouble(var8) - var2) + var4);
+            }
+         } else {
+            for(int var9 = 0; var9 >= 0 && var9 < var6; ++var9) {
+               var7.add(var0.getDouble(var9) - var2 + var4);
+            }
          }
 
          return var7;

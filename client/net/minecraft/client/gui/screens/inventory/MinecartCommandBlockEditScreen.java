@@ -5,15 +5,15 @@ import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.level.BaseCommandBlock;
 
 public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScreen {
-   private final BaseCommandBlock commandBlock;
+   private final MinecartCommandBlock minecart;
 
-   public MinecartCommandBlockEditScreen(BaseCommandBlock var1) {
+   public MinecartCommandBlockEditScreen(MinecartCommandBlock var1) {
       super();
-      this.commandBlock = var1;
+      this.minecart = var1;
    }
 
    public BaseCommandBlock getCommandBlock() {
-      return this.commandBlock;
+      return this.minecart.getCommandBlock();
    }
 
    int getPreviousY() {
@@ -25,10 +25,7 @@ public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScre
       this.commandEdit.setValue(this.getCommandBlock().getCommand());
    }
 
-   protected void populateAndSendPacket(BaseCommandBlock var1) {
-      if (var1 instanceof MinecartCommandBlock.MinecartCommandBase var2) {
-         this.minecraft.getConnection().send(new ServerboundSetCommandMinecartPacket(var2.getMinecart().getId(), this.commandEdit.getValue(), var1.isTrackOutput()));
-      }
-
+   protected void populateAndSendPacket() {
+      this.minecraft.getConnection().send(new ServerboundSetCommandMinecartPacket(this.minecart.getId(), this.commandEdit.getValue(), this.minecart.getCommandBlock().isTrackOutput()));
    }
 }

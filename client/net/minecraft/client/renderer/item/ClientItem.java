@@ -24,14 +24,15 @@ public record ClientItem(ItemModel.Unbaked model, Properties properties, @Nullab
       return new ClientItem(this.model, this.properties, var1);
    }
 
-   public static record Properties(boolean handAnimationOnSwap, boolean oversizedInGui) {
-      public static final Properties DEFAULT = new Properties(true, false);
-      public static final MapCodec<Properties> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("hand_animation_on_swap", true).forGetter(Properties::handAnimationOnSwap), Codec.BOOL.optionalFieldOf("oversized_in_gui", false).forGetter(Properties::oversizedInGui)).apply(var0, Properties::new));
+   public static record Properties(boolean handAnimationOnSwap, boolean oversizedInGui, float swapAnimationScale) {
+      public static final Properties DEFAULT = new Properties(true, false, 1.0F);
+      public static final MapCodec<Properties> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("hand_animation_on_swap", true).forGetter(Properties::handAnimationOnSwap), Codec.BOOL.optionalFieldOf("oversized_in_gui", false).forGetter(Properties::oversizedInGui), Codec.FLOAT.optionalFieldOf("swap_animation_scale", 1.0F).forGetter(Properties::swapAnimationScale)).apply(var0, Properties::new));
 
-      public Properties(boolean var1, boolean var2) {
+      public Properties(boolean var1, boolean var2, float var3) {
          super();
          this.handAnimationOnSwap = var1;
          this.oversizedInGui = var2;
+         this.swapAnimationScale = var3;
       }
    }
 }

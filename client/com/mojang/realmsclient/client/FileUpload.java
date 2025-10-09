@@ -88,7 +88,7 @@ public class FileUpload {
          return var2.build();
       } else {
          this.uploadStatus.setTotalBytes(this.file.length());
-         HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
+         HttpPost var3 = new HttpPost(this.uploadInfo.uploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
          CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
 
          UploadResult var8;
@@ -131,7 +131,7 @@ public class FileUpload {
 
    private void setupRequest(HttpPost var1) throws FileNotFoundException {
       String var10002 = this.sessionId;
-      var1.setHeader("Cookie", "sid=" + var10002 + ";token=" + this.uploadInfo.getToken() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion);
+      var1.setHeader("Cookie", "sid=" + var10002 + ";token=" + this.uploadInfo.token() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion);
       CustomInputStreamEntity var2 = new CustomInputStreamEntity(new FileInputStream(this.file), this.file.length(), this.uploadStatus);
       var2.setContentType("application/octet-stream");
       var1.setEntity(var2);

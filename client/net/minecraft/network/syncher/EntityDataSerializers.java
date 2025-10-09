@@ -39,8 +39,8 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.Quaternionfc;
+import org.joml.Vector3fc;
 
 public class EntityDataSerializers {
    private static final CrudeIncrementalIntIdentityHashBiMap<EntityDataSerializer<?>> SERIALIZERS = CrudeIncrementalIntIdentityHashBiMap.<EntityDataSerializer<?>>create(16);
@@ -80,8 +80,8 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Sniffer.State> SNIFFER_STATE;
    public static final EntityDataSerializer<WeatheringCopper.WeatherState> WEATHERING_COPPER_STATE;
    public static final EntityDataSerializer<CopperGolemState> COPPER_GOLEM_STATE;
-   public static final EntityDataSerializer<Vector3f> VECTOR3;
-   public static final EntityDataSerializer<Quaternionf> QUATERNION;
+   public static final EntityDataSerializer<Vector3fc> VECTOR3;
+   public static final EntityDataSerializer<Quaternionfc> QUATERNION;
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
 
    public static void registerSerializer(EntityDataSerializer<?> var0) {
@@ -194,8 +194,8 @@ public class EntityDataSerializers {
       SNIFFER_STATE = EntityDataSerializer.<Sniffer.State>forValueType(Sniffer.State.STREAM_CODEC);
       WEATHERING_COPPER_STATE = EntityDataSerializer.<WeatheringCopper.WeatherState>forValueType(WeatheringCopper.WeatherState.STREAM_CODEC);
       COPPER_GOLEM_STATE = EntityDataSerializer.<CopperGolemState>forValueType(CopperGolemState.STREAM_CODEC);
-      VECTOR3 = EntityDataSerializer.<Vector3f>forValueType(ByteBufCodecs.VECTOR3F);
-      QUATERNION = EntityDataSerializer.<Quaternionf>forValueType(ByteBufCodecs.QUATERNIONF);
+      VECTOR3 = EntityDataSerializer.<Vector3fc>forValueType(ByteBufCodecs.VECTOR3F);
+      QUATERNION = EntityDataSerializer.<Quaternionfc>forValueType(ByteBufCodecs.QUATERNIONF);
       RESOLVABLE_PROFILE = EntityDataSerializer.<ResolvableProfile>forValueType(ResolvableProfile.STREAM_CODEC);
       registerSerializer(BYTE);
       registerSerializer(INT);

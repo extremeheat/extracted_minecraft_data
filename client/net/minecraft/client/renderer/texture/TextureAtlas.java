@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedWriter;
@@ -65,7 +66,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    public void upload(SpriteLoader.Preparations var1) {
       this.createTexture(var1.width(), var1.height(), var1.mipLevel());
       this.clearTextureData();
-      this.setFilter(false, this.mipLevel > 1);
+      this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       this.texturesByName = Map.copyOf(var1.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {

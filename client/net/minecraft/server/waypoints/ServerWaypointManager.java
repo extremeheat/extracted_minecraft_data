@@ -118,7 +118,7 @@ public class ServerWaypointManager implements WaypointManager<WaypointTransmitte
    }
 
    private static boolean isLocatorBarEnabledFor(ServerPlayer var0) {
-      return var0.level().getServer().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
+      return var0.level().getGameRules().getBoolean(GameRules.RULE_LOCATOR_BAR);
    }
 
    private void createConnection(ServerPlayer var1, WaypointTransmitter var2) {

@@ -10,6 +10,7 @@ import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
+import org.joml.Vector3i;
 
 @Immutable
 public class Vec3i implements Comparable<Vec3i> {
@@ -105,6 +106,10 @@ public class Vec3i implements Comparable<Vec3i> {
       } else {
          return var1 == 0 ? ZERO : new Vec3i(this.getX() * var1, this.getY() * var1, this.getZ() * var1);
       }
+   }
+
+   public Vec3i multiply(int var1, int var2, int var3) {
+      return new Vec3i(this.getX() * var1, this.getY() * var2, this.getZ() * var3);
    }
 
    public Vec3i above() {
@@ -224,6 +229,10 @@ public class Vec3i implements Comparable<Vec3i> {
 
    public int get(Direction.Axis var1) {
       return var1.choose(this.x, this.y, this.z);
+   }
+
+   public Vector3i toMutable() {
+      return new Vector3i(this.x, this.y, this.z);
    }
 
    public String toString() {

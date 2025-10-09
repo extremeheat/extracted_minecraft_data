@@ -47,7 +47,7 @@ public class TridentItem extends Item implements ProjectileItem {
    }
 
    public ItemUseAnimation getUseAnimation(ItemStack var1) {
-      return ItemUseAnimation.SPEAR;
+      return ItemUseAnimation.TRIDENT;
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {

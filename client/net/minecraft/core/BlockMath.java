@@ -7,7 +7,9 @@ import java.util.Map;
 import net.minecraft.Util;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class BlockMath {
    private static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL;
@@ -44,7 +46,7 @@ public class BlockMath {
    }
 
    static {
-      VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = Maps.newEnumMap(Map.of(Direction.SOUTH, Transformation.identity(), Direction.EAST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.WEST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.NORTH, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3f)null, (Quaternionf)null), Direction.UP, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.DOWN, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3f)null, (Quaternionf)null)));
+      VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = Maps.newEnumMap(Map.of(Direction.SOUTH, Transformation.identity(), Direction.EAST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.WEST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.NORTH, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3fc)null, (Quaternionfc)null), Direction.UP, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.DOWN, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3fc)null, (Quaternionfc)null)));
       VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = Maps.newEnumMap(Util.mapValues(VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL, Transformation::inverse));
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.server.jsonrpc.internalapi;
 
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 
@@ -69,9 +70,9 @@ public interface MinecraftServerSettingsService {
 
    int setStatusHeartbeatInterval(int var1, ClientInfo var2);
 
-   int getOperatorUserPermissionLevel();
+   LevelBasedPermissionSet getOperatorUserPermissions();
 
-   int setOperatorUserPermissionLevel(int var1, ClientInfo var2);
+   LevelBasedPermissionSet setOperatorUserPermissions(LevelBasedPermissionSet var1, ClientInfo var2);
 
    boolean hidesOnlinePlayers();
 

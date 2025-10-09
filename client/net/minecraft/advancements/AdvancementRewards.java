@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -68,7 +69,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          var1.awardRecipesByKey(this.recipes);
       }
 
-      this.function.flatMap((var1x) -> var1x.get(var3.getFunctions())).ifPresent((var2x) -> var3.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
+      this.function.flatMap((var1x) -> var1x.get(var3.getFunctions())).ifPresent((var2x) -> var3.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(LevelBasedPermissionSet.GAMEMASTER)));
    }
 
    public static class Builder {

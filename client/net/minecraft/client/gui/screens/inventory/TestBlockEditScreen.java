@@ -39,7 +39,7 @@ public class TestBlockEditScreen extends Screen {
       this.addRenderableWidget(this.messageEdit);
       this.setInitialFocus(this.messageEdit);
       this.updateMode(this.mode);
-      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName).withValues(MODES).displayOnlyValue().withInitialValue(this.mode).create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (var1, var2) -> this.updateMode(var2)));
+      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (var1, var2) -> this.updateMode(var2)));
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
    }

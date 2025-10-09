@@ -151,7 +151,7 @@ public final class TrialSpawner {
    }
 
    public boolean canSpawnInLevel(ServerLevel var1) {
-      if (!var1.getServer().getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED)) {
+      if (!var1.getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED)) {
          return false;
       } else if (this.overridePeacefulAndMobSpawnRule) {
          return true;

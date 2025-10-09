@@ -62,7 +62,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    public void prepare(Camera var1) {
-      this.cameraPos = var1.getPosition();
+      this.cameraPos = var1.position();
    }
 
    @Nullable

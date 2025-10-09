@@ -3,6 +3,10 @@ package com.mojang.blaze3d.platform;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -147,8 +151,13 @@ public class InputConstants {
    public static final int RELEASE = 0;
    public static final int REPEAT = 2;
    public static final int MOUSE_BUTTON_LEFT = 0;
-   public static final int MOUSE_BUTTON_MIDDLE = 2;
    public static final int MOUSE_BUTTON_RIGHT = 1;
+   public static final int MOUSE_BUTTON_MIDDLE = 2;
+   public static final int MOUSE_BUTTON_4 = 3;
+   public static final int MOUSE_BUTTON_5 = 4;
+   public static final int MOUSE_BUTTON_6 = 5;
+   public static final int MOUSE_BUTTON_7 = 6;
+   public static final int MOUSE_BUTTON_8 = 0;
    public static final int MOD_SHIFT = 1;
    public static final int MOD_CONTROL = 2;
    public static final int MOD_ALT = 4;
@@ -482,5 +491,10 @@ public class InputConstants {
       public String toString() {
          return this.name;
       }
+   }
+
+   @Retention(RetentionPolicy.CLASS)
+   @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.TYPE_USE})
+   public @interface Value {
    }
 }

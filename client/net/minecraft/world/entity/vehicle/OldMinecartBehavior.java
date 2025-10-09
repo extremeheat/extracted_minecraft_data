@@ -63,7 +63,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
          if (var4) {
             this.moveAlongTrack(var1);
             if (var3.is(Blocks.ACTIVATOR_RAIL)) {
-               this.minecart.activateMinecart(var11.getX(), var11.getY(), var11.getZ(), (Boolean)var3.getValue(PoweredRailBlock.POWERED));
+               this.minecart.activateMinecart(var1, var11.getX(), var11.getY(), var11.getZ(), (Boolean)var3.getValue(PoweredRailBlock.POWERED));
             }
          } else {
             this.minecart.comeOffTrack(var1);

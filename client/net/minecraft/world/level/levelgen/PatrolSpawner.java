@@ -29,7 +29,7 @@ public class PatrolSpawner implements CustomSpawner {
             --this.nextTick;
             if (this.nextTick <= 0) {
                this.nextTick += 12000 + var3.nextInt(1200);
-               long var4 = var1.getDayTime() / 24000L;
+               long var4 = var1.getDayCount();
                if (var4 >= 5L && var1.isBrightOutside()) {
                   if (var3.nextInt(5) == 0) {
                      int var6 = var1.players().size();

@@ -20,6 +20,8 @@ public interface NotificationService {
 
    void serverSaveCompleted();
 
+   void serverActivityOccured();
+
    void playerOped(ServerOpListEntry var1);
 
    void playerDeoped(ServerOpListEntry var1);

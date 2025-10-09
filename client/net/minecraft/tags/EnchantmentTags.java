@@ -13,6 +13,7 @@ public interface EnchantmentTags {
    TagKey<Enchantment> DAMAGE_EXCLUSIVE = create("exclusive_set/damage");
    TagKey<Enchantment> MINING_EXCLUSIVE = create("exclusive_set/mining");
    TagKey<Enchantment> RIPTIDE_EXCLUSIVE = create("exclusive_set/riptide");
+   TagKey<Enchantment> LUNGE_EXCLUSIVE = create("exclusive_set/lunge");
    TagKey<Enchantment> TRADEABLE = create("tradeable");
    TagKey<Enchantment> DOUBLE_TRADE_PRICE = create("double_trade_price");
    TagKey<Enchantment> IN_ENCHANTING_TABLE = create("in_enchanting_table");

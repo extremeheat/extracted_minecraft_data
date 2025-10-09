@@ -13,6 +13,7 @@ import net.minecraft.world.entity.animal.axolotl.AxolotlAi;
 import net.minecraft.world.entity.animal.camel.CamelAi;
 import net.minecraft.world.entity.animal.frog.FrogAi;
 import net.minecraft.world.entity.animal.goat.GoatAi;
+import net.minecraft.world.entity.animal.nautilus.NautilusAi;
 import net.minecraft.world.entity.animal.sniffer.SnifferAi;
 
 public class SensorType<U extends Sensor<?>> {
@@ -39,6 +40,7 @@ public class SensorType<U extends Sensor<?>> {
    public static final SensorType<TemptingSensor> CAMEL_TEMPTATIONS = register("camel_temptations", () -> new TemptingSensor(CamelAi.getTemptations()));
    public static final SensorType<TemptingSensor> ARMADILLO_TEMPTATIONS = register("armadillo_temptations", () -> new TemptingSensor(ArmadilloAi.getTemptations()));
    public static final SensorType<TemptingSensor> HAPPY_GHAST_TEMPTATIONS = register("happy_ghast_temptations", () -> new TemptingSensor(HappyGhast.IS_FOOD));
+   public static final SensorType<TemptingSensor> NAUTILUS_TEMPTATIONS = register("nautilus_temptations", () -> new TemptingSensor(NautilusAi.getTemptations()));
    public static final SensorType<FrogAttackablesSensor> FROG_ATTACKABLES = register("frog_attackables", FrogAttackablesSensor::new);
    public static final SensorType<IsInWaterSensor> IS_IN_WATER = register("is_in_water", IsInWaterSensor::new);
    public static final SensorType<WardenEntitySensor> WARDEN_ENTITY_SENSOR = register("warden_entity_sensor", WardenEntitySensor::new);

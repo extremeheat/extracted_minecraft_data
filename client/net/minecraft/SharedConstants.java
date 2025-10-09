@@ -14,40 +14,40 @@ import net.minecraft.world.level.ChunkPos;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = false;
+   public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4556;
+   public static final int WORLD_VERSION = 4653;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 773;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 774;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 274;
-   public static final int SNBT_NAG_VERSION = 4531;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 273;
+   public static final int SNBT_NAG_VERSION = 4650;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 69;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 70;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 88;
+   public static final int DATA_PACK_FORMAT_MAJOR = 89;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
+   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "1.1.0";
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
    public static final String DATA_VERSION_TAG = "DataVersion";
-   public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "1.0.0";
    public static final String DEBUG_FLAG_PREFIX = "MC_DEBUG_";
    public static final boolean DEBUG_ENABLED = booleanProperty(prefixDebugFlagName("ENABLED"));
    private static final boolean DEBUG_PRINT_PROPERTIES = booleanProperty(prefixDebugFlagName("PRINT_PROPERTIES"));
@@ -61,19 +61,11 @@ public class SharedConstants {
    public static final boolean DEBUG_SHUFFLE_MODELS = debugFlag("SHUFFLE_MODELS");
    public static final boolean DEBUG_RENDER_UI_LAYERING_RECTANGLES = debugFlag("RENDER_UI_LAYERING_RECTANGLES");
    public static final boolean DEBUG_PATHFINDING = debugFlag("PATHFINDING");
-   public static final boolean DEBUG_WATER = debugFlag("WATER");
-   public static final boolean DEBUG_HEIGHTMAP = debugFlag("HEIGHTMAP");
-   public static final boolean DEBUG_COLLISION = debugFlag("COLLISION");
    public static final boolean DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES = debugFlag("SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES");
-   public static final boolean DEBUG_SUPPORT_BLOCKS = debugFlag("SUPPORT_BLOCKS");
    public static final boolean DEBUG_SHAPES = debugFlag("SHAPES");
    public static final boolean DEBUG_NEIGHBORSUPDATE = debugFlag("NEIGHBORSUPDATE");
    public static final boolean DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = debugFlag("EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER");
    public static final boolean DEBUG_STRUCTURES = debugFlag("STRUCTURES");
-   public static final boolean DEBUG_LIGHT = debugFlag("LIGHT");
-   public static final boolean DEBUG_SKY_LIGHT_SECTIONS = debugFlag("SKY_LIGHT_SECTIONS");
-   public static final boolean DEBUG_SOLID_FACE = debugFlag("SOLID_FACE");
-   public static final boolean DEBUG_CHUNKS = debugFlag("CHUNKS");
    public static final boolean DEBUG_GAME_EVENT_LISTENERS = debugFlag("GAME_EVENT_LISTENERS");
    public static final boolean DEBUG_DUMP_TEXTURE_ATLAS = debugFlag("DUMP_TEXTURE_ATLAS");
    public static final boolean DEBUG_DUMP_INTERPOLATED_TEXTURE_FRAMES = debugFlag("DUMP_INTERPOLATED_TEXTURE_FRAMES");
@@ -226,7 +218,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 773;
+      return 1073742097;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

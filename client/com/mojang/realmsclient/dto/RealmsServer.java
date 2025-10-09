@@ -137,7 +137,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
             return var2;
          }
       } catch (Exception var3) {
-         LOGGER.error("Could not parse McoServer: {}", var3.getMessage());
+         LOGGER.error("Could not parse McoServer", var3);
          return new RealmsServer();
       }
    }
@@ -176,7 +176,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    private static void sortInvited(RealmsServer var0) {
-      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result());
+      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.accepted, var0x.accepted).compare(var0x.name.toLowerCase(Locale.ROOT), var1.name.toLowerCase(Locale.ROOT)).result());
    }
 
    private static void finalizeSlots(RealmsServer var0) {
@@ -236,7 +236,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       }
    }
 
-   public RealmsServer clone() {
+   public RealmsServer copy() {
       RealmsServer var1 = new RealmsServer();
       var1.id = this.id;
       var1.remoteSubscriptionId = this.remoteSubscriptionId;
@@ -245,7 +245,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       var1.state = this.state;
       var1.owner = this.owner;
       var1.players = this.players;
-      var1.slotList = this.slotList.stream().map(RealmsSlot::clone).toList();
+      var1.slotList = this.slotList.stream().map(RealmsSlot::copy).toList();
       var1.slots = this.cloneSlots(this.slots);
       var1.expired = this.expired;
       var1.expiredTrial = this.expiredTrial;
@@ -262,7 +262,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       var1.parentRealmId = this.parentRealmId;
       var1.activeVersion = this.activeVersion;
       var1.compatibility = this.compatibility;
-      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.clone() : null;
+      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.copy() : null;
       return var1;
    }
 
@@ -270,7 +270,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       HashMap var2 = Maps.newHashMap();
 
       for(Map.Entry var4 : var1.entrySet()) {
-         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.clone(), ((RealmsSlot)var4.getValue()).settings));
+         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.copy(), ((RealmsSlot)var4.getValue()).settings));
       }
 
       return var2;
@@ -295,11 +295,6 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
 
    public ServerData toServerData(String var1) {
       return new ServerData((String)Objects.requireNonNullElse(this.name, "unknown server"), var1, ServerData.Type.REALM);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 
    public static class McoServerComparator implements Comparator<RealmsServer> {

@@ -3,28 +3,33 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.Ordering;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 
 public class EffectsInInventory {
-   private static final ResourceLocation EFFECT_BACKGROUND_LARGE_SPRITE = ResourceLocation.withDefaultNamespace("container/inventory/effect_background_large");
-   private static final ResourceLocation EFFECT_BACKGROUND_SMALL_SPRITE = ResourceLocation.withDefaultNamespace("container/inventory/effect_background_small");
+   private static final ResourceLocation EFFECT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("container/inventory/effect_background");
+   private static final ResourceLocation EFFECT_BACKGROUND_AMBIENT_SPRITE = ResourceLocation.withDefaultNamespace("container/inventory/effect_background_ambient");
+   private static final int ICON_SIZE = 18;
+   public static final int SPACING = 7;
+   private static final int TEXT_X_OFFSET = 32;
+   public static final int SPRITE_SQUARE_SIZE = 32;
    private final AbstractContainerScreen<?> screen;
    private final Minecraft minecraft;
-   @Nullable
-   private MobEffectInstance hoveredEffect;
 
    public EffectsInInventory(AbstractContainerScreen<?> var1) {
       super();
@@ -38,82 +43,62 @@ public class EffectsInInventory {
       return var2 >= 32;
    }
 
-   public void renderEffects(GuiGraphics var1, int var2, int var3) {
-      this.hoveredEffect = null;
+   public void render(GuiGraphics var1, int var2, int var3) {
       int var4 = this.screen.leftPos + this.screen.imageWidth + 2;
       int var5 = this.screen.width - var4;
       Collection var6 = this.minecraft.player.getActiveEffects();
       if (!var6.isEmpty() && var5 >= 32) {
-         boolean var7 = var5 >= 120;
+         int var7 = var5 >= 120 ? var5 - 7 : 32;
          int var8 = 33;
          if (var6.size() > 5) {
             var8 = 132 / (var6.size() - 1);
          }
 
-         List var9 = Ordering.natural().sortedCopy(var6);
-         this.renderBackgrounds(var1, var4, var8, var9, var7);
-         this.renderIcons(var1, var4, var8, var9, var7);
-         if (var7) {
-            this.renderLabels(var1, var4, var8, var9);
-         } else if (var2 >= var4 && var2 <= var4 + 33) {
-            int var10 = this.screen.topPos;
-
-            for(MobEffectInstance var12 : var9) {
-               if (var3 >= var10 && var3 <= var10 + var8) {
-                  this.hoveredEffect = var12;
-               }
-
-               var10 += var8;
-            }
-         }
-
+         this.renderEffects(var1, var6, var4, var8, var2, var3, var7);
       }
    }
 
-   public void renderTooltip(GuiGraphics var1, int var2, int var3) {
-      if (this.hoveredEffect != null) {
-         List var4 = List.of(this.getEffectName(this.hoveredEffect), MobEffectUtil.formatDuration(this.hoveredEffect, 1.0F, this.minecraft.level.tickRateManager().tickrate()));
-         var1.setTooltipForNextFrame(this.screen.getFont(), var4, Optional.empty(), var2, var3);
+   private void renderEffects(GuiGraphics var1, Collection<MobEffectInstance> var2, int var3, int var4, int var5, int var6, int var7) {
+      List var8 = Ordering.natural().sortedCopy(var2);
+      int var9 = this.screen.topPos;
+      Font var10 = this.screen.getFont();
+
+      for(MobEffectInstance var12 : var8) {
+         boolean var13 = var12.isAmbient();
+         Component var14 = this.getEffectName(var12);
+         int var15 = this.renderBackground(var1, var10, var14, var3, var9, var13, var7);
+         this.renderText(var1, var12, var14, var10, var3, var9, var15, var4, var5, var6);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)Gui.getMobEffectSprite(var12.getEffect()), var3 + 7, var9 + 7, 18, 18);
+         var9 += var4;
       }
 
    }
 
-   private void renderBackgrounds(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
-      int var6 = this.screen.topPos;
-
-      for(MobEffectInstance var8 : var4) {
-         if (var5) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
-         } else {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
-         }
-
-         var6 += var3;
-      }
-
+   private int renderBackground(GuiGraphics var1, Font var2, Component var3, int var4, int var5, boolean var6, int var7) {
+      int var8 = Math.min(var7, 32 + var2.width((FormattedText)var3) + 7);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)(var6 ? EFFECT_BACKGROUND_AMBIENT_SPRITE : EFFECT_BACKGROUND_SPRITE), var4, var5, var8, 32);
+      return var8;
    }
 
-   private void renderIcons(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
-      int var6 = this.screen.topPos;
-
-      for(MobEffectInstance var8 : var4) {
-         Holder var9 = var8.getEffect();
-         ResourceLocation var10 = Gui.getMobEffectSprite(var9);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, var2 + (var5 ? 6 : 7), var6 + 7, 18, 18);
-         var6 += var3;
+   private void renderText(GuiGraphics var1, MobEffectInstance var2, Component var3, Font var4, int var5, int var6, int var7, int var8, int var9, int var10) {
+      int var11 = var5 + 32;
+      int var12 = var6 + 7;
+      int var13 = var7 - 32 - 7;
+      Component var14 = MobEffectUtil.formatDuration(var2, 1.0F, this.minecraft.level.tickRateManager().tickrate());
+      boolean var15;
+      if (var13 > 0) {
+         boolean var16 = var4.width((FormattedText)var3) > var13;
+         FormattedCharSequence var17 = var16 ? StringWidget.clipText(var3, var4, var13) : var3.getVisualOrderText();
+         var1.drawString(var4, (FormattedCharSequence)var17, var11, var12, -1);
+         Objects.requireNonNull(var4);
+         var1.drawString(var4, var14, var11, var12 + 9, -8355712);
+         var15 = var16;
+      } else {
+         var15 = true;
       }
 
-   }
-
-   private void renderLabels(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4) {
-      int var5 = this.screen.topPos;
-
-      for(MobEffectInstance var7 : var4) {
-         Component var8 = this.getEffectName(var7);
-         var1.drawString(this.screen.getFont(), (Component)var8, var2 + 10 + 18, var5 + 6, -1);
-         Component var9 = MobEffectUtil.formatDuration(var7, 1.0F, this.minecraft.level.tickRateManager().tickrate());
-         var1.drawString(this.screen.getFont(), var9, var2 + 10 + 18, var5 + 6 + 10, -8421505);
-         var5 += var3;
+      if (var15 && var9 >= var5 && var9 <= var5 + var7 && var10 >= var6 && var10 <= var6 + var8) {
+         var1.setTooltipForNextFrame(this.screen.getFont(), List.of(var3, var14), Optional.empty(), var9, var10);
       }
 
    }

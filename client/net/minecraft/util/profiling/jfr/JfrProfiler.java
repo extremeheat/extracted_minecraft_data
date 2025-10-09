@@ -26,7 +26,6 @@ import jdk.jfr.Event;
 import jdk.jfr.FlightRecorder;
 import jdk.jfr.FlightRecorderListener;
 import jdk.jfr.Recording;
-import jdk.jfr.RecordingState;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -38,6 +37,7 @@ import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.util.profiling.jfr.event.ChunkGenerationEvent;
 import net.minecraft.util.profiling.jfr.event.ChunkRegionReadEvent;
 import net.minecraft.util.profiling.jfr.event.ChunkRegionWriteEvent;
+import net.minecraft.util.profiling.jfr.event.ClientFpsEvent;
 import net.minecraft.util.profiling.jfr.event.NetworkSummaryEvent;
 import net.minecraft.util.profiling.jfr.event.PacketReceivedEvent;
 import net.minecraft.util.profiling.jfr.event.PacketSentEvent;
@@ -58,28 +58,55 @@ public class JfrProfiler implements JvmProfiler {
    public static final String TICK_CATEGORY = "Ticking";
    public static final String NETWORK_CATEGORY = "Network";
    public static final String STORAGE_CATEGORY = "Storage";
-   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
+   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, ClientFpsEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
    private static final String FLIGHT_RECORDER_CONFIG = "/flightrecorder-config.jfc";
    private static final DateTimeFormatter DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter().withZone(ZoneId.systemDefault());
    private static final JfrProfiler INSTANCE = new JfrProfiler();
    @Nullable
    Recording recording;
-   private float currentAverageTickTime;
+   private int currentFPS;
+   private float currentAverageTickTimeServer;
    private final Map<String, NetworkSummaryEvent.SumAggregation> networkTrafficByAddress = new ConcurrentHashMap();
+   private final Runnable periodicClientFps = () -> (new ClientFpsEvent(this.currentFPS)).commit();
+   private final Runnable periodicServerTickTime = () -> (new ServerTickTimeEvent(this.currentAverageTickTimeServer)).commit();
+   private final Runnable periodicNetworkSummary = () -> {
+      Iterator var1 = this.networkTrafficByAddress.values().iterator();
+
+      while(var1.hasNext()) {
+         ((NetworkSummaryEvent.SumAggregation)var1.next()).commitEvent();
+         var1.remove();
+      }
+
+   };
 
    private JfrProfiler() {
       super();
       CUSTOM_EVENTS.forEach(FlightRecorder::register);
-      FlightRecorder.addPeriodicEvent(ServerTickTimeEvent.class, () -> (new ServerTickTimeEvent(this.currentAverageTickTime)).commit());
-      FlightRecorder.addPeriodicEvent(NetworkSummaryEvent.class, () -> {
-         Iterator var1 = this.networkTrafficByAddress.values().iterator();
-
-         while(var1.hasNext()) {
-            ((NetworkSummaryEvent.SumAggregation)var1.next()).commitEvent();
-            var1.remove();
+      this.registerPeriodicEvents();
+      FlightRecorder.addListener(new FlightRecorderListener() {
+         public void recordingStateChanged(Recording var1) {
+            switch (var1.getState()) {
+               case STOPPED:
+                  JfrProfiler.this.registerPeriodicEvents();
+               case NEW:
+               case DELAYED:
+               case RUNNING:
+               case CLOSED:
+               default:
+            }
          }
-
       });
+   }
+
+   void registerPeriodicEvents() {
+      addPeriodicEvent(ClientFpsEvent.class, this.periodicClientFps);
+      addPeriodicEvent(ServerTickTimeEvent.class, this.periodicServerTickTime);
+      addPeriodicEvent(NetworkSummaryEvent.class, this.periodicNetworkSummary);
+   }
+
+   private static void addPeriodicEvent(Class<? extends Event> var0, Runnable var1) {
+      FlightRecorder.removePeriodicEvent(var1);
+      FlightRecorder.addPeriodicEvent(var0, var1);
    }
 
    public static JfrProfiler getInstance() {
@@ -172,17 +199,32 @@ public class JfrProfiler implements JvmProfiler {
          final SummaryReporter summaryReporter = new SummaryReporter(() -> JfrProfiler.this.recording = null);
 
          public void recordingStateChanged(Recording var1) {
-            if (var1 == JfrProfiler.this.recording && var1.getState() == RecordingState.STOPPED) {
-               this.summaryReporter.recordingStopped(var1.getDestination());
-               FlightRecorder.removeListener(this);
+            if (var1 == JfrProfiler.this.recording) {
+               switch (var1.getState()) {
+                  case STOPPED:
+                     this.summaryReporter.recordingStopped(var1.getDestination());
+                     FlightRecorder.removeListener(this);
+                  case NEW:
+                  case DELAYED:
+                  case RUNNING:
+                  case CLOSED:
+                  default:
+               }
             }
          }
       });
    }
 
+   public void onClientTick(int var1) {
+      if (ClientFpsEvent.TYPE.isEnabled()) {
+         this.currentFPS = var1;
+      }
+
+   }
+
    public void onServerTick(float var1) {
       if (ServerTickTimeEvent.TYPE.isEnabled()) {
-         this.currentAverageTickTime = var1;
+         this.currentAverageTickTimeServer = var1;
       }
 
    }

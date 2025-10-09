@@ -76,15 +76,11 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
 
       public CategoryEntry(final KeyMapping.Category var2) {
          super();
-         this.categoryName = new FocusableTextWidget(KeyBindsList.this.getRowWidth(), var2.label(), KeyBindsList.this.minecraft.font, false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
+         this.categoryName = FocusableTextWidget.builder(var2.label(), KeyBindsList.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         FocusableTextWidget var10000 = this.categoryName;
-         int var10001 = KeyBindsList.this.width / 2 - this.categoryName.getWidth() / 2;
-         int var10002 = this.getContentBottom();
-         Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         var10000.setPosition(var10001, var10002 - 9 - 1);
+         this.categoryName.setPosition(KeyBindsList.this.width / 2 - this.categoryName.getWidth() / 2, this.getContentBottom() - this.categoryName.getHeight());
          this.categoryName.render(var1, var2, var3, var5);
       }
 

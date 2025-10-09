@@ -42,7 +42,7 @@ public class DebugOptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("debug.options.title");
    private static final Component SUBTITLE = Component.translatable("debug.options.warning");
    static final Component ENABLED_TEXT = Component.translatable("debug.entry.always");
-   static final Component IN_F3_TEXT = Component.translatable("debug.entry.f3");
+   static final Component IN_OVERLAY_TEXT = Component.translatable("debug.entry.overlay");
    static final Component DISABLED_TEXT;
    static final Component NOT_ALLOWED_TOOLTIP;
    private static final Component SEARCH;
@@ -141,7 +141,7 @@ public class DebugOptionsScreen extends Screen {
       }
 
       public int getRowWidth() {
-         return 310;
+         return 350;
       }
 
       public void refreshEntries() {
@@ -216,10 +216,11 @@ public class DebugOptionsScreen extends Screen {
    }
 
    class OptionEntry extends AbstractOptionEntry {
+      private static final int BUTTON_WIDTH = 60;
       private final ResourceLocation location;
       protected final List<AbstractWidget> children = Lists.newArrayList();
       private final CycleButton<Boolean> always;
-      private final CycleButton<Boolean> f3;
+      private final CycleButton<Boolean> overlay;
       private final CycleButton<Boolean> never;
       private final String name;
       private final boolean isAllowed;
@@ -237,11 +238,11 @@ public class DebugOptionsScreen extends Screen {
             this.name = var10001 + var4;
          }
 
-         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718)).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 44, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.ALWAYS_ON));
-         this.f3 = CycleButton.booleanBuilder(DebugOptionsScreen.IN_F3_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_F3_TEXT.copy().withColor(-4539718)).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 44, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.IN_F3));
-         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718)).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 44, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.NEVER));
+         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.ALWAYS_ON));
+         this.overlay = CycleButton.booleanBuilder(DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.IN_OVERLAY));
+         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(var4), (var2x, var3x) -> this.setValue(var2, DebugScreenEntryStatus.NEVER));
          this.children.add(this.never);
-         this.children.add(this.f3);
+         this.children.add(this.overlay);
          this.children.add(this.always);
          this.refreshEntry();
       }
@@ -274,29 +275,29 @@ public class DebugOptionsScreen extends Screen {
          int var6 = this.getContentX();
          int var7 = this.getContentY();
          var1.drawString(DebugOptionsScreen.this.minecraft.font, this.name, var6, var7 + 5, this.isAllowed ? -1 : -8355712);
-         int var8 = var6 + this.getContentWidth() - this.never.getWidth() - this.f3.getWidth() - this.always.getWidth();
+         int var8 = var6 + this.getContentWidth() - this.never.getWidth() - this.overlay.getWidth() - this.always.getWidth();
          if (!this.isAllowed && var4 && var2 < var8) {
             var1.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, var2, var3);
          }
 
          this.never.setX(var8);
-         this.f3.setX(this.never.getX() + this.never.getWidth());
-         this.always.setX(this.f3.getX() + this.f3.getWidth());
+         this.overlay.setX(this.never.getX() + this.never.getWidth());
+         this.always.setX(this.overlay.getX() + this.overlay.getWidth());
          this.always.setY(var7);
-         this.f3.setY(var7);
+         this.overlay.setY(var7);
          this.never.setY(var7);
          this.always.render(var1, var2, var3, var5);
-         this.f3.render(var1, var2, var3, var5);
+         this.overlay.render(var1, var2, var3, var5);
          this.never.render(var1, var2, var3, var5);
       }
 
       public void refreshEntry() {
          DebugScreenEntryStatus var1 = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
          this.always.setValue(var1 == DebugScreenEntryStatus.ALWAYS_ON);
-         this.f3.setValue(var1 == DebugScreenEntryStatus.IN_F3);
+         this.overlay.setValue(var1 == DebugScreenEntryStatus.IN_OVERLAY);
          this.never.setValue(var1 == DebugScreenEntryStatus.NEVER);
          this.always.active = !(Boolean)this.always.getValue();
-         this.f3.active = !(Boolean)this.f3.getValue();
+         this.overlay.active = !(Boolean)this.overlay.getValue();
          this.never.active = !(Boolean)this.never.getValue();
       }
    }

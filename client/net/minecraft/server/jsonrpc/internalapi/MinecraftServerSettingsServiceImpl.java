@@ -3,6 +3,7 @@ package net.minecraft.server.jsonrpc.internalapi;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.jsonrpc.JsonRpcLogger;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 
@@ -178,14 +179,14 @@ public class MinecraftServerSettingsServiceImpl implements MinecraftServerSettin
       return this.getStatusHeartbeatInterval();
    }
 
-   public int getOperatorUserPermissionLevel() {
-      return this.server.operatorUserPermissionLevel();
+   public LevelBasedPermissionSet getOperatorUserPermissions() {
+      return this.server.operatorUserPermissions();
    }
 
-   public int setOperatorUserPermissionLevel(int var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Update operator user permission level from {} to {}", this.getOperatorUserPermissionLevel(), var1);
-      this.server.setOperatorUserPermissionLevel(var1);
-      return this.getOperatorUserPermissionLevel();
+   public LevelBasedPermissionSet setOperatorUserPermissions(LevelBasedPermissionSet var1, ClientInfo var2) {
+      this.jsonrpcLogger.log(var2, "Update operator user permission level from {} to {}", this.getOperatorUserPermissions(), var1.level());
+      this.server.setOperatorUserPermissions(var1);
+      return this.getOperatorUserPermissions();
    }
 
    public boolean hidesOnlinePlayers() {

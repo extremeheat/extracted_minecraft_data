@@ -49,6 +49,12 @@ public class VertexMultiConsumer {
          return this;
       }
 
+      public VertexConsumer setColor(int var1) {
+         this.first.setColor(var1);
+         this.second.setColor(var1);
+         return this;
+      }
+
       public VertexConsumer setUv(float var1, float var2) {
          this.first.setUv(var1, var2);
          this.second.setUv(var1, var2);
@@ -70,6 +76,12 @@ public class VertexMultiConsumer {
       public VertexConsumer setNormal(float var1, float var2, float var3) {
          this.first.setNormal(var1, var2, var3);
          this.second.setNormal(var1, var2, var3);
+         return this;
+      }
+
+      public VertexConsumer setLineWidth(float var1) {
+         this.first.setLineWidth(var1);
+         this.second.setLineWidth(var1);
          return this;
       }
 
@@ -111,6 +123,11 @@ public class VertexMultiConsumer {
          return this;
       }
 
+      public VertexConsumer setColor(int var1) {
+         this.forEach((var1x) -> var1x.setColor(var1));
+         return this;
+      }
+
       public VertexConsumer setUv(float var1, float var2) {
          this.forEach((var2x) -> var2x.setUv(var1, var2));
          return this;
@@ -128,6 +145,11 @@ public class VertexMultiConsumer {
 
       public VertexConsumer setNormal(float var1, float var2, float var3) {
          this.forEach((var3x) -> var3x.setNormal(var1, var2, var3));
+         return this;
+      }
+
+      public VertexConsumer setLineWidth(float var1) {
+         this.forEach((var1x) -> var1x.setLineWidth(var1));
          return this;
       }
 

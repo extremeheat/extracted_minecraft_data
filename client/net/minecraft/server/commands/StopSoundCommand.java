@@ -28,7 +28,7 @@ public class StopSoundCommand {
          var1.then(((LiteralArgumentBuilder)Commands.literal(var5.getName()).executes((var1x) -> stopSound((CommandSourceStack)var1x.getSource(), EntityArgument.getPlayers(var1x, "targets"), var5, (ResourceLocation)null))).then(Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var1x) -> stopSound((CommandSourceStack)var1x.getSource(), EntityArgument.getPlayers(var1x, "targets"), var5, ResourceLocationArgument.getId(var1x, "sound")))));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopsound").requires(Commands.hasPermission(2))).then(var1));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(var1));
    }
 
    private static int stopSound(CommandSourceStack var0, Collection<ServerPlayer> var1, @Nullable SoundSource var2, @Nullable ResourceLocation var3) {

@@ -55,7 +55,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
    }
 
    protected void init() {
-      this.backgroundScreen.resize(this.minecraft, this.width, this.height);
+      this.backgroundScreen.resize(this.width, this.height);
       if (this.trialAvailable) {
          this.createTrialButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.START_REALMS_TRIAL)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build());
       }

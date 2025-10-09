@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.fog.environment;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -22,16 +23,17 @@ public class AtmosphericFogEnvironment extends AirBasedFogEnvironment {
       super();
    }
 
-   public void setupFog(FogData var1, Entity var2, BlockPos var3, ClientLevel var4, float var5, DeltaTracker var6) {
-      Biome var7 = (Biome)var4.getBiome(var3).value();
-      float var8 = var6.getGameTimeDeltaTicks();
+   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
+      BlockPos var6 = var2.blockPosition();
+      Biome var7 = (Biome)var3.getBiome(var6).value();
+      float var8 = var5.getGameTimeDeltaTicks();
       boolean var9 = var7.hasPrecipitation();
-      float var10 = Mth.clamp(((float)var4.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(var3) - 8.0F) / 7.0F, 0.0F, 1.0F);
-      float var11 = var4.getRainLevel(var6.getGameTimeDeltaPartialTick(false)) * var10 * (var9 ? 1.0F : 0.5F);
+      float var10 = Mth.clamp(((float)var3.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(var6) - 8.0F) / 7.0F, 0.0F, 1.0F);
+      float var11 = var3.getRainLevel(var5.getGameTimeDeltaPartialTick(false)) * var10 * (var9 ? 1.0F : 0.5F);
       this.rainFogMultiplier += (var11 - this.rainFogMultiplier) * var8 * 0.2F;
       var1.environmentalStart = this.rainFogMultiplier * -160.0F;
       var1.environmentalEnd = 1024.0F + -256.0F * this.rainFogMultiplier;
-      var1.skyEnd = var5;
+      var1.skyEnd = var4;
       var1.cloudEnd = (float)((Integer)Minecraft.getInstance().options.cloudRange().get() * 16);
    }
 

@@ -61,11 +61,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
+import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
@@ -178,7 +178,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.globallyRenderedBlockEntities;
    }
 
-   public void setServerVerifiedBlockState(BlockPos var1, BlockState var2, int var3) {
+   public void setServerVerifiedBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       if (!this.blockStatePredictionHandler.updateKnownServerState(var1, var2)) {
          super.setBlock(var1, var2, var3, 512);
       }
@@ -201,7 +201,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.blockStatePredictionHandler;
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
       if (this.blockStatePredictionHandler.isPredicting()) {
          BlockState var5 = this.getBlockState(var1);
          boolean var6 = super.setBlock(var1, var2, var3, var4);
@@ -284,6 +284,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          this.chunkSource.tick(var1, true);
       }
 
+      JvmProfiler.INSTANCE.onClientTick(this.minecraft.getFps());
    }
 
    private void tickTime() {
@@ -457,7 +458,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       if (!var11.isCollisionShapeFullBlock(this, var7)) {
          ((Biome)this.getBiome(var7).value()).getAmbientParticle().ifPresent((var2x) -> {
             if (var2x.canSpawn(this.random)) {
-               this.addParticle(var2x.getOptions(), (double)var7.getX() + this.random.nextDouble(), (double)var7.getY() + this.random.nextDouble(), (double)var7.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
+               this.addParticle(var2x.options(), (double)var7.getX() + this.random.nextDouble(), (double)var7.getY() + this.random.nextDouble(), (double)var7.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
             }
 
          });
@@ -537,7 +538,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    private void playSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11, long var12) {
-      double var14 = this.minecraft.gameRenderer.getMainCamera().getPosition().distanceToSqr(var1, var3, var5);
+      double var14 = this.minecraft.gameRenderer.getMainCamera().position().distanceToSqr(var1, var3, var5);
       SimpleSoundInstance var16 = new SimpleSoundInstance(var7, var8, var9, var10, RandomSource.create(var12), var1, var3, var5);
       if (var11 && var14 > 100.0) {
          double var17 = Math.sqrt(var14) / 40.0;
@@ -660,7 +661,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          ParticleStatus var20 = this.calculateParticleLevel(var3);
          if (var2) {
             this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
-         } else if (!(var16.getPosition().distanceToSqr(var4, var6, var8) > 1024.0)) {
+         } else if (!(var16.position().distanceToSqr(var4, var6, var8) > 1024.0)) {
             if (var20 != ParticleStatus.MINIMAL) {
                this.minecraft.particleEngine.createParticle(var1, var4, var6, var8, var10, var12, var14);
             }
@@ -710,38 +711,37 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return var3 * 0.8F + 0.2F;
    }
 
-   public int getSkyColor(Vec3 var1, float var2) {
+   public int getSkyColor(Camera var1, float var2) {
       float var3 = this.getTimeOfDay(var2);
-      Vec3 var4 = var1.subtract(2.0, 2.0, 2.0).scale(0.25);
-      Vec3 var5 = CubicSampler.gaussianSampleVec3(var4, (var1x, var2x, var3x) -> Vec3.fromRGB24(((Biome)this.getBiomeManager().getNoiseBiomeAtQuart(var1x, var2x, var3x).value()).getSkyColor()));
-      float var6 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
-      var6 = Mth.clamp(var6, 0.0F, 1.0F);
-      var5 = var5.scale((double)var6);
-      int var7 = ARGB.color(var5);
-      float var8 = this.getRainLevel(var2);
-      if (var8 > 0.0F) {
-         float var9 = 0.6F;
-         float var10 = var8 * 0.75F;
-         int var11 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.6F);
-         var7 = ARGB.lerp(var10, var7, var11);
+      Vec3 var4 = var1.cubicBiomeSampler().sampleVec3((var0) -> Vec3.fromRGB24(((Biome)var0.value()).getSkyColor()));
+      float var5 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
+      var5 = Mth.clamp(var5, 0.0F, 1.0F);
+      var4 = var4.scale((double)var5);
+      int var6 = ARGB.color(var4);
+      float var7 = this.getRainLevel(var2);
+      if (var7 > 0.0F) {
+         float var8 = 0.6F;
+         float var9 = var7 * 0.75F;
+         int var10 = ARGB.scaleRGB(ARGB.greyscale(var6), 0.6F);
+         var6 = ARGB.lerp(var9, var6, var10);
       }
 
-      float var15 = this.getThunderLevel(var2);
-      if (var15 > 0.0F) {
-         float var16 = 0.2F;
-         float var18 = var15 * 0.75F;
-         int var12 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.2F);
-         var7 = ARGB.lerp(var18, var7, var12);
+      float var14 = this.getThunderLevel(var2);
+      if (var14 > 0.0F) {
+         float var15 = 0.2F;
+         float var17 = var14 * 0.75F;
+         int var11 = ARGB.scaleRGB(ARGB.greyscale(var6), 0.2F);
+         var6 = ARGB.lerp(var17, var6, var11);
       }
 
-      int var17 = this.getSkyFlashTime();
-      if (var17 > 0) {
-         float var19 = Math.min((float)var17 - var2, 1.0F);
-         var19 *= 0.45F;
-         var7 = ARGB.lerp(var19, var7, ARGB.color(204, 204, 255));
+      int var16 = this.getSkyFlashTime();
+      if (var16 > 0) {
+         float var18 = Math.min((float)var16 - var2, 1.0F);
+         var18 *= 0.45F;
+         var6 = ARGB.lerp(var18, var6, ARGB.color(204, 204, 255));
       }
 
-      return var7;
+      return var6;
    }
 
    public int getCloudColor(float var1) {
@@ -762,7 +762,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          var2 = ARGB.lerp(var6 * 0.95F, var2, var7);
       }
 
-      return var2;
+      return ARGB.color(0.8F, var2);
    }
 
    public float getStarBrightness(float var1) {

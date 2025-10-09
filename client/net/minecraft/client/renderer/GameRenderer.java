@@ -422,7 +422,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             var4 *= Mth.lerp(var2, this.oldFovModifier, this.fovModifier);
          }
 
-         Entity var6 = var1.getEntity();
+         Entity var6 = var1.entity();
          if (var6 instanceof LivingEntity) {
             LivingEntity var5 = (LivingEntity)var6;
             if (var5.isDeadOrDying()) {
@@ -754,7 +754,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       Quaternionf var23 = this.mainCamera.rotation().conjugate(new Quaternionf());
       Matrix4f var24 = (new Matrix4f()).rotation(var23);
       var4.popPush("fog");
-      boolean var25 = this.minecraft.level.effects().isFoggyAt(this.mainCamera.getBlockPosition().getX(), this.mainCamera.getBlockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+      boolean var25 = this.minecraft.level.effects().isFoggyAt(this.mainCamera.blockPosition().getX(), this.mainCamera.blockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
       Vector4f var18 = this.fogRenderer.setupFog(this.mainCamera, this.minecraft.options.getEffectiveRenderDistance(), var25, var1, this.getDarkenWorldAmount(var2), this.minecraft.level);
       GpuBufferSlice var19 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
       var4.popPush("level");
@@ -780,9 +780,9 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private void extractCamera(float var1) {
       CameraRenderState var2 = this.levelRenderState.cameraRenderState;
       var2.initialized = this.mainCamera.isInitialized();
-      var2.pos = this.mainCamera.getPosition();
-      var2.blockPos = this.mainCamera.getBlockPosition();
-      var2.entityPos = this.mainCamera.getEntity().getPosition(var1);
+      var2.pos = this.mainCamera.position();
+      var2.blockPos = this.mainCamera.blockPosition();
+      var2.entityPos = this.mainCamera.entity().getPosition(var1);
       var2.orientation = new Quaternionf(this.mainCamera.rotation());
    }
 
@@ -831,14 +831,14 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       Quaternionf var3 = this.mainCamera.rotation().conjugate(new Quaternionf());
       Matrix4f var4 = (new Matrix4f()).rotation(var3);
       Matrix4f var5 = var2.mul(var4);
-      Vec3 var6 = this.mainCamera.getPosition();
+      Vec3 var6 = this.mainCamera.position();
       Vec3 var7 = var1.subtract(var6);
       Vector3f var8 = var5.transformProject(var7.toVector3f());
       return new Vec3(var8);
    }
 
    public double projectHorizonToScreen() {
-      float var1 = this.mainCamera.getXRot();
+      float var1 = this.mainCamera.xRot();
       if (var1 <= -90.0F) {
          return -1.0 / 0.0;
       } else if (var1 >= 90.0F) {

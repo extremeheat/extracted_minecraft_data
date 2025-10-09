@@ -4,17 +4,18 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
@@ -128,7 +129,7 @@ public class LevelLoadingScreen extends Screen {
       int var8 = var7 * var6 - var4;
       int var9 = var1 - var8 / 2;
       int var10 = var2 - var8 / 2;
-      if (SharedConstants.DEBUG_CHUNKS) {
+      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_CHUNKS_ON_SERVER)) {
          int var11 = var6 / 2 + 1;
          var0.fill(var1 - var11, var2 - var11, var1 + var11, var2 + var11, -65536);
       }
@@ -151,8 +152,10 @@ public class LevelLoadingScreen extends Screen {
             break;
          case 1:
             TextureManager var5 = Minecraft.getInstance().getTextureManager();
-            TextureSetup var6 = TextureSetup.doubleTexture(var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION).getTextureView(), var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION).getTextureView());
-            var1.fill(RenderPipelines.END_PORTAL, var6, 0, 0, this.width, this.height);
+            AbstractTexture var6 = var5.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+            AbstractTexture var7 = var5.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+            TextureSetup var8 = TextureSetup.doubleTexture(var6.getTextureView(), var6.getSampler(), var7.getTextureView(), var7.getSampler());
+            var1.fill(RenderPipelines.END_PORTAL, var8, 0, 0, this.width, this.height);
             break;
          case 2:
             this.renderPanorama(var1, var4);

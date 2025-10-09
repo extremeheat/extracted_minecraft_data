@@ -1426,6 +1426,13 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.GOLDEN_AXE);
          var1.accept((ItemLike)Items.DIAMOND_AXE);
          var1.accept((ItemLike)Items.NETHERITE_AXE);
+         var1.accept((ItemLike)Items.WOODEN_SPEAR);
+         var1.accept((ItemLike)Items.STONE_SPEAR);
+         var1.accept((ItemLike)Items.COPPER_SPEAR);
+         var1.accept((ItemLike)Items.IRON_SPEAR);
+         var1.accept((ItemLike)Items.GOLDEN_SPEAR);
+         var1.accept((ItemLike)Items.DIAMOND_SPEAR);
+         var1.accept((ItemLike)Items.NETHERITE_SPEAR);
          var1.accept((ItemLike)Items.TRIDENT);
          var1.accept((ItemLike)Items.MACE);
          var1.accept((ItemLike)Items.SHIELD);
@@ -1464,6 +1471,11 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.GOLDEN_HORSE_ARMOR);
          var1.accept((ItemLike)Items.DIAMOND_HORSE_ARMOR);
          var1.accept((ItemLike)Items.WOLF_ARMOR);
+         var1.accept((ItemLike)Items.COPPER_NAUTILUS_ARMOR);
+         var1.accept((ItemLike)Items.IRON_NAUTILUS_ARMOR);
+         var1.accept((ItemLike)Items.GOLDEN_NAUTILUS_ARMOR);
+         var1.accept((ItemLike)Items.DIAMOND_NAUTILUS_ARMOR);
+         var1.accept((ItemLike)Items.NETHERITE_NAUTILUS_ARMOR);
          var1.accept((ItemLike)Items.TOTEM_OF_UNDYING);
          var1.accept((ItemLike)Items.TNT);
          var1.accept((ItemLike)Items.END_CRYSTAL);
@@ -1729,6 +1741,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MAGMA_CUBE_SPAWN_EGG);
          var1.accept((ItemLike)Items.MOOSHROOM_SPAWN_EGG);
          var1.accept((ItemLike)Items.MULE_SPAWN_EGG);
+         var1.accept((ItemLike)Items.NAUTILUS_SPAWN_EGG);
          var1.accept((ItemLike)Items.OCELOT_SPAWN_EGG);
          var1.accept((ItemLike)Items.PANDA_SPAWN_EGG);
          var1.accept((ItemLike)Items.PARROT_SPAWN_EGG);
@@ -1769,6 +1782,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ZOGLIN_SPAWN_EGG);
          var1.accept((ItemLike)Items.ZOMBIE_SPAWN_EGG);
          var1.accept((ItemLike)Items.ZOMBIE_HORSE_SPAWN_EGG);
+         var1.accept((ItemLike)Items.ZOMBIE_NAUTILUS_SPAWN_EGG);
          var1.accept((ItemLike)Items.ZOMBIE_VILLAGER_SPAWN_EGG);
          var1.accept((ItemLike)Items.ZOMBIFIED_PIGLIN_SPAWN_EGG);
       }).build());

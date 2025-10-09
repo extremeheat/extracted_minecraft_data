@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -41,8 +42,8 @@ public class Minecart extends AbstractMinecart {
       return new ItemStack(Items.MINECART);
    }
 
-   public void activateMinecart(int var1, int var2, int var3, boolean var4) {
-      if (var4) {
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+      if (var5) {
          if (this.isVehicle()) {
             this.ejectPassengers();
          }

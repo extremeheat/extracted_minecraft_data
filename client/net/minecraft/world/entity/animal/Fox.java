@@ -866,36 +866,35 @@ public class Fox extends Animal {
       }
 
       protected void breed() {
-         ServerLevel var1 = this.level;
-         Fox var2 = (Fox)this.animal.getBreedOffspring(var1, this.partner);
-         if (var2 != null) {
-            ServerPlayer var3 = this.animal.getLoveCause();
-            ServerPlayer var4 = this.partner.getLoveCause();
-            ServerPlayer var5 = var3;
-            if (var3 != null) {
-               var2.addTrustedEntity(var3);
+         Fox var1 = (Fox)this.animal.getBreedOffspring(this.level, this.partner);
+         if (var1 != null) {
+            ServerPlayer var2 = this.animal.getLoveCause();
+            ServerPlayer var3 = this.partner.getLoveCause();
+            ServerPlayer var4 = var2;
+            if (var2 != null) {
+               var1.addTrustedEntity(var2);
             } else {
-               var5 = var4;
+               var4 = var3;
             }
 
-            if (var4 != null && var3 != var4) {
-               var2.addTrustedEntity(var4);
+            if (var3 != null && var2 != var3) {
+               var1.addTrustedEntity(var3);
             }
 
-            if (var5 != null) {
-               var5.awardStat(Stats.ANIMALS_BRED);
-               CriteriaTriggers.BRED_ANIMALS.trigger(var5, this.animal, this.partner, var2);
+            if (var4 != null) {
+               var4.awardStat(Stats.ANIMALS_BRED);
+               CriteriaTriggers.BRED_ANIMALS.trigger(var4, this.animal, this.partner, var1);
             }
 
             this.animal.setAge(6000);
             this.partner.setAge(6000);
             this.animal.resetLove();
             this.partner.resetLove();
-            var2.setAge(-24000);
-            var2.snapTo(this.animal.getX(), this.animal.getY(), this.animal.getZ(), 0.0F, 0.0F);
-            var1.addFreshEntityWithPassengers(var2);
+            var1.setAge(-24000);
+            var1.snapTo(this.animal.getX(), this.animal.getY(), this.animal.getZ(), 0.0F, 0.0F);
+            this.level.addFreshEntityWithPassengers(var1);
             this.level.broadcastEntityEvent(this.animal, (byte)18);
-            if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
                this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), this.animal.getRandom().nextInt(7) + 1));
             }
 

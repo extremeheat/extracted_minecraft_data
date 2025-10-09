@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -21,9 +22,9 @@ public abstract class BufferStorage {
       }
    }
 
-   public abstract GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4);
+   public abstract GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, int var4);
 
-   public abstract GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4);
+   public abstract GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, ByteBuffer var4);
 
    public abstract GlBuffer.GlMappedView mapBuffer(DirectStateAccess var1, GlBuffer var2, int var3, int var4, int var5);
 
@@ -32,13 +33,13 @@ public abstract class BufferStorage {
          super();
       }
 
-      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4) {
+      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, int var4) {
          int var5 = var1.createBuffer();
          var1.bufferData(var5, (long)var4, var3);
          return new GlBuffer(var2, var1, var3, var4, var5, (ByteBuffer)null);
       }
 
-      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4) {
+      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, ByteBuffer var4) {
          int var5 = var1.createBuffer();
          int var6 = var4.remaining();
          var1.bufferData(var5, var4, var3);
@@ -61,14 +62,14 @@ public abstract class BufferStorage {
          super();
       }
 
-      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, int var4) {
+      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, int var4) {
          int var5 = var1.createBuffer();
          var1.bufferStorage(var5, (long)var4, var3);
          ByteBuffer var6 = this.tryMapBufferPersistent(var1, var3, var5, var4);
          return new GlBuffer(var2, var1, var3, var4, var5, var6);
       }
 
-      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, int var3, ByteBuffer var4) {
+      public GlBuffer createBuffer(DirectStateAccess var1, @Nullable Supplier<String> var2, @GpuBuffer.Usage int var3, ByteBuffer var4) {
          int var5 = var1.createBuffer();
          int var6 = var4.remaining();
          var1.bufferStorage(var5, var4, var3);
@@ -77,7 +78,7 @@ public abstract class BufferStorage {
       }
 
       @Nullable
-      private ByteBuffer tryMapBufferPersistent(DirectStateAccess var1, int var2, int var3, int var4) {
+      private ByteBuffer tryMapBufferPersistent(DirectStateAccess var1, @GpuBuffer.Usage int var2, int var3, int var4) {
          int var6 = 0;
          if ((var2 & 1) != 0) {
             var6 |= 1;

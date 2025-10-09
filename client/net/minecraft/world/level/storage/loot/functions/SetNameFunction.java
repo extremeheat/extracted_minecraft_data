@@ -16,6 +16,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
@@ -50,7 +51,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       if (var1 != null) {
          Entity var2 = (Entity)var0.getOptionalParameter(var1.getParam());
          if (var2 != null) {
-            CommandSourceStack var3 = var2.createCommandSourceStackForNameResolution(var0.getLevel()).withPermission(2);
+            CommandSourceStack var3 = var2.createCommandSourceStackForNameResolution(var0.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
             return (var2x) -> {
                try {
                   return ComponentUtils.updateForEntity(var3, var2x, var2, 0);

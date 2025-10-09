@@ -37,6 +37,7 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.notifications.ServerActivityMonitor;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
@@ -53,6 +54,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    private final byte[] challenge;
    final MinecraftServer server;
    final Connection connection;
+   final ServerActivityMonitor serverActivityMonitor;
    private volatile State state;
    private int tick;
    @Nullable
@@ -68,6 +70,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       this.serverId = "";
       this.server = var1;
       this.connection = var2;
+      this.serverActivityMonitor = this.server.getServerActivityMonitor();
       this.challenge = Ints.toByteArray(RandomSource.create().nextInt());
       this.transferred = var3;
    }
@@ -192,6 +195,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                if (var2x != null) {
                   GameProfile var3 = var2x.profile();
                   ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", var3.name(), var3.id());
+                  ServerLoginPacketListenerImpl.this.serverActivityMonitor.reportLoginActivity();
                   ServerLoginPacketListenerImpl.this.startClientVerification(var3);
                } else if (ServerLoginPacketListenerImpl.this.server.isSingleplayer()) {
                   ServerLoginPacketListenerImpl.LOGGER.warn("Failed to verify username but will let them in anyway!");

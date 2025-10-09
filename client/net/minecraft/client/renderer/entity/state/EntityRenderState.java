@@ -34,10 +34,6 @@ public class EntityRenderState {
    public Vec3 nameTagAttachment;
    @Nullable
    public List<LeashState> leashStates;
-   @Nullable
-   public HitboxesRenderState hitboxesRenderState;
-   @Nullable
-   public ServerHitboxesRenderState serverHitboxesRenderState;
    public float shadowRadius;
    public final List<ShadowPiece> shadowPieces = new ArrayList();
 

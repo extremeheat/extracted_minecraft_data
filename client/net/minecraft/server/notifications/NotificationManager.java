@@ -44,6 +44,10 @@ public class NotificationManager implements NotificationService {
       this.notificationServices.forEach(NotificationService::serverSaveCompleted);
    }
 
+   public void serverActivityOccured() {
+      this.notificationServices.forEach(NotificationService::serverActivityOccured);
+   }
+
    public void playerOped(ServerOpListEntry var1) {
       this.notificationServices.forEach((var1x) -> var1x.playerOped(var1));
    }

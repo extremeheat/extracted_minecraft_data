@@ -5,6 +5,9 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -19,17 +22,19 @@ import net.minecraft.resources.ResourceLocation;
 public interface GpuDevice {
    CommandEncoder createCommandEncoder();
 
-   GpuTexture createTexture(@Nullable Supplier<String> var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
+   GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4);
 
-   GpuTexture createTexture(@Nullable String var1, int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
+   GpuTexture createTexture(@Nullable Supplier<String> var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
+
+   GpuTexture createTexture(@Nullable String var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
 
    GpuTextureView createTextureView(GpuTexture var1);
 
    GpuTextureView createTextureView(GpuTexture var1, int var2, int var3);
 
-   GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, int var3);
+   GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, int var3);
 
-   GpuBuffer createBuffer(@Nullable Supplier<String> var1, int var2, ByteBuffer var3);
+   GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, ByteBuffer var3);
 
    String getImplementationInformation();
 

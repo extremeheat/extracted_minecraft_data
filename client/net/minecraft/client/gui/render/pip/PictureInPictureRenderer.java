@@ -59,7 +59,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    }
 
    protected void blitTexture(T var1, GuiRenderState var2) {
-      var2.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView), var1.pose(), var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
+      var2.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), var1.pose(), var1.x0(), var1.y0(), var1.x1(), var1.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, var1.scissorArea(), (ScreenRectangle)null));
    }
 
    private void prepareTexturesAndProjection(boolean var1, int var2, int var3) {
@@ -77,7 +77,6 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
       GpuDevice var4 = RenderSystem.getDevice();
       if (this.texture == null) {
          this.texture = var4.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 12, TextureFormat.RGBA8, var2, var3, 1, 1);
-         this.texture.setTextureFilter(FilterMode.NEAREST, false);
          this.textureView = var4.createTextureView(this.texture);
          this.depthTexture = var4.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 8, TextureFormat.DEPTH32, var2, var3, 1, 1);
          this.depthTextureView = var4.createTextureView(this.depthTexture);

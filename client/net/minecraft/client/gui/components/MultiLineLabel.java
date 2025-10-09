@@ -56,7 +56,7 @@ public interface MultiLineLabel {
 
             for(TextAndWidth var10 : this.getSplitMessage()) {
                int var11 = var2x.calculateLeft(var3x, var10.width);
-               var1x.drawString(var0, var10.text, var11, var8, var7);
+               var1x.drawString(var0, var10.text, var11, var8, var7, var6);
                var8 += var5;
             }
 

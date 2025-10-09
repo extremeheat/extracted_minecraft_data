@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 
 public class GenericMessageScreen extends Screen {
    @Nullable
@@ -15,13 +16,12 @@ public class GenericMessageScreen extends Screen {
    }
 
    protected void init() {
-      this.textWidget = (FocusableTextWidget)this.addRenderableWidget(new FocusableTextWidget(this.width, this.title, this.font, 12));
+      this.textWidget = (FocusableTextWidget)this.addRenderableWidget(FocusableTextWidget.builder(this.title, this.font, 12).textWidth(this.font.width((FormattedText)this.title)).build());
       this.repositionElements();
    }
 
    protected void repositionElements() {
       if (this.textWidget != null) {
-         this.textWidget.containWithin(this.width);
          FocusableTextWidget var10000 = this.textWidget;
          int var10001 = this.width / 2 - this.textWidget.getWidth() / 2;
          int var10002 = this.height / 2;

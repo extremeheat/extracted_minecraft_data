@@ -47,7 +47,7 @@ public class Husk extends Zombie {
    public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       boolean var3 = super.doHurtTarget(var1, var2);
       if (var3 && this.getMainHandItem().isEmpty() && var2 instanceof LivingEntity) {
-         float var4 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         float var4 = var1.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
          ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)var4), this);
       }
 
@@ -58,10 +58,10 @@ public class Husk extends Zombie {
       return true;
    }
 
-   protected void doUnderWaterConversion() {
-      this.convertToZombieType(EntityType.ZOMBIE);
+   protected void doUnderWaterConversion(ServerLevel var1) {
+      this.convertToZombieType(var1, EntityType.ZOMBIE);
       if (!this.isSilent()) {
-         this.level().levelEvent((Entity)null, 1041, this.blockPosition(), 0);
+         var1.levelEvent((Entity)null, 1041, this.blockPosition(), 0);
       }
 
    }

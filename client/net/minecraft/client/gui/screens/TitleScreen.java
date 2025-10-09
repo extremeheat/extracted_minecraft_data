@@ -123,7 +123,7 @@ public class TitleScreen extends Screen {
       }
 
       if (this.realmsNotificationsEnabled()) {
-         this.realmsNotificationsScreen.init(this.minecraft, this.width, this.height);
+         this.realmsNotificationsScreen.init(this.width, this.height);
       }
 
    }

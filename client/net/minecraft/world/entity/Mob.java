@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -456,6 +457,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void aiStep() {
       super.aiStep();
+      if (this.getType().is(EntityTypeTags.BURN_IN_DAYLIGHT)) {
+         this.burnUndead();
+      }
+
       ProfilerFiller var1 = Profiler.get();
       var1.push("looting");
       Level var3 = this.level();
@@ -472,6 +477,43 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       }
 
       var1.pop();
+   }
+
+   protected EquipmentSlot sunProtectionSlot() {
+      return EquipmentSlot.HEAD;
+   }
+
+   private void burnUndead() {
+      if (this.isAlive() && this.isSunBurnTick()) {
+         EquipmentSlot var1 = this.sunProtectionSlot();
+         ItemStack var2 = this.getItemBySlot(var1);
+         if (!var2.isEmpty()) {
+            if (var2.isDamageableItem()) {
+               Item var3 = var2.getItem();
+               var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
+               if (var2.getDamageValue() >= var2.getMaxDamage()) {
+                  this.onEquippedItemBroken(var3, var1);
+                  this.setItemSlot(var1, ItemStack.EMPTY);
+               }
+            }
+
+         } else {
+            this.igniteForSeconds(8.0F);
+         }
+      }
+   }
+
+   private boolean isSunBurnTick() {
+      if (this.level().isBrightOutside() && !this.level().isClientSide()) {
+         float var1 = this.getLightLevelDependentMagicValue();
+         BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
+         boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
+         if (var1 > 0.5F && this.random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F && !var3 && this.level().canSeeSky(var2)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    protected Vec3i getPickupReach() {
@@ -1300,21 +1342,16 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       float var3 = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
       ItemStack var4 = this.getWeaponItem();
-      DamageSource var5 = (DamageSource)Optional.ofNullable(var4.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+      DamageSource var5 = var4.getDamageSource(this, () -> this.damageSources().mobAttack(this));
       var3 = EnchantmentHelper.modifyDamage(var1, var4, var2, var5, var3);
       var3 += var4.getItem().getAttackDamageBonus(var2, var3, var5);
-      boolean var6 = var2.hurtServer(var1, var5, var3);
-      if (var6) {
-         float var7 = this.getKnockback(var2, var5);
-         if (var7 > 0.0F && var2 instanceof LivingEntity) {
-            LivingEntity var8 = (LivingEntity)var2;
-            var8.knockback((double)(var7 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-         }
-
+      Vec3 var6 = var2.getDeltaMovement();
+      boolean var7 = var2.hurtServer(var1, var5, var3);
+      if (var7) {
+         this.causeExtraKnockback(var2, this.getKnockback(var2, var5), var6);
          if (var2 instanceof LivingEntity) {
-            LivingEntity var11 = (LivingEntity)var2;
-            var4.hurtEnemy(var11, this);
+            LivingEntity var8 = (LivingEntity)var2;
+            var4.hurtEnemy(var8, this);
          }
 
          EnchantmentHelper.doPostAttackEffects(var1, var2, var5);
@@ -1322,23 +1359,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          this.playAttackSound();
       }
 
-      return var6;
-   }
-
-   protected void playAttackSound() {
-   }
-
-   protected boolean isSunBurnTick() {
-      if (this.level().isBrightOutside() && !this.level().isClientSide()) {
-         float var1 = this.getLightLevelDependentMagicValue();
-         BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
-         boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
-         if (var1 > 0.5F && this.random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F && !var3 && this.level().canSeeSky(var2)) {
-            return true;
-         }
-      }
-
-      return false;
+      this.lungeForwardMaybe();
+      return var7;
    }
 
    protected void jumpInLiquid(TagKey<Fluid> var1) {

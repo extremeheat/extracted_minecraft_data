@@ -1,35 +1,38 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
-public class PendingInvitesList extends ValueObject {
+public record PendingInvitesList(List<PendingInvite> pendingInvites) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public List<PendingInvite> pendingInvites = Lists.newArrayList();
 
-   public PendingInvitesList() {
+   public PendingInvitesList(List<PendingInvite> var1) {
       super();
+      this.pendingInvites = var1;
    }
 
    public static PendingInvitesList parse(String var0) {
-      PendingInvitesList var1 = new PendingInvitesList();
+      ArrayList var1 = new ArrayList();
 
       try {
          JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
          if (var2.get("invites").isJsonArray()) {
             for(JsonElement var4 : var2.get("invites").getAsJsonArray()) {
-               var1.pendingInvites.add(PendingInvite.parse(var4.getAsJsonObject()));
+               PendingInvite var5 = PendingInvite.parse(var4.getAsJsonObject());
+               if (var5 != null) {
+                  var1.add(var5);
+               }
             }
          }
-      } catch (Exception var5) {
-         LOGGER.error("Could not parse PendingInvitesList: {}", var5.getMessage());
+      } catch (Exception var6) {
+         LOGGER.error("Could not parse PendingInvitesList", var6);
       }
 
-      return var1;
+      return new PendingInvitesList(var1);
    }
 }

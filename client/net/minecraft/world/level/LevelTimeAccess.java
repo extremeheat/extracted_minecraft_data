@@ -6,14 +6,14 @@ public interface LevelTimeAccess extends LevelReader {
    long dayTime();
 
    default float getMoonBrightness() {
-      return DimensionType.MOON_BRIGHTNESS_PER_PHASE[this.dimensionType().moonPhase(this.dayTime())];
+      return DimensionType.MOON_BRIGHTNESS_PER_PHASE[this.dimensionType().moonPhase(this.dayTime()).index()];
    }
 
    default float getTimeOfDay(float var1) {
       return this.dimensionType().timeOfDay(this.dayTime());
    }
 
-   default int getMoonPhase() {
+   default MoonPhase getMoonPhase() {
       return this.dimensionType().moonPhase(this.dayTime());
    }
 }

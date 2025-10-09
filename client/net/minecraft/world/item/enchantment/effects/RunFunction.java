@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +30,7 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
       ServerFunctionManager var7 = var6.getFunctions();
       Optional var8 = var7.get(this.function);
       if (var8.isPresent()) {
-         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
+         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
          var7.execute((CommandFunction)var8.get(), var9);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);

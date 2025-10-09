@@ -73,6 +73,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.notifications.NotificationService;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerStatsCounter;
@@ -150,6 +151,7 @@ public abstract class PlayerList {
       LevelData var10 = var8.getLevelData();
       ServerGamePacketListenerImpl var11 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
       var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), var11), var11);
+      var11.suspendFlushing();
       GameRules var12 = var8.getGameRules();
       boolean var13 = var12.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var14 = var12.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
@@ -189,6 +191,7 @@ public abstract class PlayerList {
       this.sendActivePlayerEffects(var2);
       var2.initInventoryMenu();
       this.server.notificationManager().playerJoined(var2);
+      var11.resumeFlushing();
    }
 
    protected void updateEntireScoreboard(ServerScoreboard var1, ServerPlayer var2) {
@@ -414,7 +417,7 @@ public abstract class PlayerList {
    }
 
    public void sendPlayerPermissionLevel(ServerPlayer var1) {
-      int var2 = this.server.getProfilePermissions(var1.nameAndId());
+      LevelBasedPermissionSet var2 = this.server.getProfilePermissions(var1.nameAndId());
       this.sendPlayerPermissionLevel(var1, var2);
    }
 
@@ -492,8 +495,8 @@ public abstract class PlayerList {
       this.op(var1, Optional.empty(), Optional.empty());
    }
 
-   public void op(NameAndId var1, Optional<Integer> var2, Optional<Boolean> var3) {
-      this.ops.add(new ServerOpListEntry(var1, (Integer)var2.orElse(this.server.operatorUserPermissionLevel()), (Boolean)var3.orElse(this.ops.canBypassPlayerLimit(var1))));
+   public void op(NameAndId var1, Optional<LevelBasedPermissionSet> var2, Optional<Boolean> var3) {
+      this.ops.add(new ServerOpListEntry(var1, (LevelBasedPermissionSet)var2.orElse(this.server.operatorUserPermissions()), (Boolean)var3.orElse(this.ops.canBypassPlayerLimit(var1))));
       ServerPlayer var4 = this.getPlayer(var1.id());
       if (var4 != null) {
          this.sendPlayerPermissionLevel(var4);
@@ -511,17 +514,19 @@ public abstract class PlayerList {
 
    }
 
-   private void sendPlayerPermissionLevel(ServerPlayer var1, int var2) {
+   private void sendPlayerPermissionLevel(ServerPlayer var1, LevelBasedPermissionSet var2) {
       if (var1.connection != null) {
-         byte var3;
-         if (var2 <= 0) {
-            var3 = 24;
-         } else if (var2 >= 4) {
-            var3 = 28;
-         } else {
-            var3 = (byte)(24 + var2);
+         byte var10000;
+         switch (var2.level()) {
+            case ALL -> var10000 = 24;
+            case MODERATORS -> var10000 = 25;
+            case GAMEMASTERS -> var10000 = 26;
+            case ADMINS -> var10000 = 24;
+            case OWNERS -> var10000 = 28;
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
 
+         byte var3 = var10000;
          var1.connection.send(new ClientboundEntityEventPacket(var1, var3));
       }
 

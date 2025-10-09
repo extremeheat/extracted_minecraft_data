@@ -70,9 +70,9 @@ public class Checkbox extends AbstractButton {
       var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.checkbox.usage.focused"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.focused.uncheck" : "narration.checkbox.usage.focused.check"));
          } else {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.checkbox.usage.hovered"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.hovered.uncheck" : "narration.checkbox.usage.hovered.check"));
          }
       }
 
