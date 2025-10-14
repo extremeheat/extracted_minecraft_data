@@ -1,6 +1,7 @@
 package net.minecraft.client.sounds;
 
 import com.mojang.serialization.Codec;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -31,42 +32,45 @@ public class MusicManager {
    }
 
    public void tick() {
-      MusicInfo var1 = this.minecraft.getSituationalMusic();
-      float var2 = var1.volume();
-      if (this.currentMusic != null && this.currentGain != var2) {
-         boolean var3 = this.fadePlaying(var2);
-         if (!var3) {
+      float var1 = this.minecraft.getMusicVolume();
+      if (this.currentMusic != null && this.currentGain != var1) {
+         boolean var2 = this.fadePlaying(var1);
+         if (!var2) {
             return;
          }
       }
 
-      Music var4 = var1.music();
-      if (var4 == null) {
+      Music var3 = this.minecraft.getSituationalMusic();
+      if (var3 == null) {
          this.nextSongDelay = Math.max(this.nextSongDelay, 100);
       } else {
          if (this.currentMusic != null) {
-            if (var1.canReplace(this.currentMusic)) {
+            if (canReplace(var3, this.currentMusic)) {
                this.minecraft.getSoundManager().stop(this.currentMusic);
-               this.nextSongDelay = Mth.nextInt(this.random, 0, var4.minDelay() / 2);
+               this.nextSongDelay = Mth.nextInt(this.random, 0, var3.minDelay() / 2);
             }
 
             if (!this.minecraft.getSoundManager().isActive(this.currentMusic)) {
                this.currentMusic = null;
-               this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var4, this.random));
+               this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var3, this.random));
             }
          }
 
-         this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var4, this.random));
+         this.nextSongDelay = Math.min(this.nextSongDelay, this.gameMusicFrequency.getNextSongDelay(var3, this.random));
          if (this.currentMusic == null && this.nextSongDelay-- <= 0) {
-            this.startPlaying(var1);
+            this.startPlaying(var3);
          }
 
       }
    }
 
-   public void startPlaying(MusicInfo var1) {
-      SoundEvent var2 = (SoundEvent)var1.music().event().value();
-      this.currentMusic = SimpleSoundInstance.forMusic(var2, var1.volume());
+   private static boolean canReplace(Music var0, SoundInstance var1) {
+      return var0.replaceCurrentMusic() && !((SoundEvent)var0.sound().value()).location().equals(var1.getLocation());
+   }
+
+   public void startPlaying(Music var1) {
+      SoundEvent var2 = (SoundEvent)var1.sound().value();
+      this.currentMusic = SimpleSoundInstance.forMusic(var2, this.currentGain);
       switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
          case STARTED:
             this.minecraft.getToastManager().showNowPlayingToast();
@@ -77,7 +81,6 @@ public class MusicManager {
       }
 
       this.nextSongDelay = 2147483647;
-      this.currentGain = var1.volume();
    }
 
    public void showNowPlayingToastIfNeeded() {
@@ -135,7 +138,7 @@ public class MusicManager {
    }
 
    public boolean isPlayingMusic(Music var1) {
-      return this.currentMusic == null ? false : ((SoundEvent)var1.event().value()).location().equals(this.currentMusic.getLocation());
+      return this.currentMusic == null ? false : ((SoundEvent)var1.sound().value()).location().equals(this.currentMusic.getLocation());
    }
 
    @Nullable
@@ -152,7 +155,7 @@ public class MusicManager {
 
    public void setMinutesBetweenSongs(MusicFrequency var1) {
       this.gameMusicFrequency = var1;
-      this.nextSongDelay = this.gameMusicFrequency.getNextSongDelay(this.minecraft.getSituationalMusic().music(), this.random);
+      this.nextSongDelay = this.gameMusicFrequency.getNextSongDelay(this.minecraft.getSituationalMusic(), this.random);
    }
 
    public static enum MusicFrequency implements OptionEnum, StringRepresentable {
@@ -169,7 +172,8 @@ public class MusicManager {
       private MusicFrequency(final int var3) {
          this.id = var3;
          this.maxFrequency = var3 * 1200;
-         this.key = "options.music_frequency." + this.name().toLowerCase();
+         String var10001 = this.name();
+         this.key = "options.music_frequency." + var10001.toLowerCase(Locale.ROOT);
       }
 
       int getNextSongDelay(@Nullable Music var1, RandomSource var2) {

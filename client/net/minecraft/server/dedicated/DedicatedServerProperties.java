@@ -75,6 +75,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean managementServerTlsEnabled;
    public final String managementServerTlsKeystore;
    public final String managementServerTlsKeystorePassword;
+   public final String managementServerAllowedOrigins;
    @Nullable
    public final Boolean announcePlayerAchievements;
    public final boolean enableQuery;
@@ -130,6 +131,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.managementServerTlsEnabled = this.get("management-server-tls-enabled", true);
       this.managementServerTlsKeystore = this.get("management-server-tls-keystore", "");
       this.managementServerTlsKeystorePassword = this.get("management-server-tls-keystore-password", "");
+      this.managementServerAllowedOrigins = this.get("management-server-allowed-origins", "");
       this.announcePlayerAchievements = this.getLegacyBoolean("announce-player-achievements");
       this.enableQuery = this.get("enable-query", false);
       this.queryPort = this.get("query.port", 25565);

@@ -30,7 +30,6 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
@@ -87,6 +86,7 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -505,11 +505,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.addParticlesPass(var16, var8);
       CloudStatus var23 = this.minecraft.options.getCloudsType();
       if (var23 != CloudStatus.OFF) {
-         Optional var24 = this.level.dimensionType().cloudHeight();
-         if (var24.isPresent()) {
+         float var24 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.CLOUD_OPACITY, var11);
+         if (var24 > 0.0F) {
             float var25 = (float)this.level.getGameTime() + var11;
             int var26 = this.level.getCloudColor(var11);
-            this.addCloudsPass(var16, var23, this.levelRenderState.cameraRenderState.pos, var25, var26, (float)(Integer)var24.get() + 0.33F);
+            float var27 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.CLOUD_HEIGHT, var11);
+            this.addCloudsPass(var16, var23, this.levelRenderState.cameraRenderState.pos, var25, ARGB.color(var24, var26), var27);
          }
       }
 
@@ -706,26 +707,29 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          DrawableGizmoPrimitives var7 = new DrawableGizmoPrimitives();
          DrawableGizmoPrimitives var8 = new DrawableGizmoPrimitives();
          boolean var9 = false;
-         this.collectedGizmos.addGizmos(this.minecraft.getPerTickGizmos());
+         this.collectedGizmos.addTemporaryGizmos(this.minecraft.getPerTickGizmos());
          IntegratedServer var10 = this.minecraft.getSingleplayerServer();
          if (var10 != null) {
-            this.collectedGizmos.addGizmos(var10.getPerTickGizmos());
+            this.collectedGizmos.addTemporaryGizmos(var10.getPerTickGizmos());
          }
 
-         for(SimpleGizmoCollector.GizmoInstance var12 : this.collectedGizmos.drainGizmos()) {
-            if (var12.isAlwaysOnTop()) {
+         long var11 = Util.getMillis();
+
+         for(SimpleGizmoCollector.GizmoInstance var14 : this.collectedGizmos.drainGizmos()) {
+            float var15 = var14.getAlphaMultiplier(var11);
+            if (var14.isAlwaysOnTop()) {
                var9 = true;
-               var12.gizmo().emit(var8);
+               var14.gizmo().emit(var8, var15);
             } else {
-               var12.gizmo().emit(var7);
+               var14.gizmo().emit(var7, var15);
             }
          }
 
          var7.render(var5, var6x, var2, var4);
          var6x.endLastBatch();
          if (var9) {
-            RenderTarget var13 = Minecraft.getInstance().getMainRenderTarget();
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var13.getDepthTexture(), 1.0);
+            RenderTarget var16 = Minecraft.getInstance().getMainRenderTarget();
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var16.getDepthTexture(), 1.0);
             var8.render(var5, var6x, var2, var4);
             var6x.endLastBatch();
          }
@@ -925,7 +929,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             }
 
             VertexConsumer var9 = var1.getBuffer(RenderType.lines());
-            int var8 = var5.highContrast() ? -11010079 : ARGB.color(102, -16777216);
+            int var8 = var5.highContrast() ? -11010079 : ARGB.black(102);
             this.renderHitOutline(var2, var9, var6.x, var6.y, var6.z, var5, var8, this.minecraft.getWindow().getAppropriateLineWidth());
             var1.endLastBatch();
          }

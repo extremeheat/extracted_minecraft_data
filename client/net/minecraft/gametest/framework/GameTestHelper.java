@@ -661,15 +661,18 @@ public class GameTestHelper {
    }
 
    public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
-      BlockPos var5 = this.absolutePos(var1);
-      List var6 = this.getLevel().getEntities(var2, new AABB(var5), Entity::isAlive);
-      if (var6.isEmpty()) {
-         throw this.assertionException(var1, "test.error.expected_entity", var2.getDescription());
+      this.assertEntityData((AABB)(new AABB(var1)), var2, var3, var4);
+   }
+
+   public <E extends Entity, T> void assertEntityData(AABB var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
+      List var5 = this.getLevel().getEntities(var2, this.absoluteAABB(var1), Entity::isAlive);
+      if (var5.isEmpty()) {
+         throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity", var2.getDescription());
       } else {
-         for(Entity var8 : var6) {
-            Object var9 = var3.apply(var8);
-            if (!Objects.equals(var9, var4)) {
-               throw this.assertionException(var1, "test.error.expected_entity_data", var4, var9);
+         for(Entity var7 : var5) {
+            Object var8 = var3.apply(var7);
+            if (!Objects.equals(var8, var4)) {
+               throw this.assertionException(BlockPos.containing(var1.getBottomCenter()), "test.error.expected_entity_data", var4, var8);
             }
          }
 
@@ -955,6 +958,10 @@ public class GameTestHelper {
       this.assertTrue(var1, (Component)Component.literal(var2));
    }
 
+   public <N> void assertValueEqual(N var1, N var2, String var3) {
+      this.assertValueEqual(var1, var2, (Component)Component.literal(var3));
+   }
+
    public <N> void assertValueEqual(N var1, N var2, Component var3) {
       if (!var1.equals(var2)) {
          throw this.assertionException("test.error.value_not_equal", var3, var1, var2);
@@ -977,7 +984,7 @@ public class GameTestHelper {
       return this.testInfo.getStructureBounds();
    }
 
-   private AABB getRelativeBounds() {
+   public AABB getRelativeBounds() {
       AABB var1 = this.testInfo.getStructureBounds();
       Rotation var2 = this.testInfo.getRotation();
       switch (var2) {

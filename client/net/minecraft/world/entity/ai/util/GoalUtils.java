@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.phys.Vec3;
 
 public class GoalUtils {
    public GoalUtils() {
@@ -25,6 +26,10 @@ public class GoalUtils {
    }
 
    public static boolean isRestricted(boolean var0, PathfinderMob var1, BlockPos var2) {
+      return var0 && !var1.isWithinHome(var2);
+   }
+
+   public static boolean isRestricted(boolean var0, PathfinderMob var1, Vec3 var2) {
       return var0 && !var1.isWithinHome(var2);
    }
 

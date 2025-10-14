@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -19,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -72,24 +74,26 @@ public class RespawnAnchorBlock extends Block {
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if ((Integer)var1.getValue(CHARGE) == 0) {
          return InteractionResult.PASS;
-      } else if (!canSetSpawn(var2)) {
-         if (!var2.isClientSide()) {
-            this.explode(var1, var2, var3);
-         }
-
-         return InteractionResult.SUCCESS;
-      } else {
-         if (var4 instanceof ServerPlayer) {
-            ServerPlayer var6 = (ServerPlayer)var4;
-            ServerPlayer.RespawnConfig var7 = var6.getRespawnConfig();
-            ServerPlayer.RespawnConfig var8 = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var2.dimension(), var3, 0.0F, 0.0F), false);
-            if (var7 == null || !var7.isSamePosition(var8)) {
-               var6.setRespawnPosition(var8, true);
-               var2.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
-               return InteractionResult.SUCCESS_SERVER;
+      } else if (var2 instanceof ServerLevel) {
+         ServerLevel var6 = (ServerLevel)var2;
+         if (!canSetSpawn(var6, var3)) {
+            this.explode(var1, var6, var3);
+            return InteractionResult.SUCCESS_SERVER;
+         } else {
+            if (var4 instanceof ServerPlayer) {
+               ServerPlayer var7 = (ServerPlayer)var4;
+               ServerPlayer.RespawnConfig var8 = var7.getRespawnConfig();
+               ServerPlayer.RespawnConfig var9 = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var6.dimension(), var3, 0.0F, 0.0F), false);
+               if (var8 == null || !var8.isSamePosition(var9)) {
+                  var7.setRespawnPosition(var9, true);
+                  var6.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  return InteractionResult.SUCCESS_SERVER;
+               }
             }
-         }
 
+            return InteractionResult.CONSUME;
+         }
+      } else {
          return InteractionResult.CONSUME;
       }
    }
@@ -119,7 +123,7 @@ public class RespawnAnchorBlock extends Block {
       }
    }
 
-   private void explode(BlockState var1, Level var2, final BlockPos var3) {
+   private void explode(BlockState var1, ServerLevel var2, final BlockPos var3) {
       var2.removeBlock(var3, false);
       Stream var10000 = Direction.Plane.HORIZONTAL.stream();
       Objects.requireNonNull(var3);
@@ -134,8 +138,8 @@ public class RespawnAnchorBlock extends Block {
       var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var7), var6, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
    }
 
-   public static boolean canSetSpawn(Level var0) {
-      return var0.dimensionType().respawnAnchorWorks();
+   public static boolean canSetSpawn(ServerLevel var0, BlockPos var1) {
+      return (Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, var1);
    }
 
    public static void charge(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3) {

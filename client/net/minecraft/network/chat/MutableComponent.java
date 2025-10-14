@@ -2,14 +2,13 @@ package net.minecraft.network.chat;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.util.FormattedCharSequence;
 
-public class MutableComponent implements Component {
+public final class MutableComponent implements Component {
    private final ComponentContents contents;
    private final List<Component> siblings;
    private Style style;
@@ -80,6 +79,11 @@ public class MutableComponent implements Component {
       return this;
    }
 
+   public MutableComponent withoutShadow() {
+      this.setStyle(this.getStyle().withoutShadow());
+      return this;
+   }
+
    public FormattedCharSequence getVisualOrderText() {
       Language var1 = Language.getInstance();
       if (this.decomposedWith != var1) {
@@ -93,16 +97,27 @@ public class MutableComponent implements Component {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof MutableComponent)) {
-         return false;
       } else {
-         MutableComponent var2 = (MutableComponent)var1;
-         return this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings);
+         boolean var10000;
+         if (var1 instanceof MutableComponent) {
+            MutableComponent var2 = (MutableComponent)var1;
+            if (this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 
    public int hashCode() {
-      return Objects.hash(new Object[]{this.contents, this.style, this.siblings});
+      int var1 = 1;
+      var1 = 31 * var1 + this.contents.hashCode();
+      var1 = 31 * var1 + this.style.hashCode();
+      var1 = 31 * var1 + this.siblings.hashCode();
+      return var1;
    }
 
    public String toString() {

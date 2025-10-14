@@ -1647,7 +1647,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity var2 = this.level.getEntity(var1.playerId());
       if (var2 == this.minecraft.player) {
          if (this.minecraft.player.shouldShowDeathScreen()) {
-            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore()));
+            this.minecraft.setScreen(new DeathScreen(var1.message(), this.level.getLevelData().isHardcore(), this.minecraft.player));
          } else {
             this.minecraft.player.respawn();
          }

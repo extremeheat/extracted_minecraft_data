@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -64,6 +66,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      ActiveTextCollector var5 = var1.textRenderer();
       Font var10001 = this.font;
       Component var10002 = this.title;
       int var10003 = this.width / 2;
@@ -71,11 +74,11 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
       Objects.requireNonNull(this.font);
       var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
       MultiLineLabel var10000 = this.messageLines;
-      MultiLineLabel.Align var5 = MultiLineLabel.Align.CENTER;
-      var10003 = this.width / 2;
-      var10004 = this.contentTop;
+      TextAlignment var6 = TextAlignment.CENTER;
+      int var7 = this.width / 2;
+      var10003 = this.contentTop;
       Objects.requireNonNull(this.font);
-      var10000.render(var1, var5, var10003, var10004, 9, true, -1);
+      var10000.visitLines(var6, var7, var10003, 9, var5);
    }
 
    public boolean shouldCloseOnEsc() {

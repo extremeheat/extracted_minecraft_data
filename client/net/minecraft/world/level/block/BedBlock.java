@@ -15,6 +15,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.BedRule;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -83,15 +85,17 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             }
          }
 
-         if (!canSetSpawn(var2)) {
+         BedRule var6 = (BedRule)var2.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, var3);
+         if (var6.explodes()) {
+            var6.errorMessage().ifPresent((var1x) -> var4.displayClientMessage(var1x, true));
             var2.removeBlock(var3, false);
-            BlockPos var6 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
-            if (var2.getBlockState(var6).is(this)) {
-               var2.removeBlock(var6, false);
+            BlockPos var7 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
+            if (var2.getBlockState(var7).is(this)) {
+               var2.removeBlock(var7, false);
             }
 
-            Vec3 var7 = var3.getCenter();
-            var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var7), (ExplosionDamageCalculator)null, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+            Vec3 var8 = var3.getCenter();
+            var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var8), (ExplosionDamageCalculator)null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS_SERVER;
          } else if ((Boolean)var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {
@@ -101,18 +105,14 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             return InteractionResult.SUCCESS_SERVER;
          } else {
             var4.startSleepInBed(var3).ifLeft((var1x) -> {
-               if (var1x.getMessage() != null) {
-                  var4.displayClientMessage(var1x.getMessage(), true);
+               if (var1x.message() != null) {
+                  var4.displayClientMessage(var1x.message(), true);
                }
 
             });
             return InteractionResult.SUCCESS_SERVER;
          }
       }
-   }
-
-   public static boolean canSetSpawn(Level var0) {
-      return var0.dimensionType().bedWorks();
    }
 
    private boolean kickVillagerOutOfBed(Level var1, BlockPos var2) {

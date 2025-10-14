@@ -40,6 +40,7 @@ import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,11 @@ public class ExtraCodecs {
    public static final Codec<AxisAngle4f> AXISANGLE4F;
    public static final Codec<Quaternionfc> QUATERNIONF;
    public static final Codec<Matrix4fc> MATRIX4F;
+   private static final String HEX_COLOR_PREFIX = "#";
    public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
+   public static final Codec<Integer> STRING_RGB_COLOR;
+   public static final Codec<Integer> STRING_ARGB_COLOR;
    public static final Codec<Integer> UNSIGNED_BYTE;
    public static final Codec<Integer> NON_NEGATIVE_INT;
    public static final Codec<Integer> POSITIVE_INT;
@@ -123,6 +127,30 @@ public class ExtraCodecs {
 
    public static <T> Codec<T> converter(DynamicOps<T> var0) {
       return Codec.PASSTHROUGH.xmap((var1) -> var1.convert(var0).getValue(), (var1) -> new Dynamic(var0, var1));
+   }
+
+   private static Codec<Integer> hexColor(int var0) {
+      long var1 = (1L << var0 * 4) - 1L;
+      return Codec.STRING.comapFlatMap((var3) -> {
+         if (!var3.startsWith("#")) {
+            return DataResult.error(() -> "Hex color must begin with #");
+         } else {
+            int var4 = var3.length() - "#".length();
+            if (var4 != var0) {
+               return DataResult.error(() -> "Hex color is wrong size, expected " + var0 + " digits but got " + var4);
+            } else {
+               try {
+                  long var5 = HexFormat.fromHexDigitsToLong(var3, "#".length(), var3.length());
+                  return var5 >= 0L && var5 <= var1 ? DataResult.success((int)var5) : DataResult.error(() -> "Color value out of range: " + var3);
+               } catch (NumberFormatException var7) {
+                  return DataResult.error(() -> "Invalid color value: " + var3);
+               }
+            }
+         }
+      }, (var1x) -> {
+         HexFormat var10000 = HexFormat.of();
+         return "#" + var10000.toHexDigits((long)var1x, var0);
+      });
    }
 
    public static <P, I> Codec<I> intervalCodec(Codec<P> var0, String var1, String var2, BiFunction<P, P, DataResult<I>> var3, Function<I, P> var4, Function<I, P> var5) {
@@ -482,6 +510,8 @@ public class ExtraCodecs {
       });
       RGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR3F, (var0) -> ARGB.colorFromFloat(1.0F, var0.x(), var0.y(), var0.z()));
       ARGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR4F, (var0) -> ARGB.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z()));
+      STRING_RGB_COLOR = Codec.withAlternative(hexColor(6).xmap(ARGB::opaque, ARGB::transparent), RGB_COLOR_CODEC);
+      STRING_ARGB_COLOR = Codec.withAlternative(hexColor(8), ARGB_COLOR_CODEC);
       UNSIGNED_BYTE = Codec.BYTE.flatComapMap(UnsignedBytes::toInt, (var0) -> var0 > 255 ? DataResult.error(() -> "Unsigned byte was too large: " + var0 + " > 255") : DataResult.success(var0.byteValue()));
       NON_NEGATIVE_INT = intRangeWithMessage(0, 2147483647, (var0) -> "Value must be non-negative: " + var0);
       POSITIVE_INT = intRangeWithMessage(1, 2147483647, (var0) -> "Value must be positive: " + var0);

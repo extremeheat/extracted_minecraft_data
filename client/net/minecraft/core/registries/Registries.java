@@ -31,6 +31,8 @@ import net.minecraft.stats.StatType;
 import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.valueproviders.FloatProviderType;
 import net.minecraft.util.valueproviders.IntProviderType;
+import net.minecraft.world.attribute.AttributeType;
+import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
@@ -164,6 +166,8 @@ public class Registries {
    public static final ResourceKey<Registry<MapCodec<? extends EnchantmentValueEffect>>> ENCHANTMENT_VALUE_EFFECT_TYPE = createRegistryKey("enchantment_value_effect_type");
    public static final ResourceKey<Registry<MapCodec<? extends EntitySubPredicate>>> ENTITY_SUB_PREDICATE_TYPE = createRegistryKey("entity_sub_predicate_type");
    public static final ResourceKey<Registry<EntityType<?>>> ENTITY_TYPE = createRegistryKey("entity_type");
+   public static final ResourceKey<Registry<EnvironmentAttribute<?>>> ENVIRONMENT_ATTRIBUTE = createRegistryKey("environment_attribute");
+   public static final ResourceKey<Registry<AttributeType<?>>> ATTRIBUTE_TYPE = createRegistryKey("attribute_type");
    public static final ResourceKey<Registry<FeatureSizeType<?>>> FEATURE_SIZE_TYPE = createRegistryKey("worldgen/feature_size_type");
    public static final ResourceKey<Registry<Feature<?>>> FEATURE = createRegistryKey("worldgen/feature");
    public static final ResourceKey<Registry<FloatProviderType<?>>> FLOAT_PROVIDER_TYPE = createRegistryKey("float_provider_type");
@@ -221,7 +225,7 @@ public class Registries {
    public static final ResourceKey<Registry<TrunkPlacerType<?>>> TRUNK_PLACER_TYPE = createRegistryKey("worldgen/trunk_placer_type");
    public static final ResourceKey<Registry<VillagerProfession>> VILLAGER_PROFESSION = createRegistryKey("villager_profession");
    public static final ResourceKey<Registry<VillagerType>> VILLAGER_TYPE = createRegistryKey("villager_type");
-   public static final ResourceKey<Registry<IncomingRpcMethod>> INCOMING_RPC_METHOD = createRegistryKey("incoming_rpc_methods");
+   public static final ResourceKey<Registry<IncomingRpcMethod<?, ?>>> INCOMING_RPC_METHOD = createRegistryKey("incoming_rpc_methods");
    public static final ResourceKey<Registry<OutgoingRpcMethod<?, ?>>> OUTGOING_RPC_METHOD = createRegistryKey("outgoing_rpc_methods");
    public static final ResourceKey<Registry<MapCodec<? extends Permission>>> PERMISSION_TYPE = createRegistryKey("permission_type");
    public static final ResourceKey<Registry<MapCodec<? extends PermissionCheck>>> PERMISSION_CHECK_TYPE = createRegistryKey("permission_check_type");

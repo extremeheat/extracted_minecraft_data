@@ -38,12 +38,12 @@ import org.slf4j.Logger;
 public class RealmsResetWorldScreen extends RealmsScreen {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final Component CREATE_REALM_TITLE = Component.translatable("mco.selectServer.create");
-   private static final Component CREATE_REALM_SUBTITLE = Component.translatable("mco.selectServer.create.subtitle");
+   private static final Component CREATE_REALM_SUBTITLE = Component.translatable("mco.selectServer.create.subtitle").withColor(-6250336);
    private static final Component CREATE_WORLD_TITLE = Component.translatable("mco.configure.world.switch.slot");
-   private static final Component CREATE_WORLD_SUBTITLE = Component.translatable("mco.configure.world.switch.slot.subtitle");
+   private static final Component CREATE_WORLD_SUBTITLE = Component.translatable("mco.configure.world.switch.slot.subtitle").withColor(-6250336);
    private static final Component GENERATE_NEW_WORLD = Component.translatable("mco.reset.world.generate");
    private static final Component RESET_WORLD_TITLE = Component.translatable("mco.reset.world.title");
-   private static final Component RESET_WORLD_SUBTITLE = Component.translatable("mco.reset.world.warning");
+   private static final Component RESET_WORLD_SUBTITLE = Component.translatable("mco.reset.world.warning").withColor(-65536);
    public static final Component CREATE_WORLD_RESET_TASK_TITLE = Component.translatable("mco.create.world.reset.title");
    private static final Component RESET_WORLD_RESET_TASK_TITLE = Component.translatable("mco.reset.world.resetting.screen.title");
    private static final Component WORLD_TEMPLATES_TITLE = Component.translatable("mco.reset.world.template");
@@ -53,7 +53,6 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    private final Screen lastScreen;
    private final RealmsServer serverData;
    private final Component subtitle;
-   private final int subtitleColor;
    private final Component resetTaskTitle;
    private static final ResourceLocation UPLOAD_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/upload.png");
    private static final ResourceLocation ADVENTURE_MAP_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/adventure.png");
@@ -71,33 +70,32 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    private final Runnable resetWorldRunnable;
    private final HeaderAndFooterLayout layout;
 
-   private RealmsResetWorldScreen(Screen var1, RealmsServer var2, int var3, Component var4, Component var5, int var6, Component var7, Runnable var8) {
-      this(var1, var2, var3, var4, var5, var6, var7, (RealmCreationTask)null, var8);
+   private RealmsResetWorldScreen(Screen var1, RealmsServer var2, int var3, Component var4, Component var5, Component var6, Runnable var7) {
+      this(var1, var2, var3, var4, var5, var6, (RealmCreationTask)null, var7);
    }
 
-   public RealmsResetWorldScreen(Screen var1, RealmsServer var2, int var3, Component var4, Component var5, int var6, Component var7, @Nullable RealmCreationTask var8, Runnable var9) {
+   public RealmsResetWorldScreen(Screen var1, RealmsServer var2, int var3, Component var4, Component var5, Component var6, @Nullable RealmCreationTask var7, Runnable var8) {
       super(var4);
       this.layout = new HeaderAndFooterLayout(this);
       this.lastScreen = var1;
       this.serverData = var2;
       this.slot = var3;
       this.subtitle = var5;
-      this.subtitleColor = var6;
-      this.resetTaskTitle = var7;
-      this.realmCreationTask = var8;
-      this.resetWorldRunnable = var9;
+      this.resetTaskTitle = var6;
+      this.realmCreationTask = var7;
+      this.resetWorldRunnable = var8;
    }
 
    public static RealmsResetWorldScreen forNewRealm(Screen var0, RealmsServer var1, RealmCreationTask var2, Runnable var3) {
-      return new RealmsResetWorldScreen(var0, var1, var1.activeSlot, CREATE_REALM_TITLE, CREATE_REALM_SUBTITLE, -6250336, CREATE_WORLD_RESET_TASK_TITLE, var2, var3);
+      return new RealmsResetWorldScreen(var0, var1, var1.activeSlot, CREATE_REALM_TITLE, CREATE_REALM_SUBTITLE, CREATE_WORLD_RESET_TASK_TITLE, var2, var3);
    }
 
    public static RealmsResetWorldScreen forEmptySlot(Screen var0, int var1, RealmsServer var2, Runnable var3) {
-      return new RealmsResetWorldScreen(var0, var2, var1, CREATE_WORLD_TITLE, CREATE_WORLD_SUBTITLE, -6250336, CREATE_WORLD_RESET_TASK_TITLE, var3);
+      return new RealmsResetWorldScreen(var0, var2, var1, CREATE_WORLD_TITLE, CREATE_WORLD_SUBTITLE, CREATE_WORLD_RESET_TASK_TITLE, var3);
    }
 
    public static RealmsResetWorldScreen forResetSlot(Screen var0, RealmsServer var1, Runnable var2) {
-      return new RealmsResetWorldScreen(var0, var1, var1.activeSlot, RESET_WORLD_TITLE, RESET_WORLD_SUBTITLE, -65536, RESET_WORLD_RESET_TASK_TITLE, var2);
+      return new RealmsResetWorldScreen(var0, var1, var1.activeSlot, RESET_WORLD_TITLE, RESET_WORLD_SUBTITLE, RESET_WORLD_RESET_TASK_TITLE, var2);
    }
 
    public void init() {
@@ -106,7 +104,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       Objects.requireNonNull(this.font);
       var10000.padding(9 / 3);
       var1.addChild(new StringWidget(this.title, this.font), (Consumer)(LayoutSettings::alignHorizontallyCenter));
-      var1.addChild((new StringWidget(this.subtitle, this.font)).setColor(this.subtitleColor), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      var1.addChild(new StringWidget(this.subtitle, this.font), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       (new Thread("Realms-reset-world-fetcher") {
          public void run() {
             RealmsClient var1 = RealmsClient.getOrCreate();
@@ -194,7 +192,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
          this.image = var4;
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
          boolean var5 = this.isHoveredOrFocused();
          int var6 = -1;
          if (var5) {

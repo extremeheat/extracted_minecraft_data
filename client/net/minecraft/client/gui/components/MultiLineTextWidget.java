@@ -2,14 +2,11 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.SingleKeyCache;
 
 public class MultiLineTextWidget extends AbstractStringWidget {
@@ -17,9 +14,6 @@ public class MultiLineTextWidget extends AbstractStringWidget {
    private OptionalInt maxRows;
    private final SingleKeyCache<CacheKey, MultiLineLabel> cache;
    private boolean centered;
-   private boolean allowHoverComponents;
-   @Nullable
-   private Consumer<Style> componentClickHandler;
 
    public MultiLineTextWidget(Component var1, Font var2) {
       this(0, 0, var1, var2);
@@ -30,15 +24,8 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       this.maxWidth = OptionalInt.empty();
       this.maxRows = OptionalInt.empty();
       this.centered = false;
-      this.allowHoverComponents = false;
-      this.componentClickHandler = null;
       this.cache = Util.<CacheKey, MultiLineLabel>singleKeyCache((var1x) -> var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth));
       this.active = false;
-   }
-
-   public MultiLineTextWidget setColor(int var1) {
-      super.setColor(var1);
-      return this;
    }
 
    public MultiLineTextWidget setMaxWidth(int var1) {
@@ -56,12 +43,6 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return this;
    }
 
-   public MultiLineTextWidget configureStyleHandling(boolean var1, @Nullable Consumer<Style> var2) {
-      this.allowHoverComponents = var1;
-      this.componentClickHandler = var2;
-      return this;
-   }
-
    public int getWidth() {
       return ((MultiLineLabel)this.cache.getValue(this.getFreshCacheKey())).getWidth();
    }
@@ -72,23 +53,17 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return var10000 * 9;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
-      int var6 = this.getTextX();
-      int var7 = this.getTextY();
+   public void visitLines(ActiveTextCollector var1) {
+      MultiLineLabel var2 = this.cache.getValue(this.getFreshCacheKey());
+      int var3 = this.getTextX();
+      int var4 = this.getTextY();
       Objects.requireNonNull(this.getFont());
-      byte var8 = 9;
-      int var9 = this.getColor();
+      byte var5 = 9;
       if (this.centered) {
-         int var10 = this.getX() + this.getWidth() / 2;
-         var5.render(var1, MultiLineLabel.Align.CENTER, var10, var7, var8, true, var9);
+         int var6 = this.getX() + this.getWidth() / 2;
+         var2.visitLines(TextAlignment.CENTER, var6, var4, var5, var1);
       } else {
-         var5.render(var1, MultiLineLabel.Align.LEFT, var6, var7, var8, true, var9);
-      }
-
-      if (this.isHovered() && this.allowHoverComponents) {
-         Style var11 = this.getComponentStyleAt((double)var2, (double)var3);
-         var1.renderComponentHoverEffect(this.getFont(), var11, var2, var3);
+         var2.visitLines(TextAlignment.LEFT, var3, var4, var5, var1);
       }
 
    }
@@ -101,40 +76,8 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return this.getY();
    }
 
-   @Nullable
-   private Style getComponentStyleAt(double var1, double var3) {
-      MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
-      int var6 = this.getTextX();
-      int var7 = this.getTextY();
-      Objects.requireNonNull(this.getFont());
-      byte var8 = 9;
-      if (this.centered) {
-         int var9 = var6 + this.getWidth() / 2;
-         return var5.getStyle(MultiLineLabel.Align.CENTER, var9, var7, var8, var1, var3);
-      } else {
-         return var5.getStyle(MultiLineLabel.Align.LEFT, var6, var7, var8, var1, var3);
-      }
-   }
-
-   public void onClick(MouseButtonEvent var1, boolean var2) {
-      if (this.componentClickHandler != null) {
-         Style var3 = this.getComponentStyleAt(var1.x(), var1.y());
-         if (var3 != null) {
-            this.componentClickHandler.accept(var3);
-            return;
-         }
-      }
-
-      super.onClick(var1, var2);
-   }
-
    private CacheKey getFreshCacheKey() {
       return new CacheKey(this.getMessage(), this.maxWidth.orElse(2147483647), this.maxRows);
-   }
-
-   // $FF: synthetic method
-   public AbstractStringWidget setColor(final int var1) {
-      return this.setColor(var1);
    }
 
    static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {

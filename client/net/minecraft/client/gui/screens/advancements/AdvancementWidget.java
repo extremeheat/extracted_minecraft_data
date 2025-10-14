@@ -70,7 +70,7 @@ public class AdvancementWidget {
       int var5 = Math.max(var10000.mapToInt(var10001::width).max().orElse(0), 80);
       int var6 = this.getMaxProgressWidth();
       int var7 = 29 + var5 + var6;
-      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
 
       for(FormattedCharSequence var9 : this.description) {
          var7 = Math.max(var7, var2.font.width(var9));

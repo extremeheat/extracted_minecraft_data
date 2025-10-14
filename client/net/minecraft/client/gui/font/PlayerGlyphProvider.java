@@ -16,10 +16,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class PlayerGlyphProvider {
-   private static final float WIDTH = 8.0F;
-   private static final float HEIGHT = 8.0F;
    static final GlyphInfo GLYPH_INFO = GlyphInfo.simple(8.0F);
    final PlayerSkinRenderCache playerSkinRenderCache;
    private final LoadingCache<FontDescription.PlayerSprite, GlyphSource> wrapperCache;
@@ -35,8 +34,8 @@ public class PlayerGlyphProvider {
                   return PlayerGlyphProvider.GLYPH_INFO;
                }
 
-               public TextRenderable createGlyph(float var1, float var2x, int var3x, int var4, Style var5, float var6, float var7) {
-                  return new Instance(var2, var3, var1, var2x, var3x, var4, var7);
+               public TextRenderable.Styled createGlyph(float var1, float var2x, int var3x, int var4, Style var5, float var6, float var7) {
+                  return new Instance(var2, var3, var1, var2x, var3x, var4, var7, var5);
                }
             });
          }
@@ -53,8 +52,8 @@ public class PlayerGlyphProvider {
       return (GlyphSource)this.wrapperCache.getUnchecked(var1);
    }
 
-   static record Instance(Supplier<PlayerSkinRenderCache.RenderInfo> skin, boolean hat, float x, float y, int color, int shadowColor, float shadowOffset) implements PlainTextRenderable {
-      Instance(Supplier<PlayerSkinRenderCache.RenderInfo> var1, boolean var2, float var3, float var4, int var5, int var6, float var7) {
+   static record Instance(Supplier<PlayerSkinRenderCache.RenderInfo> skin, boolean hat, float x, float y, int color, int shadowColor, float shadowOffset, Style style) implements PlainTextRenderable {
+      Instance(Supplier<PlayerSkinRenderCache.RenderInfo> var1, boolean var2, float var3, float var4, int var5, int var6, float var7, Style var8) {
          super();
          this.skin = var1;
          this.hat = var2;
@@ -63,6 +62,7 @@ public class PlayerGlyphProvider {
          this.color = var5;
          this.shadowColor = var6;
          this.shadowOffset = var7;
+         this.style = var8;
       }
 
       public void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7) {
@@ -82,10 +82,10 @@ public class PlayerGlyphProvider {
          float var16 = (var9 + (float)var11) / (float)var13;
          float var17 = (var10 + 0.0F) / (float)var14;
          float var18 = (var10 + (float)var12) / (float)var14;
-         var1.addVertex(var0, var3, var5, var7).setUv(var15, var17).setColor(var8).setLight(var2);
-         var1.addVertex(var0, var3, var6, var7).setUv(var15, var18).setColor(var8).setLight(var2);
-         var1.addVertex(var0, var4, var6, var7).setUv(var16, var18).setColor(var8).setLight(var2);
-         var1.addVertex(var0, var4, var5, var7).setUv(var16, var17).setColor(var8).setLight(var2);
+         var1.addVertex((Matrix4fc)var0, var3, var5, var7).setUv(var15, var17).setColor(var8).setLight(var2);
+         var1.addVertex((Matrix4fc)var0, var3, var6, var7).setUv(var15, var18).setColor(var8).setLight(var2);
+         var1.addVertex((Matrix4fc)var0, var4, var6, var7).setUv(var16, var18).setColor(var8).setLight(var2);
+         var1.addVertex((Matrix4fc)var0, var4, var5, var7).setUv(var16, var17).setColor(var8).setLight(var2);
       }
 
       public RenderType renderType(Font.DisplayMode var1) {
@@ -98,22 +98,6 @@ public class PlayerGlyphProvider {
 
       public GpuTextureView textureView() {
          return ((PlayerSkinRenderCache.RenderInfo)this.skin.get()).textureView();
-      }
-
-      public float left() {
-         return 0.0F;
-      }
-
-      public float right() {
-         return 8.0F;
-      }
-
-      public float top() {
-         return -1.0F;
-      }
-
-      public float bottom() {
-         return 7.0F;
       }
    }
 }

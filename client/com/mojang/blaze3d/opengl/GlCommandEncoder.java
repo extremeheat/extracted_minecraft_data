@@ -9,6 +9,7 @@ import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuQuery;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -31,6 +32,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
 import org.slf4j.Logger;
 
@@ -44,6 +46,8 @@ public class GlCommandEncoder implements CommandEncoder {
    private boolean inRenderPass;
    @Nullable
    private GlProgram lastProgram;
+   @Nullable
+   private GlTimerQuery activeTimerQuery;
 
    protected GlCommandEncoder(GlDevice var1) {
       super();
@@ -922,5 +926,27 @@ public class GlCommandEncoder implements CommandEncoder {
 
    protected GlDevice getDevice() {
       return this.device;
+   }
+
+   public GpuQuery timerQueryBegin() {
+      RenderSystem.assertOnRenderThread();
+      if (this.activeTimerQuery != null) {
+         throw new IllegalStateException("A GL_TIME_ELAPSED query is already active");
+      } else {
+         int var1 = GL32C.glGenQueries();
+         GL32C.glBeginQuery(35007, var1);
+         this.activeTimerQuery = new GlTimerQuery(var1);
+         return this.activeTimerQuery;
+      }
+   }
+
+   public void timerQueryEnd(GpuQuery var1) {
+      RenderSystem.assertOnRenderThread();
+      if (var1 != this.activeTimerQuery) {
+         throw new IllegalStateException("Mismatched or duplicate GpuQuery when ending timerQuery");
+      } else {
+         GL32C.glEndQuery(35007);
+         this.activeTimerQuery = null;
+      }
    }
 }

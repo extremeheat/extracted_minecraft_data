@@ -4,8 +4,8 @@ import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
+import net.minecraft.world.attribute.EnvironmentAttributeProbe;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -46,7 +46,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private float eyeHeight;
    private float eyeHeightOld;
    private float partialTickTime;
-   private final CubicSampler cubicBiomeSampler;
+   private final EnvironmentAttributeProbe attributeProbe;
 
    public Camera() {
       super();
@@ -56,7 +56,7 @@ public class Camera implements TrackedWaypoint.Camera {
       this.up = new Vector3f(UP);
       this.left = new Vector3f(LEFT);
       this.rotation = new Quaternionf();
-      this.cubicBiomeSampler = new CubicSampler();
+      this.attributeProbe = new EnvironmentAttributeProbe();
    }
 
    public void setup(Level var1, Entity var2, boolean var3, boolean var4, float var5) {
@@ -118,19 +118,15 @@ public class Camera implements TrackedWaypoint.Camera {
          this.move(0.0F, 0.3F, 0.0F);
       }
 
-      this.cubicBiomeSampler.update(var2.level().getBiomeManager(), this.position);
    }
 
    public void tick() {
       if (this.entity != null) {
          this.eyeHeightOld = this.eyeHeight;
          this.eyeHeight += (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
+         this.attributeProbe.tick(this.level, this.position);
       }
 
-   }
-
-   public CubicSampler cubicBiomeSampler() {
-      return this.cubicBiomeSampler;
    }
 
    private float getMaxZoom(float var1) {
@@ -213,6 +209,10 @@ public class Camera implements TrackedWaypoint.Camera {
       return this.detached;
    }
 
+   public EnvironmentAttributeProbe attributeProbe() {
+      return this.attributeProbe;
+   }
+
    public NearPlane getNearPlane() {
       Minecraft var1 = Minecraft.getInstance();
       double var2 = (double)var1.getWindow().getWidth() / (double)var1.getWindow().getHeight();
@@ -270,6 +270,7 @@ public class Camera implements TrackedWaypoint.Camera {
    public void reset() {
       this.level = null;
       this.entity = null;
+      this.attributeProbe.reset();
       this.initialized = false;
    }
 

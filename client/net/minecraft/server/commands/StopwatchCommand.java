@@ -1,6 +1,7 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -26,7 +27,7 @@ public class StopwatchCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopwatch").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).then(Commands.literal("create").executes((var0x) -> createStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))).then(Commands.literal("query").executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))).then(Commands.literal("restart").executes((var0x) -> restartStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))).then(Commands.literal("remove").executes((var0x) -> removeStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopwatch").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("create").then(Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> createStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id")))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "scale"))))).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 1.0))))).then(Commands.literal("restart").then(Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> restartStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id")))))).then(Commands.literal("remove").then(Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> removeStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))));
    }
 
    private static int createStopwatch(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
@@ -41,17 +42,17 @@ public class StopwatchCommand {
       }
    }
 
-   private static int queryStopwatch(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
-      MinecraftServer var2 = var0.getServer();
-      Stopwatches var3 = var2.getStopwatches();
-      Stopwatch var4 = var3.get(var1);
-      if (var4 == null) {
+   private static int queryStopwatch(CommandSourceStack var0, ResourceLocation var1, double var2) throws CommandSyntaxException {
+      MinecraftServer var4 = var0.getServer();
+      Stopwatches var5 = var4.getStopwatches();
+      Stopwatch var6 = var5.get(var1);
+      if (var6 == null) {
          throw ERROR_DOES_NOT_EXIST.create(var1);
       } else {
-         long var5 = Stopwatches.currentTime();
-         double var7 = var4.elapsedSeconds(var5);
-         var0.sendSuccess(() -> Component.translatable("commands.stopwatch.query", Component.translationArg(var1), var7), true);
-         return 1;
+         long var7 = Stopwatches.currentTime();
+         double var9 = var6.elapsedSeconds(var7);
+         var0.sendSuccess(() -> Component.translatable("commands.stopwatch.query", Component.translationArg(var1), var9), true);
+         return (int)(var9 * var2);
       }
    }
 

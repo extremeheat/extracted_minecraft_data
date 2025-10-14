@@ -330,18 +330,27 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    public static enum WorldType {
-      NORMAL,
-      MINIGAME,
-      ADVENTUREMAP,
-      EXPERIENCE,
-      INSPIRATION;
+      NORMAL("normal"),
+      MINIGAME("minigame"),
+      ADVENTUREMAP("adventureMap"),
+      EXPERIENCE("experience"),
+      INSPIRATION("inspiration"),
+      UNKNOWN("unknown");
 
-      private WorldType() {
+      private static final String TRANSLATION_PREFIX = "mco.backup.entry.worldType.";
+      private final Component displayName;
+
+      private WorldType(final String var3) {
+         this.displayName = Component.translatable("mco.backup.entry.worldType." + var3);
+      }
+
+      public Component getDisplayName() {
+         return this.displayName;
       }
 
       // $FF: synthetic method
       private static WorldType[] $values() {
-         return new WorldType[]{NORMAL, MINIGAME, ADVENTUREMAP, EXPERIENCE, INSPIRATION};
+         return new WorldType[]{NORMAL, MINIGAME, ADVENTUREMAP, EXPERIENCE, INSPIRATION, UNKNOWN};
       }
    }
 

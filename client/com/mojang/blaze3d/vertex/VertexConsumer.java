@@ -5,8 +5,9 @@ import java.nio.IntBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.util.ARGB;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -116,7 +117,7 @@ public interface VertexConsumer {
 
    }
 
-   default VertexConsumer addVertex(Vector3f var1) {
+   default VertexConsumer addVertex(Vector3fc var1) {
       return this.addVertex(var1.x(), var1.y(), var1.z());
    }
 
@@ -125,15 +126,15 @@ public interface VertexConsumer {
    }
 
    default VertexConsumer addVertex(PoseStack.Pose var1, float var2, float var3, float var4) {
-      return this.addVertex(var1.pose(), var2, var3, var4);
+      return this.addVertex((Matrix4fc)var1.pose(), var2, var3, var4);
    }
 
-   default VertexConsumer addVertex(Matrix4f var1, float var2, float var3, float var4) {
+   default VertexConsumer addVertex(Matrix4fc var1, float var2, float var3, float var4) {
       Vector3f var5 = var1.transformPosition(var2, var3, var4, new Vector3f());
       return this.addVertex(var5.x(), var5.y(), var5.z());
    }
 
-   default VertexConsumer addVertexWith2DPose(Matrix3x2f var1, float var2, float var3) {
+   default VertexConsumer addVertexWith2DPose(Matrix3x2fc var1, float var2, float var3) {
       Vector2f var4 = var1.transformPosition(var2, var3, new Vector2f());
       return this.addVertex(var4.x(), var4.y(), 0.0F);
    }

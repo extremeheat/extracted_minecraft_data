@@ -40,7 +40,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class DebugOptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("debug.options.title");
-   private static final Component SUBTITLE = Component.translatable("debug.options.warning");
+   private static final Component SUBTITLE = Component.translatable("debug.options.warning").withColor(-2142128);
    static final Component ENABLED_TEXT = Component.translatable("debug.entry.always");
    static final Component IN_OVERLAY_TEXT = Component.translatable("debug.entry.overlay");
    static final Component DISABLED_TEXT;
@@ -68,7 +68,7 @@ public class DebugOptionsScreen extends Screen {
       this.searchBox.setHint(SEARCH);
       var3.addChild(this.searchBox);
       var1.addChild(var3, (Consumer)(LayoutSettings::alignHorizontallyCenter));
-      var1.addChild((new MultiLineTextWidget(SUBTITLE, this.font)).setMaxWidth(var2).setCentered(true).setColor(-2142128), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+      var1.addChild((new MultiLineTextWidget(SUBTITLE, this.font)).setMaxWidth(var2).setCentered(true), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       this.layout.addToContents(this.optionList);
       LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       this.addProfileButton(DebugScreenProfile.DEFAULT, var4);

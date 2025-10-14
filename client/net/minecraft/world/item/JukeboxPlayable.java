@@ -11,7 +11,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.stats.Stats;
@@ -39,8 +38,7 @@ public record JukeboxPlayable(EitherHolder<JukeboxSong> song) implements Tooltip
       HolderLookup.Provider var5 = var1.registries();
       if (var5 != null) {
          this.song.unwrap(var5).ifPresent((var1x) -> {
-            MutableComponent var2x = ((JukeboxSong)var1x.value()).description().copy();
-            ComponentUtils.mergeStyles(var2x, Style.EMPTY.withColor(ChatFormatting.GRAY));
+            Component var2x = ComponentUtils.mergeStyles(((JukeboxSong)var1x.value()).description(), Style.EMPTY.withColor(ChatFormatting.GRAY));
             var2.accept(var2x);
          });
       }

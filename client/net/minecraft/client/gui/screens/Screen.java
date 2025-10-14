@@ -41,7 +41,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -270,24 +269,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void insertText(String var1, boolean var2) {
-   }
-
-   public boolean handleComponentClicked(Style var1) {
-      ClickEvent var2 = var1.getClickEvent();
-      if (this.minecraft.hasShiftDown()) {
-         if (var1.getInsertion() != null) {
-            this.insertText(var1.getInsertion(), false);
-         }
-      } else if (var2 != null) {
-         this.handleClickEvent(this.minecraft, var2);
-         return true;
-      }
-
-      return false;
-   }
-
-   protected void handleClickEvent(Minecraft var1, ClickEvent var2) {
-      defaultHandleGameClickEvent(var2, var1, this);
    }
 
    protected static void defaultHandleGameClickEvent(ClickEvent var0, Minecraft var1, @Nullable Screen var2) {

@@ -93,6 +93,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -504,6 +505,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          this.vehicle.onPassengerTurned(this);
       }
 
+   }
+
+   public void updateDataBeforeSync() {
    }
 
    public void tick() {
@@ -1514,15 +1518,15 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    }
 
    public boolean isInClouds() {
-      Optional var1 = this.level.dimensionType().cloudHeight();
-      if (var1.isEmpty()) {
+      float var1 = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_OPACITY, this.position());
+      if (var1 < 1.0E-5F) {
          return false;
       } else {
-         int var2 = (Integer)var1.get();
+         float var2 = (Float)this.level.environmentAttributes().getValue(EnvironmentAttributes.CLOUD_HEIGHT, this.position());
          if (this.getY() + (double)this.getBbHeight() < (double)var2) {
             return false;
          } else {
-            int var3 = var2 + 4;
+            float var3 = var2 + 4.0F;
             return this.getY() <= (double)var3;
          }
       }
@@ -1540,7 +1544,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    protected boolean updateInWaterStateAndDoFluidPushing() {
       this.fluidHeight.clear();
       this.updateInWaterStateAndDoWaterCurrentPushing();
-      double var1 = this.level().dimensionType().ultraWarm() ? 0.007 : 0.0023333333333333335;
+      double var1 = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
       boolean var3 = this.updateFluidHeightAndDoFluidPushing(FluidTags.LAVA, var1);
       return this.isInWater() || var3;
    }

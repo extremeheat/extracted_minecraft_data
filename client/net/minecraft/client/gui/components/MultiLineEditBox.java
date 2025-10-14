@@ -15,13 +15,13 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.ARGB;
 
 public class MultiLineEditBox extends AbstractTextAreaWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
    private static final int CURSOR_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
-   private static final int TEXT_COLOR = -2039584;
-   private static final int PLACEHOLDER_TEXT_COLOR = -857677600;
+   private static final int PLACEHOLDER_TEXT_COLOR = ARGB.color(204, -2039584);
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private final Component placeholder;
@@ -102,7 +102,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       String var5 = this.textField.value();
       if (var5.isEmpty() && !this.isFocused()) {
-         var1.drawWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), -857677600);
+         var1.drawWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), PLACEHOLDER_TEXT_COLOR);
       } else {
          int var6 = this.textField.cursor();
          boolean var7 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L;

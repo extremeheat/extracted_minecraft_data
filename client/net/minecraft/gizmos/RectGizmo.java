@@ -28,18 +28,18 @@ public record RectGizmo(Vec3 a, Vec3 b, Vec3 c, Vec3 d, GizmoStyle style) implem
       return var10000;
    }
 
-   public void emit(GizmoPrimitives var1) {
+   public void emit(GizmoPrimitives var1, float var2) {
       if (this.style.hasFill()) {
-         int var2 = this.style.fill();
-         var1.addQuad(this.a, this.b, this.c, this.d, var2);
+         int var3 = this.style.multipliedFill(var2);
+         var1.addQuad(this.a, this.b, this.c, this.d, var3);
       }
 
       if (this.style.hasStroke()) {
-         int var3 = this.style.stroke();
-         var1.addLine(this.a, this.b, var3, this.style.strokeWidth());
-         var1.addLine(this.b, this.c, var3, this.style.strokeWidth());
-         var1.addLine(this.c, this.d, var3, this.style.strokeWidth());
-         var1.addLine(this.d, this.a, var3, this.style.strokeWidth());
+         int var4 = this.style.multipliedStroke(var2);
+         var1.addLine(this.a, this.b, var4, this.style.strokeWidth());
+         var1.addLine(this.b, this.c, var4, this.style.strokeWidth());
+         var1.addLine(this.c, this.d, var4, this.style.strokeWidth());
+         var1.addLine(this.d, this.a, var4, this.style.strokeWidth());
       }
 
    }

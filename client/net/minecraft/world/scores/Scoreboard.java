@@ -350,7 +350,7 @@ public class Scoreboard {
    protected List<PackedScore> packPlayerScores() {
       return this.playerScores.entrySet().stream().flatMap((var0) -> {
          String var1 = (String)var0.getKey();
-         return ((PlayerScores)var0.getValue()).listRawScores().entrySet().stream().map((var1x) -> new PackedScore(var1, ((Objective)var1x.getKey()).getName(), (Score)var1x.getValue()));
+         return ((PlayerScores)var0.getValue()).listRawScores().entrySet().stream().map((var1x) -> new PackedScore(var1, ((Objective)var1x.getKey()).getName(), ((Score)var1x.getValue()).pack()));
       }).toList();
    }
 
@@ -359,7 +359,7 @@ public class Scoreboard {
       if (var2 == null) {
          LOGGER.error("Unknown objective {} for name {}, ignoring", var1.objective, var1.owner);
       } else {
-         this.getOrCreatePlayerInfo(var1.owner).setScore(var2, var1.score);
+         this.getOrCreatePlayerInfo(var1.owner).setScore(var2, new Score(var1.score));
       }
    }
 
@@ -410,13 +410,13 @@ public class Scoreboard {
       return var1;
    }
 
-   public static record PackedScore(String owner, String objective, Score score) {
+   public static record PackedScore(String owner, String objective, Score.Packed score) {
       final String owner;
       final String objective;
-      final Score score;
-      public static final Codec<PackedScore> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(PackedScore::owner), Codec.STRING.fieldOf("Objective").forGetter(PackedScore::objective), Score.MAP_CODEC.forGetter(PackedScore::score)).apply(var0, PackedScore::new));
+      final Score.Packed score;
+      public static final Codec<PackedScore> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(PackedScore::owner), Codec.STRING.fieldOf("Objective").forGetter(PackedScore::objective), Score.Packed.MAP_CODEC.forGetter(PackedScore::score)).apply(var0, PackedScore::new));
 
-      public PackedScore(String var1, String var2, Score var3) {
+      public PackedScore(String var1, String var2, Score.Packed var3) {
          super();
          this.owner = var1;
          this.objective = var2;

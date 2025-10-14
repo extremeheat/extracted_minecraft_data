@@ -21,23 +21,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, int delayTicks, Optional<Condition> dismountConditions, Optional<Condition> knockbackConditions, Optional<Condition> damageConditions, float forwardMovement, float damageMultiplier, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
-   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("min_reach", 0.0F).forGetter(KineticWeapon::minReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("max_reach", 3.0F).forGetter(KineticWeapon::maxReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("hitbox_margin", 0.3F).forGetter(KineticWeapon::hitboxMargin), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
+public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, int contactCooldownTicks, int delayTicks, Optional<Condition> dismountConditions, Optional<Condition> knockbackConditions, Optional<Condition> damageConditions, float forwardMovement, float damageMultiplier, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
+   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("min_reach", 0.0F).forGetter(KineticWeapon::minReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("max_reach", 3.0F).forGetter(KineticWeapon::maxReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("hitbox_margin", 0.3F).forGetter(KineticWeapon::hitboxMargin), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, KineticWeapon> STREAM_CODEC;
 
-   public KineticWeapon(float var1, float var2, float var3, int var4, Optional<Condition> var5, Optional<Condition> var6, Optional<Condition> var7, float var8, float var9, Optional<Holder<SoundEvent>> var10, Optional<Holder<SoundEvent>> var11) {
+   public KineticWeapon(float var1, float var2, float var3, int var4, int var5, Optional<Condition> var6, Optional<Condition> var7, Optional<Condition> var8, float var9, float var10, Optional<Holder<SoundEvent>> var11, Optional<Holder<SoundEvent>> var12) {
       super();
       this.minReach = var1;
       this.maxReach = var2;
       this.hitboxMargin = var3;
-      this.delayTicks = var4;
-      this.dismountConditions = var5;
-      this.knockbackConditions = var6;
-      this.damageConditions = var7;
-      this.forwardMovement = var8;
-      this.damageMultiplier = var9;
-      this.sound = var10;
-      this.hitSound = var11;
+      this.contactCooldownTicks = var4;
+      this.delayTicks = var5;
+      this.dismountConditions = var6;
+      this.knockbackConditions = var7;
+      this.damageConditions = var8;
+      this.forwardMovement = var9;
+      this.damageMultiplier = var10;
+      this.sound = var11;
+      this.hitSound = var12;
    }
 
    public static Vec3 getMotion(Entity var0) {
@@ -73,13 +74,18 @@ public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, 
 
          for(EntityHitResult var13 : ProjectileUtil.getHitEntitiesAlong(var3, var10 * this.minReach, var10 * this.maxReach, this.hitboxMargin, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x))) {
             Entity var14 = var13.getEntity();
-            double var15 = var6.dot(getMotion(var14));
-            double var17 = Math.max(0.0, var7 - var15);
-            boolean var19 = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(var5, var7, var17, (double)var9);
-            boolean var20 = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(var5, var7, var17, (double)var9);
-            boolean var21 = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(var5, var7, var17, (double)var9);
+            boolean var15 = var3.wasRecentlyStabbed(var14, this.contactCooldownTicks);
             var3.rememberStabbedEntity(var14);
-            var11 |= var3.stabAttack(var4, var14, (float)Mth.floor(var17 * (double)this.damageMultiplier), var21, var20, var19);
+            if (!var15) {
+               double var16 = var6.dot(getMotion(var14));
+               double var18 = Math.max(0.0, var7 - var16);
+               boolean var20 = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(var5, var7, var18, (double)var9);
+               boolean var21 = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(var5, var7, var18, (double)var9);
+               boolean var22 = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(var5, var7, var18, (double)var9);
+               if (var20 || var21 || var22) {
+                  var11 |= var3.stabAttack(var4, var14, (float)Mth.floor(var18 * (double)this.damageMultiplier), var22, var21, var20);
+               }
+            }
          }
 
          if (var11) {
@@ -90,7 +96,7 @@ public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, 
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, KineticWeapon::minReach, ByteBufCodecs.FLOAT, KineticWeapon::maxReach, ByteBufCodecs.FLOAT, KineticWeapon::hitboxMargin, ByteBufCodecs.VAR_INT, KineticWeapon::delayTicks, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::dismountConditions, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::knockbackConditions, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::damageConditions, ByteBufCodecs.FLOAT, KineticWeapon::forwardMovement, ByteBufCodecs.FLOAT, KineticWeapon::damageMultiplier, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::sound, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::hitSound, KineticWeapon::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, KineticWeapon::minReach, ByteBufCodecs.FLOAT, KineticWeapon::maxReach, ByteBufCodecs.FLOAT, KineticWeapon::hitboxMargin, ByteBufCodecs.VAR_INT, KineticWeapon::contactCooldownTicks, ByteBufCodecs.VAR_INT, KineticWeapon::delayTicks, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::dismountConditions, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::knockbackConditions, KineticWeapon.Condition.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::damageConditions, ByteBufCodecs.FLOAT, KineticWeapon::forwardMovement, ByteBufCodecs.FLOAT, KineticWeapon::damageMultiplier, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::sound, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), KineticWeapon::hitSound, KineticWeapon::new);
    }
 
    public static record Condition(int maxDurationTicks, float minSpeed, float minRelativeSpeed) {

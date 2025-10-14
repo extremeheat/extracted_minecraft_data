@@ -1,6 +1,7 @@
 package net.minecraft.gizmos;
 
 import java.util.OptionalDouble;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
 
 public record TextGizmo(Vec3 pos, String text, Style style) implements Gizmo {
@@ -11,11 +12,21 @@ public record TextGizmo(Vec3 pos, String text, Style style) implements Gizmo {
       this.style = var3;
    }
 
-   public void emit(GizmoPrimitives var1) {
-      var1.addText(this.pos, this.text, this.style);
+   public void emit(GizmoPrimitives var1, float var2) {
+      Style var3;
+      if (var2 < 1.0F) {
+         var3 = new Style(ARGB.multiplyAlpha(this.style.color, var2), this.style.scale, this.style.adjustLeft);
+      } else {
+         var3 = this.style;
+      }
+
+      var1.addText(this.pos, this.text, var3);
    }
 
    public static record Style(int color, float scale, OptionalDouble adjustLeft) {
+      final int color;
+      final float scale;
+      final OptionalDouble adjustLeft;
       public static final float DEFAULT_SCALE = 0.32F;
 
       public Style(int var1, float var2, OptionalDouble var3) {

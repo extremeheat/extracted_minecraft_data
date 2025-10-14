@@ -20,7 +20,6 @@ import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.CommonLinks;
 
 public class ReportReasonSelectionScreen extends Screen {
@@ -97,7 +96,7 @@ public class ReportReasonSelectionScreen extends Screen {
          int var9 = this.descriptionBottom() - 4;
          int var10 = var7 - var6;
          int var11 = var9 - var8;
-         int var12 = this.font.wordWrapHeight((FormattedText)var5.reason.description(), var10);
+         int var12 = this.font.wordWrapHeight(var5.reason.description(), var10);
          var1.drawWordWrap(this.font, var5.reason.description(), var6, var8 + (var11 - var12) / 2, var10, -1);
       }
 

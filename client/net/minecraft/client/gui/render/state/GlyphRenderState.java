@@ -8,11 +8,11 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 
-public record GlyphRenderState(Matrix3x2f pose, TextRenderable renderable, @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState {
-   public GlyphRenderState(Matrix3x2f var1, TextRenderable var2, @Nullable ScreenRectangle var3) {
+public record GlyphRenderState(Matrix3x2fc pose, TextRenderable renderable, @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState {
+   public GlyphRenderState(Matrix3x2fc var1, TextRenderable var2, @Nullable ScreenRectangle var3) {
       super();
       this.pose = var1;
       this.renderable = var2;

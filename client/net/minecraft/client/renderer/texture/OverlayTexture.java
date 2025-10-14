@@ -25,7 +25,7 @@ public class OverlayTexture implements AutoCloseable {
                var1.setPixel(var3, var2, -1291911168);
             } else {
                int var4 = (int)((1.0F - (float)var3 / 15.0F * 0.75F) * 255.0F);
-               var1.setPixel(var3, var2, ARGB.color(var4, -1));
+               var1.setPixel(var3, var2, ARGB.white(var4));
             }
          }
       }

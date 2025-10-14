@@ -490,10 +490,10 @@ public class MultiPlayerGameMode {
 
    public void piercingAttack(PiercingWeapon var1) {
       this.ensureHasSentCarriedItem();
+      this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
       this.minecraft.player.onAttack();
       this.minecraft.player.lungeForwardMaybe();
       var1.makeSound(this.minecraft.player);
-      this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STAB, BlockPos.ZERO, Direction.DOWN));
    }
 
    public boolean hasExperience() {
@@ -508,7 +508,7 @@ public class MultiPlayerGameMode {
       return this.minecraft.player.isPassenger() && this.minecraft.player.getVehicle() instanceof HasCustomInventoryScreen;
    }
 
-   public boolean isAlwaysFlying() {
+   public boolean isSpectator() {
       return this.localPlayerMode == GameType.SPECTATOR;
    }
 

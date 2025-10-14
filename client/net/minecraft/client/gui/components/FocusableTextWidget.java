@@ -34,14 +34,14 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = ARGB.color(this.alpha, this.alwaysShowBorder ? (this.isFocused() ? -1 : -6250336) : -1);
+      int var5 = this.alwaysShowBorder && !this.isFocused() ? ARGB.color(this.alpha, -6250336) : ARGB.white(this.alpha);
       switch (this.backgroundFill.ordinal()) {
          case 0:
-            var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.color(this.alpha, -16777216));
+            var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
             break;
          case 1:
             if (this.isFocused()) {
-               var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.color(this.alpha, -16777216));
+               var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
             }
          case 2:
       }

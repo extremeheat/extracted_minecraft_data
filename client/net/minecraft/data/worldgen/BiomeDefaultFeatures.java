@@ -454,6 +454,13 @@ public class BiomeDefaultFeatures {
       monsters(var0, 90, 5, 5, 100, false);
    }
 
+   public static void swampSpawns(MobSpawnSettings.Builder var0, int var1) {
+      commonSpawns(var0, var1);
+      var0.addSpawn(MobCategory.MONSTER, 1, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1));
+      var0.addSpawn(MobCategory.MONSTER, 30, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 4, 4));
+      var0.addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.FROG, 2, 5));
+   }
+
    public static void oceanSpawns(MobSpawnSettings.Builder var0, int var1, int var2, int var3) {
       var0.addSpawn(MobCategory.WATER_CREATURE, var1, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 1, var2));
       var0.addSpawn(MobCategory.WATER_AMBIENT, var3, new MobSpawnSettings.SpawnerData(EntityType.COD, 3, 6));

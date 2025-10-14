@@ -75,7 +75,7 @@ public class RealmsWorldSlotButton extends Button {
       return this.state.action != RealmsWorldSlotButton.Action.NOTHING && super.isActive();
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getX();
       int var6 = this.getY();
       boolean var7 = this.isHoveredOrFocused();

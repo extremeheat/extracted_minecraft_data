@@ -40,14 +40,14 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
          if (var15 != 15 && this.showSkyLight) {
-            int var18 = ARGB.lerp((float)var15 / 15.0F, -16776961, -16711681);
+            int var18 = ARGB.srgbLerp((float)var15 / 15.0F, -16776961, -16711681);
             Gizmos.billboardText(String.valueOf(var15), Vec3.atLowerCornerWithOffset(var14, 0.5, 0.25, 0.5), TextGizmo.Style.forColorAndCentered(var18));
          }
 
          if (this.showBlockLight) {
             int var20 = ((Level)var10).getBrightness(LightLayer.BLOCK, var14);
             if (var20 != 0) {
-               int var19 = ARGB.lerp((float)var20 / 15.0F, -5636096, -256);
+               int var19 = ARGB.srgbLerp((float)var20 / 15.0F, -5636096, -256);
                Gizmos.billboardText(String.valueOf(((Level)var10).getBrightness(LightLayer.BLOCK, var14)), Vec3.atCenterOf(var14), TextGizmo.Style.forColorAndCentered(var19));
             }
          }

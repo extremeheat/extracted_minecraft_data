@@ -9,8 +9,8 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
@@ -147,7 +147,7 @@ public class FireBlock extends BaseFireBlock {
                   }
                }
 
-               boolean var9 = var2.getBiome(var3).is(BiomeTags.INCREASED_FIRE_BURNOUT);
+               boolean var9 = (Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, var3);
                int var10 = var9 ? -50 : 0;
                this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
                this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);

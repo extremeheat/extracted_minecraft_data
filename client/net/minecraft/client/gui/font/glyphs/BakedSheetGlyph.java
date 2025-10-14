@@ -10,10 +10,11 @@ import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
    public static final float Z_FIGHTER = 0.001F;
-   private final GlyphInfo info;
+   final GlyphInfo info;
    final GlyphRenderTypes renderTypes;
    final GpuTextureView textureView;
    private final float u0;
@@ -92,10 +93,10 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
       float var14 = var1 ? this.shearTop() : 0.0F;
       float var15 = var1 ? this.shearBottom() : 0.0F;
       float var16 = extraThickness(var8);
-      var6.addVertex(var5, var10 + var14 - var16, var12 - var16, var4).setColor(var7).setUv(this.u0, this.v0).setLight(var9);
-      var6.addVertex(var5, var10 + var15 - var16, var13 + var16, var4).setColor(var7).setUv(this.u0, this.v1).setLight(var9);
-      var6.addVertex(var5, var11 + var15 + var16, var13 + var16, var4).setColor(var7).setUv(this.u1, this.v1).setLight(var9);
-      var6.addVertex(var5, var11 + var14 + var16, var12 - var16, var4).setColor(var7).setUv(this.u1, this.v0).setLight(var9);
+      var6.addVertex((Matrix4fc)var5, var10 + var14 - var16, var12 - var16, var4).setColor(var7).setUv(this.u0, this.v0).setLight(var9);
+      var6.addVertex((Matrix4fc)var5, var10 + var15 - var16, var13 + var16, var4).setColor(var7).setUv(this.u0, this.v1).setLight(var9);
+      var6.addVertex((Matrix4fc)var5, var11 + var15 + var16, var13 + var16, var4).setColor(var7).setUv(this.u1, this.v1).setLight(var9);
+      var6.addVertex((Matrix4fc)var5, var11 + var14 + var16, var12 - var16, var4).setColor(var7).setUv(this.u1, this.v0).setLight(var9);
    }
 
    private static float extraThickness(boolean var0) {
@@ -121,17 +122,17 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
    }
 
    private void buildEffect(EffectInstance var1, float var2, float var3, int var4, VertexConsumer var5, int var6, Matrix4f var7) {
-      var5.addVertex(var7, var1.x0 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v0).setLight(var6);
-      var5.addVertex(var7, var1.x1 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v1).setLight(var6);
-      var5.addVertex(var7, var1.x1 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v1).setLight(var6);
-      var5.addVertex(var7, var1.x0 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v0).setLight(var6);
+      var5.addVertex((Matrix4fc)var7, var1.x0 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v0).setLight(var6);
+      var5.addVertex((Matrix4fc)var7, var1.x1 + var2, var1.y1 + var2, var3).setColor(var4).setUv(this.u0, this.v1).setLight(var6);
+      var5.addVertex((Matrix4fc)var7, var1.x1 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v1).setLight(var6);
+      var5.addVertex((Matrix4fc)var7, var1.x0 + var2, var1.y0 + var2, var3).setColor(var4).setUv(this.u1, this.v0).setLight(var6);
    }
 
    public GlyphInfo info() {
       return this.info;
    }
 
-   public TextRenderable createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
+   public TextRenderable.Styled createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
       return new GlyphInstance(var1, var2, var3, var4, this, var5, var6, var7);
    }
 
@@ -139,7 +140,7 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
       return new EffectInstance(this, var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   static record GlyphInstance(float x, float y, int color, int shadowColor, BakedSheetGlyph glyph, Style style, float boldOffset, float shadowOffset) implements TextRenderable {
+   static record GlyphInstance(float x, float y, int color, int shadowColor, BakedSheetGlyph glyph, Style style, float boldOffset, float shadowOffset) implements TextRenderable.Styled {
       final float x;
       final float y;
       final Style style;
@@ -167,6 +168,10 @@ public class BakedSheetGlyph implements BakedGlyph, EffectGlyph {
 
       public float right() {
          return this.glyph.right(this);
+      }
+
+      public float activeRight() {
+         return this.x + this.glyph.info.getAdvance(this.style.isBold());
       }
 
       public float bottom() {

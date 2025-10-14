@@ -90,6 +90,7 @@ public class Main {
          DataGenerator var16 = new DataGenerator(var10, SharedConstants.getCurrentVersion(), true);
          addServerProviders(var16, var15, var12, var13, var14);
          var16.run();
+         Util.shutdownExecutors();
       } else {
          var1.printHelpOn(System.out);
       }

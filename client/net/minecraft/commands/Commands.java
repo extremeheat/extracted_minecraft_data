@@ -47,6 +47,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -139,17 +140,22 @@ import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.server.permissions.PermissionProviderCheck;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class Commands {
@@ -506,6 +512,10 @@ public class Commands {
       return new PermissionProviderCheck<T>(var0);
    }
 
+   public static CommandSourceStack createCompilationContext(PermissionSet var0) {
+      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, var0, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+   }
+
    static {
       LEVEL_ALL = PermissionCheck.AlwaysPass.INSTANCE;
       LEVEL_MODERATORS = new PermissionCheck.Require(Permissions.COMMANDS_MODERATOR);
@@ -513,6 +523,12 @@ public class Commands {
       LEVEL_ADMINS = new PermissionCheck.Require(Permissions.COMMANDS_ADMIN);
       LEVEL_OWNERS = new PermissionCheck.Require(Permissions.COMMANDS_OWNER);
       COMMAND_NODE_INSPECTOR = new ClientboundCommandsPacket.NodeInspector<CommandSourceStack>() {
+         private final CommandSourceStack noPermissionSource;
+
+         {
+            this.noPermissionSource = Commands.createCompilationContext(PermissionSet.NO_PERMISSIONS);
+         }
+
          @Nullable
          public ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
             SuggestionProvider var2 = var1.getCustomSuggestions();
@@ -525,20 +541,7 @@ public class Commands {
 
          public boolean isRestricted(CommandNode<CommandSourceStack> var1) {
             Predicate var2 = var1.getRequirement();
-            if (var2 instanceof PermissionProviderCheck var3) {
-               PermissionProviderCheck var10000 = var3;
-
-               try {
-                  var7 = var10000.test();
-               } catch (Throwable var6) {
-                  throw new MatchException(var6.toString(), var6);
-               }
-
-               PermissionCheck var5 = var7;
-               return var5 != PermissionCheck.AlwaysPass.INSTANCE;
-            } else {
-               return true;
-            }
+            return !var2.test(this.noPermissionSource);
          }
       };
    }

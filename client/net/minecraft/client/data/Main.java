@@ -10,6 +10,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
+import net.minecraft.Util;
 import net.minecraft.client.ClientBootstrap;
 import net.minecraft.client.data.models.EquipmentAssetProvider;
 import net.minecraft.client.data.models.ModelProvider;
@@ -44,6 +45,7 @@ public class Main {
          DataGenerator var10 = new DataGenerator(var7, SharedConstants.getCurrentVersion(), true);
          addClientProviders(var10, var9);
          var10.run();
+         Util.shutdownExecutors();
       } else {
          var1.printHelpOn(System.out);
       }

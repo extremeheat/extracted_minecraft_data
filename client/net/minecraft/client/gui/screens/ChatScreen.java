@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.CommandSuggestions;
@@ -11,6 +11,8 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.chat.ChatListener;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -22,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 public class ChatScreen extends Screen {
    public static final double MOUSE_SCROLL_SPEED = 7.0;
    private static final Component USAGE_TEXT = Component.translatable("chat_screen.usage");
-   private static final int TOOLTIP_MAX_WIDTH = 210;
    private String historyBuffer = "";
    private int historyPos = -1;
    protected EditBox input;
@@ -143,13 +144,11 @@ public class ChatScreen extends Screen {
          return true;
       } else {
          if (var1.button() == 0) {
-            ChatComponent var3 = this.minecraft.gui.getChat();
-            if (var3.handleChatQueueClicked(var1.x(), var1.y())) {
-               return true;
-            }
-
-            Style var4 = this.getComponentStyleAt(var1.x(), var1.y());
-            if (var4 != null && this.handleComponentClicked(var4)) {
+            int var3 = this.minecraft.getWindow().getGuiScaledHeight();
+            ActiveTextCollector.ClickableStyleFinder var4 = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)var1.x(), (int)var1.y());
+            this.minecraft.gui.getChat().captureClickableText(var4, var3, this.minecraft.gui.getGuiTicks(), true);
+            Style var5 = var4.result();
+            if (var5 != null && this.handleComponentClicked(var5)) {
                this.initial = this.input.getValue();
                return true;
             }
@@ -157,6 +156,32 @@ public class ChatScreen extends Screen {
 
          return super.mouseClicked(var1, var2);
       }
+   }
+
+   private boolean handleComponentClicked(Style var1) {
+      ClickEvent var2 = var1.getClickEvent();
+      if (this.minecraft.hasShiftDown()) {
+         if (var1.getInsertion() != null) {
+            this.insertText(var1.getInsertion(), false);
+         }
+      } else if (var2 != null) {
+         if (var2 instanceof ClickEvent.Custom) {
+            ClickEvent.Custom var3 = (ClickEvent.Custom)var2;
+            if (var3.id().equals(ChatComponent.QUEUE_EXPAND_ID)) {
+               ChatListener var4 = this.minecraft.getChatListener();
+               if (var4.queueSize() != 0L) {
+                  var4.acceptNextDelayedMessage();
+               }
+
+               return true;
+            }
+         }
+
+         defaultHandleGameClickEvent(var2, this.minecraft, this);
+         return true;
+      }
+
+      return false;
    }
 
    public void insertText(String var1, boolean var2) {
@@ -195,17 +220,9 @@ public class ChatScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
-      this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
+      this.minecraft.gui.getChat().render(var1, this.font, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       super.render(var1, var2, var3, var4);
       this.commandSuggestions.render(var1, var2, var3);
-      GuiMessageTag var5 = this.minecraft.gui.getChat().getMessageTagAt((double)var2, (double)var3);
-      if (var5 != null && var5.text() != null) {
-         var1.setTooltipForNextFrame(this.font, this.font.split(var5.text(), 210), var2, var3);
-      } else {
-         Style var6 = this.getComponentStyleAt((double)var2, (double)var3);
-         var1.renderComponentHoverEffect(this.font, var6, var2, var3);
-      }
-
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
@@ -227,11 +244,6 @@ public class ChatScreen extends Screen {
          var1.nest().add(NarratedElementType.TITLE, (Component)Component.translatable("chat_screen.message", var2));
       }
 
-   }
-
-   @Nullable
-   private Style getComponentStyleAt(double var1, double var3) {
-      return this.minecraft.gui.getChat().getClickedComponentStyleAt(var1, var3);
    }
 
    public void handleChatInput(String var1, boolean var2) {

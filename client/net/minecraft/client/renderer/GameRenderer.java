@@ -33,15 +33,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.entity.ClientAvatarState;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.font.ActiveArea;
+import net.minecraft.client.gui.font.EmptyArea;
+import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.render.GuiRenderer;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.pip.GuiBannerResultRenderer;
 import net.minecraft.client.gui.render.pip.GuiBookModelRenderer;
 import net.minecraft.client.gui.render.pip.GuiEntityRenderer;
 import net.minecraft.client.gui.render.pip.GuiProfilerChartRenderer;
 import net.minecraft.client.gui.render.pip.GuiSignRenderer;
 import net.minecraft.client.gui.render.pip.GuiSkinRenderer;
+import net.minecraft.client.gui.render.state.ColoredRectangleRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -59,13 +65,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -129,7 +138,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private final CrossFrameResourcePool resourcePool;
    private final FogRenderer fogRenderer;
    private final GuiRenderer guiRenderer;
-   private final GuiRenderState guiRenderState;
+   final GuiRenderState guiRenderState;
    private final LevelRenderState levelRenderState;
    private final SubmitNodeStorage submitNodeStorage;
    private final FeatureRenderDispatcher featureRenderDispatcher;
@@ -553,7 +562,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
          this.guiRenderState.reset();
          var3.push("guiExtraction");
-         GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState);
+         GuiGraphics var8 = new GuiGraphics(this.minecraft, this.guiRenderState, var5, var6);
          if (var4 && var2 && this.minecraft.level != null) {
             this.minecraft.gui.render(var8, var1);
          }
@@ -609,6 +618,10 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          }
 
          this.minecraft.gui.renderDeferredSubtitles();
+         if (SharedConstants.DEBUG_ACTIVE_TEXT_AREAS) {
+            this.renderActiveTextDebug();
+         }
+
          var3.popPush("guiRendering");
          this.guiRenderer.render(this.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
          this.guiRenderer.incrementFrameNumber();
@@ -618,6 +631,31 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          this.featureRenderDispatcher.endFrame();
          this.resourcePool.endFrame();
       }
+   }
+
+   private void renderActiveTextDebug() {
+      this.guiRenderState.nextStratum();
+      this.guiRenderState.forEachText((var1) -> var1.ensurePrepared().visit(new Font.GlyphVisitor() {
+            private int index;
+
+            public void acceptGlyph(TextRenderable.Styled var1x) {
+               this.renderDebugMarkers(var1x, false);
+            }
+
+            public void acceptEmptyArea(EmptyArea var1x) {
+               this.renderDebugMarkers(var1x, true);
+            }
+
+            private void renderDebugMarkers(ActiveArea var1x, boolean var2) {
+               int var3 = (var2 ? 128 : 255) - (this.index++ & 1) * 64;
+               Style var4 = var1x.style();
+               int var5 = var4.getClickEvent() != null ? var3 : 0;
+               int var6 = var4.getHoverEvent() != null ? var3 : 0;
+               int var7 = var5 != 0 && var6 != 0 ? 0 : var3;
+               int var8 = ARGB.color(128, var5, var6, var7);
+               GameRenderer.this.guiRenderState.submitGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), var1.pose, (int)var1x.activeLeft(), (int)var1x.activeTop(), (int)var1x.activeRight(), (int)var1x.activeBottom(), var8, var8, var1.scissor));
+            }
+         }));
    }
 
    private void tryTakeScreenshotIfNeeded() {
@@ -754,7 +792,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       Quaternionf var23 = this.mainCamera.rotation().conjugate(new Quaternionf());
       Matrix4f var24 = (new Matrix4f()).rotation(var23);
       var4.popPush("fog");
-      boolean var25 = this.minecraft.level.effects().isFoggyAt(this.mainCamera.blockPosition().getX(), this.mainCamera.blockPosition().getZ()) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+      boolean var25 = (Boolean)this.mainCamera.attributeProbe().getValue(EnvironmentAttributes.EXTRA_FOG, var2) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
       Vector4f var18 = this.fogRenderer.setupFog(this.mainCamera, this.minecraft.options.getEffectiveRenderDistance(), var25, var1, this.getDarkenWorldAmount(var2), this.minecraft.level);
       GpuBufferSlice var19 = this.fogRenderer.getBuffer(FogRenderer.FogMode.WORLD);
       var4.popPush("level");

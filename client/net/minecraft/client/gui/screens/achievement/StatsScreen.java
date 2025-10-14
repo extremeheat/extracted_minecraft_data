@@ -547,7 +547,7 @@ public class StatsScreen extends Screen {
                this.setTooltip(Tooltip.create(this.getMessage()));
             }
 
-            public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+            public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
                ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.width, this.height);

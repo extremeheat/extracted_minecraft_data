@@ -3,11 +3,14 @@ package net.minecraft.client.gui.screens;
 import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
 
@@ -15,6 +18,7 @@ public class DemoIntroScreen extends Screen {
    private static final ResourceLocation DEMO_BACKGROUND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/demo_background.png");
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
    private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
+   private static final int TEXT_COLOR = -14737633;
    private MultiLineLabel movementMessage;
    private MultiLineLabel durationMessage;
 
@@ -35,8 +39,12 @@ public class DemoIntroScreen extends Screen {
          this.minecraft.mouseHandler.grabMouse();
       }).bounds(this.width / 2 + 2, this.height / 2 + 62 + -16, 114, 20).build());
       Options var2 = this.minecraft.options;
-      this.movementMessage = MultiLineLabel.create(this.font, Component.translatable("demo.help.movementShort", var2.keyUp.getTranslatedKeyMessage(), var2.keyLeft.getTranslatedKeyMessage(), var2.keyDown.getTranslatedKeyMessage(), var2.keyRight.getTranslatedKeyMessage()), Component.translatable("demo.help.movementMouse"), Component.translatable("demo.help.jump", var2.keyJump.getTranslatedKeyMessage()), Component.translatable("demo.help.inventory", var2.keyInventory.getTranslatedKeyMessage()));
-      this.durationMessage = MultiLineLabel.create(this.font, Component.translatable("demo.help.fullWrapped"), 218);
+      this.movementMessage = MultiLineLabel.create(this.font, this.movementMessage(Component.translatable("demo.help.movementShort", var2.keyUp.getTranslatedKeyMessage(), var2.keyLeft.getTranslatedKeyMessage(), var2.keyDown.getTranslatedKeyMessage(), var2.keyRight.getTranslatedKeyMessage())), this.movementMessage(Component.translatable("demo.help.movementMouse")), this.movementMessage(Component.translatable("demo.help.jump", var2.keyJump.getTranslatedKeyMessage())), this.movementMessage(Component.translatable("demo.help.inventory", var2.keyInventory.getTranslatedKeyMessage())));
+      this.durationMessage = MultiLineLabel.create(this.font, Component.translatable("demo.help.fullWrapped").withoutShadow().withColor(-14737633), 218);
+   }
+
+   private Component movementMessage(MutableComponent var1) {
+      return var1.withoutShadow().withColor(-11579569);
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
@@ -50,12 +58,13 @@ public class DemoIntroScreen extends Screen {
       super.render(var1, var2, var3, var4);
       int var5 = (this.width - 248) / 2 + 10;
       int var6 = (this.height - 166) / 2 + 8;
+      ActiveTextCollector var7 = var1.textRenderer();
       var1.drawString(this.font, this.title, var5, var6, -14737633, false);
-      var6 = this.movementMessage.render(var1, MultiLineLabel.Align.LEFT, var5, var6 + 12, 12, false, -11579569);
+      var6 = this.movementMessage.visitLines(TextAlignment.LEFT, var5, var6 + 12, 12, var7);
       MultiLineLabel var10000 = this.durationMessage;
-      MultiLineLabel.Align var10002 = MultiLineLabel.Align.LEFT;
-      int var10004 = var6 + 20;
+      TextAlignment var10001 = TextAlignment.LEFT;
+      int var10003 = var6 + 20;
       Objects.requireNonNull(this.font);
-      var10000.render(var1, var10002, var5, var10004, 9, false, -14737633);
+      var10000.visitLines(var10001, var5, var10003, 9, var7);
    }
 }

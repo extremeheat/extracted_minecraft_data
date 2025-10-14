@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class LeashFeatureRenderer {
    private static final int LEASH_RENDER_STEPS = 24;
@@ -63,7 +64,7 @@ public class LeashFeatureRenderer {
       }
 
       float var21 = var4 * var11;
-      var0.addVertex(var1, var19 - var6, var20 + var5, var21 + var7).setColor(var16, var17, var18, 1.0F).setLight(var14);
-      var0.addVertex(var1, var19 + var6, var20 + 0.05F - var5, var21 - var7).setColor(var16, var17, var18, 1.0F).setLight(var14);
+      var0.addVertex((Matrix4fc)var1, var19 - var6, var20 + var5, var21 + var7).setColor(var16, var17, var18, 1.0F).setLight(var14);
+      var0.addVertex((Matrix4fc)var1, var19 + var6, var20 + 0.05F - var5, var21 - var7).setColor(var16, var17, var18, 1.0F).setLight(var14);
    }
 }

@@ -19,6 +19,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -262,7 +263,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean isConverting() {
-      return !this.level().dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.isNoAi();
+      return !this.isImmuneToZombification() && !this.isNoAi() && (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.PIGLINS_ZOMBIFY, this.position());
    }
 
    private void setCannotBeHunted(boolean var1) {

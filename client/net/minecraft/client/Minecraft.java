@@ -165,7 +165,6 @@ import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.client.sounds.MusicInfo;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.telemetry.ClientTelemetryManager;
@@ -213,7 +212,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.FileZipper;
@@ -235,11 +233,12 @@ import net.minecraft.util.profiling.metrics.profiling.ActiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.InactiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
-import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.BackgroundMusic;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -247,7 +246,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -1109,7 +1107,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             var1 = new TitleScreen();
          } else if (this.player.isDeadOrDying()) {
             if (this.player.shouldShowDeathScreen()) {
-               var1 = new DeathScreen((Component)null, this.level.getLevelData().isHardcore());
+               var1 = new DeathScreen((Component)null, this.level.getLevelData().isHardcore(), this.player);
             } else {
                this.player.respawn();
             }
@@ -1233,7 +1231,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.runAllTasks();
          var3.popPush("tick");
          if (var14 > 0) {
-            this.perTickGizmos.clear();
+            this.perTickGizmos.drainGizmos();
          }
 
          for(int var4 = 0; var4 < Math.min(10, var14); ++var4) {
@@ -1600,7 +1598,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } else {
             boolean var2 = false;
             PiercingWeapon var3 = (PiercingWeapon)var1.get(DataComponents.PIERCING_WEAPON);
-            if (var3 != null) {
+            if (var3 != null && !this.gameMode.isSpectator()) {
                this.gameMode.piercingAttack(var3);
                this.player.swing(InteractionHand.MAIN_HAND);
                return true;
@@ -2486,30 +2484,35 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.soundManager;
    }
 
-   public MusicInfo getSituationalMusic() {
+   @Nullable
+   public Music getSituationalMusic() {
       Music var1 = (Music)Optionull.map(this.screen, Screen::getBackgroundMusic);
       if (var1 != null) {
-         return new MusicInfo(var1);
-      } else if (this.player == null) {
-         return new MusicInfo(Musics.MENU);
+         return var1;
       } else {
-         Level var2 = this.player.level();
-         if (var2.dimension() == Level.END) {
-            return this.gui.getBossOverlay().shouldPlayMusic() ? new MusicInfo(Musics.END_BOSS) : new MusicInfo(Musics.END);
-         } else {
-            Holder var3 = var2.getBiome(this.player.blockPosition());
-            Biome var4 = (Biome)var3.value();
-            float var5 = var4.getBackgroundMusicVolume();
-            Optional var6 = var4.getBackgroundMusic();
-            if (var6.isPresent()) {
-               Optional var7 = ((WeightedList)var6.get()).getRandom(var2.random);
-               return new MusicInfo((Music)var7.orElse((Object)null), var5);
-            } else if (!this.musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!this.player.isUnderWater() || !var3.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))) {
-               return var2.dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly ? new MusicInfo(Musics.CREATIVE, var5) : new MusicInfo(Musics.GAME, var5);
+         Camera var2 = this.gameRenderer.getMainCamera();
+         if (this.player != null && var2 != null) {
+            Level var3 = this.player.level();
+            if (var3.dimension() == Level.END && this.gui.getBossOverlay().shouldPlayMusic()) {
+               return Musics.END_BOSS;
             } else {
-               return new MusicInfo(Musics.UNDER_WATER, var5);
+               BackgroundMusic var4 = (BackgroundMusic)var2.attributeProbe().getValue(EnvironmentAttributes.BACKGROUND_MUSIC, 1.0F);
+               boolean var5 = this.player.getAbilities().instabuild && this.player.getAbilities().mayfly;
+               boolean var6 = this.player.isUnderWater();
+               return (Music)var4.select(var5, var6).orElse((Object)null);
             }
+         } else {
+            return Musics.MENU;
          }
+      }
+   }
+
+   public float getMusicVolume() {
+      if (this.screen != null && this.screen.getBackgroundMusic() != null) {
+         return 1.0F;
+      } else {
+         Camera var1 = this.gameRenderer.getMainCamera();
+         return var1 != null ? (Float)var1.attributeProbe().getValue(EnvironmentAttributes.MUSIC_VOLUME, 1.0F) : 1.0F;
       }
    }
 

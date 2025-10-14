@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4653;
+   public static final int WORLD_VERSION = 4654;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,7 +26,7 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 774;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 273;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 274;
    public static final int SNBT_NAG_VERSION = 4650;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
@@ -35,10 +35,10 @@ public class SharedConstants {
    public static final int RESOURCE_PACK_FORMAT_MAJOR = 70;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 1;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 89;
+   public static final int DATA_PACK_FORMAT_MAJOR = 90;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -102,6 +102,7 @@ public class SharedConstants {
    public static final boolean DEBUG_CHASE_COMMAND = debugFlag("CHASE_COMMAND");
    public static final boolean DEBUG_VERBOSE_COMMAND_ERRORS = debugFlag("VERBOSE_COMMAND_ERRORS");
    public static final boolean DEBUG_DEV_COMMANDS = debugFlag("DEV_COMMANDS");
+   public static final boolean DEBUG_ACTIVE_TEXT_AREAS = debugFlag("ACTIVE_TEXT_AREAS");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
    public static final boolean DEBUG_AQUIFERS = debugFlag("AQUIFERS");
@@ -218,7 +219,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742097;
+      return 1073742098;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

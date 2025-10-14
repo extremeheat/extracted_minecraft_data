@@ -11,7 +11,9 @@ import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -95,18 +97,19 @@ public class ChatSelectionScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      ActiveTextCollector var5 = var1.textRenderer();
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
-      int var6 = this.report.reportedMessages().size();
-      int var7 = var5.maxReportedMessageCount();
-      MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      var1.drawCenteredString(this.font, (Component)var8, this.width / 2, 26, -1);
-      int var9 = this.chatSelectionList.getFooterTop();
+      AbuseReportLimits var6 = this.reportingContext.sender().reportLimits();
+      int var7 = this.report.reportedMessages().size();
+      int var8 = var6.maxReportedMessageCount();
+      MutableComponent var9 = Component.translatable("gui.chatSelection.selected", var7, var8);
+      var1.drawCenteredString(this.font, (Component)var9, this.width / 2, 26, -1);
+      int var10 = this.chatSelectionList.getFooterTop();
       MultiLineLabel var10000 = this.contextInfoLabel;
-      MultiLineLabel.Align var10002 = MultiLineLabel.Align.CENTER;
-      int var10003 = this.width / 2;
+      TextAlignment var10001 = TextAlignment.CENTER;
+      int var10002 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var10000.render(var1, var10002, var10003, var9, 9, true, -1);
+      var10000.visitLines(var10001, var10002, var10, 9, var5);
    }
 
    public void onClose() {

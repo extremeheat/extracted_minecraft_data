@@ -19,6 +19,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -33,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 
 public class ZombieHorse extends AbstractHorse {
    private static final float SPEED_FACTOR = 42.16F;
@@ -110,9 +112,9 @@ public class ZombieHorse extends AbstractHorse {
       if (var3 == EntitySpawnReason.NATURAL) {
          Zombie var5 = EntityType.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var5 != null) {
-            var5.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
             var5.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var5.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
+            var5.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
             var5.startRiding(this, false, false);
          }
       }
@@ -141,12 +143,20 @@ public class ZombieHorse extends AbstractHorse {
       }
    }
 
+   public boolean canBeLeashed() {
+      return this.isTamed() || !this.isMobControlled();
+   }
+
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.ZOMBIE_HORSE_FOOD);
    }
 
    protected EquipmentSlot sunProtectionSlot() {
       return EquipmentSlot.BODY;
+   }
+
+   public Vec3[] getQuadLeashOffsets() {
+      return Leashable.createQuadLeashOffsets(this, 0.04, 0.41, 0.18, 0.73);
    }
 
    public EntityDimensions getDefaultDimensions(Pose var1) {

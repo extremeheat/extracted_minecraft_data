@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntity, S extends EndPortalRenderState> implements BlockEntityRenderer<T, S> {
    public static final ResourceLocation END_SKY_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/end_sky.png");
@@ -52,10 +53,10 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
 
    private void renderFace(EnumSet<Direction> var1, Matrix4f var2, VertexConsumer var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, Direction var12) {
       if (var1.contains(var12)) {
-         var3.addVertex(var2, var4, var6, var8);
-         var3.addVertex(var2, var5, var6, var9);
-         var3.addVertex(var2, var5, var7, var10);
-         var3.addVertex(var2, var4, var7, var11);
+         var3.addVertex((Matrix4fc)var2, var4, var6, var8);
+         var3.addVertex((Matrix4fc)var2, var5, var6, var9);
+         var3.addVertex((Matrix4fc)var2, var5, var7, var10);
+         var3.addVertex((Matrix4fc)var2, var4, var7, var11);
       }
 
    }

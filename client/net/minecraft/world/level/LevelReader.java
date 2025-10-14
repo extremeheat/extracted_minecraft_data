@@ -12,6 +12,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -222,4 +223,6 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       Registry var2 = this.registryAccess().lookupOrThrow(var1);
       return var2.filterFeatures(this.enabledFeatures());
    }
+
+   EnvironmentAttributeReader environmentAttributes();
 }

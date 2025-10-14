@@ -153,9 +153,9 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    public static Component getFullname(Holder<Enchantment> var0, int var1) {
       MutableComponent var2 = ((Enchantment)var0.value()).description.copy();
       if (var0.is(EnchantmentTags.CURSE)) {
-         ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.RED));
+         var2 = ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.RED));
       } else {
-         ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.GRAY));
+         var2 = ComponentUtils.mergeStyles(var2, Style.EMPTY.withColor(ChatFormatting.GRAY));
       }
 
       if (var1 != 1 || ((Enchantment)var0.value()).getMaxLevel() != 1) {

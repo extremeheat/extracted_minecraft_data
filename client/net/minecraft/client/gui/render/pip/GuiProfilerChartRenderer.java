@@ -9,6 +9,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ResultField;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public class GuiProfilerChartRenderer extends PictureInPictureRenderer<GuiProfilerChartRenderState> {
    public GuiProfilerChartRenderer(MultiBufferSource.BufferSource var1) {
@@ -29,13 +30,13 @@ public class GuiProfilerChartRenderer extends PictureInPictureRenderer<GuiProfil
          VertexConsumer var9 = this.bufferSource.getBuffer(RenderType.debugTriangleFan());
          int var10 = ARGB.opaque(var7.getColor());
          int var11 = ARGB.multiply(var10, -8355712);
-         var9.addVertex(var5, 0.0F, 0.0F, 0.0F).setColor(var10);
+         var9.addVertex((Matrix4fc)var5, 0.0F, 0.0F, 0.0F).setColor(var10);
 
          for(int var12 = var8; var12 >= 0; --var12) {
             float var13 = (float)((var3 + var7.percentage * (double)var12 / (double)var8) * 6.2831854820251465 / 100.0);
             float var14 = Mth.sin(var13) * 105.0F;
             float var15 = Mth.cos(var13) * 105.0F * 0.5F;
-            var9.addVertex(var5, var14, var15, 0.0F).setColor(var10);
+            var9.addVertex((Matrix4fc)var5, var14, var15, 0.0F).setColor(var10);
          }
 
          var9 = this.bufferSource.getBuffer(RenderType.debugQuads());
@@ -48,10 +49,10 @@ public class GuiProfilerChartRenderer extends PictureInPictureRenderer<GuiProfil
             float var17 = Mth.sin(var16) * 105.0F;
             float var18 = Mth.cos(var16) * 105.0F * 0.5F;
             if (!((var23 + var18) / 2.0F < 0.0F)) {
-               var9.addVertex(var5, var22, var23, 0.0F).setColor(var11);
-               var9.addVertex(var5, var22, var23 + 10.0F, 0.0F).setColor(var11);
-               var9.addVertex(var5, var17, var18 + 10.0F, 0.0F).setColor(var11);
-               var9.addVertex(var5, var17, var18, 0.0F).setColor(var11);
+               var9.addVertex((Matrix4fc)var5, var22, var23, 0.0F).setColor(var11);
+               var9.addVertex((Matrix4fc)var5, var22, var23 + 10.0F, 0.0F).setColor(var11);
+               var9.addVertex((Matrix4fc)var5, var17, var18 + 10.0F, 0.0F).setColor(var11);
+               var9.addVertex((Matrix4fc)var5, var17, var18, 0.0F).setColor(var11);
             }
          }
 

@@ -410,7 +410,7 @@ public class HappyGhast extends Animal {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
          if (this.isAlive() && this.deathTime == 0 && this.getMaxHealth() != this.getHealth()) {
-            boolean var3 = var1.dimensionType().natural() && (this.isInClouds() || var1.precipitationAt(this.blockPosition()) != Biome.Precipitation.NONE);
+            boolean var3 = this.isInClouds() || var1.precipitationAt(this.blockPosition()) != Biome.Precipitation.NONE;
             if (this.tickCount % (var3 ? 20 : 600) == 0) {
                this.heal(1.0F);
             }

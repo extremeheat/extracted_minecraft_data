@@ -26,13 +26,6 @@ public class Vec3 implements Position {
    public final double y;
    public final double z;
 
-   public static Vec3 fromRGB24(int var0) {
-      double var1 = (double)(var0 >> 16 & 255) / 255.0;
-      double var3 = (double)(var0 >> 8 & 255) / 255.0;
-      double var5 = (double)(var0 & 255) / 255.0;
-      return new Vec3(var1, var3, var5);
-   }
-
    public static Vec3 atLowerCornerOf(Vec3i var0) {
       return new Vec3((double)var0.getX(), (double)var0.getY(), (double)var0.getZ());
    }

@@ -140,7 +140,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(var1, var2, 22, 22, var3);
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
          ResourceLocation var5;
          if (!this.active) {
             var5 = BeaconScreen.BUTTON_DISABLED_SPRITE;

@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractSliderButton extends AbstractWidget {
+public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMessage {
    private static final ResourceLocation SLIDER_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider");
    private static final ResourceLocation HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_highlighted");
    private static final ResourceLocation SLIDER_HANDLE_SPRITE = ResourceLocation.withDefaultNamespace("widget/slider_handle");
@@ -63,11 +63,9 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      Minecraft var5 = Minecraft.getInstance();
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      int var6 = ARGB.color(this.alpha, this.active ? -1 : -6250336);
-      this.renderScrollingString(var1, var5.font, 2, var6);
+      this.renderScrollingStringOverContents(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE), this.getMessage(), 2);
       if (this.isHovered()) {
          var1.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
       }

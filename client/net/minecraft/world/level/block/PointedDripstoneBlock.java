@@ -8,11 +8,12 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
@@ -145,7 +146,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       if (canDrip(var1)) {
          float var5 = var4.nextFloat();
          if (!(var5 > 0.12F)) {
-            getFluidAboveStalactite(var2, var3, var1).filter((var1x) -> var5 < 0.02F || canFillCauldron(var1x.fluid)).ifPresent((var3x) -> spawnDripParticle(var2, var3, var1, var3x.fluid));
+            getFluidAboveStalactite(var2, var3, var1).filter((var1x) -> var5 < 0.02F || canFillCauldron(var1x.fluid)).ifPresent((var3x) -> spawnDripParticle(var2, var3, var1, var3x.fluid, var3x.pos));
          }
       }
    }
@@ -360,18 +361,17 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    public static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2) {
-      getFluidAboveStalactite(var0, var1, var2).ifPresent((var3) -> spawnDripParticle(var0, var1, var2, var3.fluid));
+      getFluidAboveStalactite(var0, var1, var2).ifPresent((var3) -> spawnDripParticle(var0, var1, var2, var3.fluid, var3.pos));
    }
 
-   private static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2, Fluid var3) {
-      Vec3 var4 = var2.getOffset(var1);
-      double var5 = 0.0625;
-      double var7 = (double)var1.getX() + 0.5 + var4.x;
-      double var9 = (double)var1.getY() + STALACTITE_DRIP_START_PIXEL - 0.0625;
-      double var11 = (double)var1.getZ() + 0.5 + var4.z;
-      Fluid var13 = getDripFluid(var0, var3);
-      SimpleParticleType var14 = var13.is(FluidTags.LAVA) ? ParticleTypes.DRIPPING_DRIPSTONE_LAVA : ParticleTypes.DRIPPING_DRIPSTONE_WATER;
-      var0.addParticle(var14, var7, var9, var11, 0.0, 0.0, 0.0);
+   private static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2, Fluid var3, BlockPos var4) {
+      Vec3 var5 = var2.getOffset(var1);
+      double var6 = 0.0625;
+      double var8 = (double)var1.getX() + 0.5 + var5.x;
+      double var10 = (double)var1.getY() + STALACTITE_DRIP_START_PIXEL - 0.0625;
+      double var12 = (double)var1.getZ() + 0.5 + var5.z;
+      ParticleOptions var14 = getDripParticle(var0, var3, var4);
+      var0.addParticle(var14, var8, var10, var12, 0.0, 0.0, 0.0);
    }
 
    @Nullable
@@ -501,7 +501,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
          BlockPos var2 = var1x.above();
          BlockState var3 = var0.getBlockState(var2);
          Object var4;
-         if (var3.is(Blocks.MUD) && !var0.dimensionType().ultraWarm()) {
+         if (var3.is(Blocks.MUD) && !(Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var2)) {
             var4 = Fluids.WATER;
          } else {
             var4 = var0.getFluidState(var2).getType();
@@ -519,11 +519,11 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       return var0.is(Blocks.DRIPSTONE_BLOCK) && var1.is(Blocks.WATER) && var1.getFluidState().isSource();
    }
 
-   private static Fluid getDripFluid(Level var0, Fluid var1) {
+   private static ParticleOptions getDripParticle(Level var0, Fluid var1, BlockPos var2) {
       if (var1.isSame(Fluids.EMPTY)) {
-         return var0.dimensionType().ultraWarm() ? Fluids.LAVA : Fluids.WATER;
+         return (ParticleOptions)var0.environmentAttributes().getValue(EnvironmentAttributes.DEFAULT_DRIPSTONE_PARTICLE, var2);
       } else {
-         return var1;
+         return var1.is(FluidTags.LAVA) ? ParticleTypes.DRIPPING_DRIPSTONE_LAVA : ParticleTypes.DRIPPING_DRIPSTONE_WATER;
       }
    }
 

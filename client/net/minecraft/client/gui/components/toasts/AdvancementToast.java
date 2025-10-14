@@ -76,7 +76,7 @@ public class AdvancementToast implements Toast {
                int var11 = var10000 - var10001 * 9 / 2;
 
                for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.color(var14, -1), false);
+                  var1.drawString(var2, (FormattedCharSequence)var13, 30, var11, ARGB.white(var14), false);
                   Objects.requireNonNull(var2);
                   var11 += 9;
                }

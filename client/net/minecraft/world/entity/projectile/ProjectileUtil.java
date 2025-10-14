@@ -42,7 +42,7 @@ public final class ProjectileUtil {
       Vec3 var6 = var0.getEyePosition();
       Vec3 var7 = var6.add(var5.scale((double)var1));
       Vec3 var8 = var6.add(var5.scale((double)var2));
-      return (Collection)getHitEntitiesAlong(var7, var0, var4, var8, var3, ClipContext.Block.COLLIDER).map((var0x) -> List.of(), (var0x) -> var0x);
+      return (Collection)getHitEntitiesAlong(var0, var6, var7, var4, var8, var3, ClipContext.Block.COLLIDER).map((var0x) -> List.of(), (var0x) -> var0x);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {
@@ -74,16 +74,19 @@ public final class ProjectileUtil {
       return (HitResult)var8;
    }
 
-   private static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Vec3 var0, Entity var1, Predicate<Entity> var2, Vec3 var3, float var4, ClipContext.Block var5) {
-      Level var6 = var1.level();
-      BlockHitResult var7 = var6.clipIncludingBorder(new ClipContext(var0, var3, var5, ClipContext.Fluid.NONE, var1));
-      if (var7.getType() != HitResult.Type.MISS) {
-         var3 = var7.getLocation();
+   private static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, Vec3 var1, Vec3 var2, Predicate<Entity> var3, Vec3 var4, float var5, ClipContext.Block var6) {
+      Level var7 = var0.level();
+      BlockHitResult var8 = var7.clipIncludingBorder(new ClipContext(var1, var4, var6, ClipContext.Fluid.NONE, var0));
+      if (var8.getType() != HitResult.Type.MISS) {
+         var4 = var8.getLocation();
+         if (var1.distanceToSqr(var4) < var1.distanceToSqr(var2)) {
+            return Either.left(var8);
+         }
       }
 
-      AABB var8 = AABB.ofSize(var0, (double)var4, (double)var4, (double)var4).expandTowards(var3.subtract(var0)).inflate(1.0);
-      Collection var9 = getManyEntityHitResult(var6, var1, var0, var3, var8, var2, var4);
-      return !var9.isEmpty() ? Either.right(var9) : Either.left(var7);
+      AABB var9 = AABB.ofSize(var2, (double)var5, (double)var5, (double)var5).expandTowards(var4.subtract(var2)).inflate(1.0);
+      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5);
+      return !var10.isEmpty() ? Either.right(var10) : Either.left(var8);
    }
 
    @Nullable

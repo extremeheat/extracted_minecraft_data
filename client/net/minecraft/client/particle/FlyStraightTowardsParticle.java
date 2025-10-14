@@ -58,7 +58,7 @@ public class FlyStraightTowardsParticle extends SingleQuadParticle {
          this.x = this.xStart + this.xd * (double)var2;
          this.y = this.yStart + this.yd * (double)var2;
          this.z = this.zStart + this.zd * (double)var2;
-         int var3 = ARGB.lerp(var1, this.startColor, this.endColor);
+         int var3 = ARGB.srgbLerp(var1, this.startColor, this.endColor);
          this.setColor((float)ARGB.red(var3) / 255.0F, (float)ARGB.green(var3) / 255.0F, (float)ARGB.blue(var3) / 255.0F);
          this.setAlpha((float)ARGB.alpha(var3) / 255.0F);
       }

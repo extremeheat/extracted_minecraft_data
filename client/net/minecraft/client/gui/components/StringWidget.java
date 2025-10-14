@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components;
 
 import java.util.Objects;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -10,6 +10,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 
 public class StringWidget extends AbstractStringWidget {
+   private static final int TEXT_MARGIN = 2;
    private int maxWidth;
    private int cachedWidth;
    private boolean cachedWidthDirty;
@@ -32,11 +33,6 @@ public class StringWidget extends AbstractStringWidget {
       this.cachedWidthDirty = true;
       this.textOverflow = StringWidget.TextOverflow.CLAMPED;
       this.active = false;
-   }
-
-   public StringWidget setColor(int var1) {
-      super.setColor(var1);
-      return this;
    }
 
    public void setMessage(Component var1) {
@@ -67,24 +63,24 @@ public class StringWidget extends AbstractStringWidget {
       }
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      Component var5 = this.getMessage();
-      Font var6 = this.getFont();
-      int var7 = this.maxWidth > 0 ? this.maxWidth : this.getWidth();
-      int var8 = var6.width((FormattedText)var5);
-      int var9 = this.getX();
+   public void visitLines(ActiveTextCollector var1) {
+      Component var2 = this.getMessage();
+      Font var3 = this.getFont();
+      int var4 = this.maxWidth > 0 ? this.maxWidth : this.getWidth();
+      int var5 = var3.width((FormattedText)var2);
+      int var6 = this.getX();
       int var10000 = this.getY();
       int var10001 = this.getHeight();
-      Objects.requireNonNull(var6);
-      int var10 = var10000 + (var10001 - 9) / 2;
-      boolean var11 = var8 > var7;
-      if (var11) {
+      Objects.requireNonNull(var3);
+      int var7 = var10000 + (var10001 - 9) / 2;
+      boolean var8 = var5 > var4;
+      if (var8) {
          switch (this.textOverflow.ordinal()) {
-            case 0 -> var1.drawString(var6, clipText(var5, this.getFont(), var7), var9, var10, this.getColor());
-            case 1 -> this.renderScrollingString(var1, var6, 2, this.getColor());
+            case 0 -> var1.accept(var6, var7, clipText(var2, var3, var4));
+            case 1 -> this.renderScrollingStringOverContents(var1, var2, 2);
          }
       } else {
-         var1.drawString(var6, var5.getVisualOrderText(), var9, var10, this.getColor());
+         var1.accept(var6, var7, var2.getVisualOrderText());
       }
 
    }
@@ -92,11 +88,6 @@ public class StringWidget extends AbstractStringWidget {
    public static FormattedCharSequence clipText(Component var0, Font var1, int var2) {
       FormattedText var3 = var1.substrByWidth(var0, var2 - var1.width((FormattedText)CommonComponents.ELLIPSIS));
       return Language.getInstance().getVisualOrder(FormattedText.composite(var3, CommonComponents.ELLIPSIS));
-   }
-
-   // $FF: synthetic method
-   public AbstractStringWidget setColor(final int var1) {
-      return this.setColor(var1);
    }
 
    public static enum TextOverflow {

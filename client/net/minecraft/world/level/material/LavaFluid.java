@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.InsideBlockEffectType;
@@ -135,7 +136,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getSlopeFindDistance(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 4 : 2;
+      return isFastLava(var1) ? 4 : 2;
    }
 
    public BlockState createLegacyBlock(FluidState var1) {
@@ -147,7 +148,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getDropOff(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 1 : 2;
+      return isFastLava(var1) ? 1 : 2;
    }
 
    public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
@@ -155,7 +156,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getTickDelay(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 10 : 30;
+      return isFastLava(var1) ? 10 : 30;
    }
 
    public int getSpreadDelay(Level var1, BlockPos var2, FluidState var3, FluidState var4) {
@@ -201,6 +202,10 @@ public abstract class LavaFluid extends FlowingFluid {
 
    public Optional<SoundEvent> getPickupSound() {
       return Optional.of(SoundEvents.BUCKET_FILL_LAVA);
+   }
+
+   private static boolean isFastLava(LevelReader var0) {
+      return (Boolean)var0.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA);
    }
 
    public static class Source extends LavaFluid {

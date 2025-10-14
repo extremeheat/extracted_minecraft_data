@@ -2,18 +2,11 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
-import net.minecraft.Util;
 import net.minecraft.util.ARGB;
 
 public class MipmapGenerator {
    private static final float LINEAR_ALPHA_CUTOFF = 0.3F;
    private static final int ALPHA_CUTOUT_CUTOFF = 96;
-   private static final float[] POW22 = (float[])Util.make(new float[256], (var0) -> {
-      for(int var1 = 0; var1 < var0.length; ++var1) {
-         var0[var1] = (float)Math.pow((double)((float)var1 / 255.0F), 2.2);
-      }
-
-   });
 
    private MipmapGenerator() {
       super();
@@ -54,7 +47,7 @@ public class MipmapGenerator {
                            var16 = alphaBlend(var12, var13, var14, var15);
                         }
                      } else {
-                        var16 = gammaBlend(var12, var13, var14, var15);
+                        var16 = ARGB.meanLinear(var12, var13, var14, var15);
                      }
 
                      var7.setPixel(var10, var11, var16);
@@ -86,47 +79,44 @@ public class MipmapGenerator {
       float var5 = 0.0F;
       float var6 = 0.0F;
       float var7 = 0.0F;
-      if (var0 >> 24 != 0) {
-         var4 += getPow22(var0 >> 24);
-         var5 += getPow22(var0 >> 16);
-         var6 += getPow22(var0 >> 8);
-         var7 += getPow22(var0 >> 0);
+      if (ARGB.alpha(var0) != 0) {
+         var4 += ARGB.srgbToLinearChannel(ARGB.alpha(var0));
+         var5 += ARGB.srgbToLinearChannel(ARGB.red(var0));
+         var6 += ARGB.srgbToLinearChannel(ARGB.green(var0));
+         var7 += ARGB.srgbToLinearChannel(ARGB.blue(var0));
       }
 
-      if (var1 >> 24 != 0) {
-         var4 += getPow22(var1 >> 24);
-         var5 += getPow22(var1 >> 16);
-         var6 += getPow22(var1 >> 8);
-         var7 += getPow22(var1 >> 0);
+      if (ARGB.alpha(var1) != 0) {
+         var4 += ARGB.srgbToLinearChannel(ARGB.alpha(var1));
+         var5 += ARGB.srgbToLinearChannel(ARGB.red(var1));
+         var6 += ARGB.srgbToLinearChannel(ARGB.green(var1));
+         var7 += ARGB.srgbToLinearChannel(ARGB.blue(var1));
       }
 
-      if (var2 >> 24 != 0) {
-         var4 += getPow22(var2 >> 24);
-         var5 += getPow22(var2 >> 16);
-         var6 += getPow22(var2 >> 8);
-         var7 += getPow22(var2 >> 0);
+      if (ARGB.alpha(var2) != 0) {
+         var4 += ARGB.srgbToLinearChannel(ARGB.alpha(var2));
+         var5 += ARGB.srgbToLinearChannel(ARGB.red(var2));
+         var6 += ARGB.srgbToLinearChannel(ARGB.green(var2));
+         var7 += ARGB.srgbToLinearChannel(ARGB.blue(var2));
       }
 
-      if (var3 >> 24 != 0) {
-         var4 += getPow22(var3 >> 24);
-         var5 += getPow22(var3 >> 16);
-         var6 += getPow22(var3 >> 8);
-         var7 += getPow22(var3 >> 0);
+      if (ARGB.alpha(var3) != 0) {
+         var4 += ARGB.srgbToLinearChannel(ARGB.alpha(var3));
+         var5 += ARGB.srgbToLinearChannel(ARGB.red(var3));
+         var6 += ARGB.srgbToLinearChannel(ARGB.green(var3));
+         var7 += ARGB.srgbToLinearChannel(ARGB.blue(var3));
       }
 
       var4 /= 4.0F;
       var5 /= 4.0F;
       var6 /= 4.0F;
       var7 /= 4.0F;
-      int var8 = (int)(Math.pow((double)var4, 0.45454545454545453) * 255.0);
-      int var9 = (int)(Math.pow((double)var5, 0.45454545454545453) * 255.0);
-      int var10 = (int)(Math.pow((double)var6, 0.45454545454545453) * 255.0);
-      int var11 = (int)(Math.pow((double)var7, 0.45454545454545453) * 255.0);
+      int var8 = ARGB.linearToSrgbChannel(var4);
       if (var8 < 96) {
          var8 = 0;
       }
 
-      return ARGB.color(var8, var9, var10, var11);
+      return ARGB.color(var8, ARGB.linearToSrgbChannel(var5), ARGB.linearToSrgbChannel(var6), ARGB.linearToSrgbChannel(var7));
    }
 
    private static int alphaBlend(int var0, int var1, int var2, int var3) {
@@ -150,45 +140,20 @@ public class MipmapGenerator {
          var9 = 1.0F;
       }
 
-      return ARGB.colorFromFloat(var9, getInversePow22(var6), getInversePow22(var7), getInversePow22(var8));
+      return ARGB.color(var9, ARGB.color(ARGB.linearToSrgbChannel(var6), ARGB.linearToSrgbChannel(var7), ARGB.linearToSrgbChannel(var8)));
    }
 
    private static void accumulate(int var0, float[] var1) {
       float var2 = ARGB.alphaFloat(var0);
       var1[0] += var2;
-      float var3 = getPow22(ARGB.red(var0));
+      float var3 = ARGB.srgbToLinearChannel(ARGB.red(var0));
       var1[1] += var3 * var2;
       var1[4] += var3;
-      float var4 = getPow22(ARGB.green(var0));
+      float var4 = ARGB.srgbToLinearChannel(ARGB.green(var0));
       var1[2] += var4 * var2;
       var1[5] += var4;
-      float var5 = getPow22(ARGB.blue(var0));
+      float var5 = ARGB.srgbToLinearChannel(ARGB.blue(var0));
       var1[3] += var5 * var2;
       var1[6] += var5;
-   }
-
-   private static int gammaBlend(int var0, int var1, int var2, int var3) {
-      int var4 = gammaBlend(var0, var1, var2, var3, 24);
-      int var5 = gammaBlend(var0, var1, var2, var3, 16);
-      int var6 = gammaBlend(var0, var1, var2, var3, 8);
-      int var7 = gammaBlend(var0, var1, var2, var3, 0);
-      return ARGB.color(var4, var5, var6, var7);
-   }
-
-   private static int gammaBlend(int var0, int var1, int var2, int var3, int var4) {
-      float var5 = getPow22(var0 >> var4);
-      float var6 = getPow22(var1 >> var4);
-      float var7 = getPow22(var2 >> var4);
-      float var8 = getPow22(var3 >> var4);
-      float var9 = (float)Math.pow((double)(var5 + var6 + var7 + var8) * 0.25, 0.45454545454545453);
-      return (int)((double)var9 * 255.0);
-   }
-
-   private static float getPow22(int var0) {
-      return POW22[var0 & 255];
-   }
-
-   private static float getInversePow22(float var0) {
-      return (float)Math.pow((double)var0, 0.45454545454545453);
    }
 }

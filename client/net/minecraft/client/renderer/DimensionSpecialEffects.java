@@ -41,8 +41,6 @@ public abstract class DimensionSpecialEffects {
 
    public abstract Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2);
 
-   public abstract boolean isFoggyAt(int var1, int var2);
-
    public SkyType skyType() {
       return this.skyType;
    }
@@ -77,10 +75,6 @@ public abstract class DimensionSpecialEffects {
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
          return var1;
       }
-
-      public boolean isFoggyAt(int var1, int var2) {
-         return true;
-      }
    }
 
    public static class OverworldEffects extends DimensionSpecialEffects {
@@ -105,10 +99,6 @@ public abstract class DimensionSpecialEffects {
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
          return var1.multiply((double)(var2 * 0.94F + 0.06F), (double)(var2 * 0.94F + 0.06F), (double)(var2 * 0.91F + 0.09F));
       }
-
-      public boolean isFoggyAt(int var1, int var2) {
-         return false;
-      }
    }
 
    public static class EndEffects extends DimensionSpecialEffects {
@@ -117,11 +107,7 @@ public abstract class DimensionSpecialEffects {
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
-         return var1.scale(0.15000000596046448);
-      }
-
-      public boolean isFoggyAt(int var1, int var2) {
-         return false;
+         return var1;
       }
    }
 }

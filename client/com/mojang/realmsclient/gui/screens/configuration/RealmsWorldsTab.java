@@ -132,7 +132,7 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    }
 
    private void switchToMinigame() {
-      RealmsSelectWorldTemplateScreen var1 = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1"), Component.translatable("mco.minigame.world.info.line2")));
+      RealmsSelectWorldTemplateScreen var1 = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1").withColor(-4539718), Component.translatable("mco.minigame.world.info.line2").withColor(-4539718)));
       this.minecraft.setScreen(var1);
    }
 

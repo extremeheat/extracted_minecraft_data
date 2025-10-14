@@ -3,12 +3,12 @@ package net.minecraft.client.gui.components;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
@@ -44,6 +44,11 @@ public class CycleButton<T> extends AbstractButton implements ResettableOptionWi
       this.displayOnlyValue = var15;
       this.tooltipSupplier = var14;
       this.updateTooltip();
+   }
+
+   protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDefaultSprite(var1);
+      this.renderDefaultLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
    }
 
    private void updateTooltip() {
@@ -150,10 +155,7 @@ public class CycleButton<T> extends AbstractButton implements ResettableOptionWi
    }
 
    public static Builder<Boolean> onOffBuilder(boolean var0) {
-      Function var10002 = (var0x) -> var0x == Boolean.TRUE ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
-      BooleanSupplier var10003 = () -> var0;
-      Objects.requireNonNull(var10003);
-      return (new Builder(var10002, var10003::getAsBoolean)).withValues(BOOLEAN_OPTIONS);
+      return (new Builder((var0x) -> var0x == Boolean.TRUE ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF, () -> var0)).withValues(BOOLEAN_OPTIONS);
    }
 
    static {

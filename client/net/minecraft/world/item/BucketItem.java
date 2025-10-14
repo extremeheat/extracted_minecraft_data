@@ -14,6 +14,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -134,7 +135,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean var17 = var16.isAir() || var10 && (!var9 || var4 == null);
          if (!var17) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), (BlockHitResult)null);
-         } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
+         } else if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3) && this.content.is(FluidTags.WATER)) {
             int var18 = var3.getX();
             int var13 = var3.getY();
             int var14 = var3.getZ();

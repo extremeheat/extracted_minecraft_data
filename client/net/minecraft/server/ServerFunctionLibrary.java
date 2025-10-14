@@ -15,24 +15,19 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class ServerFunctionLibrary implements PreparableReloadListener {
@@ -74,7 +69,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       CompletableFuture var6 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var5), var2);
       CompletableFuture var7 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
          HashMap var3 = Maps.newHashMap();
-         CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationPermissions, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+         CommandSourceStack var4 = Commands.createCompilationContext(this.functionCompilationPermissions);
 
          for(Map.Entry var6 : var2x.entrySet()) {
             ResourceLocation var7 = (ResourceLocation)var6.getKey();

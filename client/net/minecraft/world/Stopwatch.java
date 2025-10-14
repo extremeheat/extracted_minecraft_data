@@ -11,12 +11,12 @@ public record Stopwatch(long creationTime, long accumulatedElapsedTime) {
       this.accumulatedElapsedTime = var3;
    }
 
-   public long elapsedTime(long var1) {
+   public long elapsedMilliseconds(long var1) {
       long var3 = var1 - this.creationTime;
       return this.accumulatedElapsedTime + var3;
    }
 
    public double elapsedSeconds(long var1) {
-      return (double)this.elapsedTime(var1) / 1000.0;
+      return (double)this.elapsedMilliseconds(var1) / 1000.0;
    }
 }

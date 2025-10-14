@@ -123,6 +123,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.attribute.BedRule;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -1047,14 +1049,14 @@ public class ServerPlayer extends Player {
       boolean var7 = var1.forced;
       BlockState var8 = var0.getBlockState(var4);
       Block var9 = var8.getBlock();
-      if (var9 instanceof RespawnAnchorBlock && (var7 || (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
+      if (var9 instanceof RespawnAnchorBlock && (var7 || (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0, var4)) {
          Optional var13 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var4);
          if (!var7 && var2 && var13.isPresent()) {
             var0.setBlock(var4, (BlockState)var8.setValue(RespawnAnchorBlock.CHARGE, (Integer)var8.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
          }
 
          return var13.map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
-      } else if (var9 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
+      } else if (var9 instanceof BedBlock && ((BedRule)var0.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, var4)).canSetSpawn(var0)) {
          return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var4, (Direction)var8.getValue(BedBlock.FACING), var5).map((var1x) -> ServerPlayer.RespawnPosAngle.of(var1x, var4, 0.0F));
       } else if (!var7) {
          return Optional.empty();
@@ -1171,28 +1173,34 @@ public class ServerPlayer extends Player {
    public Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos var1) {
       Direction var2 = (Direction)this.level().getBlockState(var1).getValue(HorizontalDirectionalBlock.FACING);
       if (!this.isSleeping() && this.isAlive()) {
-         if (!this.level().dimensionType().natural()) {
-            return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_HERE);
+         BedRule var3 = (BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, var1);
+         boolean var4 = var3.canSleep(this.level());
+         boolean var5 = var3.canSetSpawn(this.level());
+         if (!var5 && !var4) {
+            return Either.left(var3.asProblem());
          } else if (!this.bedInRange(var1, var2)) {
             return Either.left(Player.BedSleepingProblem.TOO_FAR_AWAY);
          } else if (this.bedBlocked(var1, var2)) {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
          } else {
-            this.setRespawnPosition(new RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), var1, this.getYRot(), this.getXRot()), false), true);
-            if (this.level().isBrightOutside()) {
-               return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
+            if (var5) {
+               this.setRespawnPosition(new RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), var1, this.getYRot(), this.getXRot()), false), true);
+            }
+
+            if (!var4) {
+               return Either.left(var3.asProblem());
             } else {
                if (!this.isCreative()) {
-                  double var3 = 8.0;
-                  double var5 = 5.0;
-                  Vec3 var7 = Vec3.atBottomCenterOf(var1);
-                  List var8 = this.level().getEntitiesOfClass(Monster.class, new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.level(), this));
-                  if (!var8.isEmpty()) {
+                  double var6 = 8.0;
+                  double var8 = 5.0;
+                  Vec3 var10 = Vec3.atBottomCenterOf(var1);
+                  List var11 = this.level().getEntitiesOfClass(Monster.class, new AABB(var10.x() - 8.0, var10.y() - 5.0, var10.z() - 8.0, var10.x() + 8.0, var10.y() + 5.0, var10.z() + 8.0), (var1x) -> var1x.isPreventingPlayerRest(this.level(), this));
+                  if (!var11.isEmpty()) {
                      return Either.left(Player.BedSleepingProblem.NOT_SAFE);
                   }
                }
 
-               Either var9 = super.startSleepInBed(var1).ifRight((var1x) -> {
+               Either var12 = super.startSleepInBed(var1).ifRight((var1x) -> {
                   this.awardStat(Stats.SLEEP_IN_BED);
                   CriteriaTriggers.SLEPT_IN_BED.trigger(this);
                });
@@ -1201,7 +1209,7 @@ public class ServerPlayer extends Player {
                }
 
                this.level().updateSleepingPlayerList();
-               return var9;
+               return var12;
             }
          }
       } else {

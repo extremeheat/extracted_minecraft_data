@@ -1,4 +1,4 @@
-package net.minecraft.world.level.biome;
+package net.minecraft.world.attribute;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

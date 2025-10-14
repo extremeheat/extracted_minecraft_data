@@ -7,7 +7,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
@@ -56,18 +55,11 @@ public record PiercingWeapon(float minReach, float maxReach, float hitboxMargin,
             }
          }
 
-         if (var0 instanceof LivingEntity) {
-            LivingEntity var4 = (LivingEntity)var0;
-            if (var4.wasRecentlyStabbed(var1)) {
-               return false;
-            }
-         }
-
          return !var0.isPassengerOfSameVehicle(var1);
       }
    }
 
-   public void attack(ServerPlayer var1, EquipmentSlot var2) {
+   public void attack(LivingEntity var1, EquipmentSlot var2) {
       float var3 = (float)var1.getAttributeValue(Attributes.ATTACK_DAMAGE);
       boolean var4 = false;
 

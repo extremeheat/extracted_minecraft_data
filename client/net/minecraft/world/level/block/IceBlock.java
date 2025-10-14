@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -34,7 +35,7 @@ public class IceBlock extends HalfTransparentBlock {
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
       if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_ICE_MELTING)) {
-         if (var1.dimensionType().ultraWarm()) {
+         if ((Boolean)var1.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
             var1.removeBlock(var3, false);
             return;
          }
@@ -55,7 +56,7 @@ public class IceBlock extends HalfTransparentBlock {
    }
 
    protected void melt(BlockState var1, Level var2, BlockPos var3) {
-      if (var2.dimensionType().ultraWarm()) {
+      if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
          var2.removeBlock(var3, false);
       } else {
          var2.setBlockAndUpdate(var3, meltsInto());

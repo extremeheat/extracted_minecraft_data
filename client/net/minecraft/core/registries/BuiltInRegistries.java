@@ -62,6 +62,10 @@ import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.valueproviders.FloatProviderType;
 import net.minecraft.util.valueproviders.IntProviderType;
+import net.minecraft.world.attribute.AttributeType;
+import net.minecraft.world.attribute.AttributeTypes;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -239,7 +243,7 @@ public class BuiltInRegistries {
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<TicketType> TICKET_TYPE;
-   public static final Registry<IncomingRpcMethod> INCOMING_RPC_METHOD;
+   public static final Registry<IncomingRpcMethod<?, ?>> INCOMING_RPC_METHOD;
    public static final Registry<OutgoingRpcMethod<?, ?>> OUTGOING_RPC_METHOD;
    public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
    public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
@@ -250,6 +254,8 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends DialogBody>> DIALOG_BODY_TYPE;
    public static final Registry<MapCodec<? extends Permission>> PERMISSION_TYPE;
    public static final Registry<MapCodec<? extends PermissionCheck>> PERMISSION_CHECK_TYPE;
+   public static final Registry<EnvironmentAttribute<?>> ENVIRONMENT_ATTRIBUTE;
+   public static final Registry<AttributeType<?>> ATTRIBUTE_TYPE;
    public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
@@ -422,6 +428,8 @@ public class BuiltInRegistries {
       DIALOG_BODY_TYPE = registerSimple(Registries.DIALOG_BODY_TYPE, DialogBodyTypes::bootstrap);
       PERMISSION_TYPE = registerSimple(Registries.PERMISSION_TYPE, PermissionTypes::bootstrap);
       PERMISSION_CHECK_TYPE = registerSimple(Registries.PERMISSION_CHECK_TYPE, PermissionCheckTypes::bootstrap);
+      ENVIRONMENT_ATTRIBUTE = registerSimple(Registries.ENVIRONMENT_ATTRIBUTE, EnvironmentAttributes::bootstrap);
+      ATTRIBUTE_TYPE = registerSimple(Registries.ATTRIBUTE_TYPE, AttributeTypes::bootstrap);
       TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }

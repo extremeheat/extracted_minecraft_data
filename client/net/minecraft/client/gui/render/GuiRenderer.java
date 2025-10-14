@@ -61,7 +61,7 @@ import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -260,10 +260,10 @@ public class GuiRenderer implements AutoCloseable {
 
    private void prepareText() {
       this.renderState.forEachText((var1) -> {
-         final Matrix3x2f var2 = var1.pose;
+         final Matrix3x2fc var2 = var1.pose;
          final ScreenRectangle var3 = var1.scissor;
          var1.ensurePrepared().visit(new Font.GlyphVisitor() {
-            public void acceptGlyph(TextRenderable var1) {
+            public void acceptGlyph(TextRenderable.Styled var1) {
                this.accept(var1);
             }
 

@@ -239,7 +239,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
                   for(int var15 = 0; var15 < var12; ++var15) {
                      int var16 = this.getPixel(var5, var9, var11, var15, var14);
                      int var17 = this.getPixel(var5, var10, var11, var15, var14);
-                     this.activeFrame[var11].setPixel(var15, var14, ARGB.lerp(var8, var16, var17));
+                     this.activeFrame[var11].setPixel(var15, var14, ARGB.srgbLerp(var8, var16, var17));
                   }
                }
             }

@@ -185,16 +185,17 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          String var3 = this.getProperties().managementServerHost;
          HostAndPort var4 = HostAndPort.fromParts(var3, var1);
          SecurityConfig var5 = new SecurityConfig(var2);
-         AuthenticationHandler var6 = new AuthenticationHandler(var5);
+         String var6 = this.getProperties().managementServerAllowedOrigins;
+         AuthenticationHandler var7 = new AuthenticationHandler(var5, var6);
          LOGGER.info("Starting json RPC server on {}", var4);
-         this.jsonRpcServer = new ManagementServer(var4, var6);
-         MinecraftApi var7 = MinecraftApi.of(this);
-         var7.notificationManager().registerService(new JsonRpcNotificationService(var7, this.jsonRpcServer));
+         this.jsonRpcServer = new ManagementServer(var4, var7);
+         MinecraftApi var8 = MinecraftApi.of(this);
+         var8.notificationManager().registerService(new JsonRpcNotificationService(var8, this.jsonRpcServer));
          if (this.getProperties().managementServerTlsEnabled) {
-            SslContext var8 = this.createSslContext();
-            this.jsonRpcServer.startWithTls(var7, var8);
+            SslContext var9 = this.createSslContext();
+            this.jsonRpcServer.startWithTls(var8, var9);
          } else {
-            this.jsonRpcServer.startWithoutTls(var7);
+            this.jsonRpcServer.startWithoutTls(var8);
          }
       }
 
@@ -275,8 +276,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
          this.loadLevel();
          long var16 = Util.getNanos() - var15;
-         String var9 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
-         LOGGER.info("Done ({})! For help, type \"help\"", var9);
+         String var17 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
+         LOGGER.info("Done ({})! For help, type \"help\"", var17);
          if (var13.announcePlayerAchievements != null) {
             ((GameRules.BooleanValue)this.worldData.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
          }

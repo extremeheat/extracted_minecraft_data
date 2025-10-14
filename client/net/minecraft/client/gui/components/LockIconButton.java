@@ -26,7 +26,7 @@ public class LockIconButton extends Button {
       this.locked = var1;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       Icon var5;
       if (!this.active) {
          var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;

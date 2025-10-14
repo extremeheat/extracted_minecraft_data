@@ -959,7 +959,7 @@ public abstract class Player extends Avatar implements ContainerUser {
 
                   this.attackVisualEffects(var1, var9, var11, var7, var5);
                   this.setLastHurtMob(var1);
-                  this.itemAttackInteraction(var1, var3, var4);
+                  this.itemAttackInteraction(var1, var3, var4, true);
                   this.damageStatsAndHearts(var1, var12);
                   this.causeFoodExhaustion(0.1F);
                } else {
@@ -1035,25 +1035,27 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   private void itemAttackInteraction(Entity var1, ItemStack var2, DamageSource var3) {
-      Object var4 = var1;
+   private void itemAttackInteraction(Entity var1, ItemStack var2, DamageSource var3, boolean var4) {
+      Object var5 = var1;
       if (var1 instanceof EnderDragonPart) {
-         var4 = ((EnderDragonPart)var1).parentMob;
+         var5 = ((EnderDragonPart)var1).parentMob;
       }
 
-      boolean var5 = false;
-      Level var7 = this.level();
-      if (var7 instanceof ServerLevel var6) {
-         if (var4 instanceof LivingEntity var8) {
-            var5 = var2.hurtEnemy(var8, this);
+      boolean var6 = false;
+      Level var8 = this.level();
+      if (var8 instanceof ServerLevel var7) {
+         if (var5 instanceof LivingEntity var9) {
+            var6 = var2.hurtEnemy(var9, this);
          }
 
-         EnchantmentHelper.doPostAttackEffects(var6, var1, var3);
+         if (var4) {
+            EnchantmentHelper.doPostAttackEffectsWithItemSource(var7, var1, var3, var2);
+         }
       }
 
-      if (!this.level().isClientSide() && !var2.isEmpty() && var4 instanceof LivingEntity) {
-         if (var5) {
-            var2.postHurtEnemy((LivingEntity)var4, this);
+      if (!this.level().isClientSide() && !var2.isEmpty() && var5 instanceof LivingEntity) {
+         if (var6) {
+            var2.postHurtEnemy((LivingEntity)var5, this);
          }
 
          if (var2.isEmpty()) {
@@ -1168,7 +1170,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             } else {
                this.attackVisualEffects(var2, false, false, true, var9);
                this.setLastHurtMob(var2);
-               this.itemAttackInteraction(var2, var7, var8);
+               this.itemAttackInteraction(var2, var7, var8, var13);
                this.damageStatsAndHearts(var2, var11);
                this.causeFoodExhaustion(0.1F);
                return true;
@@ -1178,9 +1180,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void magicCrit(Entity var1) {
-   }
-
-   public void respawn() {
    }
 
    public void remove(Entity.RemovalReason var1) {
@@ -1961,33 +1960,15 @@ public abstract class Player extends Avatar implements ContainerUser {
       DATA_SHOULDER_PARROT_RIGHT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
    }
 
-   public static enum BedSleepingProblem {
-      NOT_POSSIBLE_HERE,
-      NOT_POSSIBLE_NOW(Component.translatable("block.minecraft.bed.no_sleep")),
-      TOO_FAR_AWAY(Component.translatable("block.minecraft.bed.too_far_away")),
-      OBSTRUCTED(Component.translatable("block.minecraft.bed.obstructed")),
-      OTHER_PROBLEM,
-      NOT_SAFE(Component.translatable("block.minecraft.bed.not_safe"));
+   public static record BedSleepingProblem(@Nullable Component message) {
+      public static final BedSleepingProblem TOO_FAR_AWAY = new BedSleepingProblem(Component.translatable("block.minecraft.bed.too_far_away"));
+      public static final BedSleepingProblem OBSTRUCTED = new BedSleepingProblem(Component.translatable("block.minecraft.bed.obstructed"));
+      public static final BedSleepingProblem OTHER_PROBLEM = new BedSleepingProblem((Component)null);
+      public static final BedSleepingProblem NOT_SAFE = new BedSleepingProblem(Component.translatable("block.minecraft.bed.not_safe"));
 
-      @Nullable
-      private final Component message;
-
-      private BedSleepingProblem() {
-         this.message = null;
-      }
-
-      private BedSleepingProblem(final Component var3) {
-         this.message = var3;
-      }
-
-      @Nullable
-      public Component getMessage() {
-         return this.message;
-      }
-
-      // $FF: synthetic method
-      private static BedSleepingProblem[] $values() {
-         return new BedSleepingProblem[]{NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OBSTRUCTED, OTHER_PROBLEM, NOT_SAFE};
+      public BedSleepingProblem(@Nullable Component var1) {
+         super();
+         this.message = var1;
       }
    }
 }

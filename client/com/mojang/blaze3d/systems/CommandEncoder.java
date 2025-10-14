@@ -50,4 +50,8 @@ public interface CommandEncoder {
    void presentTexture(GpuTextureView var1);
 
    GpuFence createFence();
+
+   GpuQuery timerQueryBegin();
+
+   void timerQueryEnd(GpuQuery var1);
 }

@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -62,7 +63,7 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.dimensionType().natural() && var2.isSpawningMonsters() && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
+      if (var2.isSpawningMonsters() && (Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, var3) && var4.nextInt(2000) < var2.getDifficulty().getId() && var2.anyPlayerCloseEnoughForSpawning(var3)) {
          while(var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
          }

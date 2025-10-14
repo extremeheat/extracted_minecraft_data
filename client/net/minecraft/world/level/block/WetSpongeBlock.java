@@ -7,6 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -24,7 +25,7 @@ public class WetSpongeBlock extends Block {
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (var2.dimensionType().ultraWarm()) {
+      if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
          var2.setBlock(var3, Blocks.SPONGE.defaultBlockState(), 3);
          var2.levelEvent(2009, var3, 0);
          var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);

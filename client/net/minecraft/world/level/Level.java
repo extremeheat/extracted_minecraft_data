@@ -42,6 +42,8 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
@@ -124,13 +126,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final RegistryAccess registryAccess;
    private final DamageSources damageSources;
    private final PalettedContainerFactory palettedContainerFactory;
+   private final EnvironmentAttributeSystem environmentAttributes;
    private long subTickCount;
 
    protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
       super();
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
       this.isClientSide = var5;
       this.thread = Thread.currentThread();
@@ -140,6 +142,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.registryAccess = var3;
       this.palettedContainerFactory = PalettedContainerFactory.create(var3);
       this.damageSources = new DamageSources(var3);
+      this.environmentAttributes = new EnvironmentAttributeSystem(var4, var3, this.biomeManager);
    }
 
    public boolean isClientSide() {
@@ -867,6 +870,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.damageSources;
    }
 
+   public EnvironmentAttributeSystem environmentAttributes() {
+      return this.environmentAttributes;
+   }
+
    public abstract PotionBrewing potionBrewing();
 
    public abstract FuelValues fuelValues();
@@ -877,6 +884,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public PalettedContainerFactory palettedContainerFactory() {
       return this.palettedContainerFactory;
+   }
+
+   // $FF: synthetic method
+   public EnvironmentAttributeReader environmentAttributes() {
+      return this.environmentAttributes();
    }
 
    // $FF: synthetic method

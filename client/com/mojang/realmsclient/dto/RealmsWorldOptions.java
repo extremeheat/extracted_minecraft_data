@@ -28,6 +28,7 @@ public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSe
    @Nullable
    @SerializedName("worldTemplateImage")
    public String templateImage;
+   @Exclude
    public boolean empty;
 
    private RealmsWorldOptions() {

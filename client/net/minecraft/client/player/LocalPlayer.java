@@ -28,7 +28,7 @@ import net.minecraft.client.resources.sounds.AmbientSoundHandler;
 import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
-import net.minecraft.client.resources.sounds.RidingHappyGhastSoundInstance;
+import net.minecraft.client.resources.sounds.RidingEntitySoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
@@ -69,6 +69,7 @@ import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -164,7 +165,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.wasSprinting = var7;
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
-      this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager(), var2.getBiomeManager()));
+      this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager()));
    }
 
    public void heal(float var1) {
@@ -175,10 +176,15 @@ public class LocalPlayer extends AbstractClientPlayer {
          return false;
       } else {
          if (var1 instanceof AbstractMinecart) {
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, true));
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, false));
+            AbstractMinecart var4 = (AbstractMinecart)var1;
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, var4, true, SoundEvents.MINECART_INSIDE_UNDERWATER, 0.0F, 0.75F, 1.0F));
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, var4, false, SoundEvents.MINECART_INSIDE, 0.0F, 0.75F, 1.0F));
          } else if (var1 instanceof HappyGhast) {
-            this.minecraft.getSoundManager().play(new RidingHappyGhastSoundInstance(this, (HappyGhast)var1));
+            HappyGhast var5 = (HappyGhast)var1;
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, var5, false, SoundEvents.HAPPY_GHAST_RIDING, var5.getSoundSource(), 0.0F, 1.0F, 5.0F));
+         } else if (var1 instanceof AbstractNautilus) {
+            AbstractNautilus var6 = (AbstractNautilus)var1;
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, var6, true, SoundEvents.NAUTILUS_RIDING, var6.getSoundSource(), 0.0F, 1.0F, 5.0F));
          }
 
          return true;
@@ -755,7 +761,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       boolean var6 = false;
       if (var4.mayfly) {
-         if (this.minecraft.gameMode.isAlwaysFlying()) {
+         if (this.minecraft.gameMode.isSpectator()) {
             if (!var4.flying) {
                var4.flying = true;
                var6 = true;
@@ -838,7 +844,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       super.aiStep();
-      if (this.onGround() && var4.flying && !this.minecraft.gameMode.isAlwaysFlying()) {
+      if (this.onGround() && var4.flying && !this.minecraft.gameMode.isSpectator()) {
          var4.flying = false;
          this.onUpdateAbilities();
       }

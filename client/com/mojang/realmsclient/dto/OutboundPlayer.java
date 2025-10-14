@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 public class OutboundPlayer implements ReflectionBasedSerialization {
    @Nullable
+   @SerializedName("name")
    public String name;
    @Nullable
    @SerializedName("uuid")

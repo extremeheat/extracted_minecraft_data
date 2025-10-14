@@ -14,11 +14,11 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.sounds.Music;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.modifier.AttributeModifier;
 import net.minecraft.world.level.DryFoliageColor;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
@@ -34,8 +34,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public final class Biome {
-   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
-   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1) -> new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
+   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((var0x) -> var0x.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
+   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), EnvironmentAttributeMap.NETWORK_CODEC.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((var0x) -> var0x.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1, var2) -> new Biome(var0x, var1, var2, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
    public static final Codec<Holder<Biome>> CODEC;
    public static final Codec<HolderSet<Biome>> LIST_CODEC;
    private static final PerlinSimplexNoise TEMPERATURE_NOISE;
@@ -49,6 +49,7 @@ public final class Biome {
    private final ClimateSettings climateSettings;
    private final BiomeGenerationSettings generationSettings;
    private final MobSpawnSettings mobSettings;
+   private final EnvironmentAttributeMap attributes;
    private final BiomeSpecialEffects specialEffects;
    private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> (Long2FloatLinkedOpenHashMap)Util.make(() -> {
          Long2FloatLinkedOpenHashMap var1 = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
@@ -59,16 +60,13 @@ public final class Biome {
          return var1;
       }));
 
-   Biome(ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {
+   Biome(ClimateSettings var1, EnvironmentAttributeMap var2, BiomeSpecialEffects var3, BiomeGenerationSettings var4, MobSpawnSettings var5) {
       super();
       this.climateSettings = var1;
-      this.generationSettings = var3;
-      this.mobSettings = var4;
-      this.specialEffects = var2;
-   }
-
-   public int getSkyColor() {
-      return this.specialEffects.getSkyColor();
+      this.generationSettings = var4;
+      this.mobSettings = var5;
+      this.attributes = var2;
+      this.specialEffects = var3;
    }
 
    public MobSpawnSettings getMobSettings() {
@@ -175,10 +173,6 @@ public final class Biome {
       return this.generationSettings;
    }
 
-   public int getFogColor() {
-      return this.specialEffects.getFogColor();
-   }
-
    public int getGrassColor(double var1, double var3) {
       int var5 = this.getBaseGrassColor();
       return this.specialEffects.getGrassColorModifier().modifyColor(var1, var3, var5);
@@ -219,40 +213,16 @@ public final class Biome {
       return this.climateSettings.temperature;
    }
 
+   public EnvironmentAttributeMap getAttributes() {
+      return this.attributes;
+   }
+
    public BiomeSpecialEffects getSpecialEffects() {
       return this.specialEffects;
    }
 
    public int getWaterColor() {
       return this.specialEffects.getWaterColor();
-   }
-
-   public int getWaterFogColor() {
-      return this.specialEffects.getWaterFogColor();
-   }
-
-   public Optional<AmbientParticleSettings> getAmbientParticle() {
-      return this.specialEffects.getAmbientParticleSettings();
-   }
-
-   public Optional<Holder<SoundEvent>> getAmbientLoop() {
-      return this.specialEffects.getAmbientLoopSoundEvent();
-   }
-
-   public Optional<AmbientMoodSettings> getAmbientMood() {
-      return this.specialEffects.getAmbientMoodSettings();
-   }
-
-   public Optional<AmbientAdditionsSettings> getAmbientAdditions() {
-      return this.specialEffects.getAmbientAdditionsSettings();
-   }
-
-   public Optional<WeightedList<Music>> getBackgroundMusic() {
-      return this.specialEffects.getBackgroundMusic();
-   }
-
-   public float getBackgroundMusicVolume() {
-      return this.specialEffects.getBackgroundMusicVolume();
    }
 
    static {
@@ -337,6 +307,7 @@ public final class Biome {
       private TemperatureModifier temperatureModifier;
       @Nullable
       private Float downfall;
+      private final EnvironmentAttributeMap.Builder attributes;
       @Nullable
       private BiomeSpecialEffects specialEffects;
       @Nullable
@@ -347,6 +318,7 @@ public final class Biome {
       public BiomeBuilder() {
          super();
          this.temperatureModifier = Biome.TemperatureModifier.NONE;
+         this.attributes = EnvironmentAttributeMap.builder();
       }
 
       public BiomeBuilder hasPrecipitation(boolean var1) {
@@ -361,6 +333,25 @@ public final class Biome {
 
       public BiomeBuilder downfall(float var1) {
          this.downfall = var1;
+         return this;
+      }
+
+      public BiomeBuilder putAttributes(EnvironmentAttributeMap var1) {
+         this.attributes.putAll(var1);
+         return this;
+      }
+
+      public BiomeBuilder putAttributes(EnvironmentAttributeMap.Builder var1) {
+         return this.putAttributes(var1.build());
+      }
+
+      public <Value> BiomeBuilder setAttribute(EnvironmentAttribute<Value> var1, Value var2) {
+         this.attributes.set(var1, var2);
+         return this;
+      }
+
+      public <Value, Parameter> BiomeBuilder modifyAttribute(EnvironmentAttribute<Value> var1, AttributeModifier<Value, Parameter> var2, Parameter var3) {
+         this.attributes.modify(var1, var2, var3);
          return this;
       }
 
@@ -386,7 +377,7 @@ public final class Biome {
 
       public Biome build() {
          if (this.temperature != null && this.downfall != null && this.specialEffects != null && this.mobSpawnSettings != null && this.generationSettings != null) {
-            return new Biome(new ClimateSettings(this.hasPrecipitation, this.temperature, this.temperatureModifier, this.downfall), this.specialEffects, this.generationSettings, this.mobSpawnSettings);
+            return new Biome(new ClimateSettings(this.hasPrecipitation, this.temperature, this.temperatureModifier, this.downfall), this.attributes.build(), this.specialEffects, this.generationSettings, this.mobSpawnSettings);
          } else {
             throw new IllegalStateException("You are missing parameters to build a proper biome\n" + String.valueOf(this));
          }

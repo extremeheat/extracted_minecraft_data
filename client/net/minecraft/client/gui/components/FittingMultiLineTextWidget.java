@@ -17,11 +17,6 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
       this.multilineWidget = (new MultiLineTextWidget(var5, var6)).setMaxWidth(this.getWidth() - this.totalInnerPadding());
    }
 
-   public FittingMultiLineTextWidget setColor(int var1) {
-      this.multilineWidget.setColor(var1);
-      return this;
-   }
-
    public void setWidth(int var1) {
       super.setWidth(var1);
       this.multilineWidget.setMaxWidth(this.getWidth() - this.totalInnerPadding());

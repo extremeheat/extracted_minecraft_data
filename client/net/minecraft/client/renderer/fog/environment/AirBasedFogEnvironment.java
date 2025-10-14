@@ -4,7 +4,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -15,7 +15,7 @@ public abstract class AirBasedFogEnvironment extends FogEnvironment {
 
    public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
       float var5 = Mth.clamp(Mth.cos(var1.getTimeOfDay(var4) * 6.2831855F) * 2.0F + 0.5F, 0.0F, 1.0F);
-      Vec3 var6 = var1.effects().getBrightnessDependentFogColor(var2.cubicBiomeSampler().sampleVec3((var0) -> Vec3.fromRGB24(((Biome)var0.value()).getFogColor())), var5);
+      Vec3 var6 = var1.effects().getBrightnessDependentFogColor(new Vec3(ARGB.vector3fFromRGB24((Integer)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, var4))), var5);
       float var7 = (float)var6.x();
       float var8 = (float)var6.y();
       float var9 = (float)var6.z();

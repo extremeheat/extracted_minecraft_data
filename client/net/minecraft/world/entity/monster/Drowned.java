@@ -57,13 +57,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
-   private static final Logger log = LoggerFactory.getLogger(Drowned.class);
    boolean searchingForLand;
 
    public Drowned(EntityType<? extends Drowned> var1, Level var2) {

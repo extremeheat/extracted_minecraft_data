@@ -8,7 +8,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 
-public class StyledFormat implements NumberFormat {
+public record StyledFormat(Style style) implements NumberFormat {
    public static final NumberFormatType<StyledFormat> TYPE = new NumberFormatType<StyledFormat>() {
       private static final MapCodec<StyledFormat> CODEC;
       private static final StreamCodec<RegistryFriendlyByteBuf, StyledFormat> STREAM_CODEC;
@@ -22,14 +22,13 @@ public class StyledFormat implements NumberFormat {
       }
 
       static {
-         CODEC = Style.Serializer.MAP_CODEC.xmap(StyledFormat::new, (var0) -> var0.style);
-         STREAM_CODEC = StreamCodec.composite(Style.Serializer.TRUSTED_STREAM_CODEC, (var0) -> var0.style, StyledFormat::new);
+         CODEC = Style.Serializer.MAP_CODEC.xmap(StyledFormat::new, StyledFormat::style);
+         STREAM_CODEC = StreamCodec.composite(Style.Serializer.TRUSTED_STREAM_CODEC, StyledFormat::style, StyledFormat::new);
       }
    };
    public static final StyledFormat NO_STYLE;
    public static final StyledFormat SIDEBAR_DEFAULT;
    public static final StyledFormat PLAYER_LIST_DEFAULT;
-   final Style style;
 
    public StyledFormat(Style var1) {
       super();

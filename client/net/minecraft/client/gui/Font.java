@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.StringSplitter;
+import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
@@ -33,7 +34,6 @@ public class Font {
    private static final float OVER_EFFECT_DEPTH = 0.01F;
    private static final float UNDER_EFFECT_DEPTH = -0.01F;
    public static final float SHADOW_DEPTH = 0.03F;
-   public static final int NO_SHADOW = 0;
    public final int lineHeight = 9;
    private final RandomSource random = RandomSource.create();
    final Provider provider;
@@ -65,17 +65,17 @@ public class Font {
    }
 
    public void drawInBatch(Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
-      PreparedText var11 = this.prepareText(var1.getVisualOrderText(), var2, var3, var4, var5, var9);
+      PreparedText var11 = this.prepareText(var1.getVisualOrderText(), var2, var3, var4, var5, false, var9);
       var11.visit(Font.GlyphVisitor.forMultiBufferSource(var7, var6, var8, var10));
    }
 
    public void drawInBatch(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10) {
-      PreparedText var11 = this.prepareText(var1, var2, var3, var4, var5, var9);
+      PreparedText var11 = this.prepareText(var1, var2, var3, var4, var5, false, var9);
       var11.visit(Font.GlyphVisitor.forMultiBufferSource(var7, var6, var8, var10));
    }
 
    public void drawInBatch8xOutline(FormattedCharSequence var1, float var2, float var3, int var4, int var5, Matrix4f var6, MultiBufferSource var7, int var8) {
-      PreparedTextBuilder var9 = new PreparedTextBuilder(0.0F, 0.0F, var5, false);
+      PreparedTextBuilder var9 = new PreparedTextBuilder(0.0F, 0.0F, var5, false, false);
 
       for(int var10 = -1; var10 <= 1; ++var10) {
          for(int var11 = -1; var11 <= 1; ++var11) {
@@ -95,11 +95,11 @@ public class Font {
 
       GlyphVisitor var15 = Font.GlyphVisitor.forMultiBufferSource(var7, var6, Font.DisplayMode.NORMAL, var8);
 
-      for(TextRenderable var18 : var9.glyphs) {
+      for(TextRenderable.Styled var18 : var9.glyphs) {
          var15.acceptGlyph(var18);
       }
 
-      PreparedTextBuilder var17 = new PreparedTextBuilder(var2, var3, var4, false);
+      PreparedTextBuilder var17 = new PreparedTextBuilder(var2, var3, var4, false, true);
       var1.accept(var17);
       var17.visit(Font.GlyphVisitor.forMultiBufferSource(var7, var6, Font.DisplayMode.POLYGON_OFFSET, var8));
    }
@@ -120,15 +120,15 @@ public class Font {
          var1 = this.bidirectionalShaping(var1);
       }
 
-      PreparedTextBuilder var7 = new PreparedTextBuilder(var2, var3, var4, var6, var5);
+      PreparedTextBuilder var7 = new PreparedTextBuilder(var2, var3, var4, var6, var5, false);
       StringDecomposer.iterateFormatted((String)var1, Style.EMPTY, var7);
       return var7;
    }
 
-   public PreparedText prepareText(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, int var6) {
-      PreparedTextBuilder var7 = new PreparedTextBuilder(var2, var3, var4, var6, var5);
-      var1.accept(var7);
-      return var7;
+   public PreparedText prepareText(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, boolean var6, int var7) {
+      PreparedTextBuilder var8 = new PreparedTextBuilder(var2, var3, var4, var7, var5, var6);
+      var1.accept(var8);
+      return var8;
    }
 
    public int width(String var1) {
@@ -153,10 +153,6 @@ public class Font {
 
    public FormattedText substrByWidth(FormattedText var1, int var2) {
       return this.splitter.headByWidth(var1, var2, Style.EMPTY);
-   }
-
-   public int wordWrapHeight(String var1, int var2) {
-      return 9 * this.splitter.splitLines(var1, var2, Style.EMPTY).size();
    }
 
    public int wordWrapHeight(FormattedText var1, int var2) {
@@ -197,6 +193,7 @@ public class Font {
       private final boolean drawShadow;
       private final int color;
       private final int backgroundColor;
+      private final boolean includeEmpty;
       float x;
       float y;
       private float left;
@@ -207,15 +204,17 @@ public class Font {
       private float backgroundTop;
       private float backgroundRight;
       private float backgroundBottom;
-      final List<TextRenderable> glyphs;
+      final List<TextRenderable.Styled> glyphs;
       @Nullable
       private List<TextRenderable> effects;
+      @Nullable
+      private List<EmptyArea> emptyAreas;
 
-      public PreparedTextBuilder(final float var2, final float var3, final int var4, final boolean var5) {
-         this(var2, var3, var4, 0, var5);
+      public PreparedTextBuilder(final float var2, final float var3, final int var4, final boolean var5, final boolean var6) {
+         this(var2, var3, var4, 0, var5, var6);
       }
 
-      public PreparedTextBuilder(final float var2, final float var3, final int var4, final int var5, final boolean var6) {
+      public PreparedTextBuilder(final float var2, final float var3, final int var4, final int var5, final boolean var6, final boolean var7) {
          super();
          this.left = 3.4028235E38F;
          this.top = 3.4028235E38F;
@@ -231,6 +230,7 @@ public class Font {
          this.drawShadow = var6;
          this.color = var4;
          this.backgroundColor = var5;
+         this.includeEmpty = var7;
          this.markBackground(var2, var3, 0.0F);
       }
 
@@ -251,7 +251,7 @@ public class Font {
          }
       }
 
-      private void addGlyph(TextRenderable var1) {
+      private void addGlyph(TextRenderable.Styled var1) {
          this.glyphs.add(var1);
          this.markSize(var1.left(), var1.top(), var1.right(), var1.bottom());
       }
@@ -263,6 +263,14 @@ public class Font {
 
          this.effects.add(var1);
          this.markSize(var1.left(), var1.top(), var1.right(), var1.bottom());
+      }
+
+      private void addEmptyGlyph(EmptyArea var1) {
+         if (this.emptyAreas == null) {
+            this.emptyAreas = new ArrayList();
+         }
+
+         this.emptyAreas.add(var1);
       }
 
       public boolean accept(int var1, Style var2, int var3) {
@@ -280,9 +288,11 @@ public class Font {
          float var10 = var1 == 0 ? this.x - 1.0F : this.x;
          float var11 = var4.getShadowOffset();
          float var12 = var5 ? var4.getBoldOffset() : 0.0F;
-         TextRenderable var13 = var3.createGlyph(this.x, this.y, var7, var8, var2, var12, var11);
+         TextRenderable.Styled var13 = var3.createGlyph(this.x, this.y, var7, var8, var2, var12, var11);
          if (var13 != null) {
             this.addGlyph(var13);
+         } else if (this.includeEmpty) {
+            this.addEmptyGlyph(new EmptyArea(this.x, this.y, var9, 7.0F, 9.0F, var2));
          }
 
          this.markBackground(this.x, this.y, var9);
@@ -303,13 +313,19 @@ public class Font {
             var1.acceptEffect(Font.this.provider.effect().createEffect(this.backgroundLeft, this.backgroundTop, this.backgroundRight, this.backgroundBottom, -0.01F, this.backgroundColor, 0, 0.0F));
          }
 
-         for(TextRenderable var3 : this.glyphs) {
+         for(TextRenderable.Styled var3 : this.glyphs) {
             var1.acceptGlyph(var3);
          }
 
          if (this.effects != null) {
-            for(TextRenderable var5 : this.effects) {
-               var1.acceptEffect(var5);
+            for(TextRenderable var6 : this.effects) {
+               var1.acceptEffect(var6);
+            }
+         }
+
+         if (this.emptyAreas != null) {
+            for(EmptyArea var7 : this.emptyAreas) {
+               var1.acceptEmptyArea(var7);
             }
          }
 
@@ -353,7 +369,7 @@ public class Font {
    public interface GlyphVisitor {
       static GlyphVisitor forMultiBufferSource(final MultiBufferSource var0, final Matrix4f var1, final DisplayMode var2, final int var3) {
          return new GlyphVisitor() {
-            public void acceptGlyph(TextRenderable var1x) {
+            public void acceptGlyph(TextRenderable.Styled var1x) {
                this.render(var1x);
             }
 
@@ -368,9 +384,14 @@ public class Font {
          };
       }
 
-      void acceptGlyph(TextRenderable var1);
+      default void acceptGlyph(TextRenderable.Styled var1) {
+      }
 
-      void acceptEffect(TextRenderable var1);
+      default void acceptEffect(TextRenderable var1) {
+      }
+
+      default void acceptEmptyArea(EmptyArea var1) {
+      }
    }
 
    public interface PreparedText {

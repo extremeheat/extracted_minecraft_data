@@ -14,6 +14,7 @@ import net.minecraft.util.ExtraCodecs;
 
 public final class Style {
    public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (FontDescription)null);
+   public static final int NO_SHADOW = 0;
    @Nullable
    final TextColor color;
    @Nullable
@@ -128,6 +129,10 @@ public final class Style {
 
    public Style withShadowColor(int var1) {
       return Objects.equals(this.shadowColor, var1) ? this : checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
+   }
+
+   public Style withoutShadow() {
+      return this.withShadowColor(0);
    }
 
    public Style withBold(@Nullable Boolean var1) {

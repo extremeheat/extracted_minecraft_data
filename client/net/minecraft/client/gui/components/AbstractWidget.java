@@ -1,13 +1,11 @@
 package net.minecraft.client.gui.components;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -22,14 +20,12 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 
 public abstract class AbstractWidget implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
-   private static final double PERIOD_PER_SCROLLED_PIXEL = 0.5;
-   private static final double MIN_SCROLL_PERIOD = 3.0;
    protected int width;
    protected int height;
    private int x;
@@ -82,36 +78,12 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    protected abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
 
-   protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
-      renderScrollingString(var0, var1, var2, (var3 + var5) / 2, var3, var4, var5, var6, var7);
-   }
-
-   protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      int var9 = var1.width((FormattedText)var2);
-      int var10000 = var5 + var7;
-      Objects.requireNonNull(var1);
-      int var10 = (var10000 - 9) / 2 + 1;
-      int var11 = var6 - var4;
-      if (var9 > var11) {
-         int var12 = var9 - var11;
-         double var13 = (double)Util.getMillis() / 1000.0;
-         double var15 = Math.max((double)var12 * 0.5, 3.0);
-         double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
-         double var19 = Mth.lerp(var17, 0.0, (double)var12);
-         var0.enableScissor(var4, var5, var6, var7);
-         var0.drawString(var1, var2, var4 - (int)var19, var10, var8);
-         var0.disableScissor();
-      } else {
-         int var21 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
-         var0.drawCenteredString(var1, var2, var21, var10, var8);
-      }
-
-   }
-
-   protected void renderScrollingString(GuiGraphics var1, Font var2, int var3, int var4) {
-      int var5 = this.getX() + var3;
-      int var6 = this.getX() + this.getWidth() - var3;
-      renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
+   protected void renderScrollingStringOverContents(ActiveTextCollector var1, Component var2, int var3) {
+      int var4 = this.getX() + var3;
+      int var5 = this.getX() + this.getWidth() - var3;
+      int var6 = this.getY();
+      int var7 = this.getY() + this.getHeight();
+      var1.acceptScrollingWithDefaultCenter(var2, var4, var5, var6, var7);
    }
 
    public void onClick(MouseButtonEvent var1, boolean var2) {
@@ -197,6 +169,10 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    public void setAlpha(float var1) {
       this.alpha = var1;
+   }
+
+   public float getAlpha() {
+      return this.alpha;
    }
 
    public void setMessage(Component var1) {
@@ -306,5 +282,27 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    public void setTabOrderGroup(int var1) {
       this.tabOrderGroup = var1;
+   }
+
+   public abstract static class WithInactiveMessage extends AbstractWidget {
+      private Component inactiveMessage;
+
+      public static Component defaultInactiveMessage(Component var0) {
+         return ComponentUtils.mergeStyles(var0, Style.EMPTY.withColor(-6250336));
+      }
+
+      public WithInactiveMessage(int var1, int var2, int var3, int var4, Component var5) {
+         super(var1, var2, var3, var4, var5);
+         this.inactiveMessage = defaultInactiveMessage(var5);
+      }
+
+      public Component getMessage() {
+         return this.active ? super.getMessage() : this.inactiveMessage;
+      }
+
+      public void setMessage(Component var1) {
+         super.setMessage(var1);
+         this.inactiveMessage = defaultInactiveMessage(var1);
+      }
    }
 }

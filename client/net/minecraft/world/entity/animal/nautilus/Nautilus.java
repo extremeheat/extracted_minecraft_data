@@ -33,7 +33,13 @@ public class Nautilus extends AbstractNautilus {
 
    @Nullable
    public Nautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.NAUTILUS.create(var1, EntitySpawnReason.BREEDING);
+      Nautilus var3 = EntityType.NAUTILUS.create(var1, EntitySpawnReason.BREEDING);
+      if (var3 != null && this.isTame()) {
+         var3.setOwnerReference(this.getOwnerReference());
+         var3.setTame(true, true);
+      }
+
+      return var3;
    }
 
    protected void customServerAiStep(ServerLevel var1) {

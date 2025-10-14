@@ -28,6 +28,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -418,5 +419,9 @@ public class WorldGenRegion implements WorldGenLevel {
 
    public long nextSubTickCount() {
       return this.subTickCount.getAndIncrement();
+   }
+
+   public EnvironmentAttributeReader environmentAttributes() {
+      return EnvironmentAttributeReader.EMPTY;
    }
 }

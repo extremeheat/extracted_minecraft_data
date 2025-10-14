@@ -92,7 +92,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.title, this.font));
-      this.subtitle.forEach((var2x) -> var1.addChild((new StringWidget(var2x, this.font)).setColor(-4539718)));
+      this.subtitle.forEach((var2x) -> var1.addChild(new StringWidget(var2x, this.font)));
       this.worldTemplateList = (WorldTemplateList)this.layout.addToContents(new WorldTemplateList(this.worldTemplateList.getTemplates()));
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.defaultCellSetting().alignHorizontallyCenter();

@@ -1,11 +1,53 @@
 package net.minecraft.util;
 
+import net.minecraft.Util;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public class ARGB {
+   private static final int LINEAR_CHANNEL_DEPTH = 1024;
+   private static final short[] SRGB_TO_LINEAR = (short[])Util.make(new short[256], (var0) -> {
+      for(int var1 = 0; var1 < var0.length; ++var1) {
+         float var2 = (float)var1 / 255.0F;
+         var0[var1] = (short)Math.round(computeSrgbToLinear(var2) * 1023.0F);
+      }
+
+   });
+   private static final byte[] LINEAR_TO_SRGB = (byte[])Util.make(new byte[1024], (var0) -> {
+      for(int var1 = 0; var1 < var0.length; ++var1) {
+         float var2 = (float)var1 / 1023.0F;
+         var0[var1] = (byte)Math.round(computeLinearToSrgb(var2) * 255.0F);
+      }
+
+   });
+
    public ARGB() {
       super();
+   }
+
+   private static float computeSrgbToLinear(float var0) {
+      return var0 >= 0.04045F ? (float)Math.pow(((double)var0 + 0.055) / 1.055, 2.4) : var0 / 12.92F;
+   }
+
+   private static float computeLinearToSrgb(float var0) {
+      return var0 >= 0.0031308F ? (float)(1.055 * Math.pow((double)var0, 0.4166666666666667) - 0.055) : 12.92F * var0;
+   }
+
+   public static float srgbToLinearChannel(int var0) {
+      return (float)SRGB_TO_LINEAR[var0] / 1023.0F;
+   }
+
+   public static int linearToSrgbChannel(float var0) {
+      return LINEAR_TO_SRGB[Mth.floor(var0 * 1023.0F)] & 255;
+   }
+
+   public static int meanLinear(int var0, int var1, int var2, int var3) {
+      return color((alpha(var0) + alpha(var1) + alpha(var2) + alpha(var3)) / 4, linearChannelMean(red(var0), red(var1), red(var2), red(var3)), linearChannelMean(green(var0), green(var1), green(var2), green(var3)), linearChannelMean(blue(var0), blue(var1), blue(var2), blue(var3)));
+   }
+
+   private static int linearChannelMean(int var0, int var1, int var2, int var3) {
+      int var4 = (SRGB_TO_LINEAR[var0] + SRGB_TO_LINEAR[var1] + SRGB_TO_LINEAR[var2] + SRGB_TO_LINEAR[var3]) / 4;
+      return LINEAR_TO_SRGB[var4] & 255;
    }
 
    public static int alpha(int var0) {
@@ -44,6 +86,22 @@ public class ARGB {
       }
    }
 
+   public static int addRgb(int var0, int var1) {
+      return color(alpha(var0), Math.min(red(var0) + red(var1), 255), Math.min(green(var0) + green(var1), 255), Math.min(blue(var0) + blue(var1), 255));
+   }
+
+   public static int subtractRgb(int var0, int var1) {
+      return color(alpha(var0), Math.max(red(var0) - red(var1), 0), Math.max(green(var0) - green(var1), 0), Math.max(blue(var0) - blue(var1), 0));
+   }
+
+   public static int multiplyAlpha(int var0, float var1) {
+      if (var0 != 0 && !(var1 <= 0.0F)) {
+         return var1 >= 1.0F ? var0 : color(alphaFloat(var0) * var1, var0);
+      } else {
+         return 0;
+      }
+   }
+
    public static int scaleRGB(int var0, float var1) {
       return scaleRGB(var0, var1, var1, var1);
    }
@@ -61,12 +119,16 @@ public class ARGB {
       return color(var1, var1, var1);
    }
 
-   public static int lerp(float var0, int var1, int var2) {
+   public static int srgbLerp(float var0, int var1, int var2) {
       int var3 = Mth.lerpInt(var0, alpha(var1), alpha(var2));
       int var4 = Mth.lerpInt(var0, red(var1), red(var2));
       int var5 = Mth.lerpInt(var0, green(var1), green(var2));
       int var6 = Mth.lerpInt(var0, blue(var1), blue(var2));
       return color(var3, var4, var5, var6);
+   }
+
+   public static int linearLerp(float var0, int var1, int var2) {
+      return color(Mth.lerpInt(var0, alpha(var1), alpha(var2)), LINEAR_TO_SRGB[Mth.lerpInt(var0, SRGB_TO_LINEAR[red(var1)], SRGB_TO_LINEAR[red(var2)])] & 255, LINEAR_TO_SRGB[Mth.lerpInt(var0, SRGB_TO_LINEAR[green(var1)], SRGB_TO_LINEAR[green(var2)])] & 255, LINEAR_TO_SRGB[Mth.lerpInt(var0, SRGB_TO_LINEAR[blue(var1)], SRGB_TO_LINEAR[blue(var2)])] & 255);
    }
 
    public static int opaque(int var0) {
@@ -87,6 +149,18 @@ public class ARGB {
 
    public static int white(float var0) {
       return as8BitChannel(var0) << 24 | 16777215;
+   }
+
+   public static int white(int var0) {
+      return var0 << 24 | 16777215;
+   }
+
+   public static int black(float var0) {
+      return as8BitChannel(var0) << 24;
+   }
+
+   public static int black(int var0) {
+      return var0 << 24;
    }
 
    public static int colorFromFloat(float var0, float var1, float var2, float var3) {

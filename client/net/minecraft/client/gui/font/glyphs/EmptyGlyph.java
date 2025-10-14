@@ -25,7 +25,7 @@ public class EmptyGlyph implements UnbakedGlyph {
          }
 
          @Nullable
-         public TextRenderable createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
+         public TextRenderable.Styled createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
             return null;
          }
       };

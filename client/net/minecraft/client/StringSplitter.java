@@ -16,7 +16,6 @@ import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.StringDecomposer;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.lang3.mutable.MutableObject;
 
 public class StringSplitter {
    final WidthProvider widthProvider;
@@ -80,37 +79,6 @@ public class StringSplitter {
          }
       });
       return var1.substring(var5.intValue());
-   }
-
-   public int formattedIndexByWidth(String var1, int var2, Style var3) {
-      WidthLimitedCharSink var4 = new WidthLimitedCharSink((float)var2);
-      StringDecomposer.iterateFormatted((String)var1, var3, var4);
-      return var4.getPosition();
-   }
-
-   @Nullable
-   public Style componentStyleAtWidth(FormattedText var1, int var2) {
-      WidthLimitedCharSink var3 = new WidthLimitedCharSink((float)var2);
-      return (Style)var1.visit((var1x, var2x) -> StringDecomposer.iterateFormatted((String)var2x, var1x, var3) ? Optional.empty() : Optional.of(var1x), Style.EMPTY).orElse((Object)null);
-   }
-
-   @Nullable
-   public Style componentStyleAtWidth(FormattedCharSequence var1, int var2) {
-      WidthLimitedCharSink var3 = new WidthLimitedCharSink((float)var2);
-      MutableObject var4 = new MutableObject();
-      var1.accept((var2x, var3x, var4x) -> {
-         if (!var3.accept(var2x, var3x, var4x)) {
-            var4.setValue(var3x);
-            return false;
-         } else {
-            return true;
-         }
-      });
-      return (Style)var4.getValue();
-   }
-
-   public String formattedHeadByWidth(String var1, int var2, Style var3) {
-      return var1.substring(0, this.formattedIndexByWidth(var1, var2, var3));
    }
 
    public FormattedText headByWidth(FormattedText var1, int var2, Style var3) {
@@ -215,14 +183,8 @@ public class StringSplitter {
 
    public List<FormattedText> splitLines(FormattedText var1, int var2, Style var3) {
       ArrayList var4 = Lists.newArrayList();
-      this.splitLines(var1, var2, var3, (BiConsumer)((var1x, var2x) -> var4.add(var1x)));
+      this.splitLines(var1, var2, var3, (var1x, var2x) -> var4.add(var1x));
       return var4;
-   }
-
-   public List<FormattedText> splitLines(FormattedText var1, int var2, Style var3, FormattedText var4) {
-      ArrayList var5 = Lists.newArrayList();
-      this.splitLines(var1, var2, var3, (BiConsumer)((var2x, var3x) -> var5.add(var3x ? FormattedText.composite(var4, var2x) : var2x)));
-      return var5;
    }
 
    public void splitLines(FormattedText var1, int var2, Style var3, BiConsumer<FormattedText, Boolean> var4) {

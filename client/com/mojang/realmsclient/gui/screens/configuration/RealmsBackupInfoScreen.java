@@ -1,6 +1,7 @@
 package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.Backup;
+import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -52,8 +53,10 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       String var3 = var1.toLowerCase(Locale.ROOT);
       if (var3.contains("game") && var3.contains("mode")) {
          return this.gameModeMetadata(var2);
+      } else if (var3.contains("game") && var3.contains("difficulty")) {
+         return this.gameDifficultyMetadata(var2);
       } else {
-         return (Component)(var3.contains("game") && var3.contains("difficulty") ? this.gameDifficultyMetadata(var2) : Component.literal(var2));
+         return (Component)(var1.equals("world_type") ? this.parseWorldType(var2) : Component.literal(var2));
       }
    }
 
@@ -73,6 +76,14 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       }
    }
 
+   private Component parseWorldType(String var1) {
+      try {
+         return RealmsServer.WorldType.valueOf(var1.toUpperCase(Locale.ROOT)).getDisplayName();
+      } catch (Exception var3) {
+         return RealmsServer.WorldType.UNKNOWN.getDisplayName();
+      }
+   }
+
    class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
       private static final Component TEMPLATE_NAME = Component.translatable("mco.backup.entry.templateName");
       private static final Component GAME_DIFFICULTY = Component.translatable("mco.backup.entry.gameDifficulty");
@@ -87,16 +98,20 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       private static final Component UNDEFINED = Component.translatable("mco.backup.entry.undefined");
       private final String key;
       private final String value;
+      private final Component keyComponent;
+      private final Component valueComponent;
 
       public BackupInfoListEntry(final String var2, final String var3) {
          super();
          this.key = var2;
          this.value = var3;
+         this.keyComponent = this.translateKey(var2);
+         this.valueComponent = RealmsBackupInfoScreen.this.checkForSpecificMetadata(var2, var3);
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         var1.drawString(RealmsBackupInfoScreen.this.font, this.translateKey(this.key), this.getContentX(), this.getContentY(), -6250336);
-         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)RealmsBackupInfoScreen.this.checkForSpecificMetadata(this.key, this.value), this.getContentX(), this.getContentY() + 12, -1);
+         var1.drawString(RealmsBackupInfoScreen.this.font, this.keyComponent, this.getContentX(), this.getContentY(), -6250336);
+         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)this.valueComponent, this.getContentX(), this.getContentY() + 12, -1);
       }
 
       private Component translateKey(String var1) {

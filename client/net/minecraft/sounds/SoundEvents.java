@@ -125,6 +125,7 @@ public class SoundEvents {
    public static final SoundEvent BABY_NAUTILUS_DEATH = register("entity.baby_nautilus.death");
    public static final SoundEvent BABY_NAUTILUS_EAT = register("entity.baby_nautilus.eat");
    public static final SoundEvent BABY_NAUTILUS_HURT = register("entity.baby_nautilus.hurt");
+   public static final SoundEvent NAUTILUS_RIDING = register("entity.nautilus.riding");
    public static final SoundEvent BABY_NAUTILUS_SWIM = register("entity.baby_nautilus.swim");
    public static final SoundEvent BAMBOO_BREAK = register("block.bamboo.break");
    public static final SoundEvent BAMBOO_FALL = register("block.bamboo.fall");

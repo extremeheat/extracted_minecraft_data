@@ -328,7 +328,7 @@ public class Gui {
             if (this.animateOverlayMessageColor) {
                var6 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
             } else {
-               var6 = ARGB.color(var5, -1);
+               var6 = ARGB.white(var5);
             }
 
             int var7 = var3.width((FormattedText)this.overlayMessageString);
@@ -363,7 +363,7 @@ public class Gui {
             var1.pose().pushMatrix();
             var1.pose().scale(4.0F, 4.0F);
             int var10 = var3.width((FormattedText)this.title);
-            int var7 = ARGB.color(var5, -1);
+            int var7 = ARGB.white(var5);
             var1.drawStringWithBackdrop(var3, this.title, -var10 / 2, -10, var10, var7);
             var1.pose().popMatrix();
             if (this.subtitle != null) {
@@ -387,7 +387,7 @@ public class Gui {
          int var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var3));
          int var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var3));
          var1.nextStratum();
-         this.chat.render(var1, this.tickCount, var4, var5, false);
+         this.chat.render(var1, this.getFont(), this.tickCount, var4, var5, false);
       }
 
    }
@@ -623,7 +623,7 @@ public class Gui {
          }
 
          if (var6 > 0) {
-            var1.drawStringWithBackdrop(this.getFont(), var2, var4, var5, var3, ARGB.color(var6, -1));
+            var1.drawStringWithBackdrop(this.getFont(), var2, var4, var5, var3, ARGB.white(var6));
          }
       }
 

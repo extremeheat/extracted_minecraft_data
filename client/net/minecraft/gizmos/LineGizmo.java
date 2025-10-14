@@ -1,5 +1,6 @@
 package net.minecraft.gizmos;
 
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
 
 public record LineGizmo(Vec3 start, Vec3 end, int color, float width) implements Gizmo {
@@ -13,7 +14,7 @@ public record LineGizmo(Vec3 start, Vec3 end, int color, float width) implements
       this.width = var4;
    }
 
-   public void emit(GizmoPrimitives var1) {
-      var1.addLine(this.start, this.end, this.color, this.width);
+   public void emit(GizmoPrimitives var1, float var2) {
+      var1.addLine(this.start, this.end, ARGB.multiplyAlpha(this.color, var2), this.width);
    }
 }

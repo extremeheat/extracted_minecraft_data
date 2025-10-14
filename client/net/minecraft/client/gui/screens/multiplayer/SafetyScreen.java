@@ -41,7 +41,7 @@ public class SafetyScreen extends WarningScreen {
    static {
       TITLE = Component.translatable("multiplayerWarning.header").withStyle(ChatFormatting.BOLD);
       CONTENT = Component.translatable("multiplayerWarning.message");
-      CHECK = Component.translatable("multiplayerWarning.check");
+      CHECK = Component.translatable("multiplayerWarning.check").withColor(-2039584);
       NARRATION = TITLE.copy().append("\n").append(CONTENT);
    }
 }

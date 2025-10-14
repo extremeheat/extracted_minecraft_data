@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.tabs.Tab;
@@ -14,7 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 
-public class TabButton extends AbstractWidget {
+public class TabButton extends AbstractWidget.WithInactiveMessage {
    private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/tab_selected"), ResourceLocation.withDefaultNamespace("widget/tab"), ResourceLocation.withDefaultNamespace("widget/tab_selected_highlighted"), ResourceLocation.withDefaultNamespace("widget/tab_highlighted"));
    private static final int SELECTED_OFFSET = 3;
    private static final int TEXT_MARGIN = 1;
@@ -39,19 +40,19 @@ public class TabButton extends AbstractWidget {
          this.renderFocusUnderline(var1, var5, var6);
       }
 
-      this.renderString(var1, var5, var6);
+      this.renderLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
    }
 
    protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4 - var2, var5 - var3);
    }
 
-   public void renderString(GuiGraphics var1, Font var2, int var3) {
-      int var4 = this.getX() + 1;
-      int var5 = this.getY() + (this.isSelected() ? 0 : 3);
-      int var6 = this.getX() + this.getWidth() - 1;
-      int var7 = this.getY() + this.getHeight();
-      renderScrollingString(var1, var2, this.getMessage(), var4, var5, var6, var7, var3);
+   private void renderLabel(ActiveTextCollector var1) {
+      int var2 = this.getX() + 1;
+      int var3 = this.getY() + (this.isSelected() ? 0 : 3);
+      int var4 = this.getX() + this.getWidth() - 1;
+      int var5 = this.getY() + this.getHeight();
+      var1.acceptScrollingWithDefaultCenter(this.getMessage(), var2, var4, var3, var5);
    }
 
    private void renderFocusUnderline(GuiGraphics var1, Font var2, int var3) {

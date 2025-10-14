@@ -81,7 +81,7 @@ public class SpectatorGui implements SpectatorMenuListener {
          var1.pose().popMatrix();
          if (var5 > 0.0F && var6.isEnabled()) {
             Component var8 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            var1.drawString(this.minecraft.font, var8, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var8), (int)var4 + 6 + 3, ARGB.color(var5, -1));
+            var1.drawString(this.minecraft.font, var8, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var8), (int)var4 + 6 + 3, ARGB.white(var5));
          }
       }
 
@@ -95,7 +95,7 @@ public class SpectatorGui implements SpectatorMenuListener {
          int var5 = this.minecraft.font.width((FormattedText)var4);
          int var6 = (var1.guiWidth() - var5) / 2;
          int var7 = var1.guiHeight() - 35;
-         var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.color(var2, -1));
+         var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.white(var2));
       }
 
    }

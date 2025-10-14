@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -23,6 +23,10 @@ public abstract class SpriteIconButton extends Button {
       this.sprite = var6;
    }
 
+   protected void renderSprite(GuiGraphics var1, int var2, int var3) {
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), var2, var3, this.spriteWidth, this.spriteHeight, this.alpha);
+   }
+
    public static Builder builder(Component var0, Button.OnPress var1, boolean var2) {
       return new Builder(var0, var1, var2);
    }
@@ -32,14 +36,11 @@ public abstract class SpriteIconButton extends Button {
          super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         this.renderDefaultSprite(var1);
          int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
          int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
-      }
-
-      public void renderString(GuiGraphics var1, Font var2, int var3) {
+         this.renderSprite(var1, var5, var6);
       }
    }
 
@@ -48,18 +49,16 @@ public abstract class SpriteIconButton extends Button {
          super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
-         int var5 = this.getX() + this.getWidth() - this.spriteWidth - 2;
-         int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), var5, var6, this.spriteWidth, this.spriteHeight, this.alpha);
-      }
-
-      public void renderString(GuiGraphics var1, Font var2, int var3) {
-         int var4 = this.getX() + 2;
-         int var5 = this.getX() + this.getWidth() - this.spriteWidth - 4;
-         int var6 = this.getX() + this.getWidth() / 2;
-         renderScrollingString(var1, var2, this.getMessage(), var6, var4, this.getY(), var5, this.getY() + this.getHeight(), var3);
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         this.renderDefaultSprite(var1);
+         int var5 = this.getX() + 2;
+         int var6 = this.getX() + this.getWidth() - this.spriteWidth - 4;
+         int var7 = this.getX() + this.getWidth() / 2;
+         ActiveTextCollector var8 = var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE);
+         var8.acceptScrolling(this.getMessage(), var7, var5, var6, this.getY(), this.getY() + this.getHeight());
+         int var9 = this.getX() + this.getWidth() - this.spriteWidth - 2;
+         int var10 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
+         this.renderSprite(var1, var9, var10);
       }
    }
 

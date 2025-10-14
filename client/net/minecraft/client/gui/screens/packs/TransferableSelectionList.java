@@ -5,8 +5,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -16,8 +18,10 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.util.FormattedCharSequence;
@@ -72,6 +76,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          }
 
       });
+      this.refreshScrollAmount();
    }
 
    public abstract class Entry extends ObjectSelectionList.Entry<Entry> {
@@ -120,7 +125,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
       }
 
       private static MultiLineLabel cacheDescription(Minecraft var0, Component var1) {
-         return MultiLineLabel.create(var0.font, 157, 2, var1);
+         return MultiLineLabel.create(var0.font, 157, 2, ComponentUtils.mergeStyles(var1, Style.EMPTY.withColor(-8355712)));
       }
 
       public Component getNarration() {
@@ -143,7 +148,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          if (this.showHoverOverlay() && ((Boolean)this.minecraft.options.touchscreen().get() || var4 || this.parent.getSelected() == this && this.parent.isFocused())) {
             var1.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int var13 = var2 - this.getContentX();
-            int var14 = var3 - this.getContentY();
+            int var15 = var3 - this.getContentY();
             if (!this.pack.getCompatibility().isCompatible()) {
                var11 = this.incompatibleNameDisplayCache;
                var12 = this.incompatibleDescriptionDisplayCache;
@@ -165,7 +170,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
                }
 
                if (this.pack.canMoveUp()) {
-                  if (var13 < 32 && var13 > 16 && var14 < 16) {
+                  if (var13 < 32 && var13 > 16 && var15 < 16) {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   } else {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
@@ -173,7 +178,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
                }
 
                if (this.pack.canMoveDown()) {
-                  if (var13 < 32 && var13 > 16 && var14 > 16) {
+                  if (var13 < 32 && var13 > 16 && var15 > 16) {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   } else {
                      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
@@ -182,8 +187,9 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
             }
          }
 
+         ActiveTextCollector var14 = var1.textRenderer();
          var1.drawString(this.minecraft.font, (FormattedCharSequence)var11, this.getContentX() + 32 + 2, this.getContentY() + 1, -1);
-         var12.render(var1, MultiLineLabel.Align.LEFT, this.getContentX() + 32 + 2, this.getContentY() + 12, 10, true, -8355712);
+         var12.visitLines(TextAlignment.LEFT, this.getContentX() + 32 + 2, this.getContentY() + 12, 10, var14);
       }
 
       public String getPackId() {

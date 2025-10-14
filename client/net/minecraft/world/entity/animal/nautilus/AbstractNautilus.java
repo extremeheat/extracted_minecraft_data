@@ -60,7 +60,8 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    private static final int EFFECT_REFRESH_RATE = 40;
    private static final double NAUTILUS_WATER_RESISTANCE = 0.9;
    private static final float IN_WATER_SPEED_MODIFIER = 0.011F;
-   private static final float RIDDEN_SPEED_MODIFIER = 0.0325F;
+   private static final float RIDDEN_SPEED_MODIFIER_IN_WATER = 0.0325F;
+   private static final float RIDDEN_SPEED_MODIFIER_ON_LAND = 0.02F;
    private static final EntityDataAccessor<Boolean> DASH;
    private static final int DASH_COOLDOWN_TICKS = 40;
    private static final int DASH_MINIMUM_DURATION_TICKS = 5;
@@ -83,7 +84,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    }
 
    public boolean isFood(ItemStack var1) {
-      return this.isTame() ? var1.is(ItemTags.NAUTILUS_FOOD) : var1.is(ItemTags.NAUTILUS_TAMING_ITEMS);
+      return !this.isTame() && !this.isBaby() ? var1.is(ItemTags.NAUTILUS_TAMING_ITEMS) : var1.is(ItemTags.NAUTILUS_FOOD);
    }
 
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
@@ -228,7 +229,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    }
 
    protected float getRiddenSpeed(Player var1) {
-      return this.isInWater() ? 0.0325F * (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) : 0.0F;
+      return this.isInWater() ? 0.0325F * (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) : 0.02F * (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
 
    protected void doPlayerRide(Player var1) {
@@ -421,6 +422,10 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
 
    public boolean requiresCustomPersistence() {
       return super.requiresCustomPersistence() || this.isTame();
+   }
+
+   public boolean removeWhenFarAway(double var1) {
+      return true;
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {

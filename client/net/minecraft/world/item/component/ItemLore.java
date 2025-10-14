@@ -25,7 +25,7 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemLore> STREAM_CODEC;
 
    public ItemLore(List<Component> var1) {
-      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0.copy(), LORE_STYLE)));
+      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0, LORE_STYLE)));
    }
 
    public ItemLore(List<Component> var1, List<Component> var2) {

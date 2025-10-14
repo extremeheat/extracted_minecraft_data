@@ -26,7 +26,7 @@ public class TelemetryInfoScreen extends Screen {
    private static final Component BUTTON_PRIVACY_STATEMENT = Component.translatable("telemetry_info.button.privacy_statement");
    private static final Component BUTTON_GIVE_FEEDBACK = Component.translatable("telemetry_info.button.give_feedback");
    private static final Component BUTTON_VIEW_DATA = Component.translatable("telemetry_info.button.show_data");
-   private static final Component CHECKBOX_OPT_IN = Component.translatable("telemetry_info.opt_in.description");
+   private static final Component CHECKBOX_OPT_IN = Component.translatable("telemetry_info.opt_in.description").withColor(-2039584);
    private static final int SPACING = 8;
    private static final boolean EXTRA_TELEMETRY_AVAILABLE = Minecraft.getInstance().extraTelemetryAvailable();
    private final Screen lastScreen;

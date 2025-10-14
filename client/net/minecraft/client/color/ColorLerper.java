@@ -24,7 +24,7 @@ public class ColorLerper {
       float var7 = ((float)(var2 % var0.colorDuration) + Mth.frac(var1)) / (float)var0.colorDuration;
       int var8 = var0.getColor(var0.colors[var5]);
       int var9 = var0.getColor(var0.colors[var6]);
-      return ARGB.lerp(var7, var8, var9);
+      return ARGB.srgbLerp(var7, var8, var9);
    }
 
    static int getModifiedColor(DyeColor var0, float var1) {

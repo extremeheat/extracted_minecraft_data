@@ -93,7 +93,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
             if (matchesSubStr(var1, var8)) {
                var3.accept(var6);
             }
-         } else if (matchesSubStr(var1, var7.getNamespace()) || var7.getNamespace().equals("minecraft") && matchesSubStr(var1, var7.getPath())) {
+         } else if (matchesSubStr(var1, var7.getNamespace()) || matchesSubStr(var1, var7.getPath())) {
             var3.accept(var6);
          }
       }

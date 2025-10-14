@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
+import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
 
@@ -67,7 +68,8 @@ public class RandomStroll {
             var2 = var0.position().add(var0.position().vectorTo(var1).normalize().multiply((double)var6[0], (double)var6[1], (double)var6[0]));
          }
 
-         if (var2 == null || var0.level().getFluidState(BlockPos.containing(var2)).isEmpty()) {
+         boolean var7 = GoalUtils.mobRestricted(var0, (double)var6[0]);
+         if (var2 == null || var0.level().getFluidState(BlockPos.containing(var2)).isEmpty() || GoalUtils.isRestricted(var7, var0, var2)) {
             return var1;
          }
 

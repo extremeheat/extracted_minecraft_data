@@ -11,6 +11,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -19,6 +20,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
@@ -84,30 +86,38 @@ import org.joml.Vector3f;
 
 public class GuiGraphics {
    private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
-   private final Minecraft minecraft;
+   final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
    private final MaterialSet materials;
    private final TextureAtlas guiSprites;
-   private final GuiRenderState guiRenderState;
+   final GuiRenderState guiRenderState;
    private CursorType pendingCursor;
+   final int mouseX;
+   final int mouseY;
    @Nullable
    private Runnable deferredTooltip;
+   @Nullable
+   Style hoveredTextStyle;
+   @Nullable
+   Style clickableTextStyle;
 
-   private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3) {
+   private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3, int var4, int var5) {
       super();
       this.scissorStack = new ScissorStack();
       this.pendingCursor = CursorType.DEFAULT;
       this.minecraft = var1;
       this.pose = var2;
-      AtlasManager var4 = var1.getAtlasManager();
-      this.materials = var4;
-      this.guiSprites = var4.getAtlasOrThrow(AtlasIds.GUI);
+      this.mouseX = var4;
+      this.mouseY = var5;
+      AtlasManager var6 = var1.getAtlasManager();
+      this.materials = var6;
+      this.guiSprites = var6.getAtlasOrThrow(AtlasIds.GUI);
       this.guiRenderState = var3;
    }
 
-   public GuiGraphics(Minecraft var1, GuiRenderState var2) {
-      this(var1, new Matrix3x2fStack(16), var2);
+   public GuiGraphics(Minecraft var1, GuiRenderState var2, int var3, int var4) {
+      this(var1, new Matrix3x2fStack(16), var2, var3, var4);
    }
 
    public void requestCursor(CursorType var1) {
@@ -240,7 +250,7 @@ public class GuiGraphics {
 
    public void drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5, boolean var6) {
       if (ARGB.alpha(var5) != 0) {
-         this.guiRenderState.submitText(new GuiTextRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, 0, var6, this.scissorStack.peek()));
+         this.guiRenderState.submitText(new GuiTextRenderState(var1, var2, new Matrix3x2f(this.pose), var3, var4, var5, 0, var6, false, this.scissorStack.peek()));
       }
    }
 
@@ -291,7 +301,7 @@ public class GuiGraphics {
    }
 
    public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7) {
-      this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.color(var7, -1));
+      this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.white(var7));
    }
 
    private static GuiSpriteScaling getSpriteScaling(TextureAtlasSprite var0) {
@@ -592,6 +602,14 @@ public class GuiGraphics {
    }
 
    public void renderDeferredElements() {
+      if (this.hoveredTextStyle != null) {
+         this.renderComponentHoverEffect(this.minecraft.font, this.hoveredTextStyle, this.mouseX, this.mouseY);
+      }
+
+      if (this.clickableTextStyle != null && this.clickableTextStyle.getClickEvent() != null) {
+         this.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
       if (this.deferredTooltip != null) {
          this.nextStratum();
          this.deferredTooltip.run();
@@ -631,10 +649,6 @@ public class GuiGraphics {
 
    public void renderComponentHoverEffect(Font var1, @Nullable Style var2, int var3, int var4) {
       if (var2 != null) {
-         if (var2.getClickEvent() != null) {
-            this.requestCursor(CursorTypes.POINTING_HAND);
-         }
-
          if (var2.getHoverEvent() != null) {
             HoverEvent.ShowText var10000 = var2.getHoverEvent();
             Objects.requireNonNull(var10000);
@@ -720,7 +734,7 @@ public class GuiGraphics {
                this.pose.pushMatrix();
                this.pose.translate((float)var6.x / 2.0F + 64.0F - var9 * var10 / 2.0F, (float)var6.y / 2.0F + 64.0F + 4.0F);
                this.pose.scale(var10, var10);
-               this.guiRenderState.submitText(new GuiTextRenderState(var11, var6.name.getVisualOrderText(), new Matrix3x2f(this.pose), 0, 0, -1, -2147483648, false, this.scissorStack.peek()));
+               this.guiRenderState.submitText(new GuiTextRenderState(var11, var6.name.getVisualOrderText(), new Matrix3x2f(this.pose), 0, 0, -1, -2147483648, false, false, this.scissorStack.peek()));
                this.pose.popMatrix();
             }
          }
@@ -754,6 +768,26 @@ public class GuiGraphics {
 
    public TextureAtlasSprite getSprite(Material var1) {
       return this.materials.get(var1);
+   }
+
+   public ActiveTextCollector textRendererForWidget(AbstractWidget var1, HoveredTextEffects var2) {
+      return new RenderingTextCollector(this.createDefaultTextParameters(var1.getAlpha()), var2, (Consumer)null);
+   }
+
+   public ActiveTextCollector textRenderer() {
+      return this.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_ONLY);
+   }
+
+   public ActiveTextCollector textRenderer(HoveredTextEffects var1) {
+      return this.textRenderer(var1, (Consumer)null);
+   }
+
+   public ActiveTextCollector textRenderer(HoveredTextEffects var1, @Nullable Consumer<Style> var2) {
+      return new RenderingTextCollector(this.createDefaultTextParameters(1.0F), var1, var2);
+   }
+
+   private ActiveTextCollector.Parameters createDefaultTextParameters(float var1) {
+      return new ActiveTextCollector.Parameters(new Matrix3x2f(this.pose), var1, this.scissorStack.peek());
    }
 
    static class ScissorStack {
@@ -792,6 +826,92 @@ public class GuiGraphics {
 
       public boolean containsPoint(int var1, int var2) {
          return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
+      }
+   }
+
+   public static enum HoveredTextEffects {
+      NONE(false, false),
+      TOOLTIP_ONLY(true, false),
+      TOOLTIP_AND_CURSOR(true, true);
+
+      public final boolean allowTooltip;
+      public final boolean allowCursorChanges;
+
+      private HoveredTextEffects(final boolean var3, final boolean var4) {
+         this.allowTooltip = var3;
+         this.allowCursorChanges = var4;
+      }
+
+      public static HoveredTextEffects notClickable(boolean var0) {
+         return var0 ? TOOLTIP_ONLY : NONE;
+      }
+
+      // $FF: synthetic method
+      private static HoveredTextEffects[] $values() {
+         return new HoveredTextEffects[]{NONE, TOOLTIP_ONLY, TOOLTIP_AND_CURSOR};
+      }
+   }
+
+   class RenderingTextCollector implements ActiveTextCollector, Consumer<Style> {
+      private ActiveTextCollector.Parameters defaultParameters;
+      private final HoveredTextEffects hoveredTextEffects;
+      @Nullable
+      private final Consumer<Style> additionalConsumer;
+
+      RenderingTextCollector(final ActiveTextCollector.Parameters var2, final HoveredTextEffects var3, @Nullable final Consumer<Style> var4) {
+         super();
+         this.defaultParameters = var2;
+         this.hoveredTextEffects = var3;
+         this.additionalConsumer = var4;
+      }
+
+      public ActiveTextCollector.Parameters defaultParameters() {
+         return this.defaultParameters;
+      }
+
+      public void defaultParameters(ActiveTextCollector.Parameters var1) {
+         this.defaultParameters = var1;
+      }
+
+      public void accept(Style var1) {
+         if (this.hoveredTextEffects.allowTooltip && var1.getHoverEvent() != null) {
+            GuiGraphics.this.hoveredTextStyle = var1;
+         }
+
+         if (this.hoveredTextEffects.allowCursorChanges && var1.getClickEvent() != null) {
+            GuiGraphics.this.clickableTextStyle = var1;
+         }
+
+         if (this.additionalConsumer != null) {
+            this.additionalConsumer.accept(var1);
+         }
+
+      }
+
+      public void accept(TextAlignment var1, int var2, int var3, ActiveTextCollector.Parameters var4, FormattedCharSequence var5) {
+         boolean var6 = this.hoveredTextEffects.allowCursorChanges || this.hoveredTextEffects.allowTooltip || this.additionalConsumer != null;
+         int var7 = var1.calculateLeft(var2, GuiGraphics.this.minecraft.font, var5);
+         GuiTextRenderState var8 = new GuiTextRenderState(GuiGraphics.this.minecraft.font, var5, var4.pose(), var7, var3, ARGB.white(var4.opacity()), 0, true, var6, var4.scissor());
+         if (ARGB.as8BitChannel(var4.opacity()) != 0) {
+            GuiGraphics.this.guiRenderState.submitText(var8);
+         }
+
+         if (var6) {
+            ActiveTextCollector.findElementUnderCursor(var8, (float)GuiGraphics.this.mouseX, (float)GuiGraphics.this.mouseY, this);
+         }
+
+      }
+
+      public void acceptScrolling(Component var1, int var2, int var3, int var4, int var5, int var6, ActiveTextCollector.Parameters var7) {
+         int var8 = GuiGraphics.this.minecraft.font.width((FormattedText)var1);
+         Objects.requireNonNull(GuiGraphics.this.minecraft.font);
+         byte var9 = 9;
+         this.defaultScrollingHelper(var1, var2, var3, var4, var5, var6, var8, var9, var7);
+      }
+
+      // $FF: synthetic method
+      public void accept(final Object var1) {
+         this.accept((Style)var1);
       }
    }
 }

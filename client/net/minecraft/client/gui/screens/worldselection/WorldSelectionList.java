@@ -56,8 +56,10 @@ import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.LevelSettings;
@@ -372,15 +374,15 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             var5 = var5 + " (" + WorldSelectionList.DATE_FORMAT.format(Instant.ofEpochMilli(var6)) + ")";
          }
 
-         MutableComponent var8 = Component.literal(var5);
-         this.idAndLastPlayedText = (new StringWidget(var8, this.minecraft.font)).setColor(-8355712);
+         MutableComponent var8 = Component.literal(var5).withColor(-8355712);
+         this.idAndLastPlayedText = new StringWidget(var8, this.minecraft.font);
          this.idAndLastPlayedText.setMaxWidth(var3);
          if (this.minecraft.font.width(var5) > var3) {
             this.idAndLastPlayedText.setTooltip(Tooltip.create(var8));
          }
 
-         Component var9 = var2.getInfo();
-         this.infoText = (new StringWidget(var9, this.minecraft.font)).setColor(-8355712);
+         Component var9 = ComponentUtils.mergeStyles(var2.getInfo(), Style.EMPTY.withColor(-8355712));
+         this.infoText = new StringWidget(var9, this.minecraft.font);
          this.infoText.setMaxWidth(var3);
          if (this.minecraft.font.width((FormattedText)var9) > var3) {
             this.infoText.setTooltip(Tooltip.create(var9));

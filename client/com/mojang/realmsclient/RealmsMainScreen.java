@@ -691,7 +691,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, @Nullable Entry var3) {
          Component var4 = var1.getMessage();
-         int var5 = RealmsMainScreen.this.font.wordWrapHeight((FormattedText)var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
+         int var5 = RealmsMainScreen.this.font.wordWrapHeight(var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
          NotificationMessageEntry var6 = RealmsMainScreen.this.new NotificationMessageEntry(var2, var5, var4, var1);
          this.addEntry(var6, 38 + var5);
          if (var3 instanceof NotificationMessageEntry var7) {
@@ -1173,8 +1173,8 @@ public class RealmsMainScreen extends RealmsScreen {
          this.notificationCount = var1;
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
+      public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
+         super.renderContents(var1, var2, var3, var4);
          if (this.active && this.notificationCount != 0) {
             this.drawNotificationCounter(var1);
          }

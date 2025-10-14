@@ -69,6 +69,8 @@ import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.AmbientParticle;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -456,12 +458,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
 
       if (!var11.isCollisionShapeFullBlock(this, var7)) {
-         ((Biome)this.getBiome(var7).value()).getAmbientParticle().ifPresent((var2x) -> {
-            if (var2x.canSpawn(this.random)) {
-               this.addParticle(var2x.options(), (double)var7.getX() + this.random.nextDouble(), (double)var7.getY() + this.random.nextDouble(), (double)var7.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
+         for(AmbientParticle var17 : (List)this.environmentAttributes().getValue(EnvironmentAttributes.AMBIENT_PARTICLES, var7)) {
+            if (var17.canSpawn(this.random)) {
+               this.addParticle(var17.particle(), (double)var7.getX() + this.random.nextDouble(), (double)var7.getY() + this.random.nextDouble(), (double)var7.getZ() + this.random.nextDouble(), 0.0, 0.0, 0.0);
             }
-
-         });
+         }
       }
 
    }
@@ -713,35 +714,34 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public int getSkyColor(Camera var1, float var2) {
       float var3 = this.getTimeOfDay(var2);
-      Vec3 var4 = var1.cubicBiomeSampler().sampleVec3((var0) -> Vec3.fromRGB24(((Biome)var0.value()).getSkyColor()));
+      int var4 = (Integer)var1.attributeProbe().getValue(EnvironmentAttributes.SKY_COLOR, var2);
       float var5 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
       var5 = Mth.clamp(var5, 0.0F, 1.0F);
-      var4 = var4.scale((double)var5);
-      int var6 = ARGB.color(var4);
-      float var7 = this.getRainLevel(var2);
-      if (var7 > 0.0F) {
-         float var8 = 0.6F;
-         float var9 = var7 * 0.75F;
-         int var10 = ARGB.scaleRGB(ARGB.greyscale(var6), 0.6F);
-         var6 = ARGB.lerp(var9, var6, var10);
+      var4 = ARGB.scaleRGB(var4, var5);
+      float var6 = this.getRainLevel(var2);
+      if (var6 > 0.0F) {
+         float var7 = 0.6F;
+         float var8 = var6 * 0.75F;
+         int var9 = ARGB.scaleRGB(ARGB.greyscale(var4), 0.6F);
+         var4 = ARGB.srgbLerp(var8, var4, var9);
       }
 
-      float var14 = this.getThunderLevel(var2);
-      if (var14 > 0.0F) {
-         float var15 = 0.2F;
-         float var17 = var14 * 0.75F;
-         int var11 = ARGB.scaleRGB(ARGB.greyscale(var6), 0.2F);
-         var6 = ARGB.lerp(var17, var6, var11);
+      float var13 = this.getThunderLevel(var2);
+      if (var13 > 0.0F) {
+         float var14 = 0.2F;
+         float var16 = var13 * 0.75F;
+         int var10 = ARGB.scaleRGB(ARGB.greyscale(var4), 0.2F);
+         var4 = ARGB.srgbLerp(var16, var4, var10);
       }
 
-      int var16 = this.getSkyFlashTime();
-      if (var16 > 0) {
-         float var18 = Math.min((float)var16 - var2, 1.0F);
-         var18 *= 0.45F;
-         var6 = ARGB.lerp(var18, var6, ARGB.color(204, 204, 255));
+      int var15 = this.getSkyFlashTime();
+      if (var15 > 0) {
+         float var17 = Math.min((float)var15 - var2, 1.0F);
+         var17 *= 0.45F;
+         var4 = ARGB.srgbLerp(var17, var4, ARGB.color(204, 204, 255));
       }
 
-      return var6;
+      return var4;
    }
 
    public int getCloudColor(float var1) {
@@ -749,7 +749,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       float var3 = this.getRainLevel(var1);
       if (var3 > 0.0F) {
          int var4 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.6F);
-         var2 = ARGB.lerp(var3 * 0.95F, var2, var4);
+         var2 = ARGB.srgbLerp(var3 * 0.95F, var2, var4);
       }
 
       float var9 = this.getTimeOfDay(var1);
@@ -759,7 +759,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       float var6 = this.getThunderLevel(var1);
       if (var6 > 0.0F) {
          int var7 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.2F);
-         var2 = ARGB.lerp(var6 * 0.95F, var2, var7);
+         var2 = ARGB.srgbLerp(var6 * 0.95F, var2, var7);
       }
 
       return ARGB.color(0.8F, var2);

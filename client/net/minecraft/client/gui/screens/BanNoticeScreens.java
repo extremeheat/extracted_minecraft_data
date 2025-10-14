@@ -11,7 +11,6 @@ import net.minecraft.client.multiplayer.chat.report.BanReason;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.CommonLinks;
 import org.apache.commons.lang3.StringUtils;
@@ -67,9 +66,9 @@ public class BanNoticeScreens {
       if (StringUtils.isNumeric(var1)) {
          int var3 = Integer.parseInt(var1);
          BanReason var4 = BanReason.byId(var3);
-         MutableComponent var5;
+         Object var5;
          if (var4 != null) {
-            var5 = ComponentUtils.mergeStyles(var4.title().copy(), Style.EMPTY.withBold(true));
+            var5 = ComponentUtils.mergeStyles(var4.title(), Style.EMPTY.withBold(true));
          } else if (var2 != null) {
             var5 = Component.translatable("gui.banned.description.reason_id_message", var3, var2).withStyle(ChatFormatting.BOLD);
          } else {

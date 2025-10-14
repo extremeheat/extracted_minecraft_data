@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -168,14 +170,19 @@ public class LightningBolt extends Entity {
 
    private static void clearCopperOnLightningStrike(Level var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
-      if (var2.getBlock() instanceof WeatheringCopper) {
-         var0.setBlockAndUpdate(var1, WeatheringCopper.getFirst(var0.getBlockState(var1)));
-         BlockPos.MutableBlockPos var3 = var1.mutable();
-         int var4 = var0.random.nextInt(3) + 3;
+      boolean var3 = ((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var2.getBlock()) != null;
+      boolean var4 = var2.getBlock() instanceof WeatheringCopper;
+      if (var4 || var3) {
+         if (var4) {
+            var0.setBlockAndUpdate(var1, WeatheringCopper.getFirst(var0.getBlockState(var1)));
+         }
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            int var6 = var0.random.nextInt(8) + 1;
-            randomWalkCleaningCopper(var0, var1, var3, var6);
+         BlockPos.MutableBlockPos var5 = var1.mutable();
+         int var6 = var0.random.nextInt(3) + 3;
+
+         for(int var7 = 0; var7 < var6; ++var7) {
+            int var8 = var0.random.nextInt(8) + 1;
+            randomWalkCleaningCopper(var0, var1, var5, var8);
          }
 
       }

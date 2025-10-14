@@ -56,12 +56,8 @@ public class BiomeTags {
    public static final TagKey<Biome> HAS_END_CITY = create("has_structure/end_city");
    public static final TagKey<Biome> REQUIRED_OCEAN_MONUMENT_SURROUNDING = create("required_ocean_monument_surrounding");
    public static final TagKey<Biome> MINESHAFT_BLOCKING = create("mineshaft_blocking");
-   public static final TagKey<Biome> PLAYS_UNDERWATER_MUSIC = create("plays_underwater_music");
-   public static final TagKey<Biome> HAS_CLOSER_WATER_FOG = create("has_closer_water_fog");
    public static final TagKey<Biome> WATER_ON_MAP_OUTLINES = create("water_on_map_outlines");
    public static final TagKey<Biome> PRODUCES_CORALS_FROM_BONEMEAL = create("produces_corals_from_bonemeal");
-   public static final TagKey<Biome> INCREASED_FIRE_BURNOUT = create("increased_fire_burnout");
-   public static final TagKey<Biome> SNOW_GOLEM_MELTS = create("snow_golem_melts");
    public static final TagKey<Biome> WITHOUT_ZOMBIE_SIEGES = create("without_zombie_sieges");
    public static final TagKey<Biome> WITHOUT_PATROL_SPAWNS = create("without_patrol_spawns");
    public static final TagKey<Biome> WITHOUT_WANDERING_TRADER_SPAWNS = create("without_wandering_trader_spawns");

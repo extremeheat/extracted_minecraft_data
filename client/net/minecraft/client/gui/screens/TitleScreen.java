@@ -240,7 +240,7 @@ public class TitleScreen extends Screen {
          var8 = var8 + I18n.get("menu.modded");
       }
 
-      var1.drawString(this.font, (String)var8, 2, this.height - 10, ARGB.color(var5, -1));
+      var1.drawString(this.font, (String)var8, 2, this.height - 10, ARGB.white(var5));
       if (this.realmsNotificationsEnabled() && var5 >= 1.0F) {
          this.realmsNotificationsScreen.render(var1, var2, var3, var4);
       }

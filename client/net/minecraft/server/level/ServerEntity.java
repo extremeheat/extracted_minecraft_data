@@ -89,6 +89,7 @@ public class ServerEntity {
    }
 
    public void sendChanges() {
+      this.entity.updateDataBeforeSync();
       List var1 = this.entity.getPassengers();
       if (!var1.equals(this.lastPassengers)) {
          this.synchronizer.sendToTrackingPlayersFiltered(new ClientboundSetPassengersPacket(this.entity), (var2x) -> var1.contains(var2x) == this.lastPassengers.contains(var2x));
@@ -262,6 +263,7 @@ public class ServerEntity {
    }
 
    public void sendPairingData(ServerPlayer var1, Consumer<Packet<ClientGamePacketListener>> var2) {
+      this.entity.updateDataBeforeSync();
       if (this.entity.isRemoved()) {
          LOGGER.warn("Fetching packet for removed entity {}", this.entity);
       }

@@ -280,7 +280,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       return super.mouseClicked(var1, var2);
    }
 
-   class TradeOfferButton extends Button {
+   class TradeOfferButton extends Button.Plain {
       final int index;
 
       public TradeOfferButton(final int var2, final int var3, final int var4, final Button.OnPress var5) {

@@ -927,7 +927,7 @@ public abstract class Display extends Entity {
       }
 
       public int get(float var1) {
-         return ARGB.lerp(var1, this.previous, this.current);
+         return ARGB.srgbLerp(var1, this.previous, this.current);
       }
    }
 

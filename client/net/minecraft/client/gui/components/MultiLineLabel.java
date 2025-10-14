@@ -3,24 +3,19 @@ package net.minecraft.client.gui.components;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
-      public int render(GuiGraphics var1, Align var2, int var3, int var4, int var5, boolean var6, int var7) {
-         return var4;
-      }
-
-      public Style getStyle(Align var1, int var2, int var3, int var4, double var5, double var7) {
-         return null;
+      public int visitLines(TextAlignment var1, int var2, int var3, int var4, ActiveTextCollector var5) {
+         return var3;
       }
 
       public int getLineCount() {
@@ -51,34 +46,16 @@ public interface MultiLineLabel {
          @Nullable
          private Language splitWithLanguage;
 
-         public int render(GuiGraphics var1x, Align var2x, int var3x, int var4, int var5, boolean var6, int var7) {
-            int var8 = var4;
+         public int visitLines(TextAlignment var1x, int var2x, int var3x, int var4, ActiveTextCollector var5) {
+            int var6 = var3x;
 
-            for(TextAndWidth var10 : this.getSplitMessage()) {
-               int var11 = var2x.calculateLeft(var3x, var10.width);
-               var1x.drawString(var0, var10.text, var11, var8, var7, var6);
-               var8 += var5;
+            for(TextAndWidth var8 : this.getSplitMessage()) {
+               int var9 = var1x.calculateLeft(var2x, var8.width);
+               var5.accept(var9, var6, var8.text);
+               var6 += var4;
             }
 
-            return var8;
-         }
-
-         @Nullable
-         public Style getStyle(Align var1x, int var2x, int var3x, int var4, double var5, double var7) {
-            List var9 = this.getSplitMessage();
-            int var10 = Mth.floor((var7 - (double)var3x) / (double)var4);
-            if (var10 >= 0 && var10 < var9.size()) {
-               TextAndWidth var11 = (TextAndWidth)var9.get(var10);
-               int var12 = var1x.calculateLeft(var2x, var11.width);
-               if (var5 < (double)var12) {
-                  return null;
-               } else {
-                  int var13 = Mth.floor(var5 - (double)var12);
-                  return var0.getSplitter().componentStyleAtWidth(var11.text, var13);
-               }
-            } else {
-               return null;
-            }
+            return var6;
          }
 
          private List<TextAndWidth> getSplitMessage() {
@@ -123,10 +100,7 @@ public interface MultiLineLabel {
       };
    }
 
-   int render(GuiGraphics var1, Align var2, int var3, int var4, int var5, boolean var6, int var7);
-
-   @Nullable
-   Style getStyle(Align var1, int var2, int var3, int var4, double var5, double var7);
+   int visitLines(TextAlignment var1, int var2, int var3, int var4, ActiveTextCollector var5);
 
    int getLineCount();
 
@@ -140,34 +114,6 @@ public interface MultiLineLabel {
          super();
          this.text = var1;
          this.width = var2;
-      }
-   }
-
-   public static enum Align {
-      LEFT {
-         int calculateLeft(int var1, int var2) {
-            return var1;
-         }
-      },
-      CENTER {
-         int calculateLeft(int var1, int var2) {
-            return var1 - var2 / 2;
-         }
-      },
-      RIGHT {
-         int calculateLeft(int var1, int var2) {
-            return var1 - var2;
-         }
-      };
-
-      Align() {
-      }
-
-      abstract int calculateLeft(int var1, int var2);
-
-      // $FF: synthetic method
-      private static Align[] $values() {
-         return new Align[]{LEFT, CENTER, RIGHT};
       }
    }
 }

@@ -521,7 +521,7 @@ public abstract class PlayerList {
             case ALL -> var10000 = 24;
             case MODERATORS -> var10000 = 25;
             case GAMEMASTERS -> var10000 = 26;
-            case ADMINS -> var10000 = 24;
+            case ADMINS -> var10000 = 27;
             case OWNERS -> var10000 = 28;
             default -> throw new MatchException((String)null, (Throwable)null);
          }

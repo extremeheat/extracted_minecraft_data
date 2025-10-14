@@ -66,7 +66,6 @@ import org.joml.Vector4f;
 public class DebugScreenOverlay {
    private static final float CROSSHAIR_SCALE = 0.01F;
    private static final int CROSSHAIR_INDEX_COUNT = 36;
-   private static final int COLOR_GREY = -2039584;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;

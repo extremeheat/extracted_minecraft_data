@@ -1,5 +1,7 @@
 package net.minecraft.gizmos;
 
+import net.minecraft.util.ARGB;
+
 public record GizmoStyle(int stroke, float strokeWidth, int fill) {
    private static final float DEFAULT_WIDTH = 2.5F;
 
@@ -32,5 +34,13 @@ public record GizmoStyle(int stroke, float strokeWidth, int fill) {
 
    public boolean hasStroke() {
       return this.stroke != 0 && this.strokeWidth > 0.0F;
+   }
+
+   public int multipliedStroke(float var1) {
+      return ARGB.multiplyAlpha(this.stroke, var1);
+   }
+
+   public int multipliedFill(float var1) {
+      return ARGB.multiplyAlpha(this.fill, var1);
    }
 }

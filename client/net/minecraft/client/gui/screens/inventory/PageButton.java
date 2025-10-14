@@ -25,7 +25,7 @@ public class PageButton extends Button {
       this.playTurnSound = var5;
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       ResourceLocation var5;
       if (this.isForward) {
          var5 = this.isHoveredOrFocused() ? PAGE_FORWARD_HIGHLIGHTED_SPRITE : PAGE_FORWARD_SPRITE;

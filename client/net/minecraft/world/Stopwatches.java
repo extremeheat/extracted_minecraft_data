@@ -32,7 +32,7 @@ public class Stopwatches extends SavedData {
    private Map<ResourceLocation, Long> pack() {
       long var1 = currentTime();
       TreeMap var3 = new TreeMap();
-      this.stopwatches.forEach((var3x, var4) -> var3.put(var3x, var4.elapsedTime(var1)));
+      this.stopwatches.forEach((var3x, var4) -> var3.put(var3x, var4.elapsedMilliseconds(var1)));
       return var3;
    }
 

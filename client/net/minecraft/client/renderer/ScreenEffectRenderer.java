@@ -25,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
 
 public class ScreenEffectRenderer {
@@ -154,10 +155,10 @@ public class ScreenEffectRenderer {
       float var13 = var0.getV1();
       Matrix4f var14 = var1.last().pose();
       VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(var0.atlasLocation()));
-      var15.addVertex(var14, -1.0F, -1.0F, -0.5F).setUv(var11, var13).setColor(var4);
-      var15.addVertex(var14, 1.0F, -1.0F, -0.5F).setUv(var10, var13).setColor(var4);
-      var15.addVertex(var14, 1.0F, 1.0F, -0.5F).setUv(var10, var12).setColor(var4);
-      var15.addVertex(var14, -1.0F, 1.0F, -0.5F).setUv(var11, var12).setColor(var4);
+      var15.addVertex((Matrix4fc)var14, -1.0F, -1.0F, -0.5F).setUv(var11, var13).setColor(var4);
+      var15.addVertex((Matrix4fc)var14, 1.0F, -1.0F, -0.5F).setUv(var10, var13).setColor(var4);
+      var15.addVertex((Matrix4fc)var14, 1.0F, 1.0F, -0.5F).setUv(var10, var12).setColor(var4);
+      var15.addVertex((Matrix4fc)var14, -1.0F, 1.0F, -0.5F).setUv(var11, var12).setColor(var4);
    }
 
    private static void renderWater(Minecraft var0, PoseStack var1, MultiBufferSource var2) {
@@ -174,10 +175,10 @@ public class ScreenEffectRenderer {
       float var13 = var0.player.getXRot() / 64.0F;
       Matrix4f var14 = var1.last().pose();
       VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(UNDERWATER_LOCATION));
-      var15.addVertex(var14, -1.0F, -1.0F, -0.5F).setUv(4.0F + var12, 4.0F + var13).setColor(var5);
-      var15.addVertex(var14, 1.0F, -1.0F, -0.5F).setUv(0.0F + var12, 4.0F + var13).setColor(var5);
-      var15.addVertex(var14, 1.0F, 1.0F, -0.5F).setUv(0.0F + var12, 0.0F + var13).setColor(var5);
-      var15.addVertex(var14, -1.0F, 1.0F, -0.5F).setUv(4.0F + var12, 0.0F + var13).setColor(var5);
+      var15.addVertex((Matrix4fc)var14, -1.0F, -1.0F, -0.5F).setUv(4.0F + var12, 4.0F + var13).setColor(var5);
+      var15.addVertex((Matrix4fc)var14, 1.0F, -1.0F, -0.5F).setUv(0.0F + var12, 4.0F + var13).setColor(var5);
+      var15.addVertex((Matrix4fc)var14, 1.0F, 1.0F, -0.5F).setUv(0.0F + var12, 0.0F + var13).setColor(var5);
+      var15.addVertex((Matrix4fc)var14, -1.0F, 1.0F, -0.5F).setUv(4.0F + var12, 0.0F + var13).setColor(var5);
    }
 
    private static void renderFire(PoseStack var0, MultiBufferSource var1, TextureAtlasSprite var2) {
@@ -205,10 +206,10 @@ public class ScreenEffectRenderer {
          var0.translate((float)(-(var16 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
          var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
          Matrix4f var22 = var0.last().pose();
-         var3.addVertex(var22, -0.5F, -0.5F, -0.5F).setUv(var12, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex(var22, 0.5F, -0.5F, -0.5F).setUv(var11, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex(var22, 0.5F, 0.5F, -0.5F).setUv(var11, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex(var22, -0.5F, 0.5F, -0.5F).setUv(var12, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var22, -0.5F, -0.5F, -0.5F).setUv(var12, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var22, 0.5F, -0.5F, -0.5F).setUv(var11, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var22, 0.5F, 0.5F, -0.5F).setUv(var11, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var22, -0.5F, 0.5F, -0.5F).setUv(var12, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
          var0.popPose();
       }
 
