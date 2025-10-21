@@ -31,6 +31,8 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gizmos.GizmoCollector;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldLoader;
@@ -118,6 +120,7 @@ public class GameTestServer extends MinecraftServer {
    public boolean initServer() {
       this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {
       });
+      Gizmos.withCollector(GizmoCollector.NOOP);
       this.loadLevel();
       ServerLevel var1 = this.overworld();
       this.testBatches = this.evaluateTestsToRun(var1);
@@ -273,7 +276,7 @@ public class GameTestServer extends MinecraftServer {
       return 0;
    }
 
-   public boolean isEpollEnabled() {
+   public boolean useNativeTransport() {
       return false;
    }
 

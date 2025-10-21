@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,19 +32,21 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.storage.ChunkStorage;
-import net.minecraft.world.level.chunk.storage.RecreatingChunkStorage;
+import net.minecraft.world.level.chunk.storage.LegacyTagFixer;
 import net.minecraft.world.level.chunk.storage.RecreatingSimpleRegionStorage;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
@@ -160,12 +163,12 @@ public class WorldUpgrader implements AutoCloseable {
       return var0.resolveSibling("new_" + var0.getFileName().toString());
    }
 
-   static record DimensionToUpgrade<T>(ResourceKey<Level> dimensionKey, T storage, ListIterator<FileToUpgrade> files) {
+   static record DimensionToUpgrade(ResourceKey<Level> dimensionKey, SimpleRegionStorage storage, ListIterator<FileToUpgrade> files) {
       final ResourceKey<Level> dimensionKey;
-      final T storage;
+      final SimpleRegionStorage storage;
       final ListIterator<FileToUpgrade> files;
 
-      DimensionToUpgrade(ResourceKey<Level> var1, T var2, ListIterator<FileToUpgrade> var3) {
+      DimensionToUpgrade(ResourceKey<Level> var1, SimpleRegionStorage var2, ListIterator<FileToUpgrade> var3) {
          super();
          this.dimensionKey = var1;
          this.storage = var2;
@@ -184,7 +187,7 @@ public class WorldUpgrader implements AutoCloseable {
       }
    }
 
-   abstract class AbstractUpgrader<T extends AutoCloseable> {
+   abstract class AbstractUpgrader {
       private final Component upgradingStatus;
       private final Component finishedStatus;
       private final String type;
@@ -219,7 +222,7 @@ public class WorldUpgrader implements AutoCloseable {
                for(DimensionToUpgrade var6 : var1) {
                   ResourceKey var7 = var6.dimensionKey;
                   ListIterator var8 = var6.files;
-                  AutoCloseable var9 = var6.storage;
+                  SimpleRegionStorage var9 = var6.storage;
                   if (var8.hasNext()) {
                      FileToUpgrade var10 = (FileToUpgrade)var8.next();
                      boolean var11 = true;
@@ -253,7 +256,7 @@ public class WorldUpgrader implements AutoCloseable {
 
             for(DimensionToUpgrade var16 : var1) {
                try {
-                  ((AutoCloseable)var16.storage).close();
+                  var16.storage.close();
                } catch (Exception var14) {
                   WorldUpgrader.LOGGER.error("Error upgrading chunk", var14);
                }
@@ -262,13 +265,13 @@ public class WorldUpgrader implements AutoCloseable {
          }
       }
 
-      private List<DimensionToUpgrade<T>> getDimensionsToUpgrade() {
+      private List<DimensionToUpgrade> getDimensionsToUpgrade() {
          ArrayList var1 = Lists.newArrayList();
 
          for(ResourceKey var3 : WorldUpgrader.this.levels) {
             RegionStorageInfo var4 = new RegionStorageInfo(WorldUpgrader.this.levelStorage.getLevelId(), var3, this.type);
             Path var5 = WorldUpgrader.this.levelStorage.getDimensionPath(var3).resolve(this.folderName);
-            AutoCloseable var6 = this.createStorage(var4, var5);
+            SimpleRegionStorage var6 = this.createStorage(var4, var5);
             ListIterator var7 = this.getFilesToProcess(var4, var5);
             var1.add(new DimensionToUpgrade(var3, var6, var7));
          }
@@ -276,7 +279,7 @@ public class WorldUpgrader implements AutoCloseable {
          return var1;
       }
 
-      protected abstract T createStorage(RegionStorageInfo var1, Path var2);
+      protected abstract SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2);
 
       private ListIterator<FileToUpgrade> getFilesToProcess(RegionStorageInfo var1, Path var2) {
          List var3 = getAllChunkPositions(var1, var2);
@@ -324,7 +327,7 @@ public class WorldUpgrader implements AutoCloseable {
          }
       }
 
-      private boolean processOnePosition(ResourceKey<Level> var1, T var2, ChunkPos var3) {
+      private boolean processOnePosition(ResourceKey<Level> var1, SimpleRegionStorage var2, ChunkPos var3) {
          boolean var4 = false;
 
          try {
@@ -347,7 +350,7 @@ public class WorldUpgrader implements AutoCloseable {
          return var4;
       }
 
-      protected abstract boolean tryProcessOnePosition(T var1, ChunkPos var2, ResourceKey<Level> var3);
+      protected abstract boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3);
 
       private void onFileFinished(RegionFile var1) {
          if (WorldUpgrader.this.recreateRegionFiles) {
@@ -374,19 +377,19 @@ public class WorldUpgrader implements AutoCloseable {
       }
    }
 
-   abstract class SimpleRegionStorageUpgrader extends AbstractUpgrader<SimpleRegionStorage> {
+   abstract class SimpleRegionStorageUpgrader extends AbstractUpgrader {
       SimpleRegionStorageUpgrader(final DataFixTypes var2, final String var3, final Component var4, final Component var5) {
          super(var2, var3, var3, var4, var5);
       }
 
       protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {
-         return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, this.dataFixType) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, this.dataFixType));
+         return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, this.dataFixType, LegacyTagFixer.EMPTY) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, this.dataFixType));
       }
 
       protected boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3) {
          CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
          if (var4 != null) {
-            int var5 = ChunkStorage.getVersion(var4);
+            int var5 = NbtUtils.getDataVersion(var4);
             CompoundTag var6 = this.upgradeTag(var1, var4);
             boolean var7 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
             if (var7 || WorldUpgrader.this.recreateRegionFiles) {
@@ -403,11 +406,6 @@ public class WorldUpgrader implements AutoCloseable {
       }
 
       protected abstract CompoundTag upgradeTag(SimpleRegionStorage var1, CompoundTag var2);
-
-      // $FF: synthetic method
-      protected AutoCloseable createStorage(final RegionStorageInfo var1, final Path var2) {
-         return this.createStorage(var1, var2);
-      }
    }
 
    class PoiUpgrader extends SimpleRegionStorageUpgrader {
@@ -430,17 +428,17 @@ public class WorldUpgrader implements AutoCloseable {
       }
    }
 
-   class ChunkUpgrader extends AbstractUpgrader<ChunkStorage> {
+   class ChunkUpgrader extends AbstractUpgrader {
       ChunkUpgrader() {
          super(DataFixTypes.CHUNK, "chunk", "region", WorldUpgrader.STATUS_UPGRADING_CHUNKS, WorldUpgrader.STATUS_FINISHED_CHUNKS);
       }
 
-      protected boolean tryProcessOnePosition(ChunkStorage var1, ChunkPos var2, ResourceKey<Level> var3) {
+      protected boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3) {
          CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
          if (var4 != null) {
-            int var5 = ChunkStorage.getVersion(var4);
+            int var5 = NbtUtils.getDataVersion(var4);
             ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
-            CompoundTag var7 = var1.upgradeChunkTag(var3, () -> WorldUpgrader.this.overworldDataStorage, var4, var6.getTypeNameForDataFixer());
+            CompoundTag var7 = var1.upgradeChunkTag(var4, -1, ChunkMap.getChunkDataFixContextTag(var3, var6.getTypeNameForDataFixer()));
             ChunkPos var8 = new ChunkPos(var7.getIntOr("xPos", 0), var7.getIntOr("zPos", 0));
             if (!var8.equals(var2)) {
                WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
@@ -471,7 +469,7 @@ public class WorldUpgrader implements AutoCloseable {
                   this.previousWriteFuture.join();
                }
 
-               this.previousWriteFuture = var1.write(var2, () -> var7);
+               this.previousWriteFuture = var1.write(var2, var7);
                return true;
             }
          }
@@ -479,13 +477,9 @@ public class WorldUpgrader implements AutoCloseable {
          return false;
       }
 
-      protected ChunkStorage createStorage(RegionStorageInfo var1, Path var2) {
-         return (ChunkStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingChunkStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true) : new ChunkStorage(var1, var2, WorldUpgrader.this.dataFixer, true));
-      }
-
-      // $FF: synthetic method
-      protected AutoCloseable createStorage(final RegionStorageInfo var1, final Path var2) {
-         return this.createStorage(var1, var2);
+      protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {
+         Supplier var3 = () -> LegacyStructureDataHandler.getLegacyStructureHandler(var1.dimension(), WorldUpgrader.this.overworldDataStorage, WorldUpgrader.this.dataFixer);
+         return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3));
       }
    }
 }

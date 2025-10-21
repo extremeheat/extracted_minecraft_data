@@ -15,6 +15,8 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.level.Level;
 
 public class Nautilus extends AbstractNautilus {
+   private static final int NAUTILUS_TOTAL_AIR_SUPPLY = 300;
+
    public Nautilus(EntityType<? extends Nautilus> var1, Level var2) {
       super(var1, var2);
    }
@@ -80,6 +82,36 @@ public class Nautilus extends AbstractNautilus {
 
    protected SoundEvent getSwimSound() {
       return this.isBaby() ? SoundEvents.BABY_NAUTILUS_SWIM : SoundEvents.NAUTILUS_SWIM;
+   }
+
+   public int getMaxAirSupply() {
+      return 300;
+   }
+
+   protected void handleAirSupply(ServerLevel var1, int var2) {
+      if (this.isAlive() && !this.isInWater()) {
+         this.setAirSupply(var2 - 1);
+         if (this.getAirSupply() <= -20) {
+            this.setAirSupply(0);
+            this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
+         }
+      } else {
+         this.setAirSupply(300);
+      }
+
+   }
+
+   public void baseTick() {
+      int var1 = this.getAirSupply();
+      super.baseTick();
+      if (!this.isNoAi()) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            this.handleAirSupply(var2, var1);
+         }
+      }
+
    }
 
    // $FF: synthetic method

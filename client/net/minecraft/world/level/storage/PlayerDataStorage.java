@@ -7,8 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +24,6 @@ public class PlayerDataStorage {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final File playerDir;
    protected final DataFixer fixerUpper;
-   private static final DateTimeFormatter FORMATTER = FileNameDateFormatter.create();
 
    public PlayerDataStorage(LevelStorageSource.LevelStorageAccess var1, DataFixer var2) {
       super();
@@ -55,7 +53,7 @@ public class PlayerDataStorage {
       Path var3 = this.playerDir.toPath();
       String var4 = var1.id().toString();
       Path var5 = var3.resolve(var4 + var2);
-      Path var6 = var3.resolve(var4 + "_corrupted_" + LocalDateTime.now().format(FORMATTER) + var2);
+      Path var6 = var3.resolve(var4 + "_corrupted_" + ZonedDateTime.now().format(FileNameDateFormatter.FORMATTER) + var2);
       if (Files.isRegularFile(var5, new LinkOption[0])) {
          try {
             Files.copy(var5, var6, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
@@ -88,7 +86,7 @@ public class PlayerDataStorage {
       }
 
       return var2.or(() -> this.load(var1, ".dat_old")).map((var1x) -> {
-         int var2 = NbtUtils.getDataVersion(var1x, -1);
+         int var2 = NbtUtils.getDataVersion(var1x);
          var1x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var1x, var2);
          return var1x;
       });

@@ -11,6 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Holder;
@@ -232,17 +234,17 @@ public class Sheets {
    }
 
    static {
-      SHULKER_BOX_SHEET_TYPE = RenderType.entityCutoutNoCull(SHULKER_SHEET);
-      BED_SHEET_TYPE = RenderType.entitySolid(BED_SHEET);
-      BANNER_SHEET_TYPE = RenderType.entityNoOutline(BANNER_SHEET);
-      SHIELD_SHEET_TYPE = RenderType.entityNoOutline(SHIELD_SHEET);
-      SIGN_SHEET_TYPE = RenderType.entityCutoutNoCull(SIGN_SHEET);
-      CHEST_SHEET_TYPE = RenderType.entityCutout(CHEST_SHEET);
-      ARMOR_TRIMS_SHEET_TYPE = RenderType.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
-      ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderType.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
-      SOLID_BLOCK_SHEET = RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS);
-      CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
+      SHULKER_BOX_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SHULKER_SHEET);
+      BED_SHEET_TYPE = RenderTypes.entitySolid(BED_SHEET);
+      BANNER_SHEET_TYPE = RenderTypes.entityNoOutline(BANNER_SHEET);
+      SHIELD_SHEET_TYPE = RenderTypes.entityNoOutline(SHIELD_SHEET);
+      SIGN_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SIGN_SHEET);
+      CHEST_SHEET_TYPE = RenderTypes.entityCutout(CHEST_SHEET);
+      ARMOR_TRIMS_SHEET_TYPE = RenderTypes.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
+      ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
+      SOLID_BLOCK_SHEET = RenderTypes.entitySolid(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
       ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "item");
       BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
       BLOCK_ENTITIES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity");

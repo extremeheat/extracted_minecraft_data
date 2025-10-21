@@ -603,7 +603,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             }
          }
 
-         return true;
+         return false;
       }
    }
 

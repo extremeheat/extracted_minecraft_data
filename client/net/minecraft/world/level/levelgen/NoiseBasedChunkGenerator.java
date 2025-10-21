@@ -6,8 +6,10 @@ import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
@@ -113,7 +115,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {
-      DecimalFormat var4 = new DecimalFormat("0.000");
+      DecimalFormat var4 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.ROOT));
       NoiseRouter var5 = var2.router();
       DensityFunction.SinglePointContext var6 = new DensityFunction.SinglePointContext(var3.getX(), var3.getY(), var3.getZ());
       double var7 = var5.ridges().compute(var6);

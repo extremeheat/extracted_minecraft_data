@@ -34,6 +34,7 @@ public class GlStateManager {
    private static final ColorLogicState COLOR_LOGIC = new ColorLogicState();
    private static final ScissorState SCISSOR = new ScissorState();
    private static int activeTexture;
+   private static final int TEXTURE_COUNT = 12;
    private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> new TextureState()).toArray((var0) -> new TextureState[var0]);
    private static final ColorMask COLOR_MASK = new ColorMask();
    private static int readFbo;

@@ -1676,7 +1676,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var2.setCenter(var1.getNewCenterX(), var1.getNewCenterZ());
       long var3 = var1.getLerpTime();
       if (var3 > 0L) {
-         var2.lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var3);
+         var2.lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var3, this.level.getGameTime());
       } else {
          var2.setSize(var1.getNewSize());
       }
@@ -1693,7 +1693,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSetBorderLerpSize(ClientboundSetBorderLerpSizePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      this.level.getWorldBorder().lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var1.getLerpTime());
+      this.level.getWorldBorder().lerpSizeBetween(var1.getOldSize(), var1.getNewSize(), var1.getLerpTime(), this.level.getGameTime());
    }
 
    public void handleSetBorderSize(ClientboundSetBorderSizePacket var1) {

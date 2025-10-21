@@ -9,9 +9,9 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.HumanoidArm;
 
@@ -29,7 +29,7 @@ public class PlayerModel extends HumanoidModel<AvatarRenderState> {
    private final boolean slim;
 
    public PlayerModel(ModelPart var1, boolean var2) {
-      super(var1, RenderType::entityTranslucent);
+      super(var1, RenderTypes::entityTranslucent);
       this.slim = var2;
       this.leftSleeve = this.leftArm.getChild("left_sleeve");
       this.rightSleeve = this.rightArm.getChild("right_sleeve");

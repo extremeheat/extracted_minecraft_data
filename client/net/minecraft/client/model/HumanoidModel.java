@@ -10,9 +10,11 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
@@ -43,7 +45,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    public final ModelPart leftLeg;
 
    public HumanoidModel(ModelPart var1) {
-      this(var1, RenderType::entityCutoutNoCull);
+      this(var1, RenderTypes::entityCutoutNoCull);
    }
 
    public HumanoidModel(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
@@ -396,8 +398,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       TOOT_HORN(false),
       BRUSH(false),
       SPEAR(false) {
-         public void animateUseItem(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
-            SpearAnimations.thirdPersonUseItem(var1, var2, var3, var4);
+         public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {
+            SpearAnimations.thirdPersonUseItem(var1, var2, var3, var4, var5);
          }
       };
 
@@ -411,7 +413,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          return this.twoHanded;
       }
 
-      public void animateUseItem(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
+      public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {
       }
 
       // $FF: synthetic method

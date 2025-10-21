@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -72,7 +72,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          BlockStateModel var12 = this.blockRenderer.getBlockModel(var11);
          var2.pushPose();
          var2.translate(-0.5F, -0.5F, -0.5F);
-         var3.submitBlockModel(var2, RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var12, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+         var3.submitBlockModel(var2, RenderTypes.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), var12, 1.0F, 1.0F, 1.0F, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor);
          var2.popPose();
       }
 

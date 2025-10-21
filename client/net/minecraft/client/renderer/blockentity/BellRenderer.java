@@ -4,12 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.BellModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BellRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
@@ -41,7 +42,7 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
    public void submit(BellRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       BellModel.State var5 = new BellModel.State(var1.ticks, var1.shakeDirection);
       this.model.setupAnim(var5);
-      RenderType var6 = BELL_RESOURCE_LOCATION.renderType(RenderType::entitySolid);
+      RenderType var6 = BELL_RESOURCE_LOCATION.renderType(RenderTypes::entitySolid);
       var3.submitModel(this.model, var5, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BELL_RESOURCE_LOCATION), 0, var1.breakProgress);
    }
 

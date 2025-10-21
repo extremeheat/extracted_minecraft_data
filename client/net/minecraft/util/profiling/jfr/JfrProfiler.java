@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -60,8 +61,8 @@ public class JfrProfiler implements JvmProfiler {
    public static final String STORAGE_CATEGORY = "Storage";
    private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, ClientFpsEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
    private static final String FLIGHT_RECORDER_CONFIG = "/flightrecorder-config.jfc";
-   private static final DateTimeFormatter DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter().withZone(ZoneId.systemDefault());
-   private static final JfrProfiler INSTANCE = new JfrProfiler();
+   private static final DateTimeFormatter DATE_TIME_FORMATTER;
+   private static final JfrProfiler INSTANCE;
    @Nullable
    Recording recording;
    private int currentFPS;
@@ -120,7 +121,7 @@ public class JfrProfiler implements JvmProfiler {
          return false;
       } else {
          try {
-            BufferedReader var3 = new BufferedReader(new InputStreamReader(var2.openStream()));
+            BufferedReader var3 = new BufferedReader(new InputStreamReader(var2.openStream(), StandardCharsets.UTF_8));
 
             boolean var4;
             try {
@@ -303,5 +304,10 @@ public class JfrProfiler implements JvmProfiler {
             var4.commit();
          };
       }
+   }
+
+   static {
+      DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter(Locale.ROOT).withZone(ZoneId.systemDefault());
+      INSTANCE = new JfrProfiler();
    }
 }

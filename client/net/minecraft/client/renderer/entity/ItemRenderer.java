@@ -8,10 +8,11 @@ import com.mojang.math.MatrixUtil;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -47,12 +48,12 @@ public class ItemRenderer {
    }
 
    private static VertexConsumer getSpecialFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(useTransparentGlint(var1) ? RenderType.glintTranslucent() : RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(useTransparentGlint(var1) ? RenderTypes.glintTranslucent() : RenderTypes.glint()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
    public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
       if (var3) {
-         return useTransparentGlint(var1) ? VertexMultiConsumer.create(var0.getBuffer(RenderType.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlint()), var0.getBuffer(var1));
+         return useTransparentGlint(var1) ? VertexMultiConsumer.create(var0.getBuffer(RenderTypes.glintTranslucent()), var0.getBuffer(var1)) : VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderTypes.glint() : RenderTypes.entityGlint()), var0.getBuffer(var1));
       } else {
          return var0.getBuffer(var1);
       }
@@ -60,7 +61,7 @@ public class ItemRenderer {
 
    public static List<RenderType> getFoilRenderTypes(RenderType var0, boolean var1, boolean var2) {
       if (var2) {
-         return useTransparentGlint(var0) ? List.of(var0, RenderType.glintTranslucent()) : List.of(var0, var1 ? RenderType.glint() : RenderType.entityGlint());
+         return useTransparentGlint(var0) ? List.of(var0, RenderTypes.glintTranslucent()) : List.of(var0, var1 ? RenderTypes.glint() : RenderTypes.entityGlint());
       } else {
          return List.of(var0);
       }

@@ -5,12 +5,12 @@ import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EnchantTableRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
@@ -62,7 +62,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       float var6 = Mth.frac(var1.flip + 0.25F) * 1.6F - 0.3F;
       float var7 = Mth.frac(var1.flip + 0.75F) * 1.6F - 0.3F;
       BookModel.State var8 = new BookModel.State(var1.time, Mth.clamp(var6, 0.0F, 1.0F), Mth.clamp(var7, 0.0F, 1.0F), var1.open);
-      var3.submitModel(this.bookModel, var8, var2, BOOK_LOCATION.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
+      var3.submitModel(this.bookModel, var8, var2, BOOK_LOCATION.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
       var2.popPose();
    }
 

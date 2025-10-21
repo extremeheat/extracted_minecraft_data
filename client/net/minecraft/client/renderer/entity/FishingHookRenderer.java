@@ -3,11 +3,12 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -49,7 +50,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       float var6 = (float)var1.lineOriginOffset.y;
       float var7 = (float)var1.lineOriginOffset.z;
       float var8 = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
-      var3.submitCustomGeometry(var2, RenderType.lines(), (var4x, var5x) -> {
+      var3.submitCustomGeometry(var2, RenderTypes.lines(), (var4x, var5x) -> {
          boolean var6x = true;
 
          for(int var7x = 0; var7x < 16; ++var7x) {
@@ -141,6 +142,6 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
    }
 
    static {
-      RENDER_TYPE = RenderType.entityCutout(TEXTURE_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutout(TEXTURE_LOCATION);
    }
 }

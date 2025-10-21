@@ -12,13 +12,15 @@ import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.DownloadTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.RestoreTask;
-import java.text.DateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -45,6 +47,7 @@ public class RealmsBackupScreen extends RealmsScreen {
    private static final Component DOWNLOAD_LATEST = Component.translatable("mco.backup.button.download");
    private static final String UPLOADED_KEY = "uploaded";
    private static final int PADDING = 8;
+   public static final DateTimeFormatter SHORT_DATE_FORMAT;
    final RealmsConfigureWorldScreen lastScreen;
    List<Backup> backups = Collections.emptyList();
    @Nullable
@@ -142,6 +145,10 @@ public class RealmsBackupScreen extends RealmsScreen {
       }));
    }
 
+   static {
+      SHORT_DATE_FORMAT = Util.localizedDateFormatter(FormatStyle.SHORT);
+   }
+
    class BackupObjectSelectionList extends ContainerObjectSelectionList<Entry> {
       private static final int ITEM_HEIGHT = 36;
 
@@ -168,15 +175,19 @@ public class RealmsBackupScreen extends RealmsScreen {
          this.backup = var2;
          this.populateChangeList(var2);
          if (!var2.changeList.isEmpty()) {
-            this.changesButton = Button.builder(RealmsBackupScreen.HAS_CHANGES_TOOLTIP, (var1x) -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), (Component)var1x.get())).build();
+            this.changesButton = Button.builder(RealmsBackupScreen.HAS_CHANGES_TOOLTIP, (var1x) -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration(this::narrationForBackupEntry).build();
             this.children.add(this.changesButton);
          }
 
          if (!RealmsBackupScreen.this.serverData.expired) {
-            this.restoreButton = Button.builder(RealmsBackupScreen.RESTORE_TOOLTIP, (var1x) -> this.restoreClicked()).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), (Component)var1x.get())).build();
+            this.restoreButton = Button.builder(RealmsBackupScreen.RESTORE_TOOLTIP, (var1x) -> this.restoreClicked()).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration(this::narrationForBackupEntry).build();
             this.children.add(this.restoreButton);
          }
 
+      }
+
+      private MutableComponent narrationForBackupEntry(Supplier<MutableComponent> var1) {
+         return CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate())), (Component)var1.get());
       }
 
       private void populateChangeList(Backup var1) {
@@ -199,7 +210,7 @@ public class RealmsBackupScreen extends RealmsScreen {
 
       private void addToChangeList(String var1) {
          if (var1.contains("uploaded")) {
-            String var2 = DateFormat.getDateTimeInstance(3, 3).format(this.backup.lastModifiedDate);
+            String var2 = RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate());
             this.backup.changeList.put(var1, var2);
             this.backup.uploadedVersion = true;
          } else {
@@ -208,14 +219,11 @@ public class RealmsBackupScreen extends RealmsScreen {
 
       }
 
-      private String getShortBackupDate() {
-         return DateFormat.getDateTimeInstance(3, 3).format(this.backup.lastModifiedDate);
-      }
-
       private void restoreClicked() {
-         Component var1 = RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate);
-         MutableComponent var2 = Component.translatable("mco.configure.world.restore.question.line1", this.getShortBackupDate(), var1);
-         RealmsBackupScreen.this.minecraft.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, var2, (var1x) -> {
+         Component var1 = RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModified);
+         String var2 = RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate());
+         MutableComponent var3 = Component.translatable("mco.configure.world.restore.question.line1", var2, var1);
+         RealmsBackupScreen.this.minecraft.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, var3, (var1x) -> {
             RealmsConfigureWorldScreen var2 = RealmsBackupScreen.this.lastScreen.getNewScreen();
             RealmsBackupScreen.this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var2, new LongRunningTask[]{new RestoreTask(this.backup, RealmsBackupScreen.this.serverData.id, var2)}));
          }));
@@ -235,8 +243,8 @@ public class RealmsBackupScreen extends RealmsScreen {
          int var7 = var6 - 9 - 2;
          int var8 = var6 + 2;
          int var9 = this.backup.uploadedVersion ? -8388737 : -1;
-         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), this.getContentX(), var7, var9);
-         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), this.getContentX(), var8, -11776948);
+         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModified)), this.getContentX(), var7, var9);
+         var1.drawString(RealmsBackupScreen.this.font, RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate()), this.getContentX(), var8, -11776948);
          int var10 = 0;
          int var11 = this.getContentYMiddle() - 10;
          if (this.restoreButton != null) {
@@ -253,10 +261,6 @@ public class RealmsBackupScreen extends RealmsScreen {
             this.changesButton.render(var1, var2, var3, var5);
          }
 
-      }
-
-      private String getMediumDatePresentation(Date var1) {
-         return DateFormat.getDateTimeInstance(3, 3).format(var1);
       }
    }
 }

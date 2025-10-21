@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.mojang.datafixers.DataFixer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -16,13 +17,16 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.storage.LegacyTagFixer;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
-public class LegacyStructureDataHandler {
+public class LegacyStructureDataHandler implements LegacyTagFixer {
+   public static final int LAST_MONOLYTH_STRUCTURE_DATA_VERSION = 1493;
    private static final Map<String, String> CURRENT_TO_LEGACY_MAP = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put("Village", "Village");
       var0.put("Mineshaft", "Mineshaft");
@@ -48,32 +52,52 @@ public class LegacyStructureDataHandler {
    private final Map<String, StructureFeatureIndexSavedData> indexMap = Maps.newHashMap();
    private final List<String> legacyKeys;
    private final List<String> currentKeys;
+   private final DataFixer dataFixer;
 
-   public LegacyStructureDataHandler(@Nullable DimensionDataStorage var1, List<String> var2, List<String> var3) {
+   public LegacyStructureDataHandler(@Nullable DimensionDataStorage var1, List<String> var2, List<String> var3, DataFixer var4) {
       super();
       this.legacyKeys = var2;
       this.currentKeys = var3;
+      this.dataFixer = var4;
       this.populateCaches(var1);
-      boolean var4 = false;
+      boolean var5 = false;
 
-      for(String var6 : this.currentKeys) {
-         var4 |= this.dataMap.get(var6) != null;
+      for(String var7 : this.currentKeys) {
+         var5 |= this.dataMap.get(var7) != null;
       }
 
-      this.hasLegacyData = var4;
+      this.hasLegacyData = var5;
    }
 
-   public void removeIndex(long var1) {
-      for(String var4 : this.legacyKeys) {
-         StructureFeatureIndexSavedData var5 = (StructureFeatureIndexSavedData)this.indexMap.get(var4);
-         if (var5 != null && var5.hasUnhandledIndex(var1)) {
-            var5.removeIndex(var1);
+   public void markChunkDone(ChunkPos var1) {
+      long var2 = var1.toLong();
+
+      for(String var5 : this.legacyKeys) {
+         StructureFeatureIndexSavedData var6 = (StructureFeatureIndexSavedData)this.indexMap.get(var5);
+         if (var6 != null && var6.hasUnhandledIndex(var2)) {
+            var6.removeIndex(var2);
          }
       }
 
    }
 
-   public CompoundTag updateFromLegacy(CompoundTag var1) {
+   public int targetDataVersion() {
+      return 1493;
+   }
+
+   public CompoundTag applyFix(CompoundTag var1) {
+      int var2 = NbtUtils.getDataVersion(var1);
+      if (var2 < 1493) {
+         var1 = DataFixTypes.CHUNK.update(this.dataFixer, var1, var2, 1493);
+         if ((Boolean)var1.getCompound("Level").flatMap((var0) -> var0.getBoolean("hasLegacyStructureData")).orElse(false)) {
+            var1 = this.updateFromLegacy(var1);
+         }
+      }
+
+      return var1;
+   }
+
+   private CompoundTag updateFromLegacy(CompoundTag var1) {
       CompoundTag var2 = var1.getCompoundOrEmpty("Level");
       ChunkPos var3 = new ChunkPos(var2.getIntOr("xPos", 0), var2.getIntOr("zPos", 0));
       if (this.isUnhandledStructureStart(var3.x, var3.z)) {
@@ -199,15 +223,15 @@ public class LegacyStructureDataHandler {
       }
    }
 
-   public static LegacyStructureDataHandler getLegacyStructureHandler(ResourceKey<Level> var0, @Nullable DimensionDataStorage var1) {
+   public static LegacyStructureDataHandler getLegacyStructureHandler(ResourceKey<Level> var0, @Nullable DimensionDataStorage var1, DataFixer var2) {
       if (var0 == Level.OVERWORLD) {
-         return new LegacyStructureDataHandler(var1, ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"));
+         return new LegacyStructureDataHandler(var1, ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"), var2);
       } else if (var0 == Level.NETHER) {
-         ImmutableList var3 = ImmutableList.of("Fortress");
-         return new LegacyStructureDataHandler(var1, var3, var3);
+         ImmutableList var4 = ImmutableList.of("Fortress");
+         return new LegacyStructureDataHandler(var1, var4, var4, var2);
       } else if (var0 == Level.END) {
-         ImmutableList var2 = ImmutableList.of("EndCity");
-         return new LegacyStructureDataHandler(var1, var2, var2);
+         ImmutableList var3 = ImmutableList.of("EndCity");
+         return new LegacyStructureDataHandler(var1, var3, var3, var2);
       } else {
          throw new RuntimeException(String.format(Locale.ROOT, "Unknown dimension type : %s", var0));
       }

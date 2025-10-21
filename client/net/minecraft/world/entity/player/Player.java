@@ -58,6 +58,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.attribute.BedRule;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -239,7 +241,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             this.sleepCounter = 100;
          }
 
-         if (!this.level().isClientSide() && this.level().isBrightOutside()) {
+         if (!this.level().isClientSide() && !((BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, this.position())).canSleep(this.level())) {
             this.stopSleepInBed(false, true);
          }
       } else if (this.sleepCounter > 0) {
@@ -1512,6 +1514,13 @@ public abstract class Player extends Avatar implements ContainerUser {
          }
 
       }
+   }
+
+   public void lungeForwardMaybe() {
+      if (this.foodData.hasEnoughFood()) {
+         super.lungeForwardMaybe();
+      }
+
    }
 
    public Optional<WardenSpawnTracker> getWardenSpawnTracker() {

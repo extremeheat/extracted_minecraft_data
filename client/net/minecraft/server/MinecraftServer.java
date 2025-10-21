@@ -432,12 +432,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             if (var2) {
                this.setupDebugLevel(this.worldData);
             }
-         } catch (Throwable var27) {
-            CrashReport var14 = CrashReport.forThrowable(var27, "Exception initializing level");
+         } catch (Throwable var28) {
+            CrashReport var14 = CrashReport.forThrowable(var28, "Exception initializing level");
 
             try {
                var11.fillReportDetails(var14);
-            } catch (Throwable var26) {
+            } catch (Throwable var27) {
             }
 
             throw new ReportedException(var14);
@@ -452,7 +452,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.getCustomBossEvents().load(this.worldData.getCustomBossEvents(), this.registryAccess());
       }
 
-      RandomSequences var28 = var11.getRandomSequences();
+      RandomSequences var29 = var11.getRandomSequences();
       boolean var15 = false;
 
       for(Map.Entry var17 : var3.entrySet()) {
@@ -461,20 +461,22 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          if (var18 != LevelStem.OVERWORLD) {
             ResourceKey var20 = ResourceKey.create(Registries.DIMENSION, var18.location());
             DerivedLevelData var21 = new DerivedLevelData(this.worldData, var1);
-            var19 = new ServerLevel(this, this.executor, this.storageSource, var21, var20, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var28);
+            var19 = new ServerLevel(this, this.executor, this.storageSource, var21, var20, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var29);
             this.levels.put(var20, var19);
          } else {
             var19 = var11;
          }
 
-         Optional var29 = var1.getLegacyWorldBorderSettings();
-         if (var29.isPresent()) {
-            WorldBorder.Settings var30 = (WorldBorder.Settings)var29.get();
+         Optional var30 = var1.getLegacyWorldBorderSettings();
+         if (var30.isPresent()) {
+            WorldBorder.Settings var31 = (WorldBorder.Settings)var30.get();
             DimensionDataStorage var22 = var19.getDataStorage();
             if (var22.get(WorldBorder.TYPE) == null) {
                double var23 = var19.dimensionType().coordinateScale();
-               WorldBorder.Settings var25 = new WorldBorder.Settings(var30.centerX() / var23, var30.centerZ() / var23, var30.damagePerBlock(), var30.safeZone(), var30.warningBlocks(), var30.warningTime(), var30.size(), var30.lerpTime(), var30.lerpTarget());
-               var22.set(WorldBorder.TYPE, var25.toWorldBorder());
+               WorldBorder.Settings var25 = new WorldBorder.Settings(var31.centerX() / var23, var31.centerZ() / var23, var31.damagePerBlock(), var31.safeZone(), var31.warningBlocks(), var31.warningTime(), var31.size(), var31.lerpTime(), var31.lerpTarget());
+               WorldBorder var26 = new WorldBorder(var25);
+               var26.applyInitialSettings(var19.getGameTime());
+               var22.set(WorldBorder.TYPE, var26);
             }
 
             var15 = true;
@@ -1382,7 +1384,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.preventProxyConnections = var1;
    }
 
-   public abstract boolean isEpollEnabled();
+   public abstract boolean useNativeTransport();
 
    public boolean allowFlight() {
       return true;

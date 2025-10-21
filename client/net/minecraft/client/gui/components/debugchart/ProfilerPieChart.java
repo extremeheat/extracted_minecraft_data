@@ -50,8 +50,7 @@ public class ProfilerPieChart {
          int var11 = var9 - 62 - 5;
          var1.fill(var5 - 5, var11 - 62 - 5, var6 + 5, var8 + 5, -1873784752);
          var1.submitProfilerChartRenderState(var2, var5, var11 - 62 + 10, var6, var11 + 62);
-         DecimalFormat var12 = new DecimalFormat("##0.00");
-         var12.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+         DecimalFormat var12 = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
          String var13 = ProfileResults.demanglePath(var3.name);
          String var14 = "";
          if (!"unspecified".equals(var13)) {

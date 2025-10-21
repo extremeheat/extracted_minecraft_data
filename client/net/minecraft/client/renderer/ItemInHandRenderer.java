@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponentType;
@@ -36,8 +38,8 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Quaternionfc;
 
 public class ItemInHandRenderer {
-   private static final RenderType MAP_BACKGROUND = RenderType.text(ResourceLocation.withDefaultNamespace("textures/map/map_background.png"));
-   private static final RenderType MAP_BACKGROUND_CHECKERBOARD = RenderType.text(ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png"));
+   private static final RenderType MAP_BACKGROUND = RenderTypes.text(ResourceLocation.withDefaultNamespace("textures/map/map_background.png"));
+   private static final RenderType MAP_BACKGROUND_CHECKERBOARD = RenderTypes.text(ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png"));
    private static final float ITEM_SWING_X_POS_SCALE = -0.4F;
    private static final float ITEM_SWING_Y_POS_SCALE = 0.2F;
    private static final float ITEM_SWING_Z_POS_SCALE = -0.2F;
@@ -502,7 +504,7 @@ public class ItemInHandRenderer {
                   case SPEAR:
                      var8.translate((float)var22 * 0.56F, -0.52F, -0.72F);
                      float var24 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                     SpearAnimations.firstPersonUse(var8, var24, var12, var6);
+                     SpearAnimations.firstPersonUse(var1.getTicksSinceEnemyHit(var2), var8, var24, var12, var6);
                }
             } else if (var1.isAutoSpinAttack()) {
                this.applyItemArmTransform(var8, var12, var7);

@@ -39,7 +39,7 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
 
          float var9 = var1.ticksUsingItem(var4);
          if (var9 != 0.0F) {
-            (var4 == HumanoidArm.RIGHT ? var1.rightArmPose : var1.leftArmPose).animateUseItem(var5, var9, var4, var3);
+            (var4 == HumanoidArm.RIGHT ? var1.rightArmPose : var1.leftArmPose).animateUseItem(var1, var5, var9, var4, var3);
          }
 
          var2.submit(var5, var6, var7, OverlayTexture.NO_OVERLAY, var1.outlineColor);

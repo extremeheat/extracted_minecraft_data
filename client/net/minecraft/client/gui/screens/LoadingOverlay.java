@@ -12,6 +12,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.client.renderer.texture.ReloadableTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -169,7 +170,7 @@ public class LoadingOverlay extends Overlay {
 
          TextureContents var4;
          try {
-            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, false));
+            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, MipmapStrategy.MEAN));
          } catch (Throwable var7) {
             if (var3 != null) {
                try {

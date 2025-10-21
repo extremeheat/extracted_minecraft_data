@@ -4,10 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ArrowModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ArrowRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +26,7 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
       var2.pushPose();
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var1.yRot - 90.0F));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var1.xRot));
-      var3.submitModel(this.model, var1, var2, RenderType.entityCutout(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.submitModel(this.model, var1, var2, RenderTypes.entityCutout(this.getTextureLocation(var1)), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       var2.popPose();
       super.submit(var1, var2, var3, var4);
    }

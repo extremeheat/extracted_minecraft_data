@@ -8,8 +8,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.BatRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public class BatModel extends EntityModel<BatRenderState> {
    private final ModelPart head;
@@ -23,7 +23,7 @@ public class BatModel extends EntityModel<BatRenderState> {
    private final KeyframeAnimation restingAnimation;
 
    public BatModel(ModelPart var1) {
-      super(var1, RenderType::entityCutout);
+      super(var1, RenderTypes::entityCutout);
       this.body = var1.getChild("body");
       this.head = var1.getChild("head");
       this.rightWing = this.body.getChild("right_wing");

@@ -2,6 +2,7 @@ package net.minecraft.util;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import net.minecraft.SuppressForbidden;
 
 public class DelegateDataOutput implements DataOutput {
    private final DataOutput parent;
@@ -55,6 +56,9 @@ public class DelegateDataOutput implements DataOutput {
       this.parent.writeDouble(var1);
    }
 
+   @SuppressForbidden(
+      a = "Delegation is not use"
+   )
    public void writeBytes(String var1) throws IOException {
       this.parent.writeBytes(var1);
    }

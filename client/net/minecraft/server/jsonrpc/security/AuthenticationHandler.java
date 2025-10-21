@@ -26,8 +26,8 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
    private final Logger LOGGER = LogUtils.getLogger();
    private static final AttributeKey<Boolean> AUTHENTICATED_KEY = AttributeKey.valueOf("authenticated");
    private static final AttributeKey<Boolean> ATTR_WEBSOCKET_ALLOWED = AttributeKey.valueOf("websocket_auth_allowed");
-   private static final CharSequence SUBPROTOCOL_VALUE = "minecraft-v1";
-   private static final String SUBPROTOCOL_HEADER_PREFIX;
+   private static final String SUBPROTOCOL_VALUE = "minecraft-v1";
+   private static final String SUBPROTOCOL_HEADER_PREFIX = "minecraft-v1,";
    public static final String BEARER_PREFIX = "Bearer ";
    private final SecurityConfig securityConfig;
    private final Set<String> allowedOrigins;
@@ -68,7 +68,7 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
    public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
       if (var2 instanceof HttpResponse var4) {
          if (var4.status().code() == HttpResponseStatus.SWITCHING_PROTOCOLS.code() && var1.channel().attr(ATTR_WEBSOCKET_ALLOWED).get() != null && ((Boolean)var1.channel().attr(ATTR_WEBSOCKET_ALLOWED).get()).equals(Boolean.TRUE)) {
-            var4.headers().set(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL, SUBPROTOCOL_VALUE);
+            var4.headers().set(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL, "minecraft-v1");
          }
       }
 
@@ -107,7 +107,7 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
    @Nullable
    private String parseTokenInSecWebsocketProtocolHeader(HttpRequest var1) {
       String var2 = var1.headers().get(HttpHeaderNames.SEC_WEBSOCKET_PROTOCOL);
-      return var2 != null && var2.startsWith(SUBPROTOCOL_HEADER_PREFIX) ? var2.substring(SUBPROTOCOL_HEADER_PREFIX.length()).trim() : null;
+      return var2 != null && var2.startsWith("minecraft-v1,") ? var2.substring("minecraft-v1,".length()).trim() : null;
    }
 
    public boolean isValidApiKey(String var1) {
@@ -133,10 +133,6 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
       var5.headers().set(HttpHeaderNames.CONTENT_LENGTH, var4.length);
       var5.headers().set(HttpHeaderNames.CONNECTION, "close");
       var1.writeAndFlush(var5).addListener((var1x) -> var1.close());
-   }
-
-   static {
-      SUBPROTOCOL_HEADER_PREFIX = String.format("%s,", SUBPROTOCOL_VALUE);
    }
 
    static class SecurityCheckResult {

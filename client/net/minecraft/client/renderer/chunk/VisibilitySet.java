@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.chunk;
 
 import java.util.BitSet;
+import java.util.Locale;
 import java.util.Set;
 import net.minecraft.core.Direction;
 
@@ -40,13 +41,13 @@ public class VisibilitySet {
       var1.append(' ');
 
       for(Direction var5 : Direction.values()) {
-         var1.append(' ').append(var5.toString().toUpperCase().charAt(0));
+         var1.append(' ').append(var5.toString().toUpperCase(Locale.ROOT).charAt(0));
       }
 
       var1.append('\n');
 
       for(Direction var14 : Direction.values()) {
-         var1.append(var14.toString().toUpperCase().charAt(0));
+         var1.append(var14.toString().toUpperCase(Locale.ROOT).charAt(0));
 
          for(Direction var9 : Direction.values()) {
             if (var14 == var9) {

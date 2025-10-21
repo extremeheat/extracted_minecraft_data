@@ -30,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import org.slf4j.Logger;
 
 public class ConnectScreen extends Screen {
@@ -111,7 +112,7 @@ public class ConnectScreen extends Screen {
 
                   var11 = new Connection(PacketFlow.CLIENTBOUND);
                   var11.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
-                  ConnectScreen.this.channelFuture = Connection.connect(var10, var1.options.useNativeTransport(), var11);
+                  ConnectScreen.this.channelFuture = Connection.connect(var10, EventLoopGroupHolder.remote(var1.options.useNativeTransport()), var11);
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();

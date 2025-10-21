@@ -1043,7 +1043,7 @@ public class Gui {
       float var4 = 0.0F;
       if (var2 != null) {
          float var5 = (float)var3.getDistanceToBorder(var2);
-         double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 1000.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
+         double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 20.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
          double var8 = Math.max((double)var3.getWarningBlocks(), var6);
          if ((double)var5 < var8) {
             var4 = 1.0F - (float)((double)var5 / var8);

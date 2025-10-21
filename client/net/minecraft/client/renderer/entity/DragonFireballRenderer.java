@@ -2,9 +2,10 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -47,6 +48,6 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball, Entit
    }
 
    static {
-      RENDER_TYPE = RenderType.entityCutoutNoCull(TEXTURE_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutoutNoCull(TEXTURE_LOCATION);
    }
 }

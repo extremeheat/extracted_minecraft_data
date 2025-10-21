@@ -8,12 +8,11 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.JComponent;
 import javax.swing.Timer;
-import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.TimeUtil;
 
 public class StatsComponent extends JComponent {
-   private static final DecimalFormat DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("########0.000"), (var0) -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
+   private static final DecimalFormat DECIMAL_FORMAT;
    private final int[] values = new int[256];
    private int vp;
    private final String[] msgs = new String[11];
@@ -65,5 +64,9 @@ public class StatsComponent extends JComponent {
 
    public void close() {
       this.timer.stop();
+   }
+
+   static {
+      DECIMAL_FORMAT = new DecimalFormat("########0.000", DecimalFormatSymbols.getInstance(Locale.ROOT));
    }
 }

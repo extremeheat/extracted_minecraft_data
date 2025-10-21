@@ -4,11 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.dragon.EnderDragonModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -59,7 +60,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       int var7 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
       if (var1.deathTime > 0.0F) {
          int var8 = ARGB.white(var1.deathTime / 200.0F);
-         var3.order(0).submitModel(this.model, var1, var2, RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         var3.order(0).submitModel(this.model, var1, var2, RenderTypes.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
          var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
@@ -70,8 +71,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          float var9 = var1.deathTime / 200.0F;
          var2.pushPose();
          var2.translate(0.0F, -1.0F, -2.0F);
-         submitRays(var2, var9, var3, RenderType.dragonRays());
-         submitRays(var2, var9, var3, RenderType.dragonRaysDepth());
+         submitRays(var2, var9, var3, RenderTypes.dragonRays());
+         submitRays(var2, var9, var3, RenderTypes.dragonRaysDepth());
          var2.popPose();
       }
 
@@ -191,10 +192,10 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
    }
 
    static {
-      RENDER_TYPE = RenderType.entityCutoutNoCull(DRAGON_LOCATION);
-      DECAL = RenderType.entityDecal(DRAGON_LOCATION);
-      EYES = RenderType.eyes(DRAGON_EYES_LOCATION);
-      BEAM = RenderType.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
+      RENDER_TYPE = RenderTypes.entityCutoutNoCull(DRAGON_LOCATION);
+      DECAL = RenderTypes.entityDecal(DRAGON_LOCATION);
+      EYES = RenderTypes.eyes(DRAGON_EYES_LOCATION);
+      BEAM = RenderTypes.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
       HALF_SQRT_3 = (float)(Math.sqrt(3.0) / 2.0);
    }
 }

@@ -6,9 +6,9 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class AbstractPiglinModel<S extends HumanoidRenderState> extends HumanoidModel<S> {
@@ -25,7 +25,7 @@ public class AbstractPiglinModel<S extends HumanoidRenderState> extends Humanoid
    public final ModelPart leftEar;
 
    public AbstractPiglinModel(ModelPart var1) {
-      super(var1, RenderType::entityTranslucent);
+      super(var1, RenderTypes::entityTranslucent);
       this.leftSleeve = this.leftArm.getChild("left_sleeve");
       this.rightSleeve = this.rightArm.getChild("right_sleeve");
       this.leftPants = this.leftLeg.getChild("left_pants");

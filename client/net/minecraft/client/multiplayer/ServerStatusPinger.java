@@ -8,8 +8,6 @@ import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -36,6 +34,7 @@ import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import org.slf4j.Logger;
@@ -49,25 +48,25 @@ public class ServerStatusPinger {
       super();
    }
 
-   public void pingServer(final ServerData var1, final Runnable var2, final Runnable var3) throws UnknownHostException {
-      final ServerAddress var4 = ServerAddress.parseString(var1.ip);
-      Optional var5 = ServerNameResolver.DEFAULT.resolveAddress(var4).map(ResolvedServerAddress::asInetSocketAddress);
-      if (var5.isEmpty()) {
+   public void pingServer(final ServerData var1, final Runnable var2, final Runnable var3, final EventLoopGroupHolder var4) throws UnknownHostException {
+      final ServerAddress var5 = ServerAddress.parseString(var1.ip);
+      Optional var6 = ServerNameResolver.DEFAULT.resolveAddress(var5).map(ResolvedServerAddress::asInetSocketAddress);
+      if (var6.isEmpty()) {
          this.onPingFailed(ConnectScreen.UNKNOWN_HOST_MESSAGE, var1);
       } else {
-         final InetSocketAddress var6 = (InetSocketAddress)var5.get();
-         final Connection var7 = Connection.connectToServer(var6, false, (LocalSampleLogger)null);
-         this.connections.add(var7);
+         final InetSocketAddress var7 = (InetSocketAddress)var6.get();
+         final Connection var8 = Connection.connectToServer(var7, var4, (LocalSampleLogger)null);
+         this.connections.add(var8);
          var1.motd = Component.translatable("multiplayer.status.pinging");
          var1.playerList = Collections.emptyList();
-         ClientStatusPacketListener var8 = new ClientStatusPacketListener() {
+         ClientStatusPacketListener var9 = new ClientStatusPacketListener() {
             private boolean success;
             private boolean receivedPing;
             private long pingStart;
 
             public void handleStatusResponse(ClientboundStatusResponsePacket var1x) {
                if (this.receivedPing) {
-                  var7.disconnect((Component)Component.translatable("multiplayer.status.unrequested"));
+                  var8.disconnect((Component)Component.translatable("multiplayer.status.unrequested"));
                } else {
                   this.receivedPing = true;
                   ServerStatus var2x = var1x.status();
@@ -86,14 +85,14 @@ public class ServerStatusPinger {
                         ArrayList var2x = new ArrayList(var1xx.sample().size());
 
                         for(NameAndId var4x : var1xx.sample()) {
-                           MutableComponent var5;
+                           MutableComponent var5x;
                            if (var4x.equals(MinecraftServer.ANONYMOUS_PLAYER_PROFILE)) {
-                              var5 = Component.translatable("multiplayer.status.anonymous_player");
+                              var5x = Component.translatable("multiplayer.status.anonymous_player");
                            } else {
-                              var5 = Component.literal(var4x.name());
+                              var5x = Component.literal(var4x.name());
                            }
 
-                           var2x.add(var5);
+                           var2x.add(var5x);
                         }
 
                         if (var1xx.sample().size() < var1xx.online()) {
@@ -114,7 +113,7 @@ public class ServerStatusPinger {
 
                   });
                   this.pingStart = Util.getMillis();
-                  var7.send(new ServerboundPingRequestPacket(this.pingStart));
+                  var8.send(new ServerboundPingRequestPacket(this.pingStart));
                   this.success = true;
                }
             }
@@ -123,28 +122,28 @@ public class ServerStatusPinger {
                long var2x = this.pingStart;
                long var4x = Util.getMillis();
                var1.ping = var4x - var2x;
-               var7.disconnect((Component)Component.translatable("multiplayer.status.finished"));
+               var8.disconnect((Component)Component.translatable("multiplayer.status.finished"));
                var3.run();
             }
 
             public void onDisconnect(DisconnectionDetails var1x) {
                if (!this.success) {
                   ServerStatusPinger.this.onPingFailed(var1x.reason(), var1);
-                  ServerStatusPinger.this.pingLegacyServer(var6, var4, var1);
+                  ServerStatusPinger.this.pingLegacyServer(var7, var5, var1, var4);
                }
 
             }
 
             public boolean isAcceptingMessages() {
-               return var7.isConnected();
+               return var8.isConnected();
             }
          };
 
          try {
-            var7.initiateServerboundStatusConnection(var4.getHost(), var4.getPort(), var8);
-            var7.send(ServerboundStatusRequestPacket.INSTANCE);
-         } catch (Throwable var10) {
-            LOGGER.error("Failed to ping server {}", var4, var10);
+            var8.initiateServerboundStatusConnection(var5.getHost(), var5.getPort(), var9);
+            var8.send(ServerboundStatusRequestPacket.INSTANCE);
+         } catch (Throwable var11) {
+            LOGGER.error("Failed to ping server {}", var5, var11);
          }
 
       }
@@ -156,8 +155,8 @@ public class ServerStatusPinger {
       var2.status = CommonComponents.EMPTY;
    }
 
-   void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3) {
-      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
+   void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3, EventLoopGroupHolder var4) {
+      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group(var4.eventLoopGroup())).handler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1) {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);
@@ -172,7 +171,7 @@ public class ServerStatusPinger {
                var3.players = new ServerStatus.Players(var5, var4, List.of());
             })});
          }
-      })).channel(NioSocketChannel.class)).connect(var1.getAddress(), var1.getPort());
+      })).channel(var4.channelCls())).connect(var1.getAddress(), var1.getPort());
    }
 
    public static Component formatPlayerCount(int var0, int var1) {

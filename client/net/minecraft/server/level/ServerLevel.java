@@ -1290,7 +1290,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public WorldBorder getWorldBorder() {
-      return (WorldBorder)this.getDataStorage().computeIfAbsent(WorldBorder.TYPE);
+      WorldBorder var1 = (WorldBorder)this.getDataStorage().computeIfAbsent(WorldBorder.TYPE);
+      var1.applyInitialSettings(this.levelData.getGameTime());
+      return var1;
    }
 
    public RecipeManager recipeAccess() {

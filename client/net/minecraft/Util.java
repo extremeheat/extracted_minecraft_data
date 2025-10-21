@@ -30,12 +30,11 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -474,6 +473,13 @@ public class Util {
 
    public static int growByHalf(int var0, int var1) {
       return (int)Math.max(Math.min((long)var0 + (long)(var0 >> 1), 2147483639L), (long)var1);
+   }
+
+   @SuppressForbidden(
+      a = "Intentional use of default locale for user-visible date"
+   )
+   public static DateTimeFormatter localizedDateFormatter(FormatStyle var0) {
+      return DateTimeFormatter.ofLocalizedDateTime(var0);
    }
 
    public static OS getPlatform() {
@@ -1130,11 +1136,11 @@ public class Util {
 
       public void openUri(URI var1) {
          try {
-            Process var2 = (Process)AccessController.doPrivileged(() -> Runtime.getRuntime().exec(this.getOpenUriArguments(var1)));
+            Process var2 = Runtime.getRuntime().exec(this.getOpenUriArguments(var1));
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();
-         } catch (IOException | PrivilegedActionException var3) {
+         } catch (IOException var3) {
             Util.LOGGER.error("Couldn't open location '{}'", var1, var3);
          }
 

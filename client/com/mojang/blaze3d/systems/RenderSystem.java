@@ -11,7 +11,6 @@ import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.ShaderType;
-import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -69,9 +68,6 @@ public class RenderSystem {
    private static ProjectionType projectionType;
    private static ProjectionType savedProjectionType;
    private static final Matrix4fStack modelViewStack;
-   private static Matrix4f textureMatrix;
-   public static final int TEXTURE_COUNT = 12;
-   private static final TextureAndSampler[] shaderTextures;
    @Nullable
    private static GpuBufferSlice shaderFog;
    @Nullable
@@ -217,47 +213,12 @@ public class RenderSystem {
 
    public static void setupDefaultState() {
       modelViewStack.clear();
-      textureMatrix.identity();
-   }
-
-   public static void setupOverlayColor(@Nullable GpuTextureView var0, @Nullable GpuSampler var1) {
-      assertOnRenderThread();
-      setShaderTexture(1, var0, var1);
-   }
-
-   public static void teardownOverlayColor() {
-      assertOnRenderThread();
-      setShaderTexture(1, (GpuTextureView)null, (GpuSampler)null);
-   }
-
-   public static void setShaderTexture(int var0, @Nullable GpuTextureView var1, @Nullable GpuSampler var2) {
-      assertOnRenderThread();
-      if (var0 >= 0 && var0 < shaderTextures.length) {
-         shaderTextures[var0] = var1 != null && var2 != null ? new TextureAndSampler(var1, var2) : null;
-      }
-
-   }
-
-   @Nullable
-   public static TextureAndSampler getShaderTexture(int var0) {
-      assertOnRenderThread();
-      return var0 >= 0 && var0 < shaderTextures.length ? shaderTextures[var0] : null;
    }
 
    public static void setProjectionMatrix(GpuBufferSlice var0, ProjectionType var1) {
       assertOnRenderThread();
       projectionMatrixBuffer = var0;
       projectionType = var1;
-   }
-
-   public static void setTextureMatrix(Matrix4f var0) {
-      assertOnRenderThread();
-      textureMatrix = new Matrix4f(var0);
-   }
-
-   public static void resetTextureMatrix() {
-      assertOnRenderThread();
-      textureMatrix.identity();
    }
 
    public static void backupProjectionMatrix() {
@@ -286,11 +247,6 @@ public class RenderSystem {
    public static Matrix4fStack getModelViewStack() {
       assertOnRenderThread();
       return modelViewStack;
-   }
-
-   public static Matrix4f getTextureMatrix() {
-      assertOnRenderThread();
-      return textureMatrix;
    }
 
    public static AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
@@ -388,8 +344,6 @@ public class RenderSystem {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
       modelViewStack = new Matrix4fStack(16);
-      textureMatrix = new Matrix4f();
-      shaderTextures = new TextureAndSampler[12];
       shaderFog = null;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();
@@ -397,14 +351,6 @@ public class RenderSystem {
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
       scissorStateForRenderTypeDraws = new ScissorState();
       samplerCache = new SamplerCache();
-   }
-
-   public static record TextureAndSampler(GpuTextureView view, GpuSampler sampler) {
-      public TextureAndSampler(GpuTextureView var1, GpuSampler var2) {
-         super();
-         this.view = var1;
-         this.sampler = var2;
-      }
    }
 
    public static final class AutoStorageIndexBuffer {

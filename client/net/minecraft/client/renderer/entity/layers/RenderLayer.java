@@ -3,13 +3,13 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
@@ -29,7 +29,7 @@ public abstract class RenderLayer<S extends EntityRenderState, M extends EntityM
    }
 
    protected static <S extends LivingEntityRenderState> void renderColoredCutoutModel(Model<? super S> var0, ResourceLocation var1, PoseStack var2, SubmitNodeCollector var3, int var4, S var5, int var6, int var7) {
-      var3.order(var7).submitModel(var0, var5, var2, RenderType.entityCutoutNoCull(var1), var4, LivingEntityRenderer.getOverlayCoords(var5, 0.0F), var6, (TextureAtlasSprite)null, var5.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.order(var7).submitModel(var0, var5, var2, RenderTypes.entityCutoutNoCull(var1), var4, LivingEntityRenderer.getOverlayCoords(var5, 0.0F), var6, (TextureAtlasSprite)null, var5.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public M getParentModel() {

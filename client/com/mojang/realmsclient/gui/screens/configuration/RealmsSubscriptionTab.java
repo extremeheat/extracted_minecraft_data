@@ -8,13 +8,14 @@ import com.mojang.realmsclient.dto.Subscription;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.util.RealmsUtil;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.FormatStyle;
 import java.util.Objects;
-import java.util.TimeZone;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -107,10 +108,9 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
 
    }
 
-   private static Component localPresentation(long var0) {
-      GregorianCalendar var2 = new GregorianCalendar(TimeZone.getDefault());
-      ((Calendar)var2).setTimeInMillis(var0);
-      return Component.literal(DateFormat.getDateTimeInstance().format(((Calendar)var2).getTime())).withStyle(ChatFormatting.GRAY);
+   private static Component localPresentation(Instant var0) {
+      String var1 = ZonedDateTime.ofInstant(var0, ZoneId.systemDefault()).format(Util.localizedDateFormatter(FormatStyle.MEDIUM));
+      return Component.literal(var1).withStyle(ChatFormatting.GRAY);
    }
 
    private Component daysLeftPresentation(int var1) {

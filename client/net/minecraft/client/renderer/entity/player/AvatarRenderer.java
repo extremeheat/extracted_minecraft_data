@@ -9,7 +9,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -28,6 +27,7 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -260,7 +260,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var7.rightSleeve.visible = var6;
       var7.leftArm.zRot = -0.1F;
       var7.rightArm.zRot = 0.1F;
-      var2.submitModelPart(var5, var1, RenderType.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
+      var2.submitModelPart(var5, var1, RenderTypes.entityTranslucent(var4), var3, OverlayTexture.NO_OVERLAY, (TextureAtlasSprite)null);
    }
 
    protected void setupRotations(AvatarRenderState var1, PoseStack var2, float var3, float var4) {

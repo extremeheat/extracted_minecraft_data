@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -286,7 +287,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
    }
 
    static {
-      DATE_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withZone(ZoneId.systemDefault());
+      DATE_FORMAT = Util.localizedDateFormatter(FormatStyle.SHORT);
       ERROR_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error_highlighted");
       ERROR_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error");
       MARKED_JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join_highlighted");
@@ -371,14 +372,15 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          String var5 = var2.getLevelId();
          long var6 = var2.getLastPlayed();
          if (var6 != -1L) {
-            var5 = var5 + " (" + WorldSelectionList.DATE_FORMAT.format(Instant.ofEpochMilli(var6)) + ")";
+            ZonedDateTime var8 = ZonedDateTime.ofInstant(Instant.ofEpochMilli(var6), ZoneId.systemDefault());
+            var5 = var5 + " (" + WorldSelectionList.DATE_FORMAT.format(var8) + ")";
          }
 
-         MutableComponent var8 = Component.literal(var5).withColor(-8355712);
-         this.idAndLastPlayedText = new StringWidget(var8, this.minecraft.font);
+         MutableComponent var10 = Component.literal(var5).withColor(-8355712);
+         this.idAndLastPlayedText = new StringWidget(var10, this.minecraft.font);
          this.idAndLastPlayedText.setMaxWidth(var3);
          if (this.minecraft.font.width(var5) > var3) {
-            this.idAndLastPlayedText.setTooltip(Tooltip.create(var8));
+            this.idAndLastPlayedText.setTooltip(Tooltip.create(var10));
          }
 
          Component var9 = ComponentUtils.mergeStyles(var2.getInfo(), Style.EMPTY.withColor(-8355712));

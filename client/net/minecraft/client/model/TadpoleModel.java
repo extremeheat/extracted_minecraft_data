@@ -6,15 +6,15 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
    private final ModelPart tail;
 
    public TadpoleModel(ModelPart var1) {
-      super(var1, RenderType::entityCutoutNoCull);
+      super(var1, RenderTypes::entityCutoutNoCull);
       this.tail = var1.getChild("tail");
    }
 

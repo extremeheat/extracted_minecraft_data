@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
@@ -70,26 +71,29 @@ public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, 
          double var7 = var6.dot(getMotion(var3));
          float var9 = var3 instanceof Player ? 1.0F : 0.2F;
          float var10 = var3 instanceof Player ? 1.0F : 0.5F;
-         boolean var11 = false;
+         double var11 = var3.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
+         boolean var13 = false;
 
-         for(EntityHitResult var13 : ProjectileUtil.getHitEntitiesAlong(var3, var10 * this.minReach, var10 * this.maxReach, this.hitboxMargin, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x))) {
-            Entity var14 = var13.getEntity();
-            boolean var15 = var3.wasRecentlyStabbed(var14, this.contactCooldownTicks);
-            var3.rememberStabbedEntity(var14);
-            if (!var15) {
-               double var16 = var6.dot(getMotion(var14));
-               double var18 = Math.max(0.0, var7 - var16);
-               boolean var20 = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(var5, var7, var18, (double)var9);
-               boolean var21 = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(var5, var7, var18, (double)var9);
-               boolean var22 = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(var5, var7, var18, (double)var9);
-               if (var20 || var21 || var22) {
-                  var11 |= var3.stabAttack(var4, var14, (float)Mth.floor(var18 * (double)this.damageMultiplier), var22, var21, var20);
+         for(EntityHitResult var15 : ProjectileUtil.getHitEntitiesAlong(var3, var10 * this.minReach, var10 * this.maxReach, this.hitboxMargin, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x))) {
+            Entity var16 = var15.getEntity();
+            boolean var17 = var3.wasRecentlyStabbed(var16, this.contactCooldownTicks);
+            var3.rememberStabbedEntity(var16);
+            if (!var17) {
+               double var18 = var6.dot(getMotion(var16));
+               double var20 = Math.max(0.0, var7 - var18);
+               boolean var22 = this.dismountConditions.isPresent() && ((Condition)this.dismountConditions.get()).test(var5, var7, var20, (double)var9);
+               boolean var23 = this.knockbackConditions.isPresent() && ((Condition)this.knockbackConditions.get()).test(var5, var7, var20, (double)var9);
+               boolean var24 = this.damageConditions.isPresent() && ((Condition)this.damageConditions.get()).test(var5, var7, var20, (double)var9);
+               if (var22 || var23 || var24) {
+                  float var25 = (float)var11 + (float)Mth.floor(var20 * (double)this.damageMultiplier);
+                  var13 |= var3.stabAttack(var4, var16, var25, var24, var23, var22);
                }
             }
          }
 
-         if (var11) {
+         if (var13) {
             this.makeHitSound(var3);
+            var3.level().broadcastEntityEvent(var3, (byte)2);
          }
 
       }

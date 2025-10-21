@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +30,7 @@ public class TelemetryLogManager implements AutoCloseable {
       return CompletableFuture.supplyAsync(() -> {
          try {
             EventLogDirectory var1 = EventLogDirectory.open(var0, ".json");
-            var1.listFiles().prune(LocalDate.now(), 7).compressAll();
+            var1.listFiles().prune(LocalDate.now(Clock.systemDefaultZone()), 7).compressAll();
             return Optional.of(new TelemetryLogManager(var1));
          } catch (Exception var2) {
             LOGGER.error("Failed to create telemetry log manager", var2);
@@ -42,7 +43,7 @@ public class TelemetryLogManager implements AutoCloseable {
       if (this.sessionLog == null) {
          this.sessionLog = CompletableFuture.supplyAsync(() -> {
             try {
-               EventLogDirectory.RawFile var1 = this.directory.createNewFile(LocalDate.now());
+               EventLogDirectory.RawFile var1 = this.directory.createNewFile(LocalDate.now(Clock.systemDefaultZone()));
                FileChannel var2 = var1.openChannel();
                return Optional.of(new TelemetryEventLog(var2, Util.backgroundExecutor()));
             } catch (IOException var3) {

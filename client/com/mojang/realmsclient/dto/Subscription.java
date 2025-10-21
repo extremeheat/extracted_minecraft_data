@@ -3,27 +3,28 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import java.time.Instant;
 import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
 import org.slf4j.Logger;
 
-public record Subscription(long startDate, int daysLeft, SubscriptionType type) {
+public record Subscription(Instant startDate, int daysLeft, SubscriptionType type) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public Subscription(long var1, int var3, SubscriptionType var4) {
+   public Subscription(Instant var1, int var2, SubscriptionType var3) {
       super();
       this.startDate = var1;
-      this.daysLeft = var3;
-      this.type = var4;
+      this.daysLeft = var2;
+      this.type = var3;
    }
 
    public static Subscription parse(String var0) {
       try {
          JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
-         return new Subscription(JsonUtils.getLongOr("startDate", var1, 0L), JsonUtils.getIntOr("daysLeft", var1, 0), typeFrom(JsonUtils.getStringOr("subscriptionType", var1, (String)null)));
+         return new Subscription(JsonUtils.getDateOr("startDate", var1), JsonUtils.getIntOr("daysLeft", var1, 0), typeFrom(JsonUtils.getStringOr("subscriptionType", var1, (String)null)));
       } catch (Exception var2) {
          LOGGER.error("Could not parse Subscription", var2);
-         return new Subscription(0L, 0, Subscription.SubscriptionType.NORMAL);
+         return new Subscription(Instant.EPOCH, 0, Subscription.SubscriptionType.NORMAL);
       }
    }
 

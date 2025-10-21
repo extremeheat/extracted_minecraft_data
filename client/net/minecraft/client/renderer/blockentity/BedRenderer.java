@@ -13,12 +13,12 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BedRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -52,8 +52,8 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
    public BedRenderer(MaterialSet var1, EntityModelSet var2) {
       super();
       this.materials = var1;
-      this.headModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
-      this.footModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
+      this.headModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_HEAD), RenderTypes::entitySolid);
+      this.footModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_FOOT), RenderTypes::entitySolid);
    }
 
    public static LayerDefinition createHeadLayer() {
@@ -103,7 +103,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
    private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, int var10) {
       var1.pushPose();
       preparePose(var1, var8, var4);
-      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderType::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);
+      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderTypes::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);
       var1.popPose();
    }
 

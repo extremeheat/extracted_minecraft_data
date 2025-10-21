@@ -162,9 +162,9 @@ public class RegistryDataLoader {
       PrintWriter var2 = new PrintWriter(var1);
       Map var3 = (Map)var0.entrySet().stream().collect(Collectors.groupingBy((var0x) -> ((ResourceKey)var0x.getKey()).registry(), Collectors.toMap((var0x) -> ((ResourceKey)var0x.getKey()).location(), Map.Entry::getValue)));
       var3.entrySet().stream().sorted(Entry.comparingByKey()).forEach((var1x) -> {
-         var2.printf("> Errors in registry %s:%n", var1x.getKey());
+         var2.printf(Locale.ROOT, "> Errors in registry %s:%n", var1x.getKey());
          ((Map)var1x.getValue()).entrySet().stream().sorted(Entry.comparingByKey()).forEach((var1) -> {
-            var2.printf(">> Errors in element %s:%n", var1.getKey());
+            var2.printf(Locale.ROOT, ">> Errors in element %s:%n", var1.getKey());
             ((Exception)var1.getValue()).printStackTrace(var2);
          });
       });

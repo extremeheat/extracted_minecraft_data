@@ -28,6 +28,7 @@ import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
 public class IOWorker implements ChunkScanAccess, AutoCloseable {
+   public static final Supplier<CompoundTag> STORE_EMPTY = () -> null;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final AtomicBoolean shutdownRequested = new AtomicBoolean();
    private final PriorityConsecutiveExecutor consecutiveExecutor;
@@ -119,7 +120,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       return var1.getIntOr("DataVersion", 0) < 4295 ? true : var1.getCompound("blending_data").isPresent();
    }
 
-   public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {
+   public CompletableFuture<Void> store(ChunkPos var1, CompoundTag var2) {
       return this.store(var1, (Supplier)(() -> var2));
    }
 

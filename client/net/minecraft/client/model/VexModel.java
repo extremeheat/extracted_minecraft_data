@@ -8,8 +8,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.VexRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 
@@ -22,7 +22,7 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
    private final ModelPart head;
 
    public VexModel(ModelPart var1) {
-      super(var1.getChild("root"), RenderType::entityTranslucent);
+      super(var1.getChild("root"), RenderTypes::entityTranslucent);
       this.body = this.root.getChild("body");
       this.rightArm = this.body.getChild("right_arm");
       this.leftArm = this.body.getChild("left_arm");

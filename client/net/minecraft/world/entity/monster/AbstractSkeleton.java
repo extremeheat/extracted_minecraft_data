@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -10,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
@@ -114,14 +113,9 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       this.reassessWeaponGoal();
       this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var2.getSpecialMultiplier());
-      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-         LocalDate var6 = LocalDate.now();
-         int var7 = var6.get(ChronoField.DAY_OF_MONTH);
-         int var8 = var6.get(ChronoField.MONTH_OF_YEAR);
-         if (var8 == 10 && var7 == 31 && var5.nextFloat() < 0.25F) {
-            this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-            this.setDropChance(EquipmentSlot.HEAD, 0.0F);
-         }
+      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && SpecialDates.isHalloween() && var5.nextFloat() < 0.25F) {
+         this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+         this.setDropChance(EquipmentSlot.HEAD, 0.0F);
       }
 
       return var4;

@@ -15,10 +15,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -52,7 +52,7 @@ public class HangingSignRenderer extends AbstractSignRenderer {
    }
 
    public static Model.Simple createSignModel(EntityModelSet var0, WoodType var1, AttachmentType var2) {
-      return new Model.Simple(var0.bakeLayer(ModelLayers.createHangingSignModelName(var1, var2)), RenderType::entityCutoutNoCull);
+      return new Model.Simple(var0.bakeLayer(ModelLayers.createHangingSignModelName(var1, var2)), RenderTypes::entityCutoutNoCull);
    }
 
    protected float getSignModelRenderScale() {

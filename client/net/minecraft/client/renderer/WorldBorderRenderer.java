@@ -95,18 +95,18 @@ public class WorldBorderRenderer {
 
    }
 
-   public void extract(WorldBorder var1, Vec3 var2, double var3, WorldBorderRenderState var5) {
-      var5.minX = var1.getMinX();
-      var5.maxX = var1.getMaxX();
-      var5.minZ = var1.getMinZ();
-      var5.maxZ = var1.getMaxZ();
-      if ((!(var2.x < var5.maxX - var3) || !(var2.x > var5.minX + var3) || !(var2.z < var5.maxZ - var3) || !(var2.z > var5.minZ + var3)) && !(var2.x < var5.minX - var3) && !(var2.x > var5.maxX + var3) && !(var2.z < var5.minZ - var3) && !(var2.z > var5.maxZ + var3)) {
-         var5.alpha = 1.0 - var1.getDistanceToBorder(var2.x, var2.z) / var3;
-         var5.alpha = Math.pow(var5.alpha, 4.0);
-         var5.alpha = Mth.clamp(var5.alpha, 0.0, 1.0);
-         var5.tint = var1.getStatus().getColor();
+   public void extract(WorldBorder var1, float var2, Vec3 var3, double var4, WorldBorderRenderState var6) {
+      var6.minX = var1.getMinX(var2);
+      var6.maxX = var1.getMaxX(var2);
+      var6.minZ = var1.getMinZ(var2);
+      var6.maxZ = var1.getMaxZ(var2);
+      if ((!(var3.x < var6.maxX - var4) || !(var3.x > var6.minX + var4) || !(var3.z < var6.maxZ - var4) || !(var3.z > var6.minZ + var4)) && !(var3.x < var6.minX - var4) && !(var3.x > var6.maxX + var4) && !(var3.z < var6.minZ - var4) && !(var3.z > var6.maxZ + var4)) {
+         var6.alpha = 1.0 - var1.getDistanceToBorder(var3.x, var3.z) / var4;
+         var6.alpha = Math.pow(var6.alpha, 4.0);
+         var6.alpha = Mth.clamp(var6.alpha, 0.0, 1.0);
+         var6.tint = var1.getStatus().getColor();
       } else {
-         var5.alpha = 0.0;
+         var6.alpha = 0.0;
       }
    }
 

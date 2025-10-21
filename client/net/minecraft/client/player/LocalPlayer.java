@@ -1064,7 +1064,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean hasEnoughFoodToSprint() {
-      return this.isPassenger() || (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
+      return this.isPassenger() || this.getFoodData().hasEnoughFood() || this.getAbilities().mayfly;
    }
 
    public float getWaterVision() {

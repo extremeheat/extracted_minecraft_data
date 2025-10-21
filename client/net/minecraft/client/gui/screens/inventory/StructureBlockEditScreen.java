@@ -73,9 +73,8 @@ public class StructureBlockEditScreen extends Screen {
       this.initialMirror = Mirror.NONE;
       this.initialRotation = Rotation.NONE;
       this.initialMode = StructureMode.DATA;
-      this.decimalFormat = new DecimalFormat("0.0###");
+      this.decimalFormat = new DecimalFormat("0.0###", DecimalFormatSymbols.getInstance(Locale.ROOT));
       this.structure = var1;
-      this.decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
    }
 
    private void onDone() {

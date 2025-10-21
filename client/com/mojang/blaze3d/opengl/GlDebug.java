@@ -7,6 +7,7 @@ import com.mojang.blaze3d.platform.DebugMemoryUntracker;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -37,7 +38,7 @@ public class GlDebug {
    }
 
    private static String printUnknownToken(int var0) {
-      return "Unknown (0x" + Integer.toHexString(var0).toUpperCase() + ")";
+      return "Unknown (0x" + HexFormat.of().withUpperCase().toHexDigits(var0) + ")";
    }
 
    public static String sourceToString(int var0) {

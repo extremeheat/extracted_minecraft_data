@@ -8,7 +8,6 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -22,7 +21,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
@@ -85,11 +83,11 @@ public class KeyboardHandler {
             }
 
             boolean var2 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_PATHS);
-            this.debugFeedbackFormatted("SectionPath: {0}", var2 ? "shown" : "hidden");
+            this.debugFeedback("SectionPath: " + (var2 ? "shown" : "hidden"));
             return true;
          case 70:
             boolean var4 = FogRenderer.toggleFog();
-            this.debugFeedbackFormatted("Fog: {0}", var4 ? "enabled" : "disabled");
+            this.debugFeedbackEnabledStatus("Fog: ", var4);
             return true;
          case 71:
          case 72:
@@ -107,7 +105,7 @@ public class KeyboardHandler {
             return false;
          case 76:
             this.minecraft.smartCull = !this.minecraft.smartCull;
-            this.debugFeedbackFormatted("SmartCull: {0}", this.minecraft.smartCull ? "enabled" : "disabled");
+            this.debugFeedbackEnabledStatus("SmartCull: ", this.minecraft.smartCull);
             return true;
          case 79:
             if (this.minecraft.player == null) {
@@ -115,15 +113,15 @@ public class KeyboardHandler {
             }
 
             boolean var3 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_OCTREE);
-            this.debugFeedbackFormatted("Frustum culling Octree: {0}", var3 ? "enabled" : "disabled");
+            this.debugFeedbackEnabledStatus("Frustum culling Octree: ", var3);
             return true;
          case 85:
             if (var1.hasShiftDown()) {
                this.minecraft.levelRenderer.killFrustum();
-               this.debugFeedbackFormatted("Killed frustum");
+               this.debugFeedback("Killed frustum");
             } else {
                this.minecraft.levelRenderer.captureFrustum();
-               this.debugFeedbackFormatted("Captured frustum");
+               this.debugFeedback("Captured frustum");
             }
 
             return true;
@@ -133,13 +131,17 @@ public class KeyboardHandler {
             }
 
             boolean var5 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
-            this.debugFeedbackFormatted("SectionVisibility: {0}", var5 ? "enabled" : "disabled");
+            this.debugFeedbackEnabledStatus("SectionVisibility: ", var5);
             return true;
          case 87:
             this.minecraft.wireframe = !this.minecraft.wireframe;
-            this.debugFeedbackFormatted("WireFrame: {0}", this.minecraft.wireframe ? "enabled" : "disabled");
+            this.debugFeedbackEnabledStatus("WireFrame: ", this.minecraft.wireframe);
             return true;
       }
+   }
+
+   private void debugFeedbackEnabledStatus(String var1, boolean var2) {
+      this.debugFeedback(var1 + (var2 ? "enabled" : "disabled"));
    }
 
    private void showDebugChat(Component var1) {
@@ -163,8 +165,8 @@ public class KeyboardHandler {
       this.debugFeedbackComponent(Component.translatable(var1, var2));
    }
 
-   private void debugFeedbackFormatted(String var1, Object... var2) {
-      this.debugFeedbackComponent(Component.literal(MessageFormat.format(var1, var2)));
+   private void debugFeedback(String var1) {
+      this.debugFeedbackComponent(Component.literal(var1));
    }
 
    private boolean handleDebugKeys(KeyEvent var1) {
@@ -239,11 +241,9 @@ public class KeyboardHandler {
             var3 = true;
          }
 
-         if (var2.keyDebugSwitchGameMode.matches(var1)) {
+         if (var2.keyDebugSwitchGameMode.matches(var1) && this.minecraft.level != null && this.minecraft.screen == null) {
             if (this.minecraft.canSwitchGameMode() && GameModeCommand.PERMISSION_CHECK.check(this.minecraft.player.permissions())) {
-               if (!(this.minecraft.screen instanceof WinScreen)) {
-                  this.minecraft.setScreen(new GameModeSwitcherScreen());
-               }
+               this.minecraft.setScreen(new GameModeSwitcherScreen());
             } else {
                this.debugFeedbackTranslated("debug.gamemodes.error");
             }
@@ -485,6 +485,10 @@ public class KeyboardHandler {
             try {
                if (var3 != 1 && var3 != 2) {
                   if (var3 == 0 && var10.keyReleased(var4)) {
+                     if (var6.keyDebugModifier.matches(var4)) {
+                        this.usedDebugKeyAsModifier = false;
+                     }
+
                      return;
                   }
                } else {
@@ -512,22 +516,22 @@ public class KeyboardHandler {
          InputConstants.Key var18;
          boolean var22;
          boolean var10000;
-         label193: {
+         label197: {
             var18 = InputConstants.getKey(var4);
             var22 = this.minecraft.screen == null;
             if (!var22) {
-               label191: {
+               label195: {
                   Screen var15 = this.minecraft.screen;
                   if (var15 instanceof PauseScreen) {
                      PauseScreen var14 = (PauseScreen)var15;
                      if (!var14.showsPauseMenu()) {
-                        break label191;
+                        break label195;
                      }
                   }
 
                   if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label193;
+                     break label197;
                   }
                }
             }

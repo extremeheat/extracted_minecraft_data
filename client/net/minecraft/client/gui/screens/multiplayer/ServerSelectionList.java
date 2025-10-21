@@ -34,6 +34,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.FormattedCharSequence;
 import org.slf4j.Logger;
 
@@ -293,7 +294,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
                   this.screen.getPinger().pingServer(this.serverData, () -> this.minecraft.execute(this::updateServerList), () -> {
                      this.serverData.setState(this.serverData.protocol == SharedConstants.getCurrentVersion().protocolVersion() ? ServerData.State.SUCCESSFUL : ServerData.State.INCOMPATIBLE);
                      this.minecraft.execute(this::refreshStatus);
-                  });
+                  }, EventLoopGroupHolder.remote(this.minecraft.options.useNativeTransport()));
                } catch (UnknownHostException var2) {
                   this.serverData.setState(ServerData.State.UNREACHABLE);
                   this.serverData.motd = ServerSelectionList.CANT_RESOLVE_TEXT;

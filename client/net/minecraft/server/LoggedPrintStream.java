@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.mojang.logging.LogUtils;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
@@ -11,7 +12,7 @@ public class LoggedPrintStream extends PrintStream {
    protected final String name;
 
    public LoggedPrintStream(String var1, OutputStream var2) {
-      super(var2);
+      super(var2, false, StandardCharsets.UTF_8);
       this.name = var1;
    }
 

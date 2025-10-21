@@ -239,6 +239,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected ItemStack useItem;
    protected int useItemRemaining;
    protected int fallFlyTicks;
+   private long lastEnemyHitTime;
    private BlockPos lastPos;
    private Optional<BlockPos> lastClimbablePos;
    @Nullable
@@ -261,6 +262,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected LivingEntity(EntityType<? extends LivingEntity> var1, Level var2) {
       super(var1, var2);
       this.useItem = ItemStack.EMPTY;
+      this.lastEnemyHitTime = -2147483648L;
       this.lastClimbablePos = Optional.empty();
       this.activeLocationDependentEnchantments = new EnumMap(EquipmentSlot.class);
       this.locatorBarIcon = new Waypoint.Icon();
@@ -1938,6 +1940,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void handleEntityEvent(byte var1) {
       switch (var1) {
+         case 2:
+            this.lastEnemyHitTime = this.level().getGameTime();
+            break;
          case 3:
             SoundEvent var15 = this.getDeathSound();
             if (var15 != null) {
@@ -2003,6 +2008,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             super.handleEntityEvent(var1);
       }
 
+   }
+
+   public float getTicksSinceEnemyHit(float var1) {
+      return this.lastEnemyHitTime < 0L ? 0.0F : (float)(this.level().getGameTime() - this.lastEnemyHitTime) + var1;
    }
 
    public void makePoofParticles() {

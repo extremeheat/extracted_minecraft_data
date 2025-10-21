@@ -7,10 +7,11 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -54,9 +55,9 @@ public class EquipmentLayerRenderer {
             int var18 = getColorForLayer(var17, var13);
             if (var18 != 0) {
                ResourceLocation var19 = var17.usePlayerTexture() && var9 != null ? var9 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var17));
-               var7.order(var15++).submitModel(var3, var4, var6, RenderType.armorCutoutNoCull(var19), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
+               var7.order(var15++).submitModel(var3, var4, var6, RenderTypes.armorCutoutNoCull(var19), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
                if (var14) {
-                  var7.order(var15++).submitModel(var3, var4, var6, RenderType.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
+                  var7.order(var15++).submitModel(var3, var4, var6, RenderTypes.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
                }
 
                var14 = false;

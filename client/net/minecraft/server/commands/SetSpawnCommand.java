@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec2;
 
@@ -31,8 +32,8 @@ public class SetSpawnCommand {
    private static int setSpawn(CommandSourceStack var0, Collection<ServerPlayer> var1, BlockPos var2, Coordinates var3) {
       ResourceKey var4 = var0.getLevel().dimension();
       Vec2 var5 = var3.getRotation(var0);
-      float var6 = var5.y;
-      float var7 = var5.x;
+      float var6 = Mth.wrapDegrees(var5.y);
+      float var7 = Mth.clamp(var5.x, -90.0F, 90.0F);
 
       for(ServerPlayer var9 : var1) {
          var9.setRespawnPosition(new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var4, var2, var6, var7), true), false);

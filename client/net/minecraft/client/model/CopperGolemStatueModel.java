@@ -1,12 +1,12 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.Direction;
 
 public class CopperGolemStatueModel extends Model<Direction> {
    public CopperGolemStatueModel(ModelPart var1) {
-      super(var1, RenderType::entityCutoutNoCull);
+      super(var1, RenderTypes::entityCutoutNoCull);
    }
 
    public void setupAnim(Direction var1) {

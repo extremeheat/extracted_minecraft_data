@@ -6,8 +6,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
 public class Material {

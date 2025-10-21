@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EndPortalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -70,6 +71,6 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
    }
 
    protected RenderType renderType() {
-      return RenderType.endPortal();
+      return RenderTypes.endPortal();
    }
 }

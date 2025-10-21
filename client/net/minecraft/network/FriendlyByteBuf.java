@@ -33,7 +33,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -634,15 +633,6 @@ public class FriendlyByteBuf extends ByteBuf {
    public <T> ResourceKey<? extends Registry<T>> readRegistryKey() {
       ResourceLocation var1 = this.readResourceLocation();
       return ResourceKey.createRegistryKey(var1);
-   }
-
-   public Date readDate() {
-      return new Date(this.readLong());
-   }
-
-   public FriendlyByteBuf writeDate(Date var1) {
-      this.writeLong(var1.getTime());
-      return this;
    }
 
    public Instant readInstant() {
@@ -1249,6 +1239,10 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public CharSequence readCharSequence(int var1, Charset var2) {
       return this.source.readCharSequence(var1, var2);
+   }
+
+   public String readString(int var1, Charset var2) {
+      return this.source.readString(var1, var2);
    }
 
    public int readBytes(FileChannel var1, long var2, int var4) throws IOException {

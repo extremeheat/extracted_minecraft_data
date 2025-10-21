@@ -1769,6 +1769,7 @@ public class SoundEvents {
    public static final SoundEvent APPLY_EFFECT_TRIAL_OMEN = register("event.mob_effect.trial_omen");
    public static final SoundEvent APPLY_EFFECT_RAID_OMEN = register("event.mob_effect.raid_omen");
    public static final Holder.Reference<SoundEvent> SADDLE_UNEQUIP = registerForHolder("item.saddle.unequip");
+   public static final Holder.Reference<SoundEvent> UNDERWATER_SADDLE_EQUIP = registerForHolder("item.underwater_saddle.equip");
 
    public SoundEvents() {
       super();

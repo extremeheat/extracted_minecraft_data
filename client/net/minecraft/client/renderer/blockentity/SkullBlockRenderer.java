@@ -13,11 +13,12 @@ import net.minecraft.client.model.dragon.DragonHeadModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -124,11 +125,11 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
    }
 
    public static RenderType getSkullRenderType(SkullBlock.Type var0, @Nullable ResourceLocation var1) {
-      return RenderType.entityCutoutNoCullZOffset(var1 != null ? var1 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
+      return RenderTypes.entityCutoutNoCullZOffset(var1 != null ? var1 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
    }
 
    public static RenderType getPlayerSkinRenderType(ResourceLocation var0) {
-      return RenderType.entityTranslucent(var0);
+      return RenderTypes.entityTranslucent(var0);
    }
 
    // $FF: synthetic method

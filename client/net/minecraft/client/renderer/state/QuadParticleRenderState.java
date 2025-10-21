@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -65,7 +66,7 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
          if (var12 != null) {
             var1.write(var12.vertexBuffer());
             RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS).getBuffer(var12.drawState().indexCount());
-            GpuBufferSlice var14 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), RenderSystem.getTextureMatrix());
+            GpuBufferSlice var14 = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
             return new PreparedBuffers(var12.drawState().indexCount(), var14, var5);
          } else {
             return null;

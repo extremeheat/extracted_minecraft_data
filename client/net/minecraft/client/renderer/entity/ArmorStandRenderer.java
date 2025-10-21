@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.model.ArmorStandArmorModel;
 import net.minecraft.client.model.ArmorStandModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
@@ -15,6 +14,8 @@ import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -84,9 +85,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       } else {
          ResourceLocation var5 = this.getTextureLocation(var1);
          if (var3) {
-            return RenderType.entityTranslucent(var5, false);
+            return RenderTypes.entityTranslucent(var5, false);
          } else {
-            return var2 ? RenderType.entityCutoutNoCull(var5, false) : null;
+            return var2 ? RenderTypes.entityCutoutNoCull(var5, false) : null;
          }
       }
    }

@@ -3,6 +3,7 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import java.util.HexFormat;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -54,7 +55,7 @@ public class WaypointCommand {
 
    private static int setWaypointColor(CommandSourceStack var0, WaypointTransmitter var1, Integer var2) {
       mutateIcon(var0, var1, (var1x) -> var1x.color = Optional.of(var2));
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(String.format("%06X", ARGB.color(0, var2))).withColor(var2)), false);
+      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(HexFormat.of().withUpperCase().toHexDigits((long)ARGB.color(0, var2), 6)).withColor(var2)), false);
       return 0;
    }
 

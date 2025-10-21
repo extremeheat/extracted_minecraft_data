@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class DetectedVersion {
    }
 
    public static WorldVersion createBuiltIn(String var0, String var1, boolean var2) {
-      return new WorldVersion.Simple(var0, var1, new DataVersion(4654, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(70, 1), PackFormat.of(90, 0), new Date(), var2);
+      return new WorldVersion.Simple(var0, var1, new DataVersion(4655, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(71, 0), PackFormat.of(91, 0), new Date(), var2);
    }
 
    private static WorldVersion createFromJson(JsonObject var0) {
@@ -50,7 +51,7 @@ public class DetectedVersion {
                   break label63;
                }
 
-               InputStreamReader var1 = new InputStreamReader(var0);
+               InputStreamReader var1 = new InputStreamReader(var0, StandardCharsets.UTF_8);
 
                try {
                   var2 = createFromJson(GsonHelper.parse((Reader)var1));

@@ -9,8 +9,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.WardenRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class WardenModel extends EntityModel<WardenRenderState> {
@@ -35,7 +35,7 @@ public class WardenModel extends EntityModel<WardenRenderState> {
    private final KeyframeAnimation sniffAnimation;
 
    public WardenModel(ModelPart var1) {
-      super(var1, RenderType::entityCutoutNoCull);
+      super(var1, RenderTypes::entityCutoutNoCull);
       this.bone = var1.getChild("bone");
       this.body = this.bone.getChild("body");
       this.head = this.body.getChild("head");

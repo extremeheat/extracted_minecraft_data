@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.MaterialSet;
@@ -154,7 +155,7 @@ public class ScreenEffectRenderer {
       float var12 = var0.getV0();
       float var13 = var0.getV1();
       Matrix4f var14 = var1.last().pose();
-      VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(var0.atlasLocation()));
+      VertexConsumer var15 = var2.getBuffer(RenderTypes.blockScreenEffect(var0.atlasLocation()));
       var15.addVertex((Matrix4fc)var14, -1.0F, -1.0F, -0.5F).setUv(var11, var13).setColor(var4);
       var15.addVertex((Matrix4fc)var14, 1.0F, -1.0F, -0.5F).setUv(var10, var13).setColor(var4);
       var15.addVertex((Matrix4fc)var14, 1.0F, 1.0F, -0.5F).setUv(var10, var12).setColor(var4);
@@ -174,7 +175,7 @@ public class ScreenEffectRenderer {
       float var12 = -var0.player.getYRot() / 64.0F;
       float var13 = var0.player.getXRot() / 64.0F;
       Matrix4f var14 = var1.last().pose();
-      VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(UNDERWATER_LOCATION));
+      VertexConsumer var15 = var2.getBuffer(RenderTypes.blockScreenEffect(UNDERWATER_LOCATION));
       var15.addVertex((Matrix4fc)var14, -1.0F, -1.0F, -0.5F).setUv(4.0F + var12, 4.0F + var13).setColor(var5);
       var15.addVertex((Matrix4fc)var14, 1.0F, -1.0F, -0.5F).setUv(0.0F + var12, 4.0F + var13).setColor(var5);
       var15.addVertex((Matrix4fc)var14, 1.0F, 1.0F, -0.5F).setUv(0.0F + var12, 0.0F + var13).setColor(var5);
@@ -182,7 +183,7 @@ public class ScreenEffectRenderer {
    }
 
    private static void renderFire(PoseStack var0, MultiBufferSource var1, TextureAtlasSprite var2) {
-      VertexConsumer var3 = var1.getBuffer(RenderType.fireScreenEffect(var2.atlasLocation()));
+      VertexConsumer var3 = var1.getBuffer(RenderTypes.fireScreenEffect(var2.atlasLocation()));
       float var4 = var2.getU0();
       float var5 = var2.getU1();
       float var6 = (var4 + var5) / 2.0F;

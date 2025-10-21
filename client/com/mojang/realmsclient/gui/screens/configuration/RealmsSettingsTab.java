@@ -159,11 +159,9 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    }
 
    public void save() {
-      if (this.serverData.regionSelectionPreference == null || !Objects.equals(this.nameEdit.getValue(), this.serverData.name) || !Objects.equals(this.descEdit.getValue(), this.serverData.motd) || this.preferredRegionSelection.preference() != this.serverData.regionSelectionPreference.regionSelectionPreference || this.preferredRegionSelection.region() != this.serverData.regionSelectionPreference.preferredRegion) {
-         if (this.isRealmNameValid()) {
-            this.configurationScreen.saveSettings(this.nameEdit.getValue(), this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
-         }
-
+      String var1 = this.nameEdit.getValue().trim();
+      if (this.serverData.regionSelectionPreference == null || !Objects.equals(var1, this.serverData.name) || !Objects.equals(this.descEdit.getValue(), this.serverData.motd) || this.preferredRegionSelection.preference() != this.serverData.regionSelectionPreference.regionSelectionPreference || this.preferredRegionSelection.region() != this.serverData.regionSelectionPreference.preferredRegion) {
+         this.configurationScreen.saveSettings(var1, this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
       }
    }
 

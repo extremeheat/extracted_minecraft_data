@@ -7,8 +7,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public class WindChargeModel extends EntityModel<EntityRenderState> {
    private static final int ROTATION_SPEED = 16;
@@ -17,7 +17,7 @@ public class WindChargeModel extends EntityModel<EntityRenderState> {
    private final ModelPart wind;
 
    public WindChargeModel(ModelPart var1) {
-      super(var1, RenderType::entityTranslucent);
+      super(var1, RenderTypes::entityTranslucent);
       this.bone = var1.getChild("bone");
       this.wind = this.bone.getChild("wind");
       this.windCharge = this.bone.getChild("wind_charge");

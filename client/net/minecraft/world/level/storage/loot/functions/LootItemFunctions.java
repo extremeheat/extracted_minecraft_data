@@ -58,6 +58,7 @@ public class LootItemFunctions {
    public static final LootItemFunctionType<ToggleTooltips> TOGGLE_TOOLTIPS;
    public static final LootItemFunctionType<SetOminousBottleAmplifierFunction> SET_OMINOUS_BOTTLE_AMPLIFIER;
    public static final LootItemFunctionType<SetCustomModelDataFunction> SET_CUSTOM_MODEL_DATA;
+   public static final LootItemFunctionType<DiscardItem> DISCARD;
 
    public LootItemFunctions() {
       super();
@@ -139,5 +140,6 @@ public class LootItemFunctions {
       TOGGLE_TOOLTIPS = register("toggle_tooltips", ToggleTooltips.CODEC);
       SET_OMINOUS_BOTTLE_AMPLIFIER = register("set_ominous_bottle_amplifier", SetOminousBottleAmplifierFunction.CODEC);
       SET_CUSTOM_MODEL_DATA = register("set_custom_model_data", SetCustomModelDataFunction.CODEC);
+      DISCARD = register("discard", DiscardItem.CODEC);
    }
 }

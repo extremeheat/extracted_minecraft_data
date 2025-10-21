@@ -8,9 +8,9 @@ import java.util.Set;
 import net.minecraft.client.model.CopperGolemStatueModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +33,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
 
    public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
       this.positionModel(var2);
-      var3.submitModel(this.model, Direction.SOUTH, var2, RenderType.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.submitModel(this.model, Direction.SOUTH, var2, RenderTypes.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

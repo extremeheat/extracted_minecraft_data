@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SequencedMap;
 import javax.annotation.Nullable;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public interface MultiBufferSource {
    static BufferSource immediate(ByteBufferBuilder var0) {

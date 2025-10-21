@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.PaintingRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -38,7 +39,7 @@ public class PaintingRenderer extends EntityRenderer<Painting, PaintingRenderSta
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(180 - var1.direction.get2DDataValue() * 90)));
          TextureAtlasSprite var6 = this.paintingsAtlas.getSprite(var5.assetId());
          TextureAtlasSprite var7 = this.paintingsAtlas.getSprite(BACK_SPRITE_LOCATION);
-         this.renderPainting(var2, var3, RenderType.entitySolidZOffsetForward(var7.atlasLocation()), var1.lightCoordsPerBlock, var5.width(), var5.height(), var6, var7);
+         this.renderPainting(var2, var3, RenderTypes.entitySolidZOffsetForward(var7.atlasLocation()), var1.lightCoordsPerBlock, var5.width(), var5.height(), var6, var7);
          var2.popPose();
          super.submit(var1, var2, var3, var4);
       }

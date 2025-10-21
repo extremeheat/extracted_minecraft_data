@@ -3,10 +3,10 @@ package net.minecraft.client.renderer.feature;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -34,7 +34,7 @@ public class LeashFeatureRenderer {
       float var7 = var5 * var6;
       float var8 = var3 * var6;
       var0.translate((float)var2.offset.x, (float)var2.offset.y, (float)var2.offset.z);
-      VertexConsumer var9 = var1.getBuffer(RenderType.leash());
+      VertexConsumer var9 = var1.getBuffer(RenderTypes.leash());
 
       for(int var10 = 0; var10 <= 24; ++var10) {
          addVertexPair(var9, var0, var3, var4, var5, 0.05F, var7, var8, var10, false, var2);

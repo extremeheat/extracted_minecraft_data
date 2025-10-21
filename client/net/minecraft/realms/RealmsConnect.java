@@ -20,6 +20,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
+import net.minecraft.server.network.EventLoopGroupHolder;
 import org.slf4j.Logger;
 
 public class RealmsConnect {
@@ -50,7 +51,7 @@ public class RealmsConnect {
                   return;
                }
 
-               RealmsConnect.this.connection = Connection.connectToServer(var6, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger());
+               RealmsConnect.this.connection = Connection.connectToServer(var6, EventLoopGroupHolder.remote(var3.options.useNativeTransport()), var3.getDebugOverlay().getBandwidthLogger());
                if (RealmsConnect.this.aborted) {
                   return;
                }

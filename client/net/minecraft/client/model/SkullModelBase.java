@@ -1,11 +1,11 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public abstract class SkullModelBase extends Model<State> {
    public SkullModelBase(ModelPart var1) {
-      super(var1, RenderType::entityTranslucent);
+      super(var1, RenderTypes::entityTranslucent);
    }
 
    public static class State {

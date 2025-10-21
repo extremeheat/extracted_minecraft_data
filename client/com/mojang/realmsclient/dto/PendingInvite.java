@@ -3,16 +3,16 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import org.slf4j.Logger;
 
-public record PendingInvite(String invitationId, String realmName, String realmOwnerName, UUID realmOwnerUuid, Date date) {
+public record PendingInvite(String invitationId, String realmName, String realmOwnerName, UUID realmOwnerUuid, Instant date) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public PendingInvite(String var1, String var2, String var3, UUID var4, Date var5) {
+   public PendingInvite(String var1, String var2, String var3, UUID var4, Instant var5) {
       super();
       this.invitationId = var1;
       this.realmName = var2;

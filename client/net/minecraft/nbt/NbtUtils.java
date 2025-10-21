@@ -567,6 +567,10 @@ public final class NbtUtils {
       var0.putInt("DataVersion", var1);
    }
 
+   public static int getDataVersion(CompoundTag var0) {
+      return getDataVersion(var0, -1);
+   }
+
    public static int getDataVersion(CompoundTag var0, int var1) {
       return var0.getIntOr("DataVersion", var1);
    }

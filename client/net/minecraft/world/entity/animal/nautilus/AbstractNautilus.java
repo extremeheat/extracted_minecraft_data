@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal.nautilus;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -9,6 +10,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -40,6 +42,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -55,7 +58,6 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    public static final int SMALL_RESTRICTION_RADIUS = 16;
    public static final int LARGE_RESTRICTION_RADIUS = 32;
    public static final int RESTRICTION_RADIUS_BUFFER = 8;
-   private static final int NAUTILUS_TOTAL_AIR_SUPPLY = 300;
    private static final int EFFECT_DURATION = 60;
    private static final int EFFECT_REFRESH_RATE = 40;
    private static final double NAUTILUS_WATER_RESISTANCE = 0.9;
@@ -122,36 +124,6 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       return var1.isUnobstructed(this);
    }
 
-   public int getMaxAirSupply() {
-      return 300;
-   }
-
-   protected void handleAirSupply(ServerLevel var1, int var2) {
-      if (this.isAlive() && !this.isInWater()) {
-         this.setAirSupply(var2 - 1);
-         if (this.getAirSupply() <= -20) {
-            this.setAirSupply(0);
-            this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
-         }
-      } else {
-         this.setAirSupply(300);
-      }
-
-   }
-
-   public void baseTick() {
-      int var1 = this.getAirSupply();
-      super.baseTick();
-      if (!this.isNoAi()) {
-         Level var3 = this.level();
-         if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
-            this.handleAirSupply(var2, var1);
-         }
-      }
-
-   }
-
    public boolean canUseSlot(EquipmentSlot var1) {
       if (var1 != EquipmentSlot.SADDLE && var1 != EquipmentSlot.BODY) {
          return super.canUseSlot(var1);
@@ -167,7 +139,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    @Nullable
    public LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
-      if (var1 instanceof Player var2) {
+      if (this.isSaddled() && var1 instanceof Player var2) {
          return var2;
       } else {
          return super.getControllingPassenger();
@@ -449,6 +421,10 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       RandomSource var5 = var1.getRandom();
       NautilusAi.initMemories(this, var5);
       return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
+   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
+      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE && this.isUnderWater() ? SoundEvents.UNDERWATER_SADDLE_EQUIP : super.getEquipSound(var1, var2, var3));
    }
 
    static {

@@ -3,7 +3,7 @@ package com.mojang.realmsclient.util;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.util.UndashedUuid;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -95,8 +95,8 @@ public class JsonUtils {
       }
    }
 
-   public static Date getDateOr(String var0, JsonObject var1) {
+   public static Instant getDateOr(String var0, JsonObject var1) {
       JsonElement var2 = var1.get(var0);
-      return var2 != null ? new Date(Long.parseLong(var2.getAsString())) : new Date();
+      return var2 != null ? Instant.ofEpochMilli(Long.parseLong(var2.getAsString())) : Instant.EPOCH;
    }
 }

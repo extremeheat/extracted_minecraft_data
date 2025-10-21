@@ -58,7 +58,7 @@ public interface NeutralMob {
    default void updatePersistentAnger(ServerLevel var1, boolean var2) {
       LivingEntity var3 = this.getTarget();
       EntityReference var4 = this.getPersistentAngerTarget();
-      if (var3 != null && var3.isDeadOrDying() && var4 != null && var4.getUUID().equals(var3.getUUID()) && var3 instanceof Mob) {
+      if (var3 != null && var3.isDeadOrDying() && var4 != null && var4.matches(var3) && var3 instanceof Mob) {
          this.stopBeingAngry();
       } else {
          if (var3 != null && (var4 == null || !var4.matches(var3))) {
@@ -66,17 +66,30 @@ public interface NeutralMob {
             this.startPersistentAngerTimer();
          }
 
-         if (var4 != null && !this.isAngry() && (var3 == null || var3.getType() != EntityType.PLAYER || !var2)) {
+         if (var4 != null && !this.isAngry() && (var3 == null || !isValidPlayerTarget(var3) || !var2)) {
             this.stopBeingAngry();
          }
 
       }
    }
 
+   private static boolean isValidPlayerTarget(LivingEntity var0) {
+      boolean var10000;
+      if (var0 instanceof Player var1) {
+         if (!var1.isCreative() && !var1.isSpectator()) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
+   }
+
    default boolean isAngryAt(LivingEntity var1, ServerLevel var2) {
       if (!this.canAttack(var1)) {
          return false;
-      } else if (var1.getType() == EntityType.PLAYER && this.isAngryAtAllPlayers(var2)) {
+      } else if (isValidPlayerTarget(var1) && this.isAngryAtAllPlayers(var2)) {
          return true;
       } else {
          EntityReference var3 = this.getPersistentAngerTarget();

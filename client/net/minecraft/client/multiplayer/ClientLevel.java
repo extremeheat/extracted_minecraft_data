@@ -263,9 +263,9 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public void tick(BooleanSupplier var1) {
-      this.getWorldBorder().tick();
       this.updateSkyBrightness();
       if (this.tickRateManager().runsNormally()) {
+         this.getWorldBorder().tick();
          this.tickTime();
       }
 

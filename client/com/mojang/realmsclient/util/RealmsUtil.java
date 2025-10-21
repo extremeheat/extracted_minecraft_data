@@ -3,7 +3,7 @@ package com.mojang.realmsclient.util;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.exception.RealmsServiceException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -50,8 +50,8 @@ public class RealmsUtil {
       }
    }
 
-   public static Component convertToAgePresentationFromInstant(Date var0) {
-      return convertToAgePresentation(System.currentTimeMillis() - var0.getTime());
+   public static Component convertToAgePresentationFromInstant(Instant var0) {
+      return convertToAgePresentation(System.currentTimeMillis() - var0.toEpochMilli());
    }
 
    public static void renderPlayerFace(GuiGraphics var0, int var1, int var2, int var3, UUID var4) {

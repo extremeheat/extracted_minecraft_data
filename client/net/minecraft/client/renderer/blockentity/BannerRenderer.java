@@ -9,12 +9,12 @@ import net.minecraft.client.model.BannerModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BannerRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -107,15 +107,15 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
       var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
       Material var13 = ModelBakery.BANNER_BASE;
-      var2.submitModel(var6, Unit.INSTANCE, var1, var13.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var13), var12, var11);
+      var2.submitModel(var6, Unit.INSTANCE, var1, var13.renderType(RenderTypes::entitySolid), var3, var4, -1, var0.get(var13), var12, var11);
       submitPatterns(var0, var1, var2, var3, var4, var7, var8, var13, true, var9, var10, false, var11, var12);
       var1.popPose();
    }
 
    public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, boolean var11, @Nullable ModelFeatureRenderer.CrumblingOverlay var12, int var13) {
-      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entitySolid), var3, var4, -1, var0.get(var7), var13, var12);
+      var2.submitModel(var5, var6, var1, var7.renderType(RenderTypes::entitySolid), var3, var4, -1, var0.get(var7), var13, var12);
       if (var11) {
-         var2.submitModel(var5, var6, var1, RenderType.entityGlint(), var3, var4, -1, var0.get(var7), 0, var12);
+         var2.submitModel(var5, var6, var1, RenderTypes.entityGlint(), var3, var4, -1, var0.get(var7), 0, var12);
       }
 
       submitPatternLayer(var0, var1, var2, var3, var4, var5, var6, var8 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var9, var12);
@@ -130,7 +130,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
 
    private static <S> void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, DyeColor var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
       int var10 = var8.getTextureDiffuseColor();
-      var2.submitModel(var5, var6, var1, var7.renderType(RenderType::entityNoOutline), var3, var4, var10, var0.get(var7), 0, var9);
+      var2.submitModel(var5, var6, var1, var7.renderType(RenderTypes::entityNoOutline), var3, var4, var10, var0.get(var7), 0, var9);
    }
 
    public void getExtents(Set<Vector3f> var1) {

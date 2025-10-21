@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -263,12 +264,14 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       Set var4 = (Set)var3.stream().map(EntityType::getCategory).collect(Collectors.toSet());
       Sets.SetView var5 = Sets.symmetricDifference(EXCEPTIONS_BY_EXPECTED_CATEGORIES.keySet(), var4);
       if (!var5.isEmpty()) {
-         var2.add("Found EntityType with MobCategory only in either expected exceptions or kill_all_mobs advancement: %s".formatted(var5.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+         Stream var10001 = var5.stream().map(Object::toString).sorted();
+         var2.add("Found EntityType with MobCategory only in either expected exceptions or kill_all_mobs advancement: " + (String)var10001.collect(Collectors.joining(", ")));
       }
 
       Sets.SetView var6 = Sets.intersection((Set)EXCEPTIONS_BY_EXPECTED_CATEGORIES.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()), var3);
       if (!var6.isEmpty()) {
-         var2.add("Found EntityType in both expected exceptions and kill_all_mobs advancement: %s".formatted(var6.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+         Stream var8 = var6.stream().map(Object::toString).sorted();
+         var2.add("Found EntityType in both expected exceptions and kill_all_mobs advancement: " + (String)var8.collect(Collectors.joining(", ")));
       }
 
       Stream var10000 = var1.listElements().map(Holder.Reference::value);
@@ -277,14 +280,14 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EXCEPTIONS_BY_EXPECTED_CATEGORIES.forEach((var2x, var3x) -> {
          Sets.SetView var4 = Sets.difference((Set)var7.getOrDefault(var2x, Set.of()), var3x);
          if (!var4.isEmpty()) {
-            var2.add("Found (new?) EntityType with MobCategory %s which are in neither expected exceptions nor kill_all_mobs advancement: %s".formatted(var2x, var4.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
+            var2.add(String.format(Locale.ROOT, "Found (new?) EntityType with MobCategory %s which are in neither expected exceptions nor kill_all_mobs advancement: %s", var2x, var4.stream().map(Object::toString).sorted().collect(Collectors.joining(", "))));
          }
 
       });
       if (!var2.isEmpty()) {
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var2.forEach(var10001::error);
+         Logger var9 = LOGGER;
+         Objects.requireNonNull(var9);
+         var2.forEach(var9::error);
          throw new IllegalStateException("Found inconsistencies with kill_all_mobs advancement");
       } else {
          return var0;

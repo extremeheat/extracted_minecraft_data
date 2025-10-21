@@ -281,6 +281,9 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    private float crystalSoundIntensity;
    private int lastCrystalSoundPlayTick;
    private boolean hasVisualFire;
+   private Vec3 lastKnownMovement;
+   @Nullable
+   private Vec3 lastKnownPosition;
    @Nullable
    private BlockState inBlockState;
    public static final int MAX_MOVEMENTS_HANDELED_PER_TICK = 100;
@@ -310,6 +313,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.pistonDeltas = new double[]{0.0, 0.0, 0.0};
       this.mainSupportingBlockPos = Optional.empty();
       this.onGroundNoBlocks = false;
+      this.lastKnownMovement = Vec3.ZERO;
       this.inBlockState = null;
       this.movementThisTick = new ArrayDeque(100);
       this.finalMovementsThisTick = new ObjectArrayList();
@@ -517,6 +521,13 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
    public void baseTick() {
       ProfilerFiller var1 = Profiler.get();
       var1.push("entityBaseTick");
+      if (this.lastKnownPosition == null) {
+         this.lastKnownPosition = this.position();
+      }
+
+      Vec3 var2 = this.position();
+      this.lastKnownMovement = var2.subtract(this.lastKnownPosition);
+      this.lastKnownPosition = var2;
       this.inBlockState = null;
       if (this.isPassenger() && this.getVehicle().isRemoved()) {
          this.stopRiding();
@@ -536,14 +547,14 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.updateInWaterStateAndDoFluidPushing();
       this.updateFluidOnEyes();
       this.updateSwimming();
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      Level var4 = this.level();
+      if (var4 instanceof ServerLevel var3) {
          if (this.remainingFireTicks > 0) {
             if (this.fireImmune()) {
                this.clearFire();
             } else {
                if (this.remainingFireTicks % 20 == 0 && !this.isInLava()) {
-                  this.hurtServer(var2, this.damageSources().onFire(), 1.0F);
+                  this.hurtServer(var3, this.damageSources().onFire(), 1.0F);
                }
 
                this.setRemainingFireTicks(this.remainingFireTicks - 1);
@@ -563,10 +574,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       }
 
       this.firstTick = false;
-      var3 = this.level();
-      if (var3 instanceof ServerLevel var4) {
+      var4 = this.level();
+      if (var4 instanceof ServerLevel var5) {
          if (this instanceof Leashable) {
-            Leashable.tickLeash(var4, (Entity)((Leashable)this));
+            Leashable.tickLeash(var5, (Entity)((Leashable)this));
          }
       }
 
@@ -4000,7 +4011,7 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
          }
       }
 
-      return this.getDeltaMovement();
+      return this.lastKnownMovement;
    }
 
    @Nullable

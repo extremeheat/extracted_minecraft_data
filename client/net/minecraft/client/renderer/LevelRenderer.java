@@ -61,6 +61,8 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.BlockBreakingRenderState;
 import net.minecraft.client.renderer.state.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -458,7 +460,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var12.popPush("sky");
       this.skyRenderer.extractRenderState(this.level, var11, var4, this.levelRenderState.skyRenderState);
       var12.popPush("border");
-      this.worldBorderRenderer.extract(this.level.getWorldBorder(), var13, (double)(this.minecraft.options.getEffectiveRenderDistance() * 16), this.levelRenderState.worldBorderRenderState);
+      this.worldBorderRenderer.extract(this.level.getWorldBorder(), var11, var13, (double)(this.minecraft.options.getEffectiveRenderDistance() * 16), this.levelRenderState.worldBorderRenderState);
       var12.pop();
       var12.popPush("debug");
       this.debugRenderer.emitGizmos(var14, var13.x, var13.y, var13.z, var2.getGameTimeDeltaPartialTick(false));
@@ -588,9 +590,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.featureRenderDispatcher.renderAllFeatures();
          var19.endLastBatch();
          this.checkPoseStack(var21);
-         var19.endBatch(RenderType.solid());
-         var19.endBatch(RenderType.endPortal());
-         var19.endBatch(RenderType.endGateway());
+         var19.endBatch(RenderTypes.solid());
+         var19.endBatch(RenderTypes.endPortal());
+         var19.endBatch(RenderTypes.endGateway());
          var19.endBatch(Sheets.solidBlockSheet());
          var19.endBatch(Sheets.cutoutBlockSheet());
          var19.endBatch(Sheets.bedSheet());
@@ -608,16 +610,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var19.endBatch(Sheets.translucentItemSheet());
          var19.endBatch(Sheets.bannerSheet());
          var19.endBatch(Sheets.shieldSheet());
-         var19.endBatch(RenderType.armorEntityGlint());
-         var19.endBatch(RenderType.glint());
-         var19.endBatch(RenderType.glintTranslucent());
-         var19.endBatch(RenderType.entityGlint());
+         var19.endBatch(RenderTypes.armorEntityGlint());
+         var19.endBatch(RenderTypes.glint());
+         var19.endBatch(RenderTypes.glintTranslucent());
+         var19.endBatch(RenderTypes.entityGlint());
          var8.push("destroyProgress");
          this.renderBlockDestroyAnimation(var21, var20, var6);
          var20.endBatch();
          var8.pop();
          this.checkPoseStack(var21);
-         var19.endBatch(RenderType.waterMask());
+         var19.endBatch(RenderTypes.waterMask());
          var19.endBatch();
          if (var11 != null) {
             ((RenderTarget)var11.get()).copyDepthFrom((RenderTarget)var10.get());
@@ -924,11 +926,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          if (var5.isTranslucent() == var3) {
             Vec3 var6 = var4.cameraRenderState.pos;
             if (var5.highContrast()) {
-               VertexConsumer var7 = var1.getBuffer(RenderType.secondaryBlockOutline());
+               VertexConsumer var7 = var1.getBuffer(RenderTypes.secondaryBlockOutline());
                this.renderHitOutline(var2, var7, var6.x, var6.y, var6.z, var5, -16777216, 7.0F);
             }
 
-            VertexConsumer var9 = var1.getBuffer(RenderType.lines());
+            VertexConsumer var9 = var1.getBuffer(RenderTypes.lines());
             int var8 = var5.highContrast() ? -11010079 : ARGB.black(102);
             this.renderHitOutline(var2, var9, var6.x, var6.y, var6.z, var5, var8, this.minecraft.getWindow().getAppropriateLineWidth());
             var1.endLastBatch();

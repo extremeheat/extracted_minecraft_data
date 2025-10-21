@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.ambient;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -13,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -208,7 +207,7 @@ public class Bat extends AmbientCreature {
       } else {
          int var5 = var1.getMaxLocalRawBrightness(var3);
          byte var6 = 4;
-         if (isHalloween()) {
+         if (SpecialDates.isExtendedHalloween()) {
             var6 = 7;
          } else if (var4.nextBoolean()) {
             return false;
@@ -220,13 +219,6 @@ public class Bat extends AmbientCreature {
             return !var1.getBlockState(var3.below()).is(BlockTags.BATS_SPAWNABLE_ON) ? false : checkMobSpawnRules(var0, var1, var2, var3, var4);
          }
       }
-   }
-
-   private static boolean isHalloween() {
-      LocalDate var0 = LocalDate.now();
-      int var1 = var0.get(ChronoField.DAY_OF_MONTH);
-      int var2 = var0.get(ChronoField.MONTH_OF_YEAR);
-      return var2 == 10 && var1 >= 20 || var2 == 11 && var1 <= 3;
    }
 
    private void setupAnimationStates() {

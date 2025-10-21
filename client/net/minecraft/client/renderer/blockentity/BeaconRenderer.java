@@ -6,11 +6,11 @@ import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -82,7 +82,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       float var22 = 1.0F;
       float var23 = -1.0F + var12;
       float var24 = (float)var6 * var3 * (0.5F / var8) + var23;
-      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, false), (var9x, var10x) -> renderPart(var9x, var10x, var7, var5, var10, 0.0F, var8, var8, 0.0F, var17, 0.0F, 0.0F, var20, 0.0F, 1.0F, var24, var23));
+      var1.submitCustomGeometry(var0, RenderTypes.beaconBeam(var2, false), (var9x, var10x) -> renderPart(var9x, var10x, var7, var5, var10, 0.0F, var8, var8, 0.0F, var17, 0.0F, 0.0F, var20, 0.0F, 1.0F, var24, var23));
       var0.popPose();
       var13 = -var9;
       float var14 = -var9;
@@ -92,7 +92,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       var22 = 1.0F;
       var23 = -1.0F + var12;
       var24 = (float)var6 * var3 + var23;
-      var1.submitCustomGeometry(var0, RenderType.beaconBeam(var2, true), (var13x, var14x) -> renderPart(var13x, var14x, ARGB.color(32, var7), var5, var10, var13, var14, var9, var16, var17, var9, var9, var9, 0.0F, 1.0F, var24, var23));
+      var1.submitCustomGeometry(var0, RenderTypes.beaconBeam(var2, true), (var13x, var14x) -> renderPart(var13x, var14x, ARGB.color(32, var7), var5, var10, var13, var14, var9, var16, var17, var9, var9, var9, 0.0F, 1.0F, var24, var23));
       var0.popPose();
    }
 

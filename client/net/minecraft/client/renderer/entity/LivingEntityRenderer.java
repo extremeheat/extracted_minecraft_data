@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -16,6 +15,8 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -125,11 +126,11 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    protected RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
       ResourceLocation var5 = this.getTextureLocation(var1);
       if (var3) {
-         return RenderType.itemEntityTranslucentCull(var5);
+         return RenderTypes.itemEntityTranslucentCull(var5);
       } else if (var2) {
          return this.model.renderType(var5);
       } else {
-         return var4 ? RenderType.outline(var5) : null;
+         return var4 ? RenderTypes.outline(var5) : null;
       }
    }
 
@@ -301,6 +302,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.isBaby = var1.isBaby();
          var2.isInWater = var1.isInWater();
          var2.isAutoSpinAttack = var1.isAutoSpinAttack();
+         var2.ticksSinceEnemyHit = var1.getTicksSinceEnemyHit(var3);
          var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
          ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
          Item var8 = var9.getItem();

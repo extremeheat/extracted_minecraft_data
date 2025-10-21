@@ -3,6 +3,7 @@ package net.minecraft.server.rcon;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class NetworkDataOutputStream {
    private final ByteArrayOutputStream outputStream;
@@ -19,7 +20,7 @@ public class NetworkDataOutputStream {
    }
 
    public void writeString(String var1) throws IOException {
-      this.dataOutputStream.writeBytes(var1);
+      this.dataOutputStream.write(var1.getBytes(StandardCharsets.UTF_8));
       this.dataOutputStream.write(0);
    }
 

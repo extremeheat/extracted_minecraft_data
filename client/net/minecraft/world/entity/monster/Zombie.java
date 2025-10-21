@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.time.LocalDate;
-import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -19,6 +17,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -430,13 +429,13 @@ public class Zombie extends Monster {
                      this.startRiding(var9, false, false);
                   }
                } else if ((double)var5.nextFloat() < 0.05) {
-                  Chicken var12 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
-                  if (var12 != null) {
-                     var12.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-                     var12.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
-                     var12.setChickenJockey(true);
-                     this.startRiding(var12, false, false);
-                     var1.addFreshEntity(var12);
+                  Chicken var11 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
+                  if (var11 != null) {
+                     var11.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                     var11.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
+                     var11.setChickenJockey(true);
+                     this.startRiding(var11, false, false);
+                     var1.addFreshEntity(var11);
                   }
                }
             }
@@ -449,14 +448,9 @@ public class Zombie extends Monster {
          }
       }
 
-      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-         LocalDate var11 = LocalDate.now();
-         int var13 = var11.get(ChronoField.DAY_OF_MONTH);
-         int var14 = var11.get(ChronoField.MONTH_OF_YEAR);
-         if (var14 == 10 && var13 == 31 && var5.nextFloat() < 0.25F) {
-            this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-            this.setDropChance(EquipmentSlot.HEAD, 0.0F);
-         }
+      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && SpecialDates.isHalloween() && var5.nextFloat() < 0.25F) {
+         this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+         this.setDropChance(EquipmentSlot.HEAD, 0.0F);
       }
 
       this.handleAttributes(var6);

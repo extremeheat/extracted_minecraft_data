@@ -9,8 +9,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.AllayRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import org.joml.Quaternionfc;
@@ -27,7 +27,7 @@ public class AllayModel extends EntityModel<AllayRenderState> implements ArmedMo
    private static final float MIN_HAND_HOLDING_ITEM_X_ROT_RAD = -1.0471976F;
 
    public AllayModel(ModelPart var1) {
-      super(var1.getChild("root"), RenderType::entityTranslucent);
+      super(var1.getChild("root"), RenderTypes::entityTranslucent);
       this.head = this.root.getChild("head");
       this.body = this.root.getChild("body");
       this.right_arm = this.body.getChild("right_arm");

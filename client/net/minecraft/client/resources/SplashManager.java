@@ -2,8 +2,7 @@ package net.minecraft.client.resources;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.MonthDay;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -16,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class SplashManager extends SimplePreparableReloadListener<List<Component>> {
@@ -72,13 +72,12 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
 
    @Nullable
    public SplashRenderer getSplash() {
-      Calendar var1 = Calendar.getInstance();
-      var1.setTime(new Date());
-      if (var1.get(2) + 1 == 12 && var1.get(5) == 24) {
+      MonthDay var1 = SpecialDates.dayNow();
+      if (var1.equals(SpecialDates.CHRISTMAS)) {
          return SplashRenderer.CHRISTMAS;
-      } else if (var1.get(2) + 1 == 1 && var1.get(5) == 1) {
+      } else if (var1.equals(SpecialDates.NEW_YEAR)) {
          return SplashRenderer.NEW_YEAR;
-      } else if (var1.get(2) + 1 == 10 && var1.get(5) == 31) {
+      } else if (var1.equals(SpecialDates.HALLOWEEN)) {
          return SplashRenderer.HALLOWEEN;
       } else if (this.splashes.isEmpty()) {
          return null;

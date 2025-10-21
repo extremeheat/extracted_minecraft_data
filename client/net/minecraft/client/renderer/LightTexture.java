@@ -7,8 +7,6 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -63,14 +61,6 @@ public class LightTexture implements AutoCloseable {
       this.blockLightRedFlicker += (float)((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
       this.blockLightRedFlicker *= 0.9F;
       this.updateLightTexture = true;
-   }
-
-   public void turnOffLightLayer() {
-      RenderSystem.setShaderTexture(2, (GpuTextureView)null, (GpuSampler)null);
-   }
-
-   public void turnOnLightLayer() {
-      RenderSystem.setShaderTexture(2, this.textureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
    }
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {

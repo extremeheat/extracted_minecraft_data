@@ -6,14 +6,14 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class BannerFlagModel extends Model<Float> {
    private final ModelPart flag;
 
    public BannerFlagModel(ModelPart var1) {
-      super(var1, RenderType::entitySolid);
+      super(var1, RenderTypes::entitySolid);
       this.flag = var1.getChild("flag");
    }
 

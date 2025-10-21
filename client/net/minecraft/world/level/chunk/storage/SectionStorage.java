@@ -224,8 +224,8 @@ public class SectionStorage<R, P> implements AutoCloseable {
       RegistryOps var2 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
       Dynamic var3 = this.writeChunk(var1, var2);
       Tag var4 = (Tag)var3.getValue();
-      if (var4 instanceof CompoundTag) {
-         this.simpleRegionStorage.write(var1, (CompoundTag)var4).exceptionally((var2x) -> {
+      if (var4 instanceof CompoundTag var5) {
+         this.simpleRegionStorage.write(var1, var5).exceptionally((var2x) -> {
             this.errorReporter.reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var1);
             return null;
          });

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,7 +112,7 @@ public abstract class PlayerList {
    public static final Component DUPLICATE_LOGIN_DISCONNECT_MESSAGE = Component.translatable("multiplayer.disconnect.duplicate_login");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int SEND_PLAYER_INFO_INTERVAL = 600;
-   private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+   private static final SimpleDateFormat BAN_DATE_FORMAT;
    private final MinecraftServer server;
    private final List<ServerPlayer> players = Lists.newArrayList();
    private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
@@ -220,7 +221,7 @@ public abstract class PlayerList {
             PlayerList.this.broadcastAll(new ClientboundSetBorderSizePacket(var1x), var1.dimension());
          }
 
-         public void onLerpSize(WorldBorder var1x, double var2, double var4, long var6) {
+         public void onLerpSize(WorldBorder var1x, double var2, double var4, long var6, long var8) {
             PlayerList.this.broadcastAll(new ClientboundSetBorderLerpSizePacket(var1x), var1.dimension());
          }
 
@@ -818,5 +819,9 @@ public abstract class PlayerList {
 
    public boolean isAllowCommandsForAllPlayers() {
       return this.allowCommandsForAllPlayers;
+   }
+
+   static {
+      BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z", Locale.ROOT);
    }
 }

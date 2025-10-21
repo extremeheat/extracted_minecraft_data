@@ -7,11 +7,12 @@ import javax.annotation.Nullable;
 import net.minecraft.client.model.CopperGolemStatueModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.CopperGolemStatueRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
@@ -51,7 +52,7 @@ public class CopperGolemStatueBlockRenderer implements BlockEntityRenderer<Coppe
          var2.translate(0.5F, 0.0F, 0.5F);
          CopperGolemStatueModel var9 = (CopperGolemStatueModel)this.models.get(var1.pose);
          Direction var7 = var1.direction;
-         RenderType var8 = RenderType.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var5.getWeatheringState()).texture());
+         RenderType var8 = RenderTypes.entityCutoutNoCull(CopperGolemOxidationLevels.getOxidationLevel(var5.getWeatheringState()).texture());
          var3.submitModel(var9, var7, var2, var8, var1.lightCoords, OverlayTexture.NO_OVERLAY, 0, var1.breakProgress);
          var2.popPose();
       }

@@ -501,9 +501,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          }
 
          if (this.minecraft.options.getCameraType().isFirstPerson() && !var2 && !this.minecraft.options.hideGui && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
-            this.lightTexture.turnOnLightLayer();
             this.itemInHandRenderer.renderHandsWithItems(var1, var4, this.minecraft.gameRenderer.getSubmitNodeStorage(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var1));
-            this.lightTexture.turnOffLightLayer();
          }
 
          var5.popMatrix();
@@ -546,7 +544,6 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             this.tryTakeScreenshotIfNeeded();
             this.minecraft.levelRenderer.doEntityOutline();
             if (this.postEffectId != null && this.effectActive) {
-               RenderSystem.resetTextureMatrix();
                PostChain var7 = this.minecraft.getShaderManager().getPostChain(this.postEffectId, LevelTargetBundle.MAIN_TARGETS);
                if (var7 != null) {
                   var7.process(this.minecraft.getMainRenderTarget(), this.resourcePool);

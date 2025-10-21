@@ -11,11 +11,12 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MaterialMapper;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.CondiutRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -98,7 +99,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.pushPose();
          var2.translate(0.5F, 0.5F, 0.5F);
          var2.mulPose((Quaternionfc)(new Quaternionf()).rotationY(var1.activeRotation * 0.017453292F));
-         var3.submitModelPart(this.shell, var2, SHELL_TEXTURE.renderType(RenderType::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(SHELL_TEXTURE), -1, var1.breakProgress);
+         var3.submitModelPart(this.shell, var2, SHELL_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(SHELL_TEXTURE), -1, var1.breakProgress);
          var2.popPose();
       } else {
          float var5 = var1.activeRotation * 57.295776F;
@@ -108,7 +109,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.translate(0.5F, 0.3F + var6 * 0.2F, 0.5F);
          Vector3f var7 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
          var2.mulPose((Quaternionfc)(new Quaternionf()).rotationAxis(var5 * 0.017453292F, var7));
-         var3.submitModelPart(this.cage, var2, ACTIVE_SHELL_TEXTURE.renderType(RenderType::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE), -1, var1.breakProgress);
+         var3.submitModelPart(this.cage, var2, ACTIVE_SHELL_TEXTURE.renderType(RenderTypes::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(ACTIVE_SHELL_TEXTURE), -1, var1.breakProgress);
          var2.popPose();
          var2.pushPose();
          var2.translate(0.5F, 0.5F, 0.5F);
@@ -119,7 +120,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          }
 
          Material var8 = var1.animationPhase == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE;
-         RenderType var9 = var8.renderType(RenderType::entityCutoutNoCull);
+         RenderType var9 = var8.renderType(RenderTypes::entityCutoutNoCull);
          TextureAtlasSprite var10 = this.materials.get(var8);
          var3.submitModelPart(this.wind, var2, var9, var1.lightCoords, OverlayTexture.NO_OVERLAY, var10);
          var2.popPose();
@@ -137,7 +138,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          float var11 = 1.3333334F;
          var2.scale(1.3333334F, 1.3333334F, 1.3333334F);
          Material var12 = var1.isHunting ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE;
-         var3.submitModelPart(this.eye, var2, var12.renderType(RenderType::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(var12));
+         var3.submitModelPart(this.eye, var2, var12.renderType(RenderTypes::entityCutoutNoCull), var1.lightCoords, OverlayTexture.NO_OVERLAY, this.materials.get(var12));
          var2.popPose();
       }
    }

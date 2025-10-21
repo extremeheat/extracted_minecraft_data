@@ -2,10 +2,10 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -32,7 +32,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
          var8 += (float)(var9.nextInt(11) - 5);
       }
 
-      var3.submitCustomGeometry(var2, RenderType.lightning(), (var5x, var6x) -> {
+      var3.submitCustomGeometry(var2, RenderTypes.lightning(), (var5x, var6x) -> {
          Matrix4f var7x = var5x.pose();
 
          for(int var8x = 0; var8x < 4; ++var8x) {

@@ -167,7 +167,7 @@ public class IntegratedServer extends MinecraftServer {
       return 0;
    }
 
-   public boolean isEpollEnabled() {
+   public boolean useNativeTransport() {
       return false;
    }
 

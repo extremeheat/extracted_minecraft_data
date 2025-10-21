@@ -94,6 +94,10 @@ public class FoodData {
       return this.foodLevel;
    }
 
+   public boolean hasEnoughFood() {
+      return (float)this.getFoodLevel() > 6.0F;
+   }
+
    public boolean needsFood() {
       return this.foodLevel < 20;
    }

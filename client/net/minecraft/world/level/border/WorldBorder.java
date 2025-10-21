@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -24,18 +22,32 @@ public class WorldBorder extends SavedData {
    public static final double MAX_CENTER_COORDINATE = 2.9999984E7;
    public static final Codec<WorldBorder> CODEC;
    public static final SavedDataType<WorldBorder> TYPE;
-   private final List<BorderChangeListener> listeners = Lists.newArrayList();
-   double damagePerBlock = 0.2;
-   double safeZone = 5.0;
-   int warningTime = 15;
-   int warningBlocks = 5;
+   private final Settings settings;
+   private boolean initialized;
+   private final List<BorderChangeListener> listeners;
+   double damagePerBlock;
+   double safeZone;
+   int warningTime;
+   int warningBlocks;
    double centerX;
    double centerZ;
-   int absoluteMaxSize = 29999984;
-   BorderExtent extent = new StaticBorderExtent(5.9999968E7);
+   int absoluteMaxSize;
+   BorderExtent extent;
 
    public WorldBorder() {
+      this(WorldBorder.Settings.DEFAULT);
+   }
+
+   public WorldBorder(Settings var1) {
       super();
+      this.listeners = Lists.newArrayList();
+      this.damagePerBlock = 0.2;
+      this.safeZone = 5.0;
+      this.warningTime = 15;
+      this.warningBlocks = 5;
+      this.absoluteMaxSize = 29999984;
+      this.extent = new StaticBorderExtent(5.9999968E7);
+      this.settings = var1;
    }
 
    public boolean isWithinBounds(BlockPos var1) {
@@ -114,19 +126,35 @@ public class WorldBorder extends SavedData {
    }
 
    public double getMinX() {
-      return this.extent.getMinX();
+      return this.getMinX(0.0F);
+   }
+
+   public double getMinX(float var1) {
+      return this.extent.getMinX(var1);
    }
 
    public double getMinZ() {
-      return this.extent.getMinZ();
+      return this.getMinZ(0.0F);
+   }
+
+   public double getMinZ(float var1) {
+      return this.extent.getMinZ(var1);
    }
 
    public double getMaxX() {
-      return this.extent.getMaxX();
+      return this.getMaxX(0.0F);
+   }
+
+   public double getMaxX(float var1) {
+      return this.extent.getMaxX(var1);
    }
 
    public double getMaxZ() {
-      return this.extent.getMaxZ();
+      return this.getMaxZ(0.0F);
+   }
+
+   public double getMaxZ(float var1) {
+      return this.extent.getMaxZ(var1);
    }
 
    public double getCenterX() {
@@ -171,12 +199,12 @@ public class WorldBorder extends SavedData {
 
    }
 
-   public void lerpSizeBetween(double var1, double var3, long var5) {
-      this.extent = (BorderExtent)(var1 == var3 ? new StaticBorderExtent(var3) : new MovingBorderExtent(var1, var3, var5));
+   public void lerpSizeBetween(double var1, double var3, long var5, long var7) {
+      this.extent = (BorderExtent)(var1 == var3 ? new StaticBorderExtent(var3) : new MovingBorderExtent(var1, var3, var5, var7));
       this.setDirty();
 
-      for(BorderChangeListener var8 : this.getListeners()) {
-         var8.onLerpSize(this, var1, var3, var5);
+      for(BorderChangeListener var10 : this.getListeners()) {
+         var10.onLerpSize(this, var1, var3, var5, var7);
       }
 
    }
@@ -266,25 +294,27 @@ public class WorldBorder extends SavedData {
       this.extent = this.extent.update();
    }
 
-   public void applySettings(Settings var1) {
-      this.setCenter(var1.centerX(), var1.centerZ());
-      this.setDamagePerBlock(var1.damagePerBlock());
-      this.setSafeZone(var1.safeZone());
-      this.setWarningBlocks(var1.warningBlocks());
-      this.setWarningTime(var1.warningTime());
-      if (var1.lerpTime() > 0L) {
-         this.lerpSizeBetween(var1.size(), var1.lerpTarget(), var1.lerpTime());
-      } else {
-         this.setSize(var1.size());
+   public void applyInitialSettings(long var1) {
+      if (!this.initialized) {
+         this.setCenter(this.settings.centerX(), this.settings.centerZ());
+         this.setDamagePerBlock(this.settings.damagePerBlock());
+         this.setSafeZone(this.settings.safeZone());
+         this.setWarningBlocks(this.settings.warningBlocks());
+         this.setWarningTime(this.settings.warningTime());
+         if (this.settings.lerpTime() > 0L) {
+            this.lerpSizeBetween(this.settings.size(), this.settings.lerpTarget(), this.settings.lerpTime(), var1);
+         } else {
+            this.setSize(this.settings.size());
+         }
+
+         this.initialized = true;
       }
 
    }
 
    static {
-      CODEC = WorldBorder.Settings.CODEC.xmap(Settings::toWorldBorder, Settings::new);
-      Settings var10003 = WorldBorder.Settings.DEFAULT;
-      Objects.requireNonNull(var10003);
-      TYPE = new SavedDataType<WorldBorder>("world_border", var10003::toWorldBorder, CODEC, DataFixTypes.SAVED_DATA_WORLD_BORDER);
+      CODEC = WorldBorder.Settings.CODEC.xmap(WorldBorder::new, Settings::new);
+      TYPE = new SavedDataType<WorldBorder>("world_border", WorldBorder::new, CODEC, DataFixTypes.SAVED_DATA_WORLD_BORDER);
    }
 
    class MovingBorderExtent implements BorderExtent {
@@ -293,34 +323,49 @@ public class WorldBorder extends SavedData {
       private final long lerpEnd;
       private final long lerpBegin;
       private final double lerpDuration;
+      private long lerpProgress;
+      private double size;
+      private double previousSize;
 
-      MovingBorderExtent(final double var2, final double var4, final long var6) {
+      MovingBorderExtent(final double var2, final double var4, final long var6, final long var8) {
          super();
          this.from = var2;
          this.to = var4;
          this.lerpDuration = (double)var6;
-         this.lerpBegin = Util.getMillis();
+         this.lerpProgress = var6;
+         this.lerpBegin = var8;
          this.lerpEnd = this.lerpBegin + var6;
+         double var10 = this.calculateSize();
+         this.size = var10;
+         this.previousSize = var10;
       }
 
-      public double getMinX() {
-         return Mth.clamp(WorldBorder.this.getCenterX() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+      public double getMinX(float var1) {
+         return Mth.clamp(WorldBorder.this.getCenterX() - Mth.lerp((double)var1, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      public double getMinZ() {
-         return Mth.clamp(WorldBorder.this.getCenterZ() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+      public double getMinZ(float var1) {
+         return Mth.clamp(WorldBorder.this.getCenterZ() - Mth.lerp((double)var1, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      public double getMaxX() {
-         return Mth.clamp(WorldBorder.this.getCenterX() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+      public double getMaxX(float var1) {
+         return Mth.clamp(WorldBorder.this.getCenterX() + Mth.lerp((double)var1, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      public double getMaxZ() {
-         return Mth.clamp(WorldBorder.this.getCenterZ() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+      public double getMaxZ(float var1) {
+         return Mth.clamp(WorldBorder.this.getCenterZ() + Mth.lerp((double)var1, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
       public double getSize() {
-         double var1 = (double)(Util.getMillis() - this.lerpBegin) / this.lerpDuration;
+         return this.size;
+      }
+
+      public double getPreviousSize() {
+         return this.previousSize;
+      }
+
+      private double calculateSize() {
+         double var1 = (this.lerpDuration - (double)this.lerpProgress) / this.lerpDuration;
          return var1 < 1.0 ? Mth.lerp(var1, this.from, this.to) : this.to;
       }
 
@@ -329,7 +374,7 @@ public class WorldBorder extends SavedData {
       }
 
       public long getLerpTime() {
-         return this.lerpEnd - Util.getMillis();
+         return this.lerpProgress;
       }
 
       public double getLerpTarget() {
@@ -347,7 +392,10 @@ public class WorldBorder extends SavedData {
       }
 
       public BorderExtent update() {
-         if (this.getLerpTime() <= 0L) {
+         --this.lerpProgress;
+         this.previousSize = this.size;
+         this.size = this.calculateSize();
+         if (this.lerpProgress <= 0L) {
             WorldBorder.this.setDirty();
             return WorldBorder.this.new StaticBorderExtent(this.to);
          } else {
@@ -356,7 +404,7 @@ public class WorldBorder extends SavedData {
       }
 
       public VoxelShape getCollisionShape() {
-         return Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())), BooleanOp.ONLY_FIRST);
+         return Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX(0.0F)), -1.0 / 0.0, Math.floor(this.getMinZ(0.0F)), Math.ceil(this.getMaxX(0.0F)), 1.0 / 0.0, Math.ceil(this.getMaxZ(0.0F))), BooleanOp.ONLY_FIRST);
       }
    }
 
@@ -374,19 +422,19 @@ public class WorldBorder extends SavedData {
          this.updateBox();
       }
 
-      public double getMinX() {
+      public double getMinX(float var1) {
          return this.minX;
       }
 
-      public double getMaxX() {
+      public double getMaxX(float var1) {
          return this.maxX;
       }
 
-      public double getMinZ() {
+      public double getMinZ(float var1) {
          return this.minZ;
       }
 
-      public double getMaxZ() {
+      public double getMaxZ(float var1) {
          return this.maxZ;
       }
 
@@ -415,7 +463,7 @@ public class WorldBorder extends SavedData {
          this.minZ = Mth.clamp(WorldBorder.this.getCenterZ() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
          this.maxX = Mth.clamp(WorldBorder.this.getCenterX() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
          this.maxZ = Mth.clamp(WorldBorder.this.getCenterZ() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
-         this.shape = Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())), BooleanOp.ONLY_FIRST);
+         this.shape = Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX(0.0F)), -1.0 / 0.0, Math.floor(this.getMinZ(0.0F)), Math.ceil(this.getMaxX(0.0F)), 1.0 / 0.0, Math.ceil(this.getMaxZ(0.0F))), BooleanOp.ONLY_FIRST);
       }
 
       public void onAbsoluteMaxSizeChange() {
@@ -455,22 +503,16 @@ public class WorldBorder extends SavedData {
          this.lerpTime = var13;
          this.lerpTarget = var15;
       }
-
-      public WorldBorder toWorldBorder() {
-         WorldBorder var1 = new WorldBorder();
-         var1.applySettings(this);
-         return var1;
-      }
    }
 
    interface BorderExtent {
-      double getMinX();
+      double getMinX(float var1);
 
-      double getMaxX();
+      double getMaxX(float var1);
 
-      double getMinZ();
+      double getMinZ(float var1);
 
-      double getMaxZ();
+      double getMaxZ(float var1);
 
       double getSize();
 

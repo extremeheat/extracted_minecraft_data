@@ -1,9 +1,13 @@
 package net.minecraft.client.data.models.model;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import net.minecraft.client.color.item.Constant;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.renderer.item.BlockModelWrapper;
@@ -24,6 +28,7 @@ import net.minecraft.client.renderer.item.properties.select.SelectItemModelPrope
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.SpecialDates;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.Property;
 
@@ -127,6 +132,10 @@ public class ItemModelUtils {
    }
 
    public static ItemModel.Unbaked isXmas(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
-      return select(LocalTime.create("MM-dd", "", Optional.empty()), var1, List.of(when(List.of("12-24", "12-25", "12-26"), var0)));
+      DateTimeFormatter var2 = DateTimeFormatter.ofPattern("MM-dd", Locale.ROOT);
+      Stream var10000 = SpecialDates.CHRISTMAS_RANGE.stream();
+      Objects.requireNonNull(var2);
+      List var3 = var10000.map(var2::format).toList();
+      return select(LocalTime.create("MM-dd", "", Optional.empty()), var1, List.of(when(var3, var0)));
    }
 }

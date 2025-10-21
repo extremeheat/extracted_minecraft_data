@@ -89,7 +89,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       ChunkPos var2 = var1.getPos();
       if (var1.isEmpty()) {
          if (this.emptyChunks.add(var2.toLong())) {
-            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, (CompoundTag)null), var2);
+            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, IOWorker.STORE_EMPTY), var2);
          }
 
       } else {

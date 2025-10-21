@@ -30,10 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class MacroFunction<T extends ExecutionCommandSource<T>> implements CommandFunction<T> {
-   private static final DecimalFormat DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("#"), (var0) -> {
-      var0.setMaximumFractionDigits(15);
-      var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.US));
-   });
+   private static final DecimalFormat DECIMAL_FORMAT;
    private static final int MAX_CACHE_ENTRIES = 8;
    private final List<String> parameters;
    private final Object2ObjectLinkedOpenHashMap<List<String>, InstantiatedFunction<T>> cache = new Object2ObjectLinkedOpenHashMap(8, 0.25F);
@@ -193,6 +190,10 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       }
 
       return new PlainTextFunction<T>(this.id().withPath((UnaryOperator)((var1x) -> var1x + "/" + var1.hashCode())), var4);
+   }
+
+   static {
+      DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("#", DecimalFormatSymbols.getInstance(Locale.ROOT)), (var0) -> var0.setMaximumFractionDigits(15));
    }
 
    static class PlainTextEntry<T> implements Entry<T> {

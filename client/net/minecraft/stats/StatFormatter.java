@@ -5,10 +5,9 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Objects;
-import net.minecraft.Util;
 
 public interface StatFormatter {
-   DecimalFormat DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("########0.00"), (var0) -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
+   DecimalFormat DECIMAL_FORMAT = new DecimalFormat("########0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
    StatFormatter DEFAULT;
    StatFormatter DIVIDE_BY_TEN;
    StatFormatter DISTANCE;

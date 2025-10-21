@@ -29,8 +29,9 @@ public class SetWorldSpawnCommand {
       Vec2 var4 = var2.getRotation(var0);
       float var5 = var4.y;
       float var6 = var4.x;
-      var3.setRespawnData(LevelData.RespawnData.of(var3.dimension(), var1, var5, var6));
-      var0.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", var1.getX(), var1.getY(), var1.getZ(), var5, var6, var3.dimension().location().toString()), true);
+      LevelData.RespawnData var7 = LevelData.RespawnData.of(var3.dimension(), var1, var5, var6);
+      var3.setRespawnData(var7);
+      var0.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", var1.getX(), var1.getY(), var1.getZ(), var7.yaw(), var7.pitch(), var3.dimension().location().toString()), true);
       return 1;
    }
 }

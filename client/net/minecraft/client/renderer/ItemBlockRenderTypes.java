@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -102,7 +104,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SPAWNER, var2);
       var0.put(Blocks.TRIAL_SPAWNER, var2);
       var0.put(Blocks.VAULT, var2);
-      var0.put(Blocks.REDSTONE_WIRE, var2);
       var0.put(Blocks.WHEAT, var2);
       var0.put(Blocks.OAK_DOOR, var2);
       var0.put(Blocks.LADDER, var2);
@@ -146,7 +147,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.NETHER_WART, var2);
       var0.put(Blocks.BREWING_STAND, var2);
       var0.put(Blocks.COCOA, var2);
-      var0.put(Blocks.BEACON, var2);
       var0.put(Blocks.FLOWER_POT, var2);
       var0.put(Blocks.POTTED_OAK_SAPLING, var2);
       var0.put(Blocks.POTTED_SPRUCE_SAPLING, var2);
@@ -311,6 +311,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.FIREFLY_BUSH, var2);
       var0.put(Blocks.CACTUS_FLOWER, var2);
       ChunkSectionLayer var3 = ChunkSectionLayer.TRANSLUCENT;
+      var0.put(Blocks.BEACON, var3);
       var0.put(Blocks.ICE, var3);
       var0.put(Blocks.NETHER_PORTAL, var3);
       var0.put(Blocks.GLASS, var3);
@@ -329,6 +330,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BLUE_STAINED_GLASS, var3);
       var0.put(Blocks.BROWN_STAINED_GLASS, var3);
       var0.put(Blocks.GREEN_STAINED_GLASS, var3);
+      var0.put(Blocks.REDSTONE_WIRE, var3);
       var0.put(Blocks.RED_STAINED_GLASS, var3);
       var0.put(Blocks.BLACK_STAINED_GLASS, var3);
       var0.put(Blocks.WHITE_STAINED_GLASS_PANE, var3);
@@ -376,22 +378,22 @@ public class ItemBlockRenderTypes {
    public static RenderType getMovingBlockRenderType(BlockState var0) {
       Block var1 = var0.getBlock();
       if (var1 instanceof LeavesBlock) {
-         return cutoutLeaves ? RenderType.cutout() : RenderType.solid();
+         return cutoutLeaves ? RenderTypes.cutout() : RenderTypes.solid();
       } else {
          ChunkSectionLayer var2 = (ChunkSectionLayer)TYPE_BY_BLOCK.get(var1);
          if (var2 != null) {
             RenderType var10000;
             switch (var2) {
-               case SOLID -> var10000 = RenderType.solid();
-               case CUTOUT -> var10000 = RenderType.cutout();
-               case TRANSLUCENT -> var10000 = RenderType.translucentMovingBlock();
-               case TRIPWIRE -> var10000 = RenderType.tripwire();
+               case SOLID -> var10000 = RenderTypes.solid();
+               case CUTOUT -> var10000 = RenderTypes.cutout();
+               case TRANSLUCENT -> var10000 = RenderTypes.translucentMovingBlock();
+               case TRIPWIRE -> var10000 = RenderTypes.tripwire();
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
             return var10000;
          } else {
-            return RenderType.solid();
+            return RenderTypes.solid();
          }
       }
    }

@@ -480,7 +480,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getProperties().rateLimitPacketsPerSecond;
    }
 
-   public boolean isEpollEnabled() {
+   public boolean useNativeTransport() {
       return this.getProperties().useNativeTransport;
    }
 

@@ -7,10 +7,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +40,7 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderType::entitySolid), var4, var5, -1, this.materials.get(this.material), var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderTypes::entitySolid), var4, var5, -1, this.materials.get(this.material), var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Set<Vector3f> var1) {

@@ -5,6 +5,8 @@ import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.WeatherRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -92,12 +94,12 @@ public class WeatherEffectRenderer {
 
    public void render(MultiBufferSource var1, Vec3 var2, WeatherRenderState var3) {
       if (!var3.rainColumns.isEmpty()) {
-         RenderType var4 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
+         RenderType var4 = RenderTypes.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
          this.renderInstances(var1.getBuffer(var4), var3.rainColumns, var2, 1.0F, var3.radius, var3.intensity);
       }
 
       if (!var3.snowColumns.isEmpty()) {
-         RenderType var5 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
+         RenderType var5 = RenderTypes.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
          this.renderInstances(var1.getBuffer(var5), var3.snowColumns, var2, 0.8F, var3.radius, var3.intensity);
       }
 

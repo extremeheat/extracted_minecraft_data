@@ -7,7 +7,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.gizmos.GizmoPrimitives;
 import net.minecraft.gizmos.TextGizmo;
@@ -84,7 +84,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
    }
 
    private void renderLines(PoseStack var1, MultiBufferSource var2, CameraRenderState var3, Matrix4f var4) {
-      VertexConsumer var5 = var2.getBuffer(RenderType.lines());
+      VertexConsumer var5 = var2.getBuffer(RenderTypes.lines());
       PoseStack.Pose var6 = var1.last();
       Vector4f var7 = new Vector4f();
       Vector4f var8 = new Vector4f();
@@ -132,7 +132,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
       double var9 = var3.pos.z();
 
       for(TriangleFan var12 : this.triangleFans) {
-         VertexConsumer var13 = var2.getBuffer(RenderType.debugTriangleFan());
+         VertexConsumer var13 = var2.getBuffer(RenderTypes.debugTriangleFan());
 
          for(Vec3 var17 : var12.points()) {
             var13.addVertex(var4, (float)(var17.x() - var5), (float)(var17.y() - var7), (float)(var17.z() - var9)).setColor(var12.color());
@@ -142,7 +142,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
    }
 
    private void renderQuads(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-      VertexConsumer var4 = var2.getBuffer(RenderType.debugFilledBox());
+      VertexConsumer var4 = var2.getBuffer(RenderTypes.debugFilledBox());
       PoseStack.Pose var5 = var1.last();
       double var6 = var3.pos.x();
       double var8 = var3.pos.y();
@@ -158,7 +158,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
    }
 
    private void renderPoints(PoseStack var1, MultiBufferSource var2, CameraRenderState var3) {
-      VertexConsumer var4 = var2.getBuffer(RenderType.debugPoint());
+      VertexConsumer var4 = var2.getBuffer(RenderTypes.debugPoint());
       PoseStack.Pose var5 = var1.last();
       double var6 = var3.pos.x();
       double var8 = var3.pos.y();
