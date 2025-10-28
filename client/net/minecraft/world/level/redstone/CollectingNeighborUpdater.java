@@ -5,13 +5,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CollectingNeighborUpdater implements NeighborUpdater {
@@ -21,8 +21,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private final ArrayDeque<NeighborUpdates> stack = new ArrayDeque();
    private final List<NeighborUpdates> addedThisLayer = new ArrayList();
    private int count = 0;
-   @Nullable
-   private Consumer<BlockPos> debugListener;
+   private @Nullable Consumer<BlockPos> debugListener;
 
    public CollectingNeighborUpdater(Level var1, int var2) {
       super();
@@ -140,10 +139,8 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    static final class MultiNeighborUpdate implements NeighborUpdates {
       private final BlockPos sourcePos;
       private final Block sourceBlock;
-      @Nullable
-      private Orientation orientation;
-      @Nullable
-      private final Direction skipDirection;
+      private @Nullable Orientation orientation;
+      private final @Nullable Direction skipDirection;
       private int idx = 0;
 
       MultiNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3, @Nullable Direction var4) {

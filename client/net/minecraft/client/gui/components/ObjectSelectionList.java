@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -11,6 +10,7 @@ import net.minecraft.client.gui.narration.NarrationSupplier;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    private static final Component USAGE_NARRATION = Component.translatable("narration.selection.usage");
@@ -19,8 +19,7 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       super(var1, var2, var3, var4, var5);
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.getItemCount() == 0) {
          return null;
       } else if (this.isFocused() && var1 instanceof FocusNavigationEvent.ArrowNavigation) {

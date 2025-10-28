@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -47,6 +46,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE;
@@ -302,8 +302,7 @@ public class Slime extends Mob implements Enemy {
       this.hasImpulse = true;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       int var6 = var5.nextInt(3);
       if (var6 < 2 && var5.nextFloat() < 0.5F * var2.getSpecialMultiplier()) {

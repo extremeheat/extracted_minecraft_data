@@ -3,14 +3,13 @@ package net.minecraft.network.chat;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.BitSet;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class LastSeenMessagesTracker {
-   private final LastSeenTrackedEntry[] trackedMessages;
+   private final @Nullable LastSeenTrackedEntry[] trackedMessages;
    private int tail;
    private int offset;
-   @Nullable
-   private MessageSignature lastTrackedMessage;
+   private @Nullable MessageSignature lastTrackedMessage;
 
    public LastSeenMessagesTracker(int var1) {
       super();

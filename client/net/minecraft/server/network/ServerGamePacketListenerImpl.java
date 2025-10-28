@@ -30,7 +30,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.advancements.AdvancementHolder;
@@ -193,7 +192,6 @@ import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BaseCommandBlock;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -209,6 +207,7 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -218,6 +217,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl implements GameProtocols.Context, ServerGamePacketListener, ServerPlayerConnection, TickablePacketListener {
@@ -241,16 +241,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private double lastGoodX;
    private double lastGoodY;
    private double lastGoodZ;
-   @Nullable
-   private Entity lastVehicle;
+   private @Nullable Entity lastVehicle;
    private double vehicleFirstGoodX;
    private double vehicleFirstGoodY;
    private double vehicleFirstGoodZ;
    private double vehicleLastGoodX;
    private double vehicleLastGoodY;
    private double vehicleLastGoodZ;
-   @Nullable
-   private Vec3 awaitingPositionFromClient;
+   private @Nullable Vec3 awaitingPositionFromClient;
    private int awaitingTeleport;
    private int awaitingTeleportTime;
    private boolean clientIsFloating;
@@ -260,8 +258,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private int receivedMovePacketCount;
    private int knownMovePacketCount;
    private boolean receivedMovementThisTick;
-   @Nullable
-   private RemoteChatSession chatSession;
+   private @Nullable RemoteChatSession chatSession;
    private SignedMessageChain.Decoder signedMessageDecoder;
    private final LastSeenMessagesValidator lastSeenMessages = new LastSeenMessagesValidator(20);
    private int nextChatIndex;
@@ -1137,10 +1134,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          return false;
       } else {
          GameRules var2 = this.player.level().getGameRules();
-         if (var2.getBoolean(GameRules.RULE_DISABLE_PLAYER_MOVEMENT_CHECK)) {
+         if (!(Boolean)var2.get(GameRules.PLAYER_MOVEMENT_CHECK)) {
             return false;
          } else {
-            return !var1 || !var2.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK);
+            return !var1 || (Boolean)var2.get(GameRules.ELYTRA_MOVEMENT_CHECK);
          }
       }
    }
@@ -1792,7 +1789,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.resetPosition();
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
-                  ((GameRules.BooleanValue)this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS)).set(false, this.server);
+                  this.player.level().getGameRules().set(GameRules.SPECTATORS_GENERATE_CHUNKS, false, this.server);
                }
             }
             break;

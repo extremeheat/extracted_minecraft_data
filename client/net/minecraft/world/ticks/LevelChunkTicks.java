@@ -10,16 +10,14 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.Nullable;
 
 public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
    private final Queue<ScheduledTick<T>> tickQueue;
-   @Nullable
-   private List<SavedTick<T>> pendingTicks;
+   private @Nullable List<SavedTick<T>> pendingTicks;
    private final Set<ScheduledTick<?>> ticksPerPosition;
-   @Nullable
-   private BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> onTickAdded;
+   private @Nullable BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> onTickAdded;
 
    public LevelChunkTicks() {
       super();
@@ -43,13 +41,11 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       this.onTickAdded = var1;
    }
 
-   @Nullable
-   public ScheduledTick<T> peek() {
+   public @Nullable ScheduledTick<T> peek() {
       return (ScheduledTick)this.tickQueue.peek();
    }
 
-   @Nullable
-   public ScheduledTick<T> poll() {
+   public @Nullable ScheduledTick<T> poll() {
       ScheduledTick var1 = (ScheduledTick)this.tickQueue.poll();
       if (var1 != null) {
          this.ticksPerPosition.remove(var1);

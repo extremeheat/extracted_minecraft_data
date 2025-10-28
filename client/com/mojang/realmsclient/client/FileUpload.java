@@ -2,37 +2,29 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.client.worldupload.RealmsUploadCanceledException;
 import com.mojang.realmsclient.dto.UploadInfo;
 import com.mojang.realmsclient.gui.screens.UploadResult;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.User;
 import net.minecraft.util.LenientJsonParser;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.Args;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.io.input.CountingInputStream;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class FileUpload {
+public class FileUpload implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_RETRIES = 5;
    private static final String UPLOAD_PATH = "/upload";
@@ -45,14 +37,10 @@ public class FileUpload {
    private final String clientVersion;
    private final String worldVersion;
    private final UploadStatus uploadStatus;
-   final AtomicBoolean cancelled = new AtomicBoolean(false);
-   @Nullable
-   private CompletableFuture<UploadResult> uploadTask;
-   private final RequestConfig requestConfig;
+   private final HttpClient client;
 
    public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, String var8, UploadStatus var9) {
       super();
-      this.requestConfig = RequestConfig.custom().setSocketTimeout((int)TimeUnit.MINUTES.toMillis(10L)).setConnectTimeout((int)TimeUnit.SECONDS.toMillis(15L)).build();
       this.file = var1;
       this.realmId = var2;
       this.slotId = var4;
@@ -62,182 +50,96 @@ public class FileUpload {
       this.clientVersion = var7;
       this.worldVersion = var8;
       this.uploadStatus = var9;
+      this.client = HttpClient.newBuilder().executor(Util.nonCriticalIoPool()).connectTimeout(Duration.ofSeconds(15L)).build();
    }
 
-   public UploadResult upload() {
-      if (this.uploadTask != null) {
-         return (new UploadResult.Builder()).build();
-      } else {
-         this.uploadTask = CompletableFuture.supplyAsync(() -> this.requestUpload(0), Util.backgroundExecutor());
-         if (this.cancelled.get()) {
-            this.cancel();
-            return (new UploadResult.Builder()).build();
-         } else {
-            return (UploadResult)this.uploadTask.join();
-         }
-      }
+   public void close() {
+      this.client.close();
    }
 
-   public void cancel() {
-      this.cancelled.set(true);
+   public CompletableFuture<UploadResult> startUpload() {
+      long var1 = this.file.length();
+      this.uploadStatus.setTotalBytes(var1);
+      return this.requestUpload(0, var1);
    }
 
-   private UploadResult requestUpload(int var1) {
-      UploadResult.Builder var2 = new UploadResult.Builder();
-      if (this.cancelled.get()) {
-         return var2.build();
-      } else {
-         this.uploadStatus.setTotalBytes(this.file.length());
-         HttpPost var3 = new HttpPost(this.uploadInfo.uploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
-         CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
-
-         UploadResult var8;
+   private CompletableFuture<UploadResult> requestUpload(int var1, long var2) {
+      HttpRequest.BodyPublisher var4 = inputStreamPublisherWithSize(() -> {
          try {
-            this.setupRequest(var3);
-            CloseableHttpResponse var5 = var4.execute(var3);
-            long var6 = this.getRetryDelaySeconds(var5);
-            if (!this.shouldRetry(var6, var1)) {
-               this.handleResponse(var5, var2);
-               return var2.build();
-            }
-
-            var8 = this.retryUploadAfter(var6, var1);
-         } catch (Exception var12) {
-            if (!this.cancelled.get()) {
-               LOGGER.error("Caught exception while uploading: ", var12);
-               return var2.build();
-            }
-
-            throw new RealmsUploadCanceledException();
-         } finally {
-            this.cleanup(var3, var4);
+            return new UploadCountingInputStream(new FileInputStream(this.file), this.uploadStatus);
+         } catch (IOException var2) {
+            LOGGER.warn("Failed to open file {}", this.file, var2);
+            return null;
          }
+      }, var2);
+      HttpRequest var5 = HttpRequest.newBuilder(this.uploadInfo.uploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId)).timeout(Duration.ofMinutes(10L)).setHeader("Cookie", this.uploadCookie()).setHeader("Content-Type", "application/octet-stream").POST(var4).build();
+      return this.client.sendAsync(var5, BodyHandlers.ofString(StandardCharsets.UTF_8)).thenCompose((var4x) -> {
+         long var5 = this.getRetryDelaySeconds(var4x);
+         if (this.shouldRetry(var5, var1)) {
+            this.uploadStatus.restart();
 
-         return var8;
-      }
-   }
-
-   private void cleanup(HttpPost var1, @Nullable CloseableHttpClient var2) {
-      var1.releaseConnection();
-      if (var2 != null) {
-         try {
-            var2.close();
-         } catch (IOException var4) {
-            LOGGER.error("Failed to close Realms upload client");
-         }
-      }
-
-   }
-
-   private void setupRequest(HttpPost var1) throws FileNotFoundException {
-      String var10002 = this.sessionId;
-      var1.setHeader("Cookie", "sid=" + var10002 + ";token=" + this.uploadInfo.token() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion);
-      CustomInputStreamEntity var2 = new CustomInputStreamEntity(new FileInputStream(this.file), this.file.length(), this.uploadStatus);
-      var2.setContentType("application/octet-stream");
-      var1.setEntity(var2);
-   }
-
-   private void handleResponse(HttpResponse var1, UploadResult.Builder var2) throws IOException {
-      int var3 = var1.getStatusLine().getStatusCode();
-      if (var3 == 401) {
-         LOGGER.debug("Realms server returned 401: {}", var1.getFirstHeader("WWW-Authenticate"));
-      }
-
-      var2.withStatusCode(var3);
-      if (var1.getEntity() != null) {
-         String var4 = EntityUtils.toString(var1.getEntity(), "UTF-8");
-         if (var4 != null) {
             try {
-               JsonElement var5 = LenientJsonParser.parse(var4).getAsJsonObject().get("errorMsg");
-               Optional var6 = Optional.ofNullable(var5).map(JsonElement::getAsString);
-               var2.withErrorMessage((String)var6.orElse((Object)null));
-            } catch (Exception var7) {
+               Thread.sleep(Duration.ofSeconds(var5));
+            } catch (InterruptedException var8) {
             }
+
+            return this.requestUpload(var1 + 1, var2);
+         } else {
+            return CompletableFuture.completedFuture(this.handleResponse(var4x));
+         }
+      });
+   }
+
+   private static HttpRequest.BodyPublisher inputStreamPublisherWithSize(Supplier<@Nullable InputStream> var0, long var1) {
+      return BodyPublishers.fromPublisher(BodyPublishers.ofInputStream(var0), var1);
+   }
+
+   private String uploadCookie() {
+      String var10000 = this.sessionId;
+      return "sid=" + var10000 + ";token=" + this.uploadInfo.token() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion;
+   }
+
+   private UploadResult handleResponse(HttpResponse<String> var1) {
+      int var2 = var1.statusCode();
+      if (var2 == 401) {
+         LOGGER.debug("Realms server returned 401: {}", var1.headers().firstValue("WWW-Authenticate"));
+      }
+
+      String var3 = null;
+      String var4 = (String)var1.body();
+      if (var4 != null && !var4.isBlank()) {
+         try {
+            JsonElement var5 = LenientJsonParser.parse(var4).getAsJsonObject().get("errorMsg");
+            if (var5 != null) {
+               var3 = var5.getAsString();
+            }
+         } catch (Exception var6) {
+            LOGGER.warn("Failed to parse response {}", var4, var6);
          }
       }
 
+      return new UploadResult(var2, var3);
    }
 
    private boolean shouldRetry(long var1, int var3) {
       return var1 > 0L && var3 + 1 < 5;
    }
 
-   private UploadResult retryUploadAfter(long var1, int var3) throws InterruptedException {
-      Thread.sleep(Duration.ofSeconds(var1).toMillis());
-      return this.requestUpload(var3 + 1);
+   private long getRetryDelaySeconds(HttpResponse<?> var1) {
+      return var1.headers().firstValueAsLong("Retry-After").orElse(0L);
    }
 
-   private long getRetryDelaySeconds(HttpResponse var1) {
-      return (Long)Optional.ofNullable(var1.getFirstHeader("Retry-After")).map(NameValuePair::getValue).map(Long::valueOf).orElse(0L);
-   }
-
-   public boolean isFinished() {
-      return this.uploadTask.isDone() || this.uploadTask.isCancelled();
-   }
-
-   class CustomInputStreamEntity extends InputStreamEntity {
-      private final long length;
-      private final InputStream content;
+   static class UploadCountingInputStream extends CountingInputStream {
       private final UploadStatus uploadStatus;
 
-      public CustomInputStreamEntity(final InputStream var2, final long var3, final UploadStatus var5) {
-         super(var2);
-         this.content = var2;
-         this.length = var3;
-         this.uploadStatus = var5;
+      UploadCountingInputStream(InputStream var1, UploadStatus var2) {
+         super(var1);
+         this.uploadStatus = var2;
       }
 
-      public void writeTo(OutputStream var1) throws IOException {
-         Args.notNull(var1, "Output stream");
-         InputStream var2 = this.content;
-
-         try {
-            byte[] var3 = new byte[4096];
-            int var9;
-            if (this.length < 0L) {
-               while((var9 = var2.read(var3)) != -1) {
-                  if (FileUpload.this.cancelled.get()) {
-                     throw new RealmsUploadCanceledException();
-                  }
-
-                  var1.write(var3, 0, var9);
-                  this.uploadStatus.onWrite((long)var9);
-               }
-            } else {
-               long var5 = this.length;
-
-               while(var5 > 0L) {
-                  var9 = var2.read(var3, 0, (int)Math.min(4096L, var5));
-                  if (var9 == -1) {
-                     break;
-                  }
-
-                  if (FileUpload.this.cancelled.get()) {
-                     throw new RealmsUploadCanceledException();
-                  }
-
-                  var1.write(var3, 0, var9);
-                  this.uploadStatus.onWrite((long)var9);
-                  var5 -= (long)var9;
-                  var1.flush();
-               }
-            }
-         } catch (Throwable var8) {
-            if (var2 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var7) {
-                  var8.addSuppressed(var7);
-               }
-            }
-
-            throw var8;
-         }
-
-         if (var2 != null) {
-            var2.close();
-         }
-
+      protected void afterRead(int var1) throws IOException {
+         super.afterRead(var1);
+         this.uploadStatus.onWrite(this.getByteCount());
       }
    }
 }

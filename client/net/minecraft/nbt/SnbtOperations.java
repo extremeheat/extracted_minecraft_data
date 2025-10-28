@@ -12,12 +12,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.parsing.packrat.DelayedException;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.SuggestionSupplier;
+import org.jspecify.annotations.Nullable;
 
 public class SnbtOperations {
    static final DelayedException<CommandSyntaxException> ERROR_EXPECTED_STRING_UUID = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.expected_string_uuid")));
@@ -35,8 +35,7 @@ public class SnbtOperations {
          }
       }
 
-      @Nullable
-      private static <T> Boolean convert(DynamicOps<T> var0, T var1) {
+      private static <T> @Nullable Boolean convert(DynamicOps<T> var0, T var1) {
          Optional var2 = var0.getBooleanValue(var1).result();
          if (var2.isPresent()) {
             return (Boolean)var2.get();
@@ -93,7 +92,6 @@ public class SnbtOperations {
    }
 
    public interface BuiltinOperation {
-      @Nullable
-      <T> T run(DynamicOps<T> var1, List<T> var2, ParseState<StringReader> var3);
+      <T> @Nullable T run(DynamicOps<T> var1, List<T> var2, ParseState<StringReader> var3);
    }
 }

@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -48,6 +46,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Ocelot extends Animal {
    public static final double CROUCH_SPEED_MOD = 0.6;
@@ -55,10 +54,8 @@ public class Ocelot extends Animal {
    public static final double SPRINT_SPEED_MOD = 1.33;
    private static final EntityDataAccessor<Boolean> DATA_TRUSTING;
    private static final boolean DEFAULT_TRUSTING = false;
-   @Nullable
-   private OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
-   @Nullable
-   private OcelotTemptGoal temptGoal;
+   private @Nullable OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
+   private @Nullable OcelotTemptGoal temptGoal;
 
    public Ocelot(EntityType<? extends Ocelot> var1, Level var2) {
       super(var1, var2);
@@ -130,8 +127,7 @@ public class Ocelot extends Animal {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return SoundEvents.OCELOT_AMBIENT;
    }
 
@@ -206,8 +202,7 @@ public class Ocelot extends Animal {
 
    }
 
-   @Nullable
-   public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.OCELOT.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -235,8 +230,7 @@ public class Ocelot extends Animal {
       return false;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
@@ -253,8 +247,7 @@ public class Ocelot extends Animal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -266,9 +259,7 @@ public class Ocelot extends Animal {
       private final Ocelot ocelot;
 
       public OcelotAvoidEntityGoal(Ocelot var1, Class<T> var2, float var3, double var4, double var6) {
-         Predicate var10006 = EntitySelector.NO_CREATIVE_OR_SPECTATOR;
-         Objects.requireNonNull(var10006);
-         super(var1, var2, var3, var4, var6, var10006::test);
+         super(var1, var2, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
          this.ocelot = var1;
       }
 

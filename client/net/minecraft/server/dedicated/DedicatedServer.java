@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
 import net.minecraft.SharedConstants;
@@ -72,10 +71,11 @@ import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DedicatedServer extends MinecraftServer implements ServerInterface {
@@ -83,23 +83,17 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private static final int CONVERSION_RETRY_DELAY_MS = 5000;
    private static final int CONVERSION_RETRIES = 2;
    private final List<ConsoleInput> consoleInput = Collections.synchronizedList(Lists.newArrayList());
-   @Nullable
-   private QueryThreadGs4 queryThreadGs4;
+   private @Nullable QueryThreadGs4 queryThreadGs4;
    private final RconConsoleSource rconConsoleSource;
-   @Nullable
-   private RconThread rconThread;
+   private @Nullable RconThread rconThread;
    private final DedicatedServerSettings settings;
-   @Nullable
-   private MinecraftServerGui gui;
-   @Nullable
-   private final ServerTextFilter serverTextFilter;
-   @Nullable
-   private RemoteSampleLogger tickTimeLogger;
+   private @Nullable MinecraftServerGui gui;
+   private final @Nullable ServerTextFilter serverTextFilter;
+   private @Nullable RemoteSampleLogger tickTimeLogger;
    private boolean isTickTimeLoggingEnabled;
    private final ServerLinks serverLinks;
    private final Map<String, String> codeOfConductTexts;
-   @Nullable
-   private ManagementServer jsonRpcServer;
+   private @Nullable ManagementServer jsonRpcServer;
    private long lastHeartbeat;
 
    public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7) {
@@ -279,7 +273,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          String var17 = String.format(Locale.ROOT, "%.3fs", (double)var16 / 1.0E9);
          LOGGER.info("Done ({})! For help, type \"help\"", var17);
          if (var13.announcePlayerAchievements != null) {
-            ((GameRules.BooleanValue)this.worldData.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var13.announcePlayerAchievements, this);
+            this.worldData.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, var13.announcePlayerAchievements, this);
          }
 
          if (var13.enableQuery) {
@@ -745,8 +739,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.serverTextFilter != null ? this.serverTextFilter.createContext(var1.getGameProfile()) : TextFilter.DUMMY;
    }
 
-   @Nullable
-   public GameType getForcedGameType() {
+   public @Nullable GameType getForcedGameType() {
       return this.forceGameMode() ? this.worldData.getGameType() : null;
    }
 

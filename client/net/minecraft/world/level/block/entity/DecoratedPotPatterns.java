@@ -1,13 +1,13 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotPatterns {
    public static final ResourceKey<DecoratedPotPattern> BLANK = create("blank");
@@ -40,8 +40,7 @@ public class DecoratedPotPatterns {
       super();
    }
 
-   @Nullable
-   public static ResourceKey<DecoratedPotPattern> getPatternFromItem(Item var0) {
+   public static @Nullable ResourceKey<DecoratedPotPattern> getPatternFromItem(Item var0) {
       return (ResourceKey)ITEM_TO_POT_TEXTURE.get(var0);
    }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class SeaPickleBlock extends VegetationBlock implements BonemealableBlock, SimpleWaterloggedBlock {
    public static final MapCodec<SeaPickleBlock> CODEC = simpleCodec(SeaPickleBlock::new);
@@ -44,8 +44,7 @@ public class SeaPickleBlock extends VegetationBlock implements BonemealableBlock
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PICKLES, 1)).setValue(WATERLOGGED, true));
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       if (var2.is(this)) {
          return (BlockState)var2.setValue(PICKLES, Math.min(4, (Integer)var2.getValue(PICKLES) + 1));

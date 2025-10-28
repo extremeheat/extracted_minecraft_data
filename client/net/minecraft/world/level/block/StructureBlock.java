@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final MapCodec<StructureBlock> CODEC = simpleCodec(StructureBlock::new);

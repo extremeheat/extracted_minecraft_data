@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens.dialog;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.dialog.ActionButton;
 import net.minecraft.server.dialog.SimpleDialog;
+import org.jspecify.annotations.Nullable;
 
 public class SimpleDialogScreen<T extends SimpleDialog> extends DialogScreen<T> {
    public SimpleDialogScreen(@Nullable Screen var1, T var2, DialogConnectionAccess var3) {

@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHolder {
    protected static final MapCodec<SuspiciousStewEffects> EFFECTS_FIELD;
@@ -47,8 +47,7 @@ public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHold
       return this.suspiciousStewEffects;
    }
 
-   @Nullable
-   public MobEffectInstance getBeeInteractionEffect() {
+   public @Nullable MobEffectInstance getBeeInteractionEffect() {
       return null;
    }
 

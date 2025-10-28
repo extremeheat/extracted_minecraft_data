@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.render.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 public final class GuiTextRenderState implements ScreenArea {
    public final Font font;
@@ -16,12 +16,9 @@ public final class GuiTextRenderState implements ScreenArea {
    public final int backgroundColor;
    public final boolean dropShadow;
    final boolean includeEmpty;
-   @Nullable
-   public final ScreenRectangle scissor;
-   @Nullable
-   private Font.PreparedText preparedText;
-   @Nullable
-   private ScreenRectangle bounds;
+   public final @Nullable ScreenRectangle scissor;
+   private Font.@Nullable PreparedText preparedText;
+   private @Nullable ScreenRectangle bounds;
 
    public GuiTextRenderState(Font var1, FormattedCharSequence var2, Matrix3x2fc var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9, @Nullable ScreenRectangle var10) {
       super();
@@ -50,8 +47,7 @@ public final class GuiTextRenderState implements ScreenArea {
       return this.preparedText;
    }
 
-   @Nullable
-   public ScreenRectangle bounds() {
+   public @Nullable ScreenRectangle bounds() {
       this.ensurePrepared();
       return this.bounds;
    }

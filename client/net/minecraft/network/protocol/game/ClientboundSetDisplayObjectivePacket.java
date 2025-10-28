@@ -1,13 +1,13 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetDisplayObjectivePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetDisplayObjectivePacket>codec(ClientboundSetDisplayObjectivePacket::write, ClientboundSetDisplayObjectivePacket::new);
@@ -48,8 +48,7 @@ public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePa
       return this.slot;
    }
 
-   @Nullable
-   public String getObjectiveName() {
+   public @Nullable String getObjectiveName() {
       return Objects.equals(this.objectiveName, "") ? null : this.objectiveName;
    }
 }

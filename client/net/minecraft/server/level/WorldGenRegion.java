@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -62,6 +61,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.WorldGenTickAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class WorldGenRegion implements WorldGenLevel {
@@ -77,8 +77,7 @@ public class WorldGenRegion implements WorldGenLevel {
    private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<Fluid>((var1x) -> this.getChunk(var1x).getFluidTicks());
    private final BiomeManager biomeManager;
    private final ChunkStep generatingStep;
-   @Nullable
-   private Supplier<String> currentlyGenerating;
+   private @Nullable Supplier<String> currentlyGenerating;
    private final AtomicLong subTickCount = new AtomicLong();
    private static final ResourceLocation WORLDGEN_REGION_RANDOM = ResourceLocation.withDefaultNamespace("worldgen_region_random");
 
@@ -111,8 +110,7 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY);
    }
 
-   @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       int var5 = this.center.getPos().getChessboardDistance(var1, var2);
       ChunkStatus var6 = var5 >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(var5);
       GenerationChunkHolder var7;
@@ -159,8 +157,7 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(var1).getFluidState(var1);
    }
 
-   @Nullable
-   public Player getNearestPlayer(double var1, double var3, double var5, double var7, Predicate<Entity> var9) {
+   public @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
       return null;
    }
 
@@ -198,8 +195,7 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       ChunkAccess var2 = this.getChunk(var1);
       BlockEntity var3 = var2.getBlockEntity(var1);
       if (var3 != null) {
@@ -340,8 +336,7 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   @Nullable
-   public MinecraftServer getServer() {
+   public @Nullable MinecraftServer getServer() {
       return this.level.getServer();
    }
 

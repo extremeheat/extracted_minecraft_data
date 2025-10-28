@@ -2,7 +2,6 @@ package net.minecraft.world.entity.vehicle;
 
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class OldMinecartBehavior extends MinecartBehavior {
    private static final double MINECART_RIDABLE_THRESHOLD = 0.01;
@@ -270,8 +270,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
 
    }
 
-   @Nullable
-   public Vec3 getPosOffs(double var1, double var3, double var5, double var7) {
+   public @Nullable Vec3 getPosOffs(double var1, double var3, double var5, double var7) {
       int var9 = Mth.floor(var1);
       int var10 = Mth.floor(var3);
       int var11 = Mth.floor(var5);
@@ -309,8 +308,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
       }
    }
 
-   @Nullable
-   public Vec3 getPos(double var1, double var3, double var5) {
+   public @Nullable Vec3 getPos(double var1, double var3, double var5) {
       int var7 = Mth.floor(var1);
       int var8 = Mth.floor(var3);
       int var9 = Mth.floor(var5);

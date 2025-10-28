@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public static final MapCodec<MossyCarpetBlock> CODEC = simpleCodec(MossyCarpetBlock::new);
@@ -148,8 +148,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return var0;
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return getUpdatedState(this.defaultBlockState(), var1.getLevel(), var1.getClickedPos(), true);
    }
 
@@ -240,8 +239,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       return var10000;
    }
 
-   @Nullable
-   public static EnumProperty<WallSide> getPropertyForFace(Direction var0) {
+   public static @Nullable EnumProperty<WallSide> getPropertyForFace(Direction var0) {
       return (EnumProperty)PROPERTY_BY_DIRECTION.get(var0);
    }
 

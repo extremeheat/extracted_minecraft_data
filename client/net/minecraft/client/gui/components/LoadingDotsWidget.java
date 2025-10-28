@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
@@ -12,6 +11,7 @@ import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import org.jspecify.annotations.Nullable;
 
 public class LoadingDotsWidget extends AbstractWidget {
    private final Font font;
@@ -48,8 +48,7 @@ public class LoadingDotsWidget extends AbstractWidget {
       return false;
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 }

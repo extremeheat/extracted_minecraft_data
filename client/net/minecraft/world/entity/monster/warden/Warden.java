@@ -5,7 +5,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -70,6 +69,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public class Warden extends Monster implements VibrationSystem {
    private static final int VIBRATION_COOLDOWN_TICKS = 40;
@@ -174,8 +174,7 @@ public class Warden extends Monster implements VibrationSystem {
       return 4.0F;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return !this.hasPose(Pose.ROARING) && !this.isDiggingOrEmerging() ? this.getAngerLevel().getAmbientSound() : null;
    }
 
@@ -417,8 +416,7 @@ public class Warden extends Monster implements VibrationSystem {
       return this.getAngerLevel().isAngry() ? this.angerManagement.getActiveEntity() : Optional.empty();
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 
@@ -426,8 +424,7 @@ public class Warden extends Monster implements VibrationSystem {
       return false;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.getBrain().setMemoryWithExpiry(MemoryModuleType.DIG_COOLDOWN, Unit.INSTANCE, 1200L);
       if (var3 == EntitySpawnReason.TRIGGERED) {
          this.setPose(Pose.EMERGING);

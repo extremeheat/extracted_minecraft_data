@@ -3,19 +3,18 @@ package net.minecraft.world.level.pathfinder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class Path {
    public static final StreamCodec<FriendlyByteBuf, Path> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, Path>of((var0, var1) -> var1.writeToStream(var0), Path::createFromStream);
    private final List<Node> nodes;
-   @Nullable
-   private DebugData debugData;
+   private @Nullable DebugData debugData;
    private int nextNodeIndex;
    private final BlockPos target;
    private final float distToTarget;
@@ -41,8 +40,7 @@ public final class Path {
       return this.nextNodeIndex >= this.nodes.size();
    }
 
-   @Nullable
-   public Node getEndNode() {
+   public @Nullable Node getEndNode() {
       return !this.nodes.isEmpty() ? (Node)this.nodes.get(this.nodes.size() - 1) : null;
    }
 
@@ -97,8 +95,7 @@ public final class Path {
       return (Node)this.nodes.get(this.nextNodeIndex);
    }
 
-   @Nullable
-   public Node getPreviousNode() {
+   public @Nullable Node getPreviousNode() {
       return this.nextNodeIndex > 0 ? (Node)this.nodes.get(this.nextNodeIndex - 1) : null;
    }
 
@@ -127,8 +124,7 @@ public final class Path {
       this.debugData = new DebugData(var1, var2, var3);
    }
 
-   @Nullable
-   public DebugData debugData() {
+   public @Nullable DebugData debugData() {
       return this.debugData;
    }
 

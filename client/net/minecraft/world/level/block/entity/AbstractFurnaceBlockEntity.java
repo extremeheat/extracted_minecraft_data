@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, RecipeCraftingHolder, StackedContentsCompatible {
    protected static final int SLOT_INPUT = 0;
@@ -325,8 +325,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    }
 
-   @Nullable
-   public RecipeHolder<?> getRecipeUsed() {
+   public @Nullable RecipeHolder<?> getRecipeUsed() {
       return null;
    }
 
@@ -338,9 +337,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       var1.awardRecipes(var2);
 
       for(RecipeHolder var4 : var2) {
-         if (var4 != null) {
-            var1.triggerRecipeCrafted(var4, this.items);
-         }
+         var1.triggerRecipeCrafted(var4, this.items);
       }
 
       this.recipesUsed.clear();

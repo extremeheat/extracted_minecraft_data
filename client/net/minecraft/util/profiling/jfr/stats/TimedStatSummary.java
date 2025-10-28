@@ -5,8 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.Percentiles;
+import org.jspecify.annotations.Nullable;
 
 public record TimedStatSummary<T extends TimedStat>(T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration) {
    public TimedStatSummary(T var1, T var2, @Nullable T var3, int var4, Map<Integer, Double> var5, Duration var6) {

@@ -3,7 +3,6 @@ package net.minecraft.commands.arguments.blocks;
 import com.mojang.logging.LogUtils;
 import java.util.Set;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -19,14 +18,14 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BlockInput implements Predicate<BlockInWorld> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final BlockState state;
    private final Set<Property<?>> properties;
-   @Nullable
-   private final CompoundTag tag;
+   private final @Nullable CompoundTag tag;
 
    public BlockInput(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
       super();

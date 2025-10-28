@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.TickContainerAccess;
+import org.jspecify.annotations.Nullable;
 
 public class ImposterProtoChunk extends ProtoChunk {
    private final LevelChunk wrapped;
@@ -39,8 +39,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       this.allowWrites = var2;
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return this.wrapped.getBlockEntity(var1);
    }
 
@@ -56,8 +55,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.allowWrites ? this.wrapped.getSection(var1) : super.getSection(var1);
    }
 
-   @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
+   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return this.allowWrites ? this.wrapped.setBlockState(var1, var2, var3) : null;
    }
 
@@ -113,8 +111,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getPos();
    }
 
-   @Nullable
-   public StructureStart getStartForStructure(Structure var1) {
+   public @Nullable StructureStart getStartForStructure(Structure var1) {
       return this.wrapped.getStartForStructure(var1);
    }
 
@@ -171,13 +168,11 @@ public class ImposterProtoChunk extends ProtoChunk {
    public void setBlockEntityNbt(CompoundTag var1) {
    }
 
-   @Nullable
-   public CompoundTag getBlockEntityNbt(BlockPos var1) {
+   public @Nullable CompoundTag getBlockEntityNbt(BlockPos var1) {
       return this.wrapped.getBlockEntityNbt(var1);
    }
 
-   @Nullable
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
       return this.wrapped.getBlockEntityNbtForSaving(var1, var2);
    }
 
@@ -197,8 +192,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getTicksForSerialization(var1);
    }
 
-   @Nullable
-   public BlendingData getBlendingData() {
+   public @Nullable BlendingData getBlendingData() {
       return this.wrapped.getBlendingData();
    }
 

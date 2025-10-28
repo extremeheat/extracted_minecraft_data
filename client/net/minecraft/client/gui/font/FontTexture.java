@@ -9,11 +9,11 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class FontTexture extends AbstractTexture implements Dumpable {
    private static final int SIZE = 256;
@@ -32,8 +32,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       this.renderTypes = var2;
    }
 
-   @Nullable
-   public BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
+   public @Nullable BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
       if (var2.isColored() != this.colored) {
          return null;
       } else {
@@ -62,10 +61,8 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       final int y;
       private final int width;
       private final int height;
-      @Nullable
-      private Node left;
-      @Nullable
-      private Node right;
+      private @Nullable Node left;
+      private @Nullable Node right;
       private boolean occupied;
 
       Node(int var1, int var2, int var3, int var4) {
@@ -76,8 +73,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
          this.height = var4;
       }
 
-      @Nullable
-      Node insert(GlyphBitmap var1) {
+      @Nullable Node insert(GlyphBitmap var1) {
          if (this.left != null && this.right != null) {
             Node var6 = this.left.insert(var1);
             if (var6 == null) {

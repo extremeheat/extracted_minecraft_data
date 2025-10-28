@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.fog.environment;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
+import org.jspecify.annotations.Nullable;
 
 public class PowderedSnowFogEnvironment extends FogEnvironment {
    private static final int COLOR = -6308916;

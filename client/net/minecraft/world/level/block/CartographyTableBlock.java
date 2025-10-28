@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class CartographyTableBlock extends Block {
    public static final MapCodec<CartographyTableBlock> CODEC = simpleCodec(CartographyTableBlock::new);
@@ -37,8 +37,7 @@ public class CartographyTableBlock extends Block {
       return InteractionResult.SUCCESS;
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return new SimpleMenuProvider((var2x, var3x, var4) -> new CartographyTableMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 }

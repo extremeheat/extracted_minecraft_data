@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TestBlockEntity extends BlockEntity {
@@ -53,8 +53,7 @@ public class TestBlockEntity extends BlockEntity {
       }
    }
 
-   @Nullable
-   public ClientboundBlockEntityDataPacket getUpdatePacket() {
+   public @Nullable ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
@@ -128,8 +127,7 @@ public class TestBlockEntity extends BlockEntity {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Packet getUpdatePacket() {
+   public @Nullable Packet getUpdatePacket() {
       return this.getUpdatePacket();
    }
 }

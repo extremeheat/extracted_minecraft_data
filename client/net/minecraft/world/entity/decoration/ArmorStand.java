@@ -3,7 +3,6 @@ package net.minecraft.world.entity.decoration;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
@@ -35,17 +34,18 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ArmorStand extends LivingEntity {
    public static final int WOBBLE_TIME = 5;
@@ -260,7 +260,7 @@ public class ArmorStand extends LivingEntity {
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isRemoved()) {
          return false;
-      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
+      } else if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
       } else if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          this.kill(var1);
@@ -553,13 +553,11 @@ public class ArmorStand extends LivingEntity {
       return new LivingEntity.Fallsounds(SoundEvents.ARMOR_STAND_FALL, SoundEvents.ARMOR_STAND_FALL);
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.ARMOR_STAND_HIT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.ARMOR_STAND_BREAK;
    }
 

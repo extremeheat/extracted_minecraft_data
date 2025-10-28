@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -83,6 +82,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BlockBehaviour implements FeatureElement {
    protected static final Direction[] UPDATE_SHAPE_ORDER;
@@ -285,8 +285,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return null;
    }
 
@@ -425,8 +424,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       float friction;
       float speedFactor;
       float jumpFactor;
-      @Nullable
-      private ResourceKey<Block> id;
+      private @Nullable ResourceKey<Block> id;
       private DependantName<Block, Optional<ResourceKey<LootTable>>> drops;
       private DependantName<Block, String> descriptionId;
       boolean canOcclude;
@@ -451,8 +449,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       StatePredicate emissiveRendering;
       boolean dynamicShape;
       FeatureFlagSet requiredFeatures;
-      @Nullable
-      OffsetFunction offsetFunction;
+      @Nullable OffsetFunction offsetFunction;
 
       private Properties() {
          super();
@@ -778,13 +775,11 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final StatePredicate isViewBlocking;
       private final StatePredicate hasPostProcess;
       private final StatePredicate emissiveRendering;
-      @Nullable
-      private final OffsetFunction offsetFunction;
+      private final @Nullable OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
-      @Nullable
-      private Cache cache;
+      private @Nullable Cache cache;
       private FluidState fluidState;
       private boolean isRandomlyTicking;
       private boolean solidRender;
@@ -1164,8 +1159,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.hasPostProcess.test(this.asState(), var1, var2);
       }
 
-      @Nullable
-      public MenuProvider getMenuProvider(Level var1, BlockPos var2) {
+      public @Nullable MenuProvider getMenuProvider(Level var1, BlockPos var2) {
          return this.getBlock().getMenuProvider(this.asState(), var1, var2);
       }
 
@@ -1197,8 +1191,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().shouldChangedStateKeepBlockEntity(var1);
       }
 
-      @Nullable
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockEntityType<T> var2) {
+      public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockEntityType<T> var2) {
          return this.getBlock() instanceof EntityBlock ? ((EntityBlock)this.getBlock()).getTicker(var1, this.asState(), var2) : null;
       }
 

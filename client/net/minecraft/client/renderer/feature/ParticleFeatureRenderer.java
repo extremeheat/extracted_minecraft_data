@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Queue;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
+import org.jspecify.annotations.Nullable;
 
 public class ParticleFeatureRenderer implements AutoCloseable {
    private final Queue<ParticleBufferCache> availableBuffers = new ArrayDeque();
@@ -86,8 +86,7 @@ public class ParticleFeatureRenderer implements AutoCloseable {
    }
 
    public static class ParticleBufferCache implements AutoCloseable {
-      @Nullable
-      private MappableRingBuffer ringBuffer;
+      private @Nullable MappableRingBuffer ringBuffer;
 
       public ParticleBufferCache() {
          super();

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -47,7 +46,6 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -57,11 +55,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Turtle extends Animal {
    private static final EntityDataAccessor<Boolean> HAS_EGG;
@@ -72,8 +72,7 @@ public class Turtle extends Animal {
    int layEggCounter;
    public static final TargetingConditions.Selector BABY_ON_LAND_SELECTOR;
    BlockPos homePos;
-   @Nullable
-   BlockPos travelPos;
+   @Nullable BlockPos travelPos;
    boolean goingHome;
 
    public Turtle(EntityType<? extends Turtle> var1, Level var2) {
@@ -125,8 +124,7 @@ public class Turtle extends Animal {
       this.setHasEgg(var1.getBooleanOr("has_egg", false));
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setHomePos(this.blockPosition());
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
@@ -159,8 +157,7 @@ public class Turtle extends Animal {
       return 200;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return !this.isInWater() && this.onGround() && !this.isBaby() ? SoundEvents.TURTLE_AMBIENT_LAND : super.getAmbientSound();
    }
 
@@ -172,13 +169,11 @@ public class Turtle extends Animal {
       return SoundEvents.TURTLE_SWIM;
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return this.isBaby() ? SoundEvents.TURTLE_HURT_BABY : SoundEvents.TURTLE_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return this.isBaby() ? SoundEvents.TURTLE_DEATH_BABY : SoundEvents.TURTLE_DEATH;
    }
 
@@ -203,8 +198,7 @@ public class Turtle extends Animal {
       return new TurtlePathNavigation(this, var1);
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.TURTLE.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -238,7 +232,7 @@ public class Turtle extends Animal {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
             ServerLevel var1 = (ServerLevel)var2;
-            if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if ((Boolean)var1.getGameRules().get(GameRules.MOB_DROPS)) {
                this.dropFromGiftLootTable(var1, BuiltInLootTables.TURTLE_GROW, this::spawnAtLocation);
             }
          }
@@ -246,16 +240,12 @@ public class Turtle extends Animal {
 
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(0.1F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-         if (this.getTarget() == null && (!this.goingHome || !this.homePos.closerToCenterThan(this.position(), 20.0))) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
-         }
-      } else {
-         super.travel(var1);
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(0.1F, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      if (this.getTarget() == null && (!this.goingHome || !this.homePos.closerToCenterThan(this.position(), 20.0))) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
       }
 
    }
@@ -469,7 +459,7 @@ public class Turtle extends Animal {
          this.animal.resetLove();
          this.partner.resetLove();
          RandomSource var2 = this.animal.getRandom();
-         if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_DROPS)) {
             this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), var2.nextInt(7) + 1));
          }
 

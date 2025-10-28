@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.SlotProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -72,7 +73,7 @@ public class ItemCommands {
 
       for(Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
-         if (var7 != SlotAccess.NULL) {
+         if (var7 != null) {
             ItemStack var8 = applyModifier(var0, var3, var7.get().copy());
             if (var7.set(var8)) {
                var4.put(var6, var8);
@@ -122,7 +123,7 @@ public class ItemCommands {
 
       for(Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
-         if (var7 != SlotAccess.NULL && var7.set(var3.copy())) {
+         if (var7 != null && var7.set(var3.copy())) {
             var4.add(var6);
             if (var6 instanceof ServerPlayer) {
                ((ServerPlayer)var6).containerMenu.broadcastChanges();
@@ -160,19 +161,19 @@ public class ItemCommands {
    }
 
    private static int entityToBlock(CommandSourceStack var0, Entity var1, int var2, BlockPos var3, int var4) throws CommandSyntaxException {
-      return setBlockItem(var0, var3, var4, getEntityItem(var1, var2));
+      return setBlockItem(var0, var3, var4, getItemInSlot(var1, var2));
    }
 
    private static int entityToBlock(CommandSourceStack var0, Entity var1, int var2, BlockPos var3, int var4, Holder<LootItemFunction> var5) throws CommandSyntaxException {
-      return setBlockItem(var0, var3, var4, applyModifier(var0, var5, getEntityItem(var1, var2)));
+      return setBlockItem(var0, var3, var4, applyModifier(var0, var5, getItemInSlot(var1, var2)));
    }
 
    private static int entityToEntities(CommandSourceStack var0, Entity var1, int var2, Collection<? extends Entity> var3, int var4) throws CommandSyntaxException {
-      return setEntityItem(var0, var3, var4, getEntityItem(var1, var2));
+      return setEntityItem(var0, var3, var4, getItemInSlot(var1, var2));
    }
 
    private static int entityToEntities(CommandSourceStack var0, Entity var1, int var2, Collection<? extends Entity> var3, int var4, Holder<LootItemFunction> var5) throws CommandSyntaxException {
-      return setEntityItem(var0, var3, var4, applyModifier(var0, var5, getEntityItem(var1, var2)));
+      return setEntityItem(var0, var3, var4, applyModifier(var0, var5, getItemInSlot(var1, var2)));
    }
 
    private static ItemStack applyModifier(CommandSourceStack var0, Holder<LootItemFunction> var1, ItemStack var2) {
@@ -185,9 +186,9 @@ public class ItemCommands {
       return var6;
    }
 
-   private static ItemStack getEntityItem(Entity var0, int var1) throws CommandSyntaxException {
+   private static ItemStack getItemInSlot(SlotProvider var0, int var1) throws CommandSyntaxException {
       SlotAccess var2 = var0.getSlot(var1);
-      if (var2 == SlotAccess.NULL) {
+      if (var2 == null) {
          throw ERROR_SOURCE_INAPPLICABLE_SLOT.create(var1);
       } else {
          return var2.get().copy();
@@ -196,10 +197,6 @@ public class ItemCommands {
 
    private static ItemStack getBlockItem(CommandSourceStack var0, BlockPos var1, int var2) throws CommandSyntaxException {
       Container var3 = getContainer(var0, var1, ERROR_SOURCE_NOT_A_CONTAINER);
-      if (var2 >= 0 && var2 < var3.getContainerSize()) {
-         return var3.getItem(var2).copy();
-      } else {
-         throw ERROR_SOURCE_INAPPLICABLE_SLOT.create(var2);
-      }
+      return getItemInSlot(var3, var2);
    }
 }

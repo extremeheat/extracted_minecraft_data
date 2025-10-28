@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.BundleMouseActions;
@@ -25,6 +24,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2i;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
@@ -43,16 +43,11 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    private final List<ItemSlotMouseAction> itemSlotMouseActions;
    protected final T menu;
    protected final Component playerInventoryTitle;
-   @Nullable
-   protected Slot hoveredSlot;
-   @Nullable
-   private Slot clickedSlot;
-   @Nullable
-   private Slot quickdropSlot;
-   @Nullable
-   private Slot lastClickSlot;
-   @Nullable
-   private SnapbackData snapbackData;
+   protected @Nullable Slot hoveredSlot;
+   private @Nullable Slot clickedSlot;
+   private @Nullable Slot quickdropSlot;
+   private @Nullable Slot lastClickSlot;
+   private @Nullable SnapbackData snapbackData;
    protected int leftPos;
    protected int topPos;
    private boolean isSplittingStack;
@@ -303,8 +298,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
    }
 
-   @Nullable
-   private Slot getHoveredSlot(double var1, double var3) {
+   private @Nullable Slot getHoveredSlot(double var1, double var3) {
       for(Slot var6 : this.menu.slots) {
          if (var6.isActive() && this.isHovering(var6, var1, var3)) {
             return var6;

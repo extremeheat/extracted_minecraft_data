@@ -10,12 +10,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class ComponentUtils {
    public static final String DEFAULT_SEPARATOR_TEXT = ", ";

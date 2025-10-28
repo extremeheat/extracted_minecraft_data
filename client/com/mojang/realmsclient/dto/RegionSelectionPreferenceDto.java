@@ -2,7 +2,7 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class RegionSelectionPreferenceDto implements ReflectionBasedSerialization {
    public static final RegionSelectionPreferenceDto DEFAULT;
@@ -11,8 +11,7 @@ public class RegionSelectionPreferenceDto implements ReflectionBasedSerializatio
    public final RegionSelectionPreference regionSelectionPreference;
    @SerializedName("preferredRegion")
    @JsonAdapter(RealmsRegion.RealmsRegionJsonAdapter.class)
-   @Nullable
-   public RealmsRegion preferredRegion;
+   public @Nullable RealmsRegion preferredRegion;
 
    public RegionSelectionPreferenceDto(RegionSelectionPreference var1, @Nullable RealmsRegion var2) {
       super();

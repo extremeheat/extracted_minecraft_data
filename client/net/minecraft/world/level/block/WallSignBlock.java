@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class WallSignBlock extends SignBlock {
    public static final MapCodec<WallSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallSignBlock::new));
@@ -46,8 +46,7 @@ public class WallSignBlock extends SignBlock {
       return var2.getBlockState(var3.relative(((Direction)var1.getValue(FACING)).getOpposite())).isSolid();
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = this.defaultBlockState();
       FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos());
       Level var4 = var1.getLevel();

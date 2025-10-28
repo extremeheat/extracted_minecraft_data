@@ -3,8 +3,6 @@ package net.minecraft.world.entity.projectile;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collections;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -47,6 +45,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FishingHook extends Projectile {
@@ -63,8 +62,7 @@ public class FishingHook extends Projectile {
    private int timeUntilHooked;
    private float fishAngle;
    private boolean openWater;
-   @Nullable
-   private Entity hookedIn;
+   private @Nullable Entity hookedIn;
    private FishHookState currentState;
    private final int luck;
    private final int lureSpeed;
@@ -107,7 +105,6 @@ public class FishingHook extends Projectile {
       this.xRotO = this.getXRot();
    }
 
-   @Nonnull
    public InterpolationHandler getInterpolation() {
       return this.interpolationHandler;
    }
@@ -507,8 +504,7 @@ public class FishingHook extends Projectile {
 
    }
 
-   @Nullable
-   public Player getPlayerOwner() {
+   public @Nullable Player getPlayerOwner() {
       Entity var1 = this.getOwner();
       Player var10000;
       if (var1 instanceof Player var2) {
@@ -520,8 +516,7 @@ public class FishingHook extends Projectile {
       return var10000;
    }
 
-   @Nullable
-   public Entity getHookedIn() {
+   public @Nullable Entity getHookedIn() {
       return this.hookedIn;
    }
 

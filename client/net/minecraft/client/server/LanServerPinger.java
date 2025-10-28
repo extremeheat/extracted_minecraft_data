@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.DefaultUncaughtExceptionHandler;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LanServerPinger extends Thread {
@@ -71,7 +72,7 @@ public class LanServerPinger extends Thread {
       }
    }
 
-   public static String parseAddress(String var0) {
+   public static @Nullable String parseAddress(String var0) {
       int var1 = var0.indexOf("[/MOTD]");
       if (var1 < 0) {
          return null;

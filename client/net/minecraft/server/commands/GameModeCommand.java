@@ -15,8 +15,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.server.permissions.Permissions;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class GameModeCommand {
    public static final PermissionCheck PERMISSION_CHECK;
@@ -34,7 +34,7 @@ public class GameModeCommand {
       if (var0.getEntity() == var1) {
          var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.self", var3), true);
       } else {
-         if (var0.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+         if ((Boolean)var0.getLevel().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK)) {
             var1.sendSystemMessage(Component.translatable("gameMode.changed", var3));
          }
 

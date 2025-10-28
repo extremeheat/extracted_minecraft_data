@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.datafixers.util.Pair;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -10,14 +9,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class RepairItemRecipe extends CustomRecipe {
    public RepairItemRecipe(CraftingBookCategory var1) {
       super(var1);
    }
 
-   @Nullable
-   private static Pair<ItemStack, ItemStack> getItemsToCombine(CraftingInput var0) {
+   private static @Nullable Pair<ItemStack, ItemStack> getItemsToCombine(CraftingInput var0) {
       if (var0.ingredientCount() != 2) {
          return null;
       } else {

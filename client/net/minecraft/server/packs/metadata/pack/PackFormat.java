@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.InclusiveRange;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record PackFormat(int major, int minor) implements Comparable<PackFormat> {
@@ -40,7 +40,7 @@ public record PackFormat(int major, int minor) implements Comparable<PackFormat>
       for(IntermediaryFormatHolder var6 : var0) {
          IntermediaryFormat var7 = var6.format();
          if (var7.min().isEmpty() && var7.max().isEmpty() && var7.supported().isEmpty()) {
-            LOGGER.warn("Unknown or broken overlay entry " + String.valueOf(var6));
+            LOGGER.warn("Unknown or broken overlay entry {}", var6);
          } else {
             DataResult var8 = var7.validate(var1, false, var3 <= var1, "Overlay \"" + String.valueOf(var6) + "\"", "formats");
             if (!var8.isSuccess()) {

@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,6 +62,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class StructureTemplate {
@@ -738,8 +738,7 @@ public class StructureTemplate {
          return var2;
       }
 
-      @Nullable
-      public BlockState stateFor(int var1) {
+      public @Nullable BlockState stateFor(int var1) {
          BlockState var2 = this.ids.byId(var1);
          return var2 == null ? DEFAULT_BLOCK_STATE : var2;
       }
@@ -760,8 +759,7 @@ public class StructureTemplate {
    public static record StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
       final BlockPos pos;
       final BlockState state;
-      @Nullable
-      final CompoundTag nbt;
+      final @Nullable CompoundTag nbt;
 
       public StructureBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
          super();
@@ -819,8 +817,7 @@ public class StructureTemplate {
    public static final class Palette {
       private final List<StructureBlockInfo> blocks;
       private final Map<Block, List<StructureBlockInfo>> cache = Maps.newHashMap();
-      @Nullable
-      private List<JigsawBlockInfo> cachedJigsaws;
+      private @Nullable List<JigsawBlockInfo> cachedJigsaws;
 
       Palette(List<StructureBlockInfo> var1) {
          super();

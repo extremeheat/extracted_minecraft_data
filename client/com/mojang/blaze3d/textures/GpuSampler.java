@@ -13,5 +13,7 @@ public abstract class GpuSampler implements AutoCloseable {
 
    public abstract FilterMode getMagFilter();
 
+   public abstract int getMaxAnisotropy();
+
    public abstract void close();
 }

@@ -23,19 +23,18 @@ import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.jsonrpc.security.AuthenticationHandler;
 import net.minecraft.server.jsonrpc.websocket.JsonToWebSocketEncoder;
 import net.minecraft.server.jsonrpc.websocket.WebSocketToJsonCodec;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ManagementServer {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final HostAndPort hostAndPort;
    final AuthenticationHandler authenticationHandler;
-   @Nullable
-   private Channel serverChannel;
+   private @Nullable Channel serverChannel;
    private final NioEventLoopGroup nioEventLoopGroup;
    private final Set<Connection> connections = Sets.newIdentityHashSet();
 
@@ -73,7 +72,7 @@ public class ManagementServer {
       this.start(var1, var2);
    }
 
-   private void start(final MinecraftApi var1, @Nullable final SslContext var2) {
+   private void start(final MinecraftApi var1, final @Nullable SslContext var2) {
       final JsonRpcLogger var3 = new JsonRpcLogger();
       ChannelFuture var4 = ((ServerBootstrap)((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).handler(new LoggingHandler(LogLevel.DEBUG))).channel(NioServerSocketChannel.class)).childHandler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1x) {

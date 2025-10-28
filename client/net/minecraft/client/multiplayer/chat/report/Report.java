@@ -5,18 +5,17 @@ import com.mojang.authlib.minecraft.report.AbuseReportLimits;
 import com.mojang.datafixers.util.Either;
 import java.time.Instant;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Report {
    protected final UUID reportId;
    protected final Instant createdAt;
    protected final UUID reportedProfileId;
    protected String comments = "";
-   @Nullable
-   protected ReportReason reason;
+   protected @Nullable ReportReason reason;
    protected boolean attested;
 
    public Report(UUID var1, Instant var2, UUID var3) {
@@ -64,8 +63,7 @@ public abstract class Report {
          this.report.comments = var1;
       }
 
-      @Nullable
-      public ReportReason reason() {
+      public @Nullable ReportReason reason() {
          return this.report.reason;
       }
 
@@ -79,8 +77,7 @@ public abstract class Report {
 
       public abstract boolean hasContent();
 
-      @Nullable
-      public CannotBuildReason checkBuildable() {
+      public @Nullable CannotBuildReason checkBuildable() {
          return !this.report().attested ? Report.CannotBuildReason.NOT_ATTESTED : null;
       }
 

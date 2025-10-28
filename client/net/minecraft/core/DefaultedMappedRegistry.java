@@ -2,11 +2,10 @@ package net.minecraft.core;
 
 import com.mojang.serialization.Lifecycle;
 import java.util.Optional;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements DefaultedRegistry<T> {
    private final ResourceLocation defaultKey;
@@ -31,13 +30,11 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
       return var2 == -1 ? super.getId(this.defaultValue.value()) : var2;
    }
 
-   @Nonnull
    public ResourceLocation getKey(T var1) {
       ResourceLocation var2 = super.getKey(var1);
       return var2 == null ? this.defaultKey : var2;
    }
 
-   @Nonnull
    public T getValue(@Nullable ResourceLocation var1) {
       Object var2 = super.getValue(var1);
       return (T)(var2 == null ? this.defaultValue.value() : var2);
@@ -51,7 +48,6 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
       return Optional.ofNullable(this.defaultValue);
    }
 
-   @Nonnull
    public T byId(int var1) {
       Object var2 = super.byId(var1);
       return (T)(var2 == null ? this.defaultValue.value() : var2);

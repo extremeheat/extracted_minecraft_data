@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.TextAlignment;
@@ -11,6 +10,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
+import org.jspecify.annotations.Nullable;
 
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
@@ -41,10 +41,8 @@ public interface MultiLineLabel {
 
    static MultiLineLabel create(final Font var0, final int var1, final int var2, final Component... var3) {
       return var3.length == 0 ? EMPTY : new MultiLineLabel() {
-         @Nullable
-         private List<TextAndWidth> cachedTextAndWidth;
-         @Nullable
-         private Language splitWithLanguage;
+         private @Nullable List<TextAndWidth> cachedTextAndWidth;
+         private @Nullable Language splitWithLanguage;
 
          public int visitLines(TextAlignment var1x, int var2x, int var3x, int var4, ActiveTextCollector var5) {
             int var6 = var3x;
@@ -79,7 +77,7 @@ public interface MultiLineLabel {
                   FormattedCharSequence var7 = Language.getInstance().getVisualOrder(var13);
                   if (var12 == var11.size() - 1 && var10 == var2 && var10 != var2x.size()) {
                      FormattedText var8 = var0.substrByWidth(var13, var0.width(var13) - var0.width((FormattedText)CommonComponents.ELLIPSIS));
-                     FormattedText var9 = FormattedText.composite(var8, CommonComponents.ELLIPSIS);
+                     FormattedText var9 = FormattedText.composite(var8, CommonComponents.ELLIPSIS.copy().withStyle(var3[var3.length - 1].getStyle()));
                      this.cachedTextAndWidth.add(new TextAndWidth(Language.getInstance().getVisualOrder(var9), var0.width(var9)));
                   } else {
                      this.cachedTextAndWidth.add(new TextAndWidth(var7, var0.width(var7)));

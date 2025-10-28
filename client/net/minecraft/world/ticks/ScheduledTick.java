@@ -2,8 +2,8 @@ package net.minecraft.world.ticks;
 
 import it.unimi.dsi.fastutil.Hash;
 import java.util.Comparator;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.Nullable;
 
 public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
    public static final Comparator<ScheduledTick<?>> DRAIN_ORDER = (var0, var1) -> {
@@ -35,7 +35,7 @@ public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPrior
       }
 
       // $FF: synthetic method
-      public boolean equals(@Nullable final Object var1, @Nullable final Object var2) {
+      public boolean equals(final @Nullable Object var1, final @Nullable Object var2) {
          return this.equals((ScheduledTick)var1, (ScheduledTick)var2);
       }
 

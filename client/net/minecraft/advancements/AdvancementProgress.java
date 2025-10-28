@@ -15,11 +15,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementProgress implements Comparable<AdvancementProgress> {
    private static final DateTimeFormatter OBTAINED_TIME_FORMAT;
@@ -100,8 +100,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       return new AdvancementProgress(var1);
    }
 
-   @Nullable
-   public CriterionProgress getCriterion(String var1) {
+   public @Nullable CriterionProgress getCriterion(String var1) {
       return (CriterionProgress)this.criteria.get(var1);
    }
 
@@ -120,8 +119,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       }
    }
 
-   @Nullable
-   public Component getProgressText() {
+   public @Nullable Component getProgressText() {
       if (this.criteria.isEmpty()) {
          return null;
       } else {
@@ -163,8 +161,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       return var1;
    }
 
-   @Nullable
-   public Instant getFirstProgressDate() {
+   public @Nullable Instant getFirstProgressDate() {
       return (Instant)this.criteria.values().stream().map(CriterionProgress::getObtained).filter(Objects::nonNull).min(Comparator.naturalOrder()).orElse((Object)null);
    }
 

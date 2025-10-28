@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ChatLog {
    private final LoggedChatEvent[] buffer;
@@ -42,8 +42,7 @@ public class ChatLog {
       this.buffer[this.index(this.nextId++)] = var1;
    }
 
-   @Nullable
-   public LoggedChatEvent lookup(int var1) {
+   public @Nullable LoggedChatEvent lookup(int var1) {
       return var1 >= this.start() && var1 <= this.end() ? this.buffer[this.index(var1)] : null;
    }
 

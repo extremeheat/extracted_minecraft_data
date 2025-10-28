@@ -2,12 +2,13 @@ package net.minecraft.client.gui.screens;
 
 import com.ibm.icu.text.Collator;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -25,9 +26,10 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
 public class CreateBuffetWorldScreen extends Screen {
-   private static final Component BIOME_SELECT_INFO = Component.translatable("createWorld.customize.buffet.biome").withColor(-8355712);
-   private static final int SPACING = 8;
-   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private static final Component SEARCH_HINT;
+   private static final int SPACING = 3;
+   private static final int SEARCH_BOX_HEIGHT = 15;
+   final HeaderAndFooterLayout layout;
    private final Screen parent;
    private final Consumer<Holder<Biome>> applySettings;
    final Registry<Biome> biomes;
@@ -39,6 +41,8 @@ public class CreateBuffetWorldScreen extends Screen {
       super(Component.translatable("createWorld.customize.buffet.title"));
       this.parent = var1;
       this.applySettings = var3;
+      Objects.requireNonNull(this.font);
+      this.layout = new HeaderAndFooterLayout(this, 13 + 9 + 3 + 15, 33);
       this.biomes = var2.worldgenLoadContext().lookupOrThrow(Registries.BIOME);
       Holder var4 = (Holder)this.biomes.get(Biomes.PLAINS).or(() -> this.biomes.listElements().findAny()).orElseThrow();
       this.biome = (Holder)var2.selectedDimensions().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(var4);
@@ -49,17 +53,21 @@ public class CreateBuffetWorldScreen extends Screen {
    }
 
    protected void init() {
-      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(8));
+      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(3));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.getTitle(), this.font));
-      var1.addChild(new StringWidget(BIOME_SELECT_INFO, this.font));
-      this.list = (BiomeList)this.layout.addToContents(new BiomeList());
-      LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+      EditBox var2 = (EditBox)var1.addChild(new EditBox(this.font, 200, 15, Component.empty()));
+      BiomeList var3 = new BiomeList();
+      var2.setHint(SEARCH_HINT);
+      Objects.requireNonNull(var3);
+      var2.setResponder(var3::filterEntries);
+      this.list = (BiomeList)this.layout.addToContents(var3);
+      LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.doneButton = (Button)var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.applySettings.accept(this.biome);
          this.onClose();
       }).build());
-      var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
       this.list.setSelected((BiomeList.Entry)this.list.children().stream().filter((var1x) -> Objects.equals(var1x.biome, this.biome)).findFirst().orElse((Object)null));
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
@@ -74,14 +82,25 @@ public class CreateBuffetWorldScreen extends Screen {
       this.doneButton.active = this.list.getSelected() != null;
    }
 
+   static {
+      SEARCH_HINT = Component.translatable("createWorld.customize.buffet.search").withStyle(EditBox.SEARCH_HINT_STYLE);
+   }
+
    class BiomeList extends ObjectSelectionList<Entry> {
       BiomeList() {
-         super(CreateBuffetWorldScreen.this.minecraft, CreateBuffetWorldScreen.this.width, CreateBuffetWorldScreen.this.height - 77, 40, 16);
-         Collator var2 = Collator.getInstance(Locale.getDefault());
-         CreateBuffetWorldScreen.this.biomes.listElements().map((var1x) -> new Entry(var1x)).sorted(Comparator.comparing((var0) -> var0.name.getString(), var2)).forEach((var1x) -> this.addEntry(var1x));
+         super(CreateBuffetWorldScreen.this.minecraft, CreateBuffetWorldScreen.this.width, CreateBuffetWorldScreen.this.layout.getContentHeight(), CreateBuffetWorldScreen.this.layout.getHeaderHeight(), 15);
+         this.filterEntries("");
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      private void filterEntries(String var1) {
+         Collator var2 = Collator.getInstance(Locale.getDefault());
+         String var3 = var1.toLowerCase(Locale.ROOT);
+         List var4 = CreateBuffetWorldScreen.this.biomes.listElements().map((var1x) -> new Entry(var1x)).sorted(Comparator.comparing((var0) -> var0.name.getString(), var2)).filter((var2x) -> var1.isEmpty() || var2x.name.getString().toLowerCase(Locale.ROOT).contains(var3)).toList();
+         this.replaceEntries(var4);
+         this.refreshScrollAmount();
+      }
+
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          if (var1 != null) {
             CreateBuffetWorldScreen.this.biome = var1.biome;

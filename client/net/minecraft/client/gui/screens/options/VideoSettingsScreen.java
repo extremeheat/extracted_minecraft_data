@@ -29,20 +29,21 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private static final Component BUTTON_CANCEL;
    private static final Component DISPLAY_HEADER;
    private static final Component QUALITY_HEADER;
-   private static final Component INTERFACE_HEADER;
+   private static final Component PREFERENCES_HEADER;
    private final GpuWarnlistManager gpuWarnlistManager;
    private final int oldMipmaps;
+   private final int oldAnisotropyBit;
 
    private static OptionInstance<?>[] qualityOptions(Options var0) {
-      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.weatherRadius()};
+      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.weatherRadius(), var0.maxAnisotropyBit()};
    }
 
    private static OptionInstance<?>[] displayOptions(Options var0) {
       return new OptionInstance[]{var0.framerateLimit(), var0.enableVsync(), var0.inactivityFpsLimit(), var0.guiScale(), var0.fullscreen(), var0.gamma()};
    }
 
-   private static OptionInstance<?>[] interfaceOptions(Options var0) {
-      return new OptionInstance[]{var0.showAutosaveIndicator(), var0.vignette(), var0.attackIndicator()};
+   private static OptionInstance<?>[] preferenceOptions(Options var0) {
+      return new OptionInstance[]{var0.showAutosaveIndicator(), var0.vignette(), var0.attackIndicator(), var0.chunkSectionFadeInTime()};
    }
 
    public VideoSettingsScreen(Screen var1, Minecraft var2, Options var3) {
@@ -54,6 +55,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       }
 
       this.oldMipmaps = (Integer)var3.mipmapLevels().get();
+      this.oldAnisotropyBit = (Integer)var3.maxAnisotropyBit().get();
    }
 
    protected void addOptions() {
@@ -89,8 +91,8 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addHeader(QUALITY_HEADER);
       this.list.addBig(this.options.graphicsPreset());
       this.list.addSmall(qualityOptions(this.options));
-      this.list.addHeader(INTERFACE_HEADER);
-      this.list.addSmall(interfaceOptions(this.options));
+      this.list.addHeader(PREFERENCES_HEADER);
+      this.list.addSmall(preferenceOptions(this.options));
    }
 
    public void onClose() {
@@ -99,7 +101,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    public void removed() {
-      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps) {
+      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps || (Integer)this.options.maxAnisotropyBit().get() != this.oldAnisotropyBit) {
          this.minecraft.updateMaxMipLevel((Integer)this.options.mipmapLevels().get());
          this.minecraft.delayTextureReload();
       }
@@ -205,6 +207,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       BUTTON_CANCEL = Component.translatable("options.graphics.warning.cancel");
       DISPLAY_HEADER = Component.translatable("options.video.display.header");
       QUALITY_HEADER = Component.translatable("options.video.quality.header");
-      INTERFACE_HEADER = Component.translatable("options.video.interface.header");
+      PREFERENCES_HEADER = Component.translatable("options.video.preferences.header");
    }
 }

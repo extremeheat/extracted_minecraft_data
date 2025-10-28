@@ -3,11 +3,11 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public record Damage(boolean normalize) implements RangeSelectItemModelProperty {
    public static final MapCodec<Damage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Damage::normalize)).apply(var0, Damage::new));

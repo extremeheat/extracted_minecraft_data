@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.ElytraModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -17,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
+import org.jspecify.annotations.Nullable;
 
 public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
    private final ElytraModel elytraModel;
@@ -43,8 +43,7 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
       }
    }
 
-   @Nullable
-   private static ResourceLocation getPlayerElytraTexture(HumanoidRenderState var0) {
+   private static @Nullable ResourceLocation getPlayerElytraTexture(HumanoidRenderState var0) {
       if (var0 instanceof AvatarRenderState var1) {
          PlayerSkin var2 = var1.skin;
          if (var2.elytra() != null) {

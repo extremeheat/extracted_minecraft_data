@@ -5,8 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public record MethodInfo<Params, Result>(String description, Optional<ParamInfo<Params>> params, Optional<ResultInfo<Result>> result) {
    public MethodInfo(String var1, @Nullable ParamInfo<Params> var2, @Nullable ResultInfo<Result> var3) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.damagesource;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -11,15 +10,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DamageSource {
    private final Holder<DamageType> type;
-   @Nullable
-   private final Entity causingEntity;
-   @Nullable
-   private final Entity directEntity;
-   @Nullable
-   private final Vec3 damageSourcePosition;
+   private final @Nullable Entity causingEntity;
+   private final @Nullable Entity directEntity;
+   private final @Nullable Vec3 damageSourcePosition;
 
    public String toString() {
       return "DamageSource (" + this.type().msgId() + ")";
@@ -57,18 +54,15 @@ public class DamageSource {
       this(var1, (Entity)null, (Entity)null, (Vec3)null);
    }
 
-   @Nullable
-   public Entity getDirectEntity() {
+   public @Nullable Entity getDirectEntity() {
       return this.directEntity;
    }
 
-   @Nullable
-   public Entity getEntity() {
+   public @Nullable Entity getEntity() {
       return this.causingEntity;
    }
 
-   @Nullable
-   public ItemStack getWeaponItem() {
+   public @Nullable ItemStack getWeaponItem() {
       return this.directEntity != null ? this.directEntity.getWeaponItem() : null;
    }
 
@@ -124,8 +118,7 @@ public class DamageSource {
       return var10000;
    }
 
-   @Nullable
-   public Vec3 getSourcePosition() {
+   public @Nullable Vec3 getSourcePosition() {
       if (this.damageSourcePosition != null) {
          return this.damageSourcePosition;
       } else {
@@ -133,8 +126,7 @@ public class DamageSource {
       }
    }
 
-   @Nullable
-   public Vec3 sourcePositionRaw() {
+   public @Nullable Vec3 sourcePositionRaw() {
       return this.damageSourcePosition;
    }
 

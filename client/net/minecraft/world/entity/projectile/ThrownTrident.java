@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ThrownTrident extends AbstractArrow {
    private static final EntityDataAccessor<Byte> ID_LOYALTY;
@@ -108,9 +110,13 @@ public class ThrownTrident extends AbstractArrow {
       return (Boolean)this.entityData.get(ID_FOIL);
    }
 
-   @Nullable
-   protected EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
+   protected @Nullable EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
       return this.dealtDamage ? null : super.findHitEntity(var1, var2);
+   }
+
+   protected Collection<EntityHitResult> findHitEntities(Vec3 var1, Vec3 var2) {
+      EntityHitResult var3 = this.findHitEntity(var1, var2);
+      return var3 != null ? List.of(var3) : List.of();
    }
 
    protected void onHitEntity(EntityHitResult var1) {

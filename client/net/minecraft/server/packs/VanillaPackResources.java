@@ -13,13 +13,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class VanillaPackResources implements PackResources {
@@ -39,8 +39,7 @@ public class VanillaPackResources implements PackResources {
       this.pathsForType = var5;
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getRootResource(String... var1) {
+   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
       FileUtil.validatePath(var1);
       List var2 = List.of(var1);
 
@@ -98,8 +97,7 @@ public class VanillaPackResources implements PackResources {
       PathPackResources.listPath(var1, var4, var3, var0);
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public @Nullable IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
       return (IoSupplier)FileUtil.decomposePath(var2.getPath()).mapOrElse((var3) -> {
          String var4 = var2.getNamespace();
 
@@ -121,8 +119,7 @@ public class VanillaPackResources implements PackResources {
       return this.namespaces;
    }
 
-   @Nullable
-   public <T> T getMetadataSection(MetadataSectionType<T> var1) {
+   public <T> @Nullable T getMetadataSection(MetadataSectionType<T> var1) {
       IoSupplier var2 = this.getRootResource("pack.mcmeta");
       if (var2 != null) {
          try {

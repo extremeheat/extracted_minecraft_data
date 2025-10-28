@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -17,6 +16,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class NameTagFeatureRenderer {
    public NameTagFeatureRenderer() {

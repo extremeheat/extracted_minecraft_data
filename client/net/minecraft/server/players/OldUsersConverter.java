@@ -19,13 +19,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class OldUsersConverter {
@@ -241,8 +241,7 @@ public class OldUsersConverter {
       }
    }
 
-   @Nullable
-   public static UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
+   public static @Nullable UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
       if (!StringUtil.isNullOrEmpty(var1) && var1.length() <= 16) {
          Optional var2 = var0.services().nameToIdCache().get(var1).map(NameAndId::id);
          if (var2.isPresent()) {

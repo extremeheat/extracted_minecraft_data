@@ -14,18 +14,16 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class NullOps implements DynamicOps<Unit> {
    public static final NullOps INSTANCE = new NullOps();
    private static final MapLike<Unit> EMPTY_MAP = new MapLike<Unit>() {
-      @Nullable
-      public Unit get(Unit var1) {
+      public @Nullable Unit get(Unit var1) {
          return null;
       }
 
-      @Nullable
-      public Unit get(String var1) {
+      public @Nullable Unit get(String var1) {
          return null;
       }
 
@@ -34,14 +32,12 @@ public class NullOps implements DynamicOps<Unit> {
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object get(final String var1) {
+      public @Nullable Object get(final String var1) {
          return this.get(var1);
       }
 
       // $FF: synthetic method
-      @Nullable
-      public Object get(final Object var1) {
+      public @Nullable Object get(final Object var1) {
          return this.get((Unit)var1);
       }
    };

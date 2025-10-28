@@ -1,6 +1,5 @@
 package net.minecraft.world.level.chunk;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.FullChunkStatus;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public class EmptyLevelChunk extends LevelChunk {
    private final Holder<Biome> biome;
@@ -26,8 +26,7 @@ public class EmptyLevelChunk extends LevelChunk {
       return Blocks.VOID_AIR.defaultBlockState();
    }
 
-   @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
+   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       return null;
    }
 
@@ -39,8 +38,7 @@ public class EmptyLevelChunk extends LevelChunk {
       return 0;
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1, LevelChunk.EntityCreationType var2) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1, LevelChunk.EntityCreationType var2) {
       return null;
    }
 

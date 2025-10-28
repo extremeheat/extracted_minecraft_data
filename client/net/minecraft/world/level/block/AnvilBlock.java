@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -28,6 +27,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class AnvilBlock extends FallingBlock {
    public static final MapCodec<AnvilBlock> CODEC = simpleCodec(AnvilBlock::new);
@@ -59,8 +59,7 @@ public class AnvilBlock extends FallingBlock {
       return InteractionResult.SUCCESS;
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return new SimpleMenuProvider((var2x, var3x, var4) -> new AnvilMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 
@@ -90,8 +89,7 @@ public class AnvilBlock extends FallingBlock {
       return var1.damageSources().anvil(var1);
    }
 
-   @Nullable
-   public static BlockState damage(BlockState var0) {
+   public static @Nullable BlockState damage(BlockState var0) {
       if (var0.is(Blocks.ANVIL)) {
          return (BlockState)Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, (Direction)var0.getValue(FACING));
       } else {

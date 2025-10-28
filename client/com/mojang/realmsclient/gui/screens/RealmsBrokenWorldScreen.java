@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -31,6 +30,7 @@ import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsBrokenWorldScreen extends RealmsScreen {
@@ -38,8 +38,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_BUTTON_WIDTH = 80;
    private final Screen lastScreen;
-   @Nullable
-   private RealmsServer serverData;
+   private @Nullable RealmsServer serverData;
    private final long serverId;
    private final Component[] message = new Component[]{Component.translatable("mco.brokenworld.message.line1"), Component.translatable("mco.brokenworld.message.line2")};
    private int leftX;

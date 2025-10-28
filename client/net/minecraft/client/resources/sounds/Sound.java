@@ -1,12 +1,12 @@
 package net.minecraft.client.resources.sounds;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.Weighted;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.SampledFloat;
+import org.jspecify.annotations.Nullable;
 
 public class Sound implements Weighted<Sound> {
    public static final FileToIdConverter SOUND_LISTER = new FileToIdConverter("sounds", ".ogg");
@@ -97,8 +97,7 @@ public class Sound implements Weighted<Sound> {
          this.name = var3;
       }
 
-      @Nullable
-      public static Type getByName(String var0) {
+      public static @Nullable Type getByName(String var0) {
          for(Type var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;

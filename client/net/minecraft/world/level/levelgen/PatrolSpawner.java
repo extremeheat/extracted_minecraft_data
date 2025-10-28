@@ -11,9 +11,9 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class PatrolSpawner implements CustomSpawner {
    private int nextTick;
@@ -24,7 +24,7 @@ public class PatrolSpawner implements CustomSpawner {
 
    public void tick(ServerLevel var1, boolean var2) {
       if (var2) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
+         if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_PATROLS)) {
             RandomSource var3 = var1.random;
             --this.nextTick;
             if (this.nextTick <= 0) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SpellParticleOption;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -12,6 +11,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class SpectralArrow extends AbstractArrow {
    private static final int DEFAULT_DURATION = 200;

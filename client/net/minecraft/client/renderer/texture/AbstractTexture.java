@@ -6,13 +6,11 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractTexture implements AutoCloseable {
-   @Nullable
-   protected GpuTexture texture;
-   @Nullable
-   protected GpuTextureView textureView;
+   protected @Nullable GpuTexture texture;
+   protected @Nullable GpuTextureView textureView;
    protected GpuSampler sampler;
 
    public AbstractTexture() {

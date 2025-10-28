@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -21,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
+import org.jspecify.annotations.Nullable;
 
 public class ExperimentsScreen extends Screen {
    private static final Component TITLE = Component.translatable("selectWorld.experiments");
@@ -32,8 +32,7 @@ public class ExperimentsScreen extends Screen {
    private final PackRepository packRepository;
    private final Consumer<PackRepository> output;
    private final Object2BooleanMap<Pack> packs = new Object2BooleanLinkedOpenHashMap();
-   @Nullable
-   private ScrollableLayout scrollArea;
+   private @Nullable ScrollableLayout scrollArea;
 
    public ExperimentsScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3) {
       super(TITLE);

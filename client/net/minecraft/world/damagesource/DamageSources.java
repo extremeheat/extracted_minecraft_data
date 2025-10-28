@@ -1,6 +1,5 @@
 package net.minecraft.world.damagesource;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DamageSources {
    private final Registry<DamageType> damageTypes;

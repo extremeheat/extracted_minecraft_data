@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -19,6 +18,7 @@ import net.minecraft.client.resources.SkinManager;
 import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.component.ResolvableProfile;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerSkinRenderCache {
    public static final RenderType DEFAULT_PLAYER_SKIN_RENDER_TYPE = playerSkinRenderType(DefaultPlayerSkin.getDefaultSkin());
@@ -85,12 +85,9 @@ public class PlayerSkinRenderCache {
    public final class RenderInfo {
       private final GameProfile gameProfile;
       private final PlayerSkin playerSkin;
-      @Nullable
-      private RenderType itemRenderType;
-      @Nullable
-      private GpuTextureView textureView;
-      @Nullable
-      private GlyphRenderTypes glyphRenderTypes;
+      private @Nullable RenderType itemRenderType;
+      private @Nullable GpuTextureView textureView;
+      private @Nullable GlyphRenderTypes glyphRenderTypes;
 
       public RenderInfo(final GameProfile var2, final PlayerSkin var3, final PlayerSkin.Patch var4) {
          super();

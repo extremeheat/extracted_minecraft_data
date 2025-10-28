@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.EnumMap;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class SwimNodeEvaluator extends NodeEvaluator {
    private final boolean allowBreaching;
@@ -74,8 +74,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       return var0 != null && var0.costMalus >= 0.0F;
    }
 
-   @Nullable
-   protected Node findAcceptedNode(int var1, int var2, int var3) {
+   protected @Nullable Node findAcceptedNode(int var1, int var2, int var3) {
       Node var4 = null;
       PathType var5 = this.getCachedBlockType(var1, var2, var3);
       if (this.allowBreaching && var5 == PathType.BREACH || var5 == PathType.WATER) {

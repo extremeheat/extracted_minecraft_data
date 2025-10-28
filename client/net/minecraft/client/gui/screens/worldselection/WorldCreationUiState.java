@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -19,13 +18,15 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.WorldPresetTags;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.gamerules.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import org.jspecify.annotations.Nullable;
 
 public class WorldCreationUiState {
    private static final Component DEFAULT_WORLD_NAME = Component.translatable("selectWorld.newWorld");
@@ -33,8 +34,7 @@ public class WorldCreationUiState {
    private String name;
    private SelectedGameMode gameMode;
    private Difficulty difficulty;
-   @Nullable
-   private Boolean allowCommands;
+   private @Nullable Boolean allowCommands;
    private String seed;
    private boolean generateStructures;
    private boolean bonusChest;
@@ -63,7 +63,7 @@ public class WorldCreationUiState {
       this.targetFolder = this.findResultFolder(this.name);
       this.gameMode = var2.initialWorldCreationOptions().selectedGameMode();
       this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
-      var2.initialWorldCreationOptions().disabledGameRules().forEach((var1x) -> ((GameRules.BooleanValue)this.gameRules.getRule(var1x)).set(false, (MinecraftServer)null));
+      this.gameRules.setAll((GameRuleMap)var2.initialWorldCreationOptions().gameRuleOverwrites(), (MinecraftServer)null);
       Optional.ofNullable(var2.initialWorldCreationOptions().flatLevelPreset()).flatMap((var1x) -> var2.worldgenLoadContext().lookup(Registries.FLAT_LEVEL_GENERATOR_PRESET).flatMap((var1) -> var1.get(var1x))).map((var0) -> ((FlatLevelGeneratorPreset)var0.value()).settings()).ifPresent((var1x) -> this.updateDimensions(PresetEditor.flatWorldConfigurator(var1x)));
    }
 
@@ -225,8 +225,7 @@ public class WorldCreationUiState {
       return this.worldType;
    }
 
-   @Nullable
-   public PresetEditor getPresetEditor() {
+   public @Nullable PresetEditor getPresetEditor() {
       Holder var1 = this.getWorldType().preset();
       return var1 != null ? (PresetEditor)PresetEditor.EDITORS.get(var1.unwrapKey()) : null;
    }

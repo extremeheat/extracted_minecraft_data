@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
@@ -39,19 +39,15 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private Button cancelButton;
    private final String worldName;
    private final DownloadStatus downloadStatus;
-   @Nullable
-   private volatile Component errorMessage;
+   private volatile @Nullable Component errorMessage;
    private volatile Component status = Component.translatable("mco.download.preparing");
-   @Nullable
-   private volatile String progress;
+   private volatile @Nullable String progress;
    private volatile boolean cancelled;
    private volatile boolean showDots = true;
    private volatile boolean finished;
    private volatile boolean extracting;
-   @Nullable
-   private Long previousWrittenBytes;
-   @Nullable
-   private Long previousTimeSnapshot;
+   private @Nullable Long previousWrittenBytes;
+   private @Nullable Long previousTimeSnapshot;
    private long bytesPersSecond;
    private int animTick;
    private static final String[] DOTS = new String[]{"", ".", ". .", ". . ."};
@@ -92,8 +88,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    }
 
    private long getContentLength(String var1) {
-      FileDownload var2 = new FileDownload();
-      return var2.contentLength(var1);
+      return FileDownload.contentLength(var1).orElse(0L);
    }
 
    public void tick() {
@@ -208,7 +203,6 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
 
                this.status = Component.translatable("mco.download.downloading", this.worldName);
                FileDownload var1 = new FileDownload();
-               var1.contentLength(this.worldDownload.downloadLink());
                var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
 
                while(!var1.isFinished()) {

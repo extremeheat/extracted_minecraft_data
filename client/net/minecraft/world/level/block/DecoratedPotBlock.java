@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -48,6 +47,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<DecoratedPotBlock> CODEC = simpleCodec(DecoratedPotBlock::new);
@@ -141,8 +141,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       var1.add(HORIZONTAL_FACING, WATERLOGGED, CRACKED);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new DecoratedPotBlockEntity(var1, var2);
    }
 

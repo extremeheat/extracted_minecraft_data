@@ -7,14 +7,13 @@ import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.state.StateHolder;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Property<T extends Comparable<T>> {
    private final Class<T> clazz;
    private final String name;
-   @Nullable
-   private Integer hashCode;
+   private @Nullable Integer hashCode;
    private final Codec<T> codec;
    private final Codec<Value<T>> valueCodec;
 

@@ -2,7 +2,7 @@ package net.minecraft.server.packs.linkfs;
 
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 abstract class DummyFileAttributes implements BasicFileAttributes {
    private static final FileTime EPOCH = FileTime.fromMillis(0L);
@@ -35,8 +35,7 @@ abstract class DummyFileAttributes implements BasicFileAttributes {
       return 0L;
    }
 
-   @Nullable
-   public Object fileKey() {
+   public @Nullable Object fileKey() {
       return null;
    }
 }

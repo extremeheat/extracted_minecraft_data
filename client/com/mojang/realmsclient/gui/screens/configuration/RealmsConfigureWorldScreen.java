@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -45,24 +44,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsConfigureWorldScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component PLAY_TEXT = Component.translatable("mco.selectServer.play");
    private final RealmsMainScreen lastScreen;
-   @Nullable
-   private RealmsServer serverData;
-   @Nullable
-   private PreferredRegionsDto regions;
+   private @Nullable RealmsServer serverData;
+   private @Nullable PreferredRegionsDto regions;
    private final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
    private final long serverId;
    private boolean stateChanged;
    private final TabManager tabManager;
-   @Nullable
-   private Button playButton;
-   @Nullable
-   private TabNavigationBar tabNavigationBar;
+   private @Nullable Button playButton;
+   private @Nullable TabNavigationBar tabNavigationBar;
    final HeaderAndFooterLayout layout;
 
    public RealmsConfigureWorldScreen(RealmsMainScreen var1, long var2, @Nullable RealmsServer var4, @Nullable PreferredRegionsDto var5) {

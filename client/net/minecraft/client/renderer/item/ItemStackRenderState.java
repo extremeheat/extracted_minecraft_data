@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransform;
@@ -20,14 +19,14 @@ import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class ItemStackRenderState {
    ItemDisplayContext displayContext;
    private int activeLayerCount;
    private boolean animated;
    private boolean oversizedInGui;
-   @Nullable
-   private AABB cachedModelBoundingBox;
+   private @Nullable AABB cachedModelBoundingBox;
    private LayerRenderState[] layers;
 
    public ItemStackRenderState() {
@@ -90,8 +89,7 @@ public class ItemStackRenderState {
       return this.firstLayer().usesBlockLight;
    }
 
-   @Nullable
-   public TextureAtlasSprite pickParticleIcon(RandomSource var1) {
+   public @Nullable TextureAtlasSprite pickParticleIcon(RandomSource var1) {
       return this.activeLayerCount == 0 ? null : this.layers[var1.nextInt(this.activeLayerCount)].particleIcon;
    }
 
@@ -161,17 +159,13 @@ public class ItemStackRenderState {
       public static final Supplier<Vector3f[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
       private final List<BakedQuad> quads = new ArrayList();
       boolean usesBlockLight;
-      @Nullable
-      TextureAtlasSprite particleIcon;
+      @Nullable TextureAtlasSprite particleIcon;
       ItemTransform transform;
-      @Nullable
-      private RenderType renderType;
+      private @Nullable RenderType renderType;
       private FoilType foilType;
       private int[] tintLayers;
-      @Nullable
-      private SpecialModelRenderer<Object> specialRenderer;
-      @Nullable
-      private Object argumentForSpecialRendering;
+      private @Nullable SpecialModelRenderer<Object> specialRenderer;
+      private @Nullable Object argumentForSpecialRendering;
       Supplier<Vector3f[]> extents;
 
       public LayerRenderState() {

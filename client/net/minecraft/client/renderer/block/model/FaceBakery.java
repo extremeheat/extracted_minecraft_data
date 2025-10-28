@@ -5,7 +5,6 @@ import com.mojang.math.MatrixUtil;
 import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelState;
@@ -14,6 +13,7 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class FaceBakery {
    public static final int VERTEX_INT_SIZE = 8;
@@ -64,10 +64,7 @@ public class FaceBakery {
       float var3 = var1.minV();
       float var4 = var1.maxU();
       float var5 = var1.maxV();
-      float var6 = var0.uvShrinkRatio();
-      float var7 = (var2 + var2 + var4 + var4) / 4.0F;
-      float var8 = (var3 + var3 + var5 + var5) / 4.0F;
-      return new BlockElementFace.UVs(Mth.lerp(var6, var2, var7), Mth.lerp(var6, var3, var8), Mth.lerp(var6, var4, var7), Mth.lerp(var6, var5, var8));
+      return new BlockElementFace.UVs(var2, var3, var4, var5);
    }
 
    private static int[] makeVertices(BlockElementFace.UVs var0, Quadrant var1, Matrix4fc var2, TextureAtlasSprite var3, Direction var4, float[] var5, Transformation var6, @Nullable BlockElementRotation var7) {

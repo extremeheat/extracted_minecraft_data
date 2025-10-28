@@ -257,6 +257,17 @@ public class SoundEvents {
    public static final SoundEvent CALCITE_PLACE = register("block.calcite.place");
    public static final SoundEvent CALCITE_HIT = register("block.calcite.hit");
    public static final SoundEvent CALCITE_FALL = register("block.calcite.fall");
+   public static final SoundEvent CAMEL_HUSK_AMBIENT = register("entity.camel_husk.ambient");
+   public static final SoundEvent CAMEL_HUSK_DASH = register("entity.camel_husk.dash");
+   public static final SoundEvent CAMEL_HUSK_DASH_READY = register("entity.camel_husk.dash_ready");
+   public static final SoundEvent CAMEL_HUSK_DEATH = register("entity.camel_husk.death");
+   public static final SoundEvent CAMEL_HUSK_EAT = register("entity.camel_husk.eat");
+   public static final SoundEvent CAMEL_HUSK_HURT = register("entity.camel_husk.hurt");
+   public static final Holder.Reference<SoundEvent> CAMEL_HUSK_SADDLE = registerForHolder("entity.camel_husk.saddle");
+   public static final SoundEvent CAMEL_HUSK_SIT = register("entity.camel_husk.sit");
+   public static final SoundEvent CAMEL_HUSK_STAND = register("entity.camel_husk.stand");
+   public static final SoundEvent CAMEL_HUSK_STEP = register("entity.camel_husk.step");
+   public static final SoundEvent CAMEL_HUSK_STEP_SAND = register("entity.camel_husk.step_sand");
    public static final SoundEvent CAMEL_AMBIENT = register("entity.camel.ambient");
    public static final SoundEvent CAMEL_DASH = register("entity.camel.dash");
    public static final SoundEvent CAMEL_DASH_READY = register("entity.camel.dash_ready");
@@ -1146,6 +1157,10 @@ public class SoundEvents {
    public static final SoundEvent PANDA_WORRIED_AMBIENT = register("entity.panda.worried_ambient");
    public static final SoundEvent PANDA_HURT = register("entity.panda.hurt");
    public static final SoundEvent PANDA_BITE = register("entity.panda.bite");
+   public static final SoundEvent PARCHED_AMBIENT = register("entity.parched.ambient");
+   public static final SoundEvent PARCHED_DEATH = register("entity.parched.death");
+   public static final SoundEvent PARCHED_HURT = register("entity.parched.hurt");
+   public static final SoundEvent PARCHED_STEP = register("entity.parched.step");
    public static final SoundEvent PARROT_AMBIENT = register("entity.parrot.ambient");
    public static final SoundEvent PARROT_DEATH = register("entity.parrot.death");
    public static final SoundEvent PARROT_EAT = register("entity.parrot.eat");
@@ -1154,6 +1169,7 @@ public class SoundEvents {
    public static final SoundEvent PARROT_IMITATE_BLAZE = register("entity.parrot.imitate.blaze");
    public static final SoundEvent PARROT_IMITATE_BOGGED = register("entity.parrot.imitate.bogged");
    public static final SoundEvent PARROT_IMITATE_BREEZE = register("entity.parrot.imitate.breeze");
+   public static final SoundEvent PARROT_IMITATE_CAMEL_HUSK = register("entity.parrot.imitate.camel_husk");
    public static final SoundEvent PARROT_IMITATE_CREAKING = register("entity.parrot.imitate.creaking");
    public static final SoundEvent PARROT_IMITATE_CREEPER = register("entity.parrot.imitate.creeper");
    public static final SoundEvent PARROT_IMITATE_DROWNED = register("entity.parrot.imitate.drowned");
@@ -1168,6 +1184,7 @@ public class SoundEvents {
    public static final SoundEvent PARROT_IMITATE_ILLUSIONER = register("entity.parrot.imitate.illusioner");
    public static final SoundEvent PARROT_IMITATE_MAGMA_CUBE = register("entity.parrot.imitate.magma_cube");
    public static final SoundEvent PARROT_IMITATE_PHANTOM = register("entity.parrot.imitate.phantom");
+   public static final SoundEvent PARROT_IMITATE_PARCHED = register("entity.parrot.imitate.parched");
    public static final SoundEvent PARROT_IMITATE_PIGLIN = register("entity.parrot.imitate.piglin");
    public static final SoundEvent PARROT_IMITATE_PIGLIN_BRUTE = register("entity.parrot.imitate.piglin_brute");
    public static final SoundEvent PARROT_IMITATE_PILLAGER = register("entity.parrot.imitate.pillager");
@@ -1186,6 +1203,8 @@ public class SoundEvents {
    public static final SoundEvent PARROT_IMITATE_WITHER_SKELETON = register("entity.parrot.imitate.wither_skeleton");
    public static final SoundEvent PARROT_IMITATE_ZOGLIN = register("entity.parrot.imitate.zoglin");
    public static final SoundEvent PARROT_IMITATE_ZOMBIE = register("entity.parrot.imitate.zombie");
+   public static final SoundEvent PARROT_IMITATE_ZOMBIE_HORSE = register("entity.parrot.imitate.zombie_horse");
+   public static final SoundEvent PARROT_IMITATE_ZOMBIE_NAUTILUS = register("entity.parrot.imitate.zombie_nautilus");
    public static final SoundEvent PARROT_IMITATE_ZOMBIE_VILLAGER = register("entity.parrot.imitate.zombie_villager");
    public static final SoundEvent PARROT_STEP = register("entity.parrot.step");
    public static final SoundEvent PHANTOM_AMBIENT = register("entity.phantom.ambient");
@@ -1769,7 +1788,8 @@ public class SoundEvents {
    public static final SoundEvent APPLY_EFFECT_TRIAL_OMEN = register("event.mob_effect.trial_omen");
    public static final SoundEvent APPLY_EFFECT_RAID_OMEN = register("event.mob_effect.raid_omen");
    public static final Holder.Reference<SoundEvent> SADDLE_UNEQUIP = registerForHolder("item.saddle.unequip");
-   public static final Holder.Reference<SoundEvent> UNDERWATER_SADDLE_EQUIP = registerForHolder("item.underwater_saddle.equip");
+   public static final Holder.Reference<SoundEvent> NAUTILUS_SADDLE_UNDERWATER_EQUIP = registerForHolder("item.nautilus_saddle_underwater_equip");
+   public static final Holder.Reference<SoundEvent> NAUTILUS_SADDLE_EQUIP = registerForHolder("item.nautilus_saddle_equip");
 
    public SoundEvents() {
       super();

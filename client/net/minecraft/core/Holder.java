@@ -6,10 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import org.jspecify.annotations.Nullable;
 
 public interface Holder<T> {
    T value();
@@ -116,13 +116,10 @@ public interface Holder<T> {
 
    public static class Reference<T> implements Holder<T> {
       private final HolderOwner<T> owner;
-      @Nullable
-      private Set<TagKey<T>> tags;
+      private @Nullable Set<TagKey<T>> tags;
       private final Type type;
-      @Nullable
-      private ResourceKey<T> key;
-      @Nullable
-      private T value;
+      private @Nullable ResourceKey<T> key;
+      private @Nullable T value;
 
       protected Reference(Type var1, HolderOwner<T> var2, @Nullable ResourceKey<T> var3, @Nullable T var4) {
          super();

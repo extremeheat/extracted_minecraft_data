@@ -316,7 +316,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    private void modifyItemFilteredCount(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, MutableFloat var5) {
-      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var3x) -> var5.setValue(var3x.process(var3, var2.getRandom(), var5.getValue())));
+      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var3x) -> var5.setValue(var3x.process(var3, var2.getRandom(), var5.floatValue())));
    }
 
    private void modifyEntityFilteredValue(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, Entity var5, MutableFloat var6) {

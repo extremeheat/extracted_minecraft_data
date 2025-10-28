@@ -2,7 +2,6 @@ package net.minecraft.world.level;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -10,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public interface CommonLevelAccessor extends EntityGetter, LevelReader, LevelSimulatedRW {
    default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {

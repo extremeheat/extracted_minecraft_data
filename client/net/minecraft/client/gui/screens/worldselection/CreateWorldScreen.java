@@ -16,13 +16,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
@@ -70,10 +68,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.gamerules.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -86,6 +85,7 @@ import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CreateWorldScreen extends Screen {
@@ -110,12 +110,9 @@ public class CreateWorldScreen extends Screen {
    private final DirectoryValidator packValidator;
    private final CreateWorldCallback createWorldCallback;
    private final Runnable onClose;
-   @Nullable
-   private Path tempDataPackDir;
-   @Nullable
-   private PackRepository tempDataPackRepository;
-   @Nullable
-   private TabNavigationBar tabNavigationBar;
+   private @Nullable Path tempDataPackDir;
+   private @Nullable PackRepository tempDataPackRepository;
+   private @Nullable TabNavigationBar tabNavigationBar;
 
    public static void openFresh(Minecraft var0, Runnable var1) {
       openFresh(var0, var1, (var0x, var1x, var2, var3) -> var0x.createNewWorld(var1x, var2));
@@ -128,7 +125,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    public static void testWorld(Minecraft var0, Runnable var1) {
-      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings().options(), var2x.worldGenSettings().dimensions(), var1x, var0x, var2x.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, Set.of(GameRules.RULE_DAYLIGHT, GameRules.RULE_WEATHER_CYCLE, GameRules.RULE_DOMOBSPAWNING), FlatLevelGeneratorPresets.REDSTONE_READY));
+      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings().options(), var2x.worldGenSettings().dimensions(), var1x, var0x, var2x.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, (new GameRuleMap.Builder()).set(GameRules.ADVANCE_TIME, false).set(GameRules.ADVANCE_WEATHER, false).set(GameRules.SPAWN_MOBS, false).build(), FlatLevelGeneratorPresets.REDSTONE_READY));
       Function var3 = (var0x) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(var0x.datapackWorldgen()));
       openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.FLAT, (var0x, var1x, var2x, var3x) -> var0x.createNewWorld(var1x, var2x));
    }
@@ -153,7 +150,7 @@ public class CreateWorldScreen extends Screen {
       var5.uiState.setName(var2.levelName());
       var5.uiState.setAllowCommands(var2.allowCommands());
       var5.uiState.setDifficulty(var2.difficulty());
-      var5.uiState.getGameRules().assignFrom(var2.gameRules(), (MinecraftServer)null);
+      var5.uiState.getGameRules().setAll((GameRules)var2.gameRules(), (MinecraftServer)null);
       if (var2.hardcore()) {
          var5.uiState.setGameMode(WorldCreationUiState.SelectedGameMode.HARDCORE);
       } else if (var2.gameType().isSurvival()) {
@@ -252,7 +249,7 @@ public class CreateWorldScreen extends Screen {
       String var2 = this.uiState.getName().trim();
       if (var1) {
          GameRules var3 = new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
-         ((GameRules.BooleanValue)var3.getRule(GameRules.RULE_DAYLIGHT)).set(false, (MinecraftServer)null);
+         var3.set(GameRules.ADVANCE_TIME, false, (MinecraftServer)null);
          return new LevelSettings(var2, GameType.SPECTATOR, false, Difficulty.PEACEFUL, true, var3, WorldDataConfiguration.DEFAULT);
       } else {
          return new LevelSettings(var2, this.uiState.getGameMode().gameType, this.uiState.isHardcore(), this.uiState.getDifficulty(), this.uiState.isAllowCommands(), this.uiState.getGameRules(), this.uiState.getSettings().dataConfiguration());
@@ -291,8 +288,7 @@ public class CreateWorldScreen extends Screen {
       this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
-   @Nullable
-   private Path getOrCreateTempDataPackDir() {
+   private @Nullable Path getOrCreateTempDataPackDir() {
       if (this.tempDataPackDir == null) {
          try {
             this.tempDataPackDir = Files.createTempDirectory("mcworld-");
@@ -485,7 +481,6 @@ public class CreateWorldScreen extends Screen {
       return Optional.empty();
    }
 
-   @Nullable
    public static Path createTempDataPackDirFromExistingWorld(Path var0, Minecraft var1) {
       MutableObject var2 = new MutableObject();
 
@@ -494,7 +489,7 @@ public class CreateWorldScreen extends Screen {
 
          try {
             var3.filter((var1x) -> !var1x.equals(var0)).forEach((var2x) -> {
-               Path var3 = (Path)var2.getValue();
+               Path var3 = (Path)var2.get();
                if (var3 == null) {
                   try {
                      var3 = Files.createTempDirectory("mcworld-");
@@ -529,11 +524,10 @@ public class CreateWorldScreen extends Screen {
          return null;
       }
 
-      return (Path)var2.getValue();
+      return (Path)var2.get();
    }
 
-   @Nullable
-   private Pair<Path, PackRepository> getDataPackSelectionSettings(WorldDataConfiguration var1) {
+   private @Nullable Pair<Path, PackRepository> getDataPackSelectionSettings(WorldDataConfiguration var1) {
       Path var2 = this.getOrCreateTempDataPackDir();
       if (var2 != null) {
          if (this.tempDataPackRepository == null) {

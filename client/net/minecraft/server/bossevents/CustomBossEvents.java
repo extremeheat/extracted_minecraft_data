@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -13,6 +12,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CustomBossEvents {
@@ -24,8 +24,7 @@ public class CustomBossEvents {
       super();
    }
 
-   @Nullable
-   public CustomBossEvent get(ResourceLocation var1) {
+   public @Nullable CustomBossEvent get(ResourceLocation var1) {
       return (CustomBossEvent)this.events.get(var1);
    }
 

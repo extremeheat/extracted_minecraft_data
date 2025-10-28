@@ -10,11 +10,14 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Column;
 import net.minecraft.world.level.levelgen.feature.configurations.UnderwaterMagmaConfiguration;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration> {
    public UnderwaterMagmaFeature(Codec<UnderwaterMagmaConfiguration> var1) {
@@ -48,9 +51,9 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
    }
 
    private boolean isValidPlacement(WorldGenLevel var1, BlockPos var2) {
-      if (!this.isWaterOrAir(var1, var2) && !this.isWaterOrAir(var1, var2.below())) {
+      if (!isWaterOrAir(var1.getBlockState(var2)) && !this.isVisibleFromOutside(var1, var2.below(), Direction.UP)) {
          for(Direction var4 : Direction.Plane.HORIZONTAL) {
-            if (this.isWaterOrAir(var1, var2.relative(var4))) {
+            if (this.isVisibleFromOutside(var1, var2.relative(var4), var4.getOpposite())) {
                return false;
             }
          }
@@ -61,8 +64,13 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
       }
    }
 
-   private boolean isWaterOrAir(LevelAccessor var1, BlockPos var2) {
-      BlockState var3 = var1.getBlockState(var2);
-      return var3.is(Blocks.WATER) || var3.isAir();
+   private static boolean isWaterOrAir(BlockState var0) {
+      return var0.is(Blocks.WATER) || var0.isAir();
+   }
+
+   private boolean isVisibleFromOutside(LevelAccessor var1, BlockPos var2, Direction var3) {
+      BlockState var4 = var1.getBlockState(var2);
+      VoxelShape var5 = var4.getFaceOcclusionShape(var3);
+      return var5 == Shapes.empty() || !Block.isShapeFullBlock(var5);
    }
 }

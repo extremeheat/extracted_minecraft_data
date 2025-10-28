@@ -17,7 +17,7 @@ import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.TimeUtil;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
 public class ServerWatchdog implements Runnable {
@@ -44,7 +44,7 @@ public class ServerWatchdog implements Runnable {
             CrashReport var7 = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
             this.server.fillSystemReport(var7.getSystemReport());
             CrashReportCategory var8 = var7.addCategory("Performance stats");
-            var8.setDetail("Random tick rate", (CrashReportDetail)(() -> ((GameRules.IntegerValue)this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString()));
+            var8.setDetail("Random tick rate", (CrashReportDetail)(() -> this.server.getWorldData().getGameRules().getAsString(GameRules.RANDOM_TICK_SPEED)));
             var8.setDetail("Level stats", (CrashReportDetail)(() -> (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
                   String var10000 = String.valueOf(var0.dimension().location());
                   return var10000 + ": " + var0.getWatchdogStats();

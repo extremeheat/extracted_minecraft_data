@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.Util;
@@ -81,6 +80,7 @@ import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
 public class Gui {
    private static final ResourceLocation CROSSHAIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair");
@@ -143,8 +143,7 @@ public class Gui {
    private final Minecraft minecraft;
    private final ChatComponent chat;
    private int tickCount;
-   @Nullable
-   private Component overlayMessageString;
+   private @Nullable Component overlayMessageString;
    private int overlayMessageTime;
    private boolean animateOverlayMessageColor;
    private boolean chatDisabledByPlayerShown;
@@ -157,10 +156,8 @@ public class Gui {
    private final PlayerTabOverlay tabList;
    private final BossHealthOverlay bossOverlay;
    private int titleTime;
-   @Nullable
-   private Component title;
-   @Nullable
-   private Component subtitle;
+   private @Nullable Component title;
+   private @Nullable Component subtitle;
    private int titleFadeInTime;
    private int titleStayTime;
    private int titleFadeOutTime;
@@ -169,8 +166,7 @@ public class Gui {
    private long lastHealthTime;
    private long healthBlinkTime;
    private int lastBubblePopSoundPlayed;
-   @Nullable
-   private Runnable deferredSubtitles;
+   private @Nullable Runnable deferredSubtitles;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
    private Pair<ContextualInfo, ContextualBarRenderer> contextualInfoBar;
@@ -714,8 +710,7 @@ public class Gui {
 
    }
 
-   @Nullable
-   private Player getCameraPlayer() {
+   private @Nullable Player getCameraPlayer() {
       Entity var2 = this.minecraft.getCameraEntity();
       Player var10000;
       if (var2 instanceof Player var1) {
@@ -727,8 +722,7 @@ public class Gui {
       return var10000;
    }
 
-   @Nullable
-   private LivingEntity getPlayerVehicleWithHealth() {
+   private @Nullable LivingEntity getPlayerVehicleWithHealth() {
       Player var1 = this.getCameraPlayer();
       if (var1 != null) {
          Entity var2 = var1.getVehicle();
@@ -1043,7 +1037,7 @@ public class Gui {
       float var4 = 0.0F;
       if (var2 != null) {
          float var5 = (float)var3.getDistanceToBorder(var2);
-         double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 20.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
+         double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime(), Math.abs(var3.getLerpTarget() - var3.getSize()));
          double var8 = Math.max((double)var3.getWarningBlocks(), var6);
          if ((double)var5 < var8) {
             var4 = 1.0F - (float)((double)var5 / var8);

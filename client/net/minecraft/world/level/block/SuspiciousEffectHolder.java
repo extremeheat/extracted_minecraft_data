@@ -3,12 +3,12 @@ package net.minecraft.world.level.block;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public interface SuspiciousEffectHolder {
    SuspiciousStewEffects getSuspiciousEffects();
@@ -17,8 +17,7 @@ public interface SuspiciousEffectHolder {
       return (List)BuiltInRegistries.ITEM.stream().map(SuspiciousEffectHolder::tryGet).filter(Objects::nonNull).collect(Collectors.toList());
    }
 
-   @Nullable
-   static SuspiciousEffectHolder tryGet(ItemLike var0) {
+   static @Nullable SuspiciousEffectHolder tryGet(ItemLike var0) {
       Item var3 = var0.asItem();
       if (var3 instanceof BlockItem var1) {
          Block var6 = var1.getBlock();

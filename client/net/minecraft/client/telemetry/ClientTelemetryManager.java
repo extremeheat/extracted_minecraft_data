@@ -14,11 +14,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
+import org.jspecify.annotations.Nullable;
 
 public class ClientTelemetryManager implements AutoCloseable {
    private static final AtomicInteger THREAD_COUNT = new AtomicInteger(1);

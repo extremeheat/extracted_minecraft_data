@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
@@ -25,6 +24,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.thread.PriorityConsecutiveExecutor;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class IOWorker implements ChunkScanAccess, AutoCloseable {
@@ -267,8 +267,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    static class PendingStore {
-      @Nullable
-      CompoundTag data;
+      @Nullable CompoundTag data;
       final CompletableFuture<Void> result = new CompletableFuture();
 
       public PendingStore(@Nullable CompoundTag var1) {
@@ -276,8 +275,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          this.data = var1;
       }
 
-      @Nullable
-      CompoundTag copyData() {
+      @Nullable CompoundTag copyData() {
          CompoundTag var1 = this.data;
          return var1 == null ? null : var1.copy();
       }
@@ -285,7 +283,6 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    @FunctionalInterface
    interface ThrowingSupplier<T> {
-      @Nullable
-      T get() throws Exception;
+      @Nullable T get() throws Exception;
    }
 }

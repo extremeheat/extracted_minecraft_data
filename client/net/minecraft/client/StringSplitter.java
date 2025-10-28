@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -16,6 +15,7 @@ import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.StringDecomposer;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.Nullable;
 
 public class StringSplitter {
    final WidthProvider widthProvider;
@@ -404,8 +404,7 @@ public class StringSplitter {
          return var4.getResultOrEmpty();
       }
 
-      @Nullable
-      public FormattedText getRemainder() {
+      public @Nullable FormattedText getRemainder() {
          ComponentCollector var1 = new ComponentCollector();
          List var10000 = this.parts;
          Objects.requireNonNull(var1);

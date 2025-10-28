@@ -1,7 +1,7 @@
 package net.minecraft.world.level.lighting;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.LightChunkGetter;
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 
 public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.SkyDataLayerStorageMap, SkyLightSectionStorage> {
    private static final long REMOVE_TOP_SKY_SOURCE_ENTRY = LightEngine.QueueEntry.decreaseAllDirections(15);
@@ -40,8 +40,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
       return var4 == null ? var3 : var4.getLowestSourceY(SectionPos.sectionRelative(var1), SectionPos.sectionRelative(var2));
    }
 
-   @Nullable
-   private ChunkSkyLightSources getChunkSources(int var1, int var2) {
+   private @Nullable ChunkSkyLightSources getChunkSources(int var1, int var2) {
       LightChunk var3 = this.chunkSource.getChunkForLighting(var1, var2);
       return var3 != null ? var3.getSkyLightSources() : null;
    }

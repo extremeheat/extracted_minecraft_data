@@ -31,11 +31,11 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)Stream.concat(Stream.of(this.entityTarget.getParam()), this.scores.values().stream().flatMap((var0) -> var0.getReferencedContextParams().stream())).collect(ImmutableSet.toImmutableSet());
+      return (Set)Stream.concat(Stream.of(this.entityTarget.contextParam()), this.scores.values().stream().flatMap((var0) -> var0.getReferencedContextParams().stream())).collect(ImmutableSet.toImmutableSet());
    }
 
    public boolean test(LootContext var1) {
-      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.getParam());
+      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.contextParam());
       if (var2 == null) {
          return false;
       } else {

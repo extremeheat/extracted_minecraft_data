@@ -4,43 +4,19 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.OptionalInt;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
-public class BiomeSpecialEffects {
-   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("water_color").forGetter((var0x) -> var0x.waterColor), Codec.INT.optionalFieldOf("foliage_color").forGetter((var0x) -> var0x.foliageColorOverride), Codec.INT.optionalFieldOf("dry_foliage_color").forGetter((var0x) -> var0x.dryFoliageColorOverride), Codec.INT.optionalFieldOf("grass_color").forGetter((var0x) -> var0x.grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter((var0x) -> var0x.grassColorModifier)).apply(var0, BiomeSpecialEffects::new));
-   private final int waterColor;
-   private final Optional<Integer> foliageColorOverride;
-   private final Optional<Integer> dryFoliageColorOverride;
-   private final Optional<Integer> grassColorOverride;
-   private final GrassColorModifier grassColorModifier;
+public record BiomeSpecialEffects(int waterColor, Optional<Integer> foliageColorOverride, Optional<Integer> dryFoliageColorOverride, Optional<Integer> grassColorOverride, GrassColorModifier grassColorModifier) {
+   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.STRING_RGB_COLOR.fieldOf("water_color").forGetter(BiomeSpecialEffects::waterColor), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("foliage_color").forGetter(BiomeSpecialEffects::foliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeSpecialEffects::dryFoliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("grass_color").forGetter(BiomeSpecialEffects::grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter(BiomeSpecialEffects::grassColorModifier)).apply(var0, BiomeSpecialEffects::new));
 
-   BiomeSpecialEffects(int var1, Optional<Integer> var2, Optional<Integer> var3, Optional<Integer> var4, GrassColorModifier var5) {
+   public BiomeSpecialEffects(int var1, Optional<Integer> var2, Optional<Integer> var3, Optional<Integer> var4, GrassColorModifier var5) {
       super();
       this.waterColor = var1;
       this.foliageColorOverride = var2;
       this.dryFoliageColorOverride = var3;
       this.grassColorOverride = var4;
       this.grassColorModifier = var5;
-   }
-
-   public int getWaterColor() {
-      return this.waterColor;
-   }
-
-   public Optional<Integer> getFoliageColorOverride() {
-      return this.foliageColorOverride;
-   }
-
-   public Optional<Integer> getDryFoliageColorOverride() {
-      return this.dryFoliageColorOverride;
-   }
-
-   public Optional<Integer> getGrassColorOverride() {
-      return this.grassColorOverride;
-   }
-
-   public GrassColorModifier getGrassColorModifier() {
-      return this.grassColorModifier;
    }
 
    public static class Builder {

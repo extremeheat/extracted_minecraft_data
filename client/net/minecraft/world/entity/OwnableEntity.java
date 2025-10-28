@@ -1,22 +1,19 @@
 package net.minecraft.world.entity;
 
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public interface OwnableEntity {
-   @Nullable
-   EntityReference<LivingEntity> getOwnerReference();
+   @Nullable EntityReference<LivingEntity> getOwnerReference();
 
    Level level();
 
-   @Nullable
-   default LivingEntity getOwner() {
+   default @Nullable LivingEntity getOwner() {
       return EntityReference.getLivingEntity(this.getOwnerReference(), this.level());
    }
 
-   @Nullable
-   default LivingEntity getRootOwner() {
+   default @Nullable LivingEntity getRootOwner() {
       ObjectArraySet var1 = new ObjectArraySet();
       LivingEntity var2 = this.getOwner();
       var1.add(this);

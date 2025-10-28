@@ -10,11 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -56,6 +54,7 @@ import net.minecraft.util.MemoryReserve;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
@@ -65,6 +64,7 @@ import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.level.validation.ContentValidationException;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class WorldOpenFlows {
@@ -102,8 +102,7 @@ public class WorldOpenFlows {
       }
    }
 
-   @Nullable
-   private LevelStorageSource.LevelStorageAccess createWorldAccess(String var1) {
+   private LevelStorageSource.@Nullable LevelStorageAccess createWorldAccess(String var1) {
       try {
          return this.levelSource.validateAndCreateAccess(var1);
       } catch (IOException var3) {
@@ -157,7 +156,7 @@ public class WorldOpenFlows {
          return new WorldLoader.DataLoadOutput(new 1Data(var3x.worldData().getLevelSettings(), var3x.worldData().worldGenOptions(), var3x.dimensions().dimensions()), var1x.datapackDimensions());
       }, (var0, var1x, var2x, var3x) -> {
          var0.close();
-         InitialWorldCreationOptions var4 = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, Set.of(), (ResourceKey)null);
+         InitialWorldCreationOptions var4 = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, GameRuleMap.of(), (ResourceKey)null);
          return Pair.of(var3x.levelSettings, new WorldCreationContext(var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration(), var4));
       });
    }

@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -49,6 +48,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractArrow extends Projectile {
    private static final double ARROW_BASE_DAMAGE = 2.0;
@@ -65,21 +65,17 @@ public abstract class AbstractArrow extends Projectile {
    private static final EntityDataAccessor<Boolean> IN_GROUND;
    private static final int FLAG_CRIT = 1;
    private static final int FLAG_NOPHYSICS = 2;
-   @Nullable
-   private BlockState lastState;
+   private @Nullable BlockState lastState;
    protected int inGroundTime;
    public Pickup pickup;
    public int shakeTime;
    private int life;
    private double baseDamage;
    private SoundEvent soundEvent;
-   @Nullable
-   private IntOpenHashSet piercingIgnoreEntityIds;
-   @Nullable
-   private List<Entity> piercedAndKilledEntities;
+   private @Nullable IntOpenHashSet piercingIgnoreEntityIds;
+   private @Nullable List<Entity> piercedAndKilledEntities;
    private ItemStack pickupItemStack;
-   @Nullable
-   private ItemStack firedFromWeapon;
+   private @Nullable ItemStack firedFromWeapon;
 
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2) {
       super(var1, var2);
@@ -567,8 +563,7 @@ public abstract class AbstractArrow extends Projectile {
       EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> this.firedFromWeapon = null);
    }
 
-   @Nullable
-   public ItemStack getWeaponItem() {
+   public @Nullable ItemStack getWeaponItem() {
       return this.firedFromWeapon;
    }
 
@@ -583,13 +578,12 @@ public abstract class AbstractArrow extends Projectile {
    protected void doPostHurtEffects(LivingEntity var1) {
    }
 
-   @Nullable
-   protected EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
+   protected @Nullable EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
       return ProjectileUtil.getEntityHitResult(this.level(), this, var1, var2, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity);
    }
 
    protected Collection<EntityHitResult> findHitEntities(Vec3 var1, Vec3 var2) {
-      return ProjectileUtil.getManyEntityHitResult(this.level(), this, var1, var2, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity);
+      return ProjectileUtil.getManyEntityHitResult(this.level(), this, var1, var2, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), this::canHitEntity, false);
    }
 
    protected boolean canHitEntity(Entity var1) {
@@ -776,7 +770,7 @@ public abstract class AbstractArrow extends Projectile {
       return super.isPickable() && !this.isInGround();
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       return var1 == 0 ? SlotAccess.of(this::getPickupItemStackOrigin, this::setPickupItemStack) : super.getSlot(var1);
    }
 

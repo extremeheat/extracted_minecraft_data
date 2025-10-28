@@ -6,7 +6,6 @@ import com.mojang.realmsclient.dto.ServiceQuality;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -20,6 +19,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsPreferredRegionSelectionScreen extends Screen {
    private static final Component REGION_SELECTION_LABEL = Component.translatable("mco.configure.world.region_preference.title");
@@ -28,11 +28,9 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    private final Screen parent;
    private final BiConsumer<RegionSelectionPreference, RealmsRegion> applySettings;
    final Map<RealmsRegion, ServiceQuality> regionServiceQuality;
-   @Nullable
-   private RegionSelectionList list;
+   private @Nullable RegionSelectionList list;
    RealmsSettingsTab.RegionSelection selection;
-   @Nullable
-   private Button doneButton;
+   private @Nullable Button doneButton;
 
    public RealmsPreferredRegionSelectionScreen(Screen var1, BiConsumer<RegionSelectionPreference, RealmsRegion> var2, Map<RealmsRegion, ServiceQuality> var3, RealmsSettingsTab.RegionSelection var4) {
       super(REGION_SELECTION_LABEL);
@@ -81,7 +79,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.keySet().stream().map((var1x) -> new Entry(RegionSelectionPreference.MANUAL, var1x)).forEach((var1x) -> this.addEntry(var1x));
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          if (var1 != null) {
             RealmsPreferredRegionSelectionScreen.this.selection = var1.regionSelection;
@@ -94,7 +92,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          final RealmsSettingsTab.RegionSelection regionSelection;
          private final Component name;
 
-         public Entry(final RegionSelectionPreference var2, @Nullable final RealmsRegion var3) {
+         public Entry(final @Nullable RegionSelectionPreference var2, final RealmsRegion var3) {
             this(new RealmsSettingsTab.RegionSelection(var2, var3));
          }
 

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -14,12 +13,12 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
+import org.jspecify.annotations.Nullable;
 
 public class ShowTradesToPlayer extends Behavior<Villager> {
    private static final int MAX_LOOK_TIME = 900;
    private static final int STARTING_LOOK_TIME = 40;
-   @Nullable
-   private ItemStack playerItemStack;
+   private @Nullable ItemStack playerItemStack;
    private final List<ItemStack> displayItems = Lists.newArrayList();
    private int cycleCounter;
    private int displayIndex;

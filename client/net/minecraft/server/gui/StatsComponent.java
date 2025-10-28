@@ -10,12 +10,13 @@ import javax.swing.JComponent;
 import javax.swing.Timer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.TimeUtil;
+import org.jspecify.annotations.Nullable;
 
 public class StatsComponent extends JComponent {
    private static final DecimalFormat DECIMAL_FORMAT;
    private final int[] values = new int[256];
    private int vp;
-   private final String[] msgs = new String[11];
+   private final @Nullable String[] msgs = new String[11];
    private final MinecraftServer server;
    private final Timer timer;
 

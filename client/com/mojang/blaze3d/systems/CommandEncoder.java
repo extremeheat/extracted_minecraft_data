@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public interface CommandEncoder {

@@ -20,6 +20,7 @@ import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import java.io.File;
@@ -35,7 +36,6 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -70,7 +70,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
@@ -80,6 +79,7 @@ import net.minecraft.util.SingleKeyCache;
 import net.minecraft.util.TimeSource;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Util {
@@ -151,7 +151,7 @@ public class Util {
                   super.onStart();
                }
 
-               protected void onTermination(Throwable var1) {
+               protected void onTermination(@Nullable Throwable var1) {
                   if (var1 != null) {
                      Util.LOGGER.warn("{} died", this.getName(), var1);
                   } else {
@@ -236,16 +236,14 @@ public class Util {
          System.exit(-1);
       }
 
-      LOGGER.error(String.format(Locale.ROOT, "Caught exception in thread %s", var0), var1);
+      LOGGER.error("Caught exception in thread {}", var0, var1);
    }
 
-   @Nullable
-   public static Type<?> fetchChoiceType(DSL.TypeReference var0, String var1) {
+   public static @Nullable Type<?> fetchChoiceType(DSL.TypeReference var0, String var1) {
       return !SharedConstants.CHECK_DATA_FIXER_SCHEMA ? null : doFetchChoiceType(var0, var1);
    }
 
-   @Nullable
-   private static Type<?> doFetchChoiceType(DSL.TypeReference var0, String var1) {
+   private static @Nullable Type<?> doFetchChoiceType(DSL.TypeReference var0, String var1) {
       Type var2 = null;
 
       try {
@@ -519,10 +517,6 @@ public class Util {
       }
    }
 
-   public static <T> T lastOf(List<T> var0) {
-      return (T)var0.get(var0.size() - 1);
-   }
-
    public static <T> T findNextInIterable(Iterable<T> var0, @Nullable T var1) {
       Iterator var2 = var0.iterator();
       Object var3 = var2.next();
@@ -592,7 +586,7 @@ public class Util {
       if (var0.isEmpty()) {
          return CompletableFuture.completedFuture(List.of());
       } else if (var0.size() == 1) {
-         return ((CompletableFuture)var0.get(0)).thenApply(List::of);
+         return ((CompletableFuture)var0.getFirst()).thenApply(ObjectLists::singleton);
       } else {
          CompletableFuture var1 = CompletableFuture.allOf((CompletableFuture[])var0.toArray(new CompletableFuture[0]));
          return var1.thenApply((var1x) -> var0.stream().map(CompletableFuture::join).toList());
@@ -618,20 +612,21 @@ public class Util {
    }
 
    private static <V> CompletableFuture<List<V>> fallibleSequence(List<? extends CompletableFuture<? extends V>> var0, Consumer<Throwable> var1) {
-      ArrayList var2 = Lists.newArrayListWithCapacity(var0.size());
+      ObjectArrayList var2 = new ObjectArrayList();
+      var2.size(var0.size());
       CompletableFuture[] var3 = new CompletableFuture[var0.size()];
-      var0.forEach((var3x) -> {
-         int var4 = var2.size();
-         var2.add((Object)null);
-         var3[var4] = var3x.whenComplete((var3xx, var4x) -> {
+
+      for(int var4 = 0; var4 < var0.size(); ++var4) {
+         var3[var4] = ((CompletableFuture)var0.get(var4)).whenComplete((var3x, var4x) -> {
             if (var4x != null) {
                var1.accept(var4x);
             } else {
-               var2.set(var4, var3xx);
+               var2.set(var4, var3x);
             }
 
          });
-      });
+      }
+
       return CompletableFuture.allOf(var3).thenApply((var1x) -> var2);
    }
 

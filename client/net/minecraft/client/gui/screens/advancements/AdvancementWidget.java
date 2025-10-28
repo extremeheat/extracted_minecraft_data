@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.DisplayInfo;
@@ -22,6 +21,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementWidget {
    private static final ResourceLocation TITLE_BOX_SPRITE = ResourceLocation.withDefaultNamespace("advancements/title_box");
@@ -47,11 +47,9 @@ public class AdvancementWidget {
    private final int width;
    private final List<FormattedCharSequence> description;
    private final Minecraft minecraft;
-   @Nullable
-   private AdvancementWidget parent;
+   private @Nullable AdvancementWidget parent;
    private final List<AdvancementWidget> children = Lists.newArrayList();
-   @Nullable
-   private AdvancementProgress progress;
+   private @Nullable AdvancementProgress progress;
    private final int x;
    private final int y;
 
@@ -117,8 +115,7 @@ public class AdvancementWidget {
       return var4;
    }
 
-   @Nullable
-   private AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
+   private @Nullable AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
       do {
          var1 = var1.parent();
       } while(var1 != null && var1.advancement().display().isEmpty());

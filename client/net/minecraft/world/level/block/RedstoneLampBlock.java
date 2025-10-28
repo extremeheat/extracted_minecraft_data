@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -12,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.Orientation;
+import org.jspecify.annotations.Nullable;
 
 public class RedstoneLampBlock extends Block {
    public static final MapCodec<RedstoneLampBlock> CODEC = simpleCodec(RedstoneLampBlock::new);
@@ -26,8 +26,7 @@ public class RedstoneLampBlock extends Block {
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return (BlockState)this.defaultBlockState().setValue(LIT, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
    }
 

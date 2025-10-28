@@ -2,7 +2,6 @@ package net.minecraft.world.entity;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -26,6 +25,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ExperienceOrb extends Entity {
    protected static final EntityDataAccessor<Integer> DATA_VALUE;
@@ -41,8 +41,7 @@ public class ExperienceOrb extends Entity {
    private int age;
    private int health;
    private int count;
-   @Nullable
-   private Player followingPlayer;
+   private @Nullable Player followingPlayer;
    private final InterpolationHandler interpolation;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {

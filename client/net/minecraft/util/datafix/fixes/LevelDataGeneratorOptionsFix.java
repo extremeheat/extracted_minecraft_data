@@ -22,9 +22,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.LenientJsonParser;
+import org.jspecify.annotations.Nullable;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
    static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (var0) -> {
@@ -172,8 +172,7 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
       return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("layers"), var18, var1.createString("biome"), var1.createString(var4), var1.createString("structures"), var19)));
    }
 
-   @Nullable
-   private static Pair<Integer, String> getLayerInfoFromString(String var0) {
+   private static @Nullable Pair<Integer, String> getLayerInfoFromString(String var0) {
       String[] var1 = var0.split("\\*", 2);
       int var2;
       if (var1.length == 2) {

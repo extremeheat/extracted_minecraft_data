@@ -19,7 +19,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -46,6 +45,7 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DedicatedServerProperties extends Settings<DedicatedServerProperties> {
@@ -76,8 +76,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final String managementServerTlsKeystore;
    public final String managementServerTlsKeystorePassword;
    public final String managementServerAllowedOrigins;
-   @Nullable
-   public final Boolean announcePlayerAchievements;
+   public final @Nullable Boolean announcePlayerAchievements;
    public final boolean enableQuery;
    public final int queryPort;
    public final boolean enableRcon;
@@ -185,8 +184,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return new DedicatedServerProperties(var2);
    }
 
-   @Nullable
-   private static Component parseResourcePackPrompt(String var0) {
+   private static @Nullable Component parseResourcePackPrompt(String var0) {
       if (!Strings.isNullOrEmpty(var0)) {
          try {
             JsonElement var1 = StrictJsonParser.parse(var0);
@@ -246,8 +244,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return new DataPackConfig(var2, var3);
    }
 
-   @Nullable
-   public static LevelBasedPermissionSet deserializePermission(String var0) {
+   public static @Nullable LevelBasedPermissionSet deserializePermission(String var0) {
       try {
          PermissionLevel var1 = PermissionLevel.byId(Integer.parseInt(var0));
          return LevelBasedPermissionSet.forLevel(var1);

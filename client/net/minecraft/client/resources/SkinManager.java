@@ -20,7 +20,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SkinTextureDownloader;
@@ -29,6 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Services;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SkinManager {

@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -26,6 +25,7 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    private static final ResourceLocation BEACON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/beacon.png");
@@ -38,10 +38,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    private static final Component PRIMARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.primary");
    private static final Component SECONDARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.secondary");
    private final List<BeaconButton> beaconButtons = Lists.newArrayList();
-   @Nullable
-   Holder<MobEffect> primary;
-   @Nullable
-   Holder<MobEffect> secondary;
+   @Nullable Holder<MobEffect> primary;
+   @Nullable Holder<MobEffect> secondary;
 
    public BeaconScreen(final BeaconMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);

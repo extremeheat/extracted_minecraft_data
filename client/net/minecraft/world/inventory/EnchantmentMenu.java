@@ -111,7 +111,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                for(int var10 = 0; var10 < 3; ++var10) {
                   if (this.costs[var10] > 0) {
                      List var11 = this.getEnchantmentList(var2x.registryAccess(), var2, var10, this.costs[var10]);
-                     if (var11 != null && !var11.isEmpty()) {
+                     if (!var11.isEmpty()) {
                         EnchantmentInstance var8 = (EnchantmentInstance)var11.get(this.random.nextInt(var11.size()));
                         this.enchantClue[var10] = var4.getId(var8.enchantment());
                         this.levelClue[var10] = var8.level();

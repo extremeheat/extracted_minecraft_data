@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.boss;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class EnderDragonPart extends Entity {
    public final EnderDragon parentMob;
@@ -41,8 +41,7 @@ public class EnderDragonPart extends Entity {
       return true;
    }
 
-   @Nullable
-   public ItemStack getPickResult() {
+   public @Nullable ItemStack getPickResult() {
       return this.parentMob.getPickResult();
    }
 

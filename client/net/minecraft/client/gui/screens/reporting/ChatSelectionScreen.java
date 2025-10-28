@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -37,18 +36,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 
 public class ChatSelectionScreen extends Screen {
    static final ResourceLocation CHECKMARK_SPRITE = ResourceLocation.withDefaultNamespace("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
-   @Nullable
-   private final Screen lastScreen;
+   private final @Nullable Screen lastScreen;
    private final ReportingContext reportingContext;
    private Button confirmSelectedButton;
    private MultiLineLabel contextInfoLabel;
-   @Nullable
-   private ChatSelectionList chatSelectionList;
+   private @Nullable ChatSelectionList chatSelectionList;
    final ChatReport.Builder report;
    private final Consumer<ChatReport.Builder> onSelected;
    private ChatSelectionLogFiller chatLogFiller;
@@ -122,8 +120,7 @@ public class ChatSelectionScreen extends Screen {
 
    public class ChatSelectionList extends ObjectSelectionList<Entry> implements ChatSelectionLogFiller.Output {
       public static final int ITEM_HEIGHT = 16;
-      @Nullable
-      private Heading previousHeading;
+      private @Nullable Heading previousHeading;
 
       public ChatSelectionList(final Minecraft var2, final int var3) {
          super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
@@ -194,8 +191,7 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      @Nullable
-      protected Entry nextEntry(ScreenDirection var1) {
+      protected @Nullable Entry nextEntry(ScreenDirection var1) {
          return (Entry)this.nextEntry(var1, Entry::canSelect);
       }
 
@@ -220,8 +216,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       // $FF: synthetic method
-      @Nullable
-      protected AbstractSelectionList.Entry nextEntry(final ScreenDirection var1) {
+      protected AbstractSelectionList.@Nullable Entry nextEntry(final ScreenDirection var1) {
          return this.nextEntry(var1);
       }
 
@@ -271,16 +266,13 @@ public class ChatSelectionScreen extends Screen {
          private final int chatId;
          private final FormattedText text;
          private final Component narration;
-         @Nullable
-         private final List<FormattedCharSequence> hoverText;
-         @Nullable
-         private final GuiMessageTag.Icon tagIcon;
-         @Nullable
-         private final List<FormattedCharSequence> tagHoverText;
+         private final @Nullable List<FormattedCharSequence> hoverText;
+         private final GuiMessageTag.@Nullable Icon tagIcon;
+         private final @Nullable List<FormattedCharSequence> tagHoverText;
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(final int var2, final Component var3, final Component var4, @Nullable final GuiMessageTag var5, final boolean var6, final boolean var7) {
+         public MessageEntry(final int var2, final Component var3, final @Nullable Component var4, final GuiMessageTag var5, final boolean var6, final boolean var7) {
             super();
             this.chatId = var2;
             this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);

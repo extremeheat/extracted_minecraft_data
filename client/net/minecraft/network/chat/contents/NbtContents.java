@@ -10,7 +10,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.NbtOps;
@@ -25,6 +24,7 @@ import net.minecraft.network.chat.contents.data.DataSource;
 import net.minecraft.network.chat.contents.data.DataSources;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class NbtContents implements ComponentContents {
@@ -34,14 +34,13 @@ public class NbtContents implements ComponentContents {
    private final Optional<Component> separator;
    private final String nbtPathPattern;
    private final DataSource dataSource;
-   @Nullable
-   protected final NbtPathArgument.NbtPath compiledNbtPath;
+   protected final NbtPathArgument.@Nullable NbtPath compiledNbtPath;
 
    public NbtContents(String var1, boolean var2, Optional<Component> var3, DataSource var4) {
       this(var1, compileNbtPath(var1), var2, var3, var4);
    }
 
-   private NbtContents(String var1, @Nullable NbtPathArgument.NbtPath var2, boolean var3, Optional<Component> var4, DataSource var5) {
+   private NbtContents(String var1, NbtPathArgument.@Nullable NbtPath var2, boolean var3, Optional<Component> var4, DataSource var5) {
       super();
       this.nbtPathPattern = var1;
       this.compiledNbtPath = var2;
@@ -50,8 +49,7 @@ public class NbtContents implements ComponentContents {
       this.dataSource = var5;
    }
 
-   @Nullable
-   private static NbtPathArgument.NbtPath compileNbtPath(String var0) {
+   private static NbtPathArgument.@Nullable NbtPath compileNbtPath(String var0) {
       try {
          return (new NbtPathArgument()).parse(new StringReader(var0));
       } catch (CommandSyntaxException var2) {

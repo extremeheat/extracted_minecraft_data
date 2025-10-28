@@ -36,7 +36,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -65,6 +64,7 @@ import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -96,26 +96,18 @@ public class GuiRenderer implements AutoCloseable {
    private final SubmitNodeCollector submitNodeCollector;
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
-   @Nullable
-   private GpuTexture itemsAtlas;
-   @Nullable
-   private GpuTextureView itemsAtlasView;
-   @Nullable
-   private GpuTexture itemsAtlasDepth;
-   @Nullable
-   private GpuTextureView itemsAtlasDepthView;
+   private @Nullable GpuTexture itemsAtlas;
+   private @Nullable GpuTextureView itemsAtlasView;
+   private @Nullable GpuTexture itemsAtlasDepth;
+   private @Nullable GpuTextureView itemsAtlasDepthView;
    private int itemAtlasX;
    private int itemAtlasY;
    private int cachedGuiScale;
    private int frameNumber;
-   @Nullable
-   private ScreenRectangle previousScissorArea = null;
-   @Nullable
-   private RenderPipeline previousPipeline = null;
-   @Nullable
-   private TextureSetup previousTextureSetup = null;
-   @Nullable
-   private BufferBuilder bufferBuilder = null;
+   private @Nullable ScreenRectangle previousScissorArea = null;
+   private @Nullable RenderPipeline previousPipeline = null;
+   private @Nullable TextureSetup previousTextureSetup = null;
+   private @Nullable BufferBuilder bufferBuilder = null;
 
    public GuiRenderer(GuiRenderState var1, MultiBufferSource.BufferSource var2, SubmitNodeCollector var3, FeatureRenderDispatcher var4, List<PictureInPictureRenderer<?>> var5) {
       super();
@@ -339,7 +331,7 @@ public class GuiRenderer implements AutoCloseable {
          });
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
-         if (var6.getValue()) {
+         if (var6.booleanValue()) {
             this.renderState.forEachItem((var2x) -> {
                if (var2x.oversizedItemBounds() != null) {
                   TrackingItemStackRenderState var3 = var2x.itemStackRenderState();
@@ -577,7 +569,7 @@ public class GuiRenderer implements AutoCloseable {
       return new BufferBuilder(this.byteBufferBuilder, var1.getVertexFormatMode(), var1.getVertexFormat());
    }
 
-   private boolean scissorChanged(ScreenRectangle var1, @Nullable ScreenRectangle var2) {
+   private boolean scissorChanged(@Nullable ScreenRectangle var1, @Nullable ScreenRectangle var2) {
       if (var1 == var2) {
          return false;
       } else if (var1 != null) {
@@ -653,8 +645,7 @@ public class GuiRenderer implements AutoCloseable {
       final MeshData mesh;
       final RenderPipeline pipeline;
       final TextureSetup textureSetup;
-      @Nullable
-      final ScreenRectangle scissorArea;
+      final @Nullable ScreenRectangle scissorArea;
 
       MeshToDraw(MeshData var1, RenderPipeline var2, TextureSetup var3, @Nullable ScreenRectangle var4) {
          super();

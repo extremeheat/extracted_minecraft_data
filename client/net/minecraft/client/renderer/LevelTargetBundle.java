@@ -3,8 +3,8 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final ResourceLocation MAIN_TARGET_ID;
@@ -18,18 +18,12 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final Set<ResourceLocation> OUTLINE_TARGETS;
    public static final Set<ResourceLocation> SORTING_TARGETS;
    public ResourceHandle<RenderTarget> main = ResourceHandle.<RenderTarget>invalid();
-   @Nullable
-   public ResourceHandle<RenderTarget> translucent;
-   @Nullable
-   public ResourceHandle<RenderTarget> itemEntity;
-   @Nullable
-   public ResourceHandle<RenderTarget> particles;
-   @Nullable
-   public ResourceHandle<RenderTarget> weather;
-   @Nullable
-   public ResourceHandle<RenderTarget> clouds;
-   @Nullable
-   public ResourceHandle<RenderTarget> entityOutline;
+   public @Nullable ResourceHandle<RenderTarget> translucent;
+   public @Nullable ResourceHandle<RenderTarget> itemEntity;
+   public @Nullable ResourceHandle<RenderTarget> particles;
+   public @Nullable ResourceHandle<RenderTarget> weather;
+   public @Nullable ResourceHandle<RenderTarget> clouds;
+   public @Nullable ResourceHandle<RenderTarget> entityOutline;
 
    public LevelTargetBundle() {
       super();
@@ -58,8 +52,7 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
 
    }
 
-   @Nullable
-   public ResourceHandle<RenderTarget> get(ResourceLocation var1) {
+   public @Nullable ResourceHandle<RenderTarget> get(ResourceLocation var1) {
       if (var1.equals(MAIN_TARGET_ID)) {
          return this.main;
       } else if (var1.equals(TRANSLUCENT_TARGET_ID)) {

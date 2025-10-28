@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -23,6 +22,7 @@ import net.minecraft.client.server.LanServerDetection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class JoinMultiplayerScreen extends Screen {
@@ -39,8 +39,7 @@ public class JoinMultiplayerScreen extends Screen {
    private Button deleteButton;
    private ServerData editingServer;
    private LanServerDetection.LanServerList lanServerList;
-   @Nullable
-   private LanServerDetection.LanServerDetector lanServerDetector;
+   private LanServerDetection.@Nullable LanServerDetector lanServerDetector;
 
    public JoinMultiplayerScreen(Screen var1) {
       super(Component.translatable("multiplayer.title"));

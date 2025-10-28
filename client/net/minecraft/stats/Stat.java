@@ -1,7 +1,6 @@
 package net.minecraft.stats;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,6 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 
 public class Stat<T> extends ObjectiveCriteria {
    public static final StreamCodec<RegistryFriendlyByteBuf, Stat<?>> STREAM_CODEC;

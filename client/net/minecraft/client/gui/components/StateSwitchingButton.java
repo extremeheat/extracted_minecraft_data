@@ -1,14 +1,13 @@
 package net.minecraft.client.gui.components;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
+import org.jspecify.annotations.Nullable;
 
 public class StateSwitchingButton extends AbstractWidget {
-   @Nullable
-   protected WidgetSprites sprites;
+   protected @Nullable WidgetSprites sprites;
    protected boolean isStateTriggered;
 
    public StateSwitchingButton(int var1, int var2, int var3, int var4, boolean var5) {

@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -47,7 +46,6 @@ public class DebugOptionsScreen extends Screen {
    static final Component NOT_ALLOWED_TOOLTIP;
    private static final Component SEARCH;
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 61, 33);
-   @Nullable
    private OptionList optionList;
    private EditBox searchBox;
    final List<Button> profileButtons = new ArrayList();
@@ -114,8 +112,8 @@ public class DebugOptionsScreen extends Screen {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public OptionList getOptionList() {
+      return this.optionList;
    }
 
    static {
@@ -124,7 +122,7 @@ public class DebugOptionsScreen extends Screen {
       SEARCH = Component.translatable("debug.options.search").withStyle(EditBox.SEARCH_HINT_STYLE);
    }
 
-   class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {
+   public class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {
       private static final Comparator<Map.Entry<ResourceLocation, DebugScreenEntry>> COMPARATOR = (var0, var1) -> {
          int var2 = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)var0.getValue()).category().sortKey(), ((DebugScreenEntry)var1.getValue()).category().sortKey());
          return var2 != 0 ? var2 : ((ResourceLocation)var0.getKey()).compareTo((ResourceLocation)var1.getKey());

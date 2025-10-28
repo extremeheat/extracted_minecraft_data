@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.PackedBitStorage;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChunkPalettedStorageFix extends DataFix {
@@ -486,7 +486,7 @@ public class ChunkPalettedStorageFix extends DataFix {
 
    static final class UpgradeChunk {
       private int sides;
-      private final Section[] sections = new Section[16];
+      private final @Nullable ChunkPalettedStorageFix.Section[] sections = new Section[16];
       private final Dynamic<?> level;
       private final int x;
       private final int z;
@@ -743,13 +743,11 @@ public class ChunkPalettedStorageFix extends DataFix {
 
       }
 
-      @Nullable
-      private Dynamic<?> getBlockEntity(int var1) {
+      private @Nullable Dynamic<?> getBlockEntity(int var1) {
          return (Dynamic)this.blockEntities.get(var1);
       }
 
-      @Nullable
-      private Dynamic<?> removeBlockEntity(int var1) {
+      private @Nullable Dynamic<?> removeBlockEntity(int var1) {
          return (Dynamic)this.blockEntities.remove(var1);
       }
 
@@ -784,8 +782,7 @@ public class ChunkPalettedStorageFix extends DataFix {
          }
       }
 
-      @Nullable
-      private Section getSection(int var1) {
+      private @Nullable Section getSection(int var1) {
          int var2 = var1 >> 12;
          return var2 < this.sections.length ? this.sections[var2] : null;
       }

@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -9,12 +8,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import org.jspecify.annotations.Nullable;
 
 public class MerchantContainer implements Container {
    private final Merchant merchant;
    private final NonNullList<ItemStack> itemStacks;
-   @Nullable
-   private MerchantOffer activeOffer;
+   private @Nullable MerchantOffer activeOffer;
    private int selectionHint;
    private int futureXp;
 
@@ -119,8 +118,7 @@ public class MerchantContainer implements Container {
       }
    }
 
-   @Nullable
-   public MerchantOffer getActiveOffer() {
+   public @Nullable MerchantOffer getActiveOffer() {
       return this.activeOffer;
    }
 

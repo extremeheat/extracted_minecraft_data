@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.ShadowSubmit> shadowSubmits = new ArrayList();
@@ -76,13 +76,13 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.leashSubmits.add(new SubmitNodeStorage.LeashSubmit(new Matrix4f(var1.last().pose()), var2));
    }
 
-   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10) {
+   public <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10) {
       this.wasUsed = true;
       SubmitNodeStorage.ModelSubmit var11 = new SubmitNodeStorage.ModelSubmit(var3.last().copy(), var1, var2, var5, var6, var7, var8, var9, var10);
       this.modelSubmits.add(var4, var11);
    }
 
-   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, @Nullable ModelFeatureRenderer.CrumblingOverlay var10, int var11) {
+   public void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11) {
       this.wasUsed = true;
       this.modelPartSubmits.add(var3, new SubmitNodeStorage.ModelPartSubmit(var2.last().copy(), var1, var4, var5, var6, var7, var8, var9, var10, var11));
    }

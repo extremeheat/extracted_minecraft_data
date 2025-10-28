@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -14,6 +13,7 @@ import net.minecraft.network.protocol.game.ServerboundSetTestBlockPacket;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
+import org.jspecify.annotations.Nullable;
 
 public class TestBlockEditScreen extends Screen {
    private static final List<TestBlockMode> MODES = List.of(TestBlockMode.values());
@@ -22,8 +22,7 @@ public class TestBlockEditScreen extends Screen {
    private final BlockPos position;
    private TestBlockMode mode;
    private String message;
-   @Nullable
-   private EditBox messageEdit;
+   private @Nullable EditBox messageEdit;
 
    public TestBlockEditScreen(TestBlockEntity var1) {
       super(TITLE);

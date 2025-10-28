@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -33,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class CrossbowItem extends ProjectileWeaponItem {
    private static final float MAX_CHARGE_DURATION = 1.25F;

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.boss.wither;
 import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -49,12 +48,13 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.entity.projectile.windcharge.WindCharge;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class WitherBoss extends Monster implements RangedAttackMob {
    private static final EntityDataAccessor<Integer> DATA_TARGET_A;
@@ -284,7 +284,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
          if (this.destroyBlocksTick > 0) {
             --this.destroyBlocksTick;
-            if (this.destroyBlocksTick == 0 && var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (this.destroyBlocksTick == 0 && (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
                boolean var11 = false;
                int var14 = Mth.floor(this.getBbWidth() / 2.0F + 1.0F);
                int var17 = Mth.floor(this.getBbHeight());

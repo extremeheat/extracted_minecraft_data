@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -26,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 
 public class EditBox extends AbstractWidget {
    private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
@@ -51,14 +51,11 @@ public class EditBox extends AbstractWidget {
    private int highlightPos;
    private int textColor;
    private int textColorUneditable;
-   @Nullable
-   private String suggestion;
-   @Nullable
-   private Consumer<String> responder;
+   private @Nullable String suggestion;
+   private @Nullable Consumer<String> responder;
    private Predicate<String> filter;
    private final List<TextFormatter> formatters;
-   @Nullable
-   private Component hint;
+   private @Nullable Component hint;
    private long focusedTime;
    private int textX;
    private int textY;
@@ -634,7 +631,6 @@ public class EditBox extends AbstractWidget {
 
    @FunctionalInterface
    public interface TextFormatter {
-      @Nullable
-      FormattedCharSequence format(String var1, int var2);
+      @Nullable FormattedCharSequence format(String var1, int var2);
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -20,18 +19,18 @@ import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 
 public class HarvestFarmland extends Behavior<Villager> {
    private static final int HARVEST_DURATION = 200;
    public static final float SPEED_MODIFIER = 0.5F;
-   @Nullable
-   private BlockPos aboveFarmlandPos;
+   private @Nullable BlockPos aboveFarmlandPos;
    private long nextOkStartTime;
    private int timeWorkedSoFar;
    private final List<BlockPos> validFarmlandAroundVillager = Lists.newArrayList();
@@ -41,7 +40,7 @@ public class HarvestFarmland extends Behavior<Villager> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+      if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
          return false;
       } else if (!var2.getVillagerData().profession().is(VillagerProfession.FARMER)) {
          return false;
@@ -65,8 +64,7 @@ public class HarvestFarmland extends Behavior<Villager> {
       }
    }
 
-   @Nullable
-   private BlockPos getValidFarmland(ServerLevel var1) {
+   private @Nullable BlockPos getValidFarmland(ServerLevel var1) {
       return this.validFarmlandAroundVillager.isEmpty() ? null : (BlockPos)this.validFarmlandAroundVillager.get(var1.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
    }
 

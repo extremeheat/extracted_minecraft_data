@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class InteractWithDoor {
    private static final int COOLDOWN_BEFORE_RERUNNING_IN_SAME_NODE = 20;
@@ -36,13 +36,13 @@ public class InteractWithDoor {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      MutableObject var0 = new MutableObject((Object)null);
+      MutableObject var0 = new MutableObject();
       MutableInt var1 = new MutableInt(0);
       return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.PATH), var2.registered(MemoryModuleType.DOORS_TO_CLOSE), var2.registered(MemoryModuleType.NEAREST_LIVING_ENTITIES)).apply(var2, (var3, var4, var5) -> (var6, var7, var8) -> {
                Path var10 = (Path)var2.get(var3);
                Optional var11 = var2.tryGet(var4);
                if (!var10.notStarted() && !var10.isDone()) {
-                  if (Objects.equals(var0.getValue(), var10.getNextNode())) {
+                  if (Objects.equals(var0.get(), var10.getNextNode())) {
                      var1.setValue(20);
                   } else if (var1.decrementAndGet() > 0) {
                      return false;

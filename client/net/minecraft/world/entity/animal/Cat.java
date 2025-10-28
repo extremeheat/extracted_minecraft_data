@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -66,6 +64,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class Cat extends TamableAnimal {
    public static final double TEMPT_SPEED_MOD = 0.6;
@@ -77,10 +76,8 @@ public class Cat extends TamableAnimal {
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
    private static final ResourceKey<CatVariant> DEFAULT_VARIANT;
    private static final DyeColor DEFAULT_COLLAR_COLOR;
-   @Nullable
-   private CatAvoidEntityGoal<Player> avoidPlayersGoal;
-   @Nullable
-   private TemptGoal temptGoal;
+   private @Nullable CatAvoidEntityGoal<Player> avoidPlayersGoal;
+   private @Nullable TemptGoal temptGoal;
    private float lieDownAmount;
    private float lieDownAmountO;
    private float lieDownAmountTail;
@@ -121,8 +118,7 @@ public class Cat extends TamableAnimal {
       this.entityData.set(DATA_VARIANT_ID, var1);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.CAT_VARIANT) {
          return (T)castComponentValue(var1, this.getVariant());
       } else {
@@ -212,8 +208,7 @@ public class Cat extends TamableAnimal {
 
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       if (this.isTame()) {
          if (this.isInLove()) {
             return SoundEvents.CAT_PURR;
@@ -318,8 +313,7 @@ public class Cat extends TamableAnimal {
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
-   @Nullable
-   public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cat var3 = EntityType.CAT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Cat var4) {
          if (this.random.nextBoolean()) {
@@ -351,8 +345,7 @@ public class Cat extends TamableAnimal {
       }
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.CAT_VARIANT).ifPresent(this::setVariant);
       return var4;
@@ -454,8 +447,7 @@ public class Cat extends TamableAnimal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -472,9 +464,7 @@ public class Cat extends TamableAnimal {
       private final Cat cat;
 
       public CatAvoidEntityGoal(Cat var1, Class<T> var2, float var3, double var4, double var6) {
-         Predicate var10006 = EntitySelector.NO_CREATIVE_OR_SPECTATOR;
-         Objects.requireNonNull(var10006);
-         super(var1, var2, var3, var4, var6, var10006::test);
+         super(var1, var2, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
          this.cat = var1;
       }
 
@@ -488,8 +478,7 @@ public class Cat extends TamableAnimal {
    }
 
    static class CatTemptGoal extends TemptGoal {
-      @Nullable
-      private Player selectedPlayer;
+      private @Nullable Player selectedPlayer;
       private final Cat cat;
 
       public CatTemptGoal(Cat var1, double var2, Predicate<ItemStack> var4, boolean var5) {
@@ -518,10 +507,8 @@ public class Cat extends TamableAnimal {
 
    static class CatRelaxOnOwnerGoal extends Goal {
       private final Cat cat;
-      @Nullable
-      private Player ownerPlayer;
-      @Nullable
-      private BlockPos goalPos;
+      private @Nullable Player ownerPlayer;
+      private @Nullable BlockPos goalPos;
       private int onBedTicks;
 
       public CatRelaxOnOwnerGoal(Cat var1) {

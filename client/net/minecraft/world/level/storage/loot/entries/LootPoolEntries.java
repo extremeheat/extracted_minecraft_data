@@ -13,6 +13,7 @@ public class LootPoolEntries {
    public static final LootPoolEntryType LOOT_TABLE;
    public static final LootPoolEntryType DYNAMIC;
    public static final LootPoolEntryType TAG;
+   public static final LootPoolEntryType SLOTS;
    public static final LootPoolEntryType ALTERNATIVES;
    public static final LootPoolEntryType SEQUENCE;
    public static final LootPoolEntryType GROUP;
@@ -32,6 +33,7 @@ public class LootPoolEntries {
       LOOT_TABLE = register("loot_table", NestedLootTable.CODEC);
       DYNAMIC = register("dynamic", DynamicLoot.CODEC);
       TAG = register("tag", TagEntry.CODEC);
+      SLOTS = register("slots", SlotLoot.CODEC);
       ALTERNATIVES = register("alternatives", AlternativesEntry.CODEC);
       SEQUENCE = register("sequence", SequentialEntry.CODEC);
       GROUP = register("group", EntryGroup.CODEC);

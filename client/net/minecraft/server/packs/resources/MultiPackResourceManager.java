@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MultiPackResourceManager implements CloseableResourceManager {
@@ -56,8 +56,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       this.namespacedManagers = var3;
    }
 
-   @Nullable
-   private ResourceFilterSection getPackFilterSection(PackResources var1) {
+   private @Nullable ResourceFilterSection getPackFilterSection(PackResources var1) {
       try {
          return (ResourceFilterSection)var1.getMetadataSection(ResourceFilterSection.TYPE);
       } catch (IOException var3) {

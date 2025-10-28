@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.block;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -13,13 +12,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class MovingBlockRenderState implements BlockAndTintGetter {
    public BlockPos randomSeedPos;
    public BlockPos blockPos;
    public BlockState blockState;
-   @Nullable
-   public Holder<Biome> biome;
+   public @Nullable Holder<Biome> biome;
    public BlockAndTintGetter level;
 
    public MovingBlockRenderState() {
@@ -42,8 +41,7 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
       return this.biome == null ? -1 : var2.getColor(this.biome.value(), (double)var1.getX(), (double)var1.getZ());
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return null;
    }
 

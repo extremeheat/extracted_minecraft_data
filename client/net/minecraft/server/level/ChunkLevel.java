@@ -1,10 +1,10 @@
 package net.minecraft.server.level;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.level.chunk.status.ChunkPyramid;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkStep;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkLevel {
    private static final int FULL_CHUNK_LEVEL = 33;
@@ -18,14 +18,12 @@ public class ChunkLevel {
       super();
    }
 
-   @Nullable
-   public static ChunkStatus generationStatus(int var0) {
+   public static @Nullable ChunkStatus generationStatus(int var0) {
       return getStatusAroundFullChunk(var0 - 33, (ChunkStatus)null);
    }
 
-   @Nullable
    @Contract("_,!null->!null;_,_->_")
-   public static ChunkStatus getStatusAroundFullChunk(int var0, @Nullable ChunkStatus var1) {
+   public static @Nullable ChunkStatus getStatusAroundFullChunk(int var0, @Nullable ChunkStatus var1) {
       if (var0 > RADIUS_AROUND_FULL_CHUNK) {
          return var1;
       } else {

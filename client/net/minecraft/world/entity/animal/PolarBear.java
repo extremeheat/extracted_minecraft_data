@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class PolarBear extends Animal implements NeutralMob {
    private static final EntityDataAccessor<Boolean> DATA_STANDING_ID;
@@ -58,15 +58,13 @@ public class PolarBear extends Animal implements NeutralMob {
    private int warningSoundTicks;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public PolarBear(EntityType<? extends PolarBear> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.POLAR_BEAR.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -129,8 +127,7 @@ public class PolarBear extends Animal implements NeutralMob {
       this.persistentAngerTarget = var1;
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

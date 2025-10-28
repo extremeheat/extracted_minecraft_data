@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
@@ -21,6 +20,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.SelectableEntry;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -36,6 +36,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.FormattedCharSequence;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerSelectionList extends ObjectSelectionList<Entry> {
@@ -256,9 +257,8 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
    }
 
-   public class OnlineServerEntry extends Entry {
-      private static final int ICON_WIDTH = 32;
-      private static final int ICON_HEIGHT = 32;
+   public class OnlineServerEntry extends Entry implements SelectableEntry {
+      private static final int ICON_SIZE = 32;
       private static final int SPACING = 5;
       private static final int STATUS_ICON_WIDTH = 10;
       private static final int STATUS_ICON_HEIGHT = 8;
@@ -266,14 +266,10 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final Minecraft minecraft;
       private final ServerData serverData;
       private final FaviconTexture icon;
-      @Nullable
-      private byte[] lastIconBytes;
-      @Nullable
-      private List<Component> onlinePlayersTooltip;
-      @Nullable
-      private ResourceLocation statusIcon;
-      @Nullable
-      private Component statusIconTooltip;
+      private byte @Nullable [] lastIconBytes;
+      private @Nullable List<Component> onlinePlayersTooltip;
+      private @Nullable ResourceLocation statusIcon;
+      private @Nullable Component statusIconTooltip;
 
       protected OnlineServerEntry(final JoinMultiplayerScreen var2, final ServerData var3) {
          super();
@@ -373,25 +369,26 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             var1.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
             int var13 = var2 - this.getContentX();
             int var14 = var3 - this.getContentY();
-            if (this.canJoin()) {
-               if (var13 < 32 && var13 > 16) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
-               } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
-               }
+            if (this.mouseOverRightHalf(var13, var14, 32)) {
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               ServerSelectionList.this.handleCursor(var1);
+            } else {
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
             }
 
             if (var15 > 0) {
-               if (var13 < 16 && var14 < 16) {
+               if (this.mouseOverTopLeftQuarter(var13, var14, 32)) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  ServerSelectionList.this.handleCursor(var1);
                } else {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
 
             if (var15 < this.screen.getServers().size() - 1) {
-               if (var13 < 16 && var14 > 16) {
+               if (this.mouseOverBottomLeftQuarter(var13, var14, 32)) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  ServerSelectionList.this.handleCursor(var1);
                } else {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
@@ -444,11 +441,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          var1.blit(RenderPipelines.GUI_TEXTURED, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 
-      private boolean canJoin() {
-         return true;
-      }
-
-      private boolean uploadServerIcon(@Nullable byte[] var1) {
+      private boolean uploadServerIcon(byte @Nullable [] var1) {
          if (var1 == null) {
             this.icon.clear();
          } else {
@@ -495,31 +488,27 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-         double var3 = var1.x() - (double)this.getX();
-         double var5 = var1.y() - (double)this.getY();
-         if (var3 <= 32.0) {
-            if (var3 < 32.0 && var3 > 16.0 && this.canJoin()) {
-               this.join();
-               return true;
-            }
-
-            int var7 = this.screen.serverSelectionList.children().indexOf(this);
-            if (var3 < 16.0 && var5 < 16.0 && var7 > 0) {
-               this.swap(var7, var7 - 1);
-               return true;
-            }
-
-            if (var3 < 16.0 && var5 > 16.0 && var7 < this.screen.getServers().size() - 1) {
-               this.swap(var7, var7 + 1);
-               return true;
-            }
-         }
-
-         if (var2) {
+         int var3 = (int)var1.x() - this.getContentX();
+         int var4 = (int)var1.y() - this.getContentY();
+         if (this.mouseOverRightHalf(var3, var4, 32)) {
             this.join();
-         }
+            return true;
+         } else {
+            int var5 = this.screen.serverSelectionList.children().indexOf(this);
+            if (var5 > 0 && this.mouseOverTopLeftQuarter(var3, var4, 32)) {
+               this.swap(var5, var5 - 1);
+               return true;
+            } else if (var5 < this.screen.getServers().size() - 1 && this.mouseOverBottomLeftQuarter(var3, var4, 32)) {
+               this.swap(var5, var5 + 1);
+               return true;
+            } else {
+               if (var2) {
+                  this.join();
+               }
 
-         return super.mouseClicked(var1, var2);
+               return super.mouseClicked(var1, var2);
+            }
+         }
       }
 
       public ServerData getServerData() {

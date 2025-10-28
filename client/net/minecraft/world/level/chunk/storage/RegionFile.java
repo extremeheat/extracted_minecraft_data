@@ -17,11 +17,11 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RegionFile implements AutoCloseable {
@@ -115,8 +115,7 @@ public class RegionFile implements AutoCloseable {
       return this.externalFileDir.resolve(var2);
    }
 
-   @Nullable
-   public synchronized DataInputStream getChunkDataInputStream(ChunkPos var1) throws IOException {
+   public synchronized @Nullable DataInputStream getChunkDataInputStream(ChunkPos var1) throws IOException {
       int var2 = this.getOffset(var1);
       if (var2 == 0) {
          return null;
@@ -171,8 +170,7 @@ public class RegionFile implements AutoCloseable {
       return (byte)(var0 & -129);
    }
 
-   @Nullable
-   private DataInputStream createChunkInputStream(ChunkPos var1, byte var2, InputStream var3) throws IOException {
+   private @Nullable DataInputStream createChunkInputStream(ChunkPos var1, byte var2, InputStream var3) throws IOException {
       RegionFileVersion var4 = RegionFileVersion.fromId(var2);
       if (var4 == RegionFileVersion.VERSION_CUSTOM) {
          String var5 = (new DataInputStream(var3)).readUTF();
@@ -192,8 +190,7 @@ public class RegionFile implements AutoCloseable {
       }
    }
 
-   @Nullable
-   private DataInputStream createExternalChunkInputStream(ChunkPos var1, byte var2) throws IOException {
+   private @Nullable DataInputStream createExternalChunkInputStream(ChunkPos var1, byte var2) throws IOException {
       Path var3 = this.getExternalChunkPath(var1);
       if (!Files.isRegularFile(var3, new LinkOption[0])) {
          LOGGER.error("External chunk path {} is not file", var3);

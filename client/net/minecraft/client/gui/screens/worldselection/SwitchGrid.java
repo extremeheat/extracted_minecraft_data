@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,6 +19,7 @@ import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
 class SwitchGrid {
    private static final int DEFAULT_SWITCH_BUTTON_WIDTH = 44;
@@ -104,10 +104,8 @@ class SwitchGrid {
       private final Component label;
       private final BooleanSupplier stateSupplier;
       private final Consumer<Boolean> onClicked;
-      @Nullable
-      private Component info;
-      @Nullable
-      private BooleanSupplier isActiveCondition;
+      private @Nullable Component info;
+      private @Nullable BooleanSupplier isActiveCondition;
       private final int buttonWidth;
 
       SwitchBuilder(Component var1, BooleanSupplier var2, Consumer<Boolean> var3, int var4) {

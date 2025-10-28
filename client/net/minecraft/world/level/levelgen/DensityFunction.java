@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import org.jspecify.annotations.Nullable;
 
 public interface DensityFunction {
    Codec<DensityFunction> DIRECT_CODEC = DensityFunctions.DIRECT_CODEC;

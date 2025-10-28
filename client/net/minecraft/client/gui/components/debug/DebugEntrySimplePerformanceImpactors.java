@@ -1,12 +1,12 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntrySimplePerformanceImpactors implements DebugScreenEntry {
    public DebugEntrySimplePerformanceImpactors() {
@@ -17,6 +17,7 @@ public class DebugEntrySimplePerformanceImpactors implements DebugScreenEntry {
       Minecraft var5 = Minecraft.getInstance();
       Options var6 = var5.options;
       var1.addLine(String.format(Locale.ROOT, "%s%s B: %d", (Boolean)var6.improvedTransparency().get() ? "improved-transparency" : "", var6.cloudStatus().get() == CloudStatus.OFF ? "" : (var6.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), var6.biomeBlendRadius().get()));
+      var1.addLine(String.format(Locale.ROOT, "Anisotropy: %dx", var6.maxAnisotropyValue()));
    }
 
    public boolean isAllowed(boolean var1) {

@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -27,6 +26,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.SmoothDouble;
 import net.minecraft.world.entity.player.Inventory;
 import org.joml.Vector2i;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFWDropCallback;
 import org.slf4j.Logger;
 
@@ -39,11 +39,10 @@ public class MouseHandler {
    private boolean isRightPressed;
    private double xpos;
    private double ypos;
-   protected long lastClickTime;
+   private @Nullable LastClick lastClick;
    protected int lastClickButton;
    private int fakeRightMouse;
-   @Nullable
-   private MouseButtonInfo activeButton = null;
+   private @Nullable MouseButtonInfo activeButton = null;
    private boolean ignoreFirstMove = true;
    private int clickDepth;
    private double mousePressedTime;
@@ -101,9 +100,9 @@ public class MouseHandler {
 
                   try {
                      long var14 = Util.getMillis();
-                     boolean var21 = var14 - this.lastClickTime < 250L && this.lastClickButton == var13.button();
+                     boolean var21 = this.lastClick != null && var14 - this.lastClick.time() < 250L && this.lastClick.screen() == var12 && this.lastClickButton == var13.button();
                      if (var12.mouseClicked(var13, var21)) {
-                        this.lastClickTime = var14;
+                        this.lastClick = new LastClick(var14, var12);
                         this.lastClickButton = var7.button();
                         return;
                      }
@@ -429,5 +428,13 @@ public class MouseHandler {
       double var6 = this.getScaledYPos(var3) - 8.0;
       String var8 = String.format(Locale.ROOT, "%.0f,%.0f", var4, var6);
       var2.drawString(var1, (String)var8, (int)var4, (int)var6, -1);
+   }
+
+   static record LastClick(long time, Screen screen) {
+      LastClick(long var1, Screen var3) {
+         super();
+         this.time = var1;
+         this.screen = var3;
+      }
    }
 }

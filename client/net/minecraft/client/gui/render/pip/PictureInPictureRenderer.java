@@ -9,7 +9,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
@@ -18,17 +17,14 @@ import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
+import org.jspecify.annotations.Nullable;
 
 public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderState> implements AutoCloseable {
    protected final MultiBufferSource.BufferSource bufferSource;
-   @Nullable
-   private GpuTexture texture;
-   @Nullable
-   private GpuTextureView textureView;
-   @Nullable
-   private GpuTexture depthTexture;
-   @Nullable
-   private GpuTextureView depthTextureView;
+   private @Nullable GpuTexture texture;
+   private @Nullable GpuTextureView textureView;
+   private @Nullable GpuTexture depthTexture;
+   private @Nullable GpuTextureView depthTextureView;
    private final CachedOrthoProjectionMatrixBuffer projectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName(), -1000.0F, 1000.0F, true);
 
    protected PictureInPictureRenderer(MultiBufferSource.BufferSource var1) {

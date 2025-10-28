@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.SkullModel;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
@@ -46,8 +46,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
    });
    private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   @Nullable
-   public static SkullModelBase createModel(EntityModelSet var0, SkullBlock.Type var1) {
+   public static @Nullable SkullModelBase createModel(EntityModelSet var0, SkullBlock.Type var1) {
       if (var1 instanceof SkullBlock.Types) {
          SkullBlock.Types var2 = (SkullBlock.Types)var1;
          Object var10000;
@@ -79,7 +78,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       return new SkullBlockRenderState();
    }
 
-   public void extractRenderState(SkullBlockEntity var1, SkullBlockRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(SkullBlockEntity var1, SkullBlockRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.animationProgress = var1.getAnimation(var3);
       BlockState var6 = var1.getBlockState();
@@ -96,7 +95,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       submitSkull(var1.direction, var1.rotationDegrees, var1.animationProgress, var2, var3, var1.lightCoords, var5, var1.renderType, 0, var1.breakProgress);
    }
 
-   public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
+   public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9) {
       var3.pushPose();
       if (var0 == null) {
          var3.translate(0.5F, 0.0F, 0.5F);

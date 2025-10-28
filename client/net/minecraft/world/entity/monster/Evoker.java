@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -32,17 +31,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EvokerFangs;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public class Evoker extends SpellcasterIllager {
-   @Nullable
-   private Sheep wololoTarget;
+   private @Nullable Sheep wololoTarget;
 
    public Evoker(EntityType<? extends Evoker> var1, Level var2) {
       super(var1, var2);
@@ -108,8 +107,7 @@ public class Evoker extends SpellcasterIllager {
       this.wololoTarget = var1;
    }
 
-   @Nullable
-   Sheep getWololoTarget() {
+   @Nullable Sheep getWololoTarget() {
       return this.wololoTarget;
    }
 
@@ -286,7 +284,7 @@ public class Evoker extends SpellcasterIllager {
             return false;
          } else {
             ServerLevel var1 = getServerLevel(Evoker.this.level());
-            if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
                return false;
             } else {
                List var2 = var1.getNearbyEntities(Sheep.class, this.wololoTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0, 4.0, 16.0));

@@ -19,7 +19,7 @@ public class SamplerCache {
             for(AddressMode var9 : AddressMode.values()) {
                for(FilterMode var13 : FilterMode.values()) {
                   for(FilterMode var17 : FilterMode.values()) {
-                     this.samplers[encode(var5, var9, var13, var17)] = var1.createSampler(var5, var9, var13, var17);
+                     this.samplers[encode(var5, var9, var13, var17)] = var1.createSampler(var5, var9, var13, var17, 1);
                   }
                }
             }

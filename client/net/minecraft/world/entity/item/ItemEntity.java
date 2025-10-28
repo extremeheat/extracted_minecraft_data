@@ -2,7 +2,6 @@ package net.minecraft.world.entity.item;
 
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
@@ -27,13 +26,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ItemEntity extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM;
@@ -48,10 +48,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private int age;
    private int pickupDelay;
    private int health;
-   @Nullable
-   private EntityReference<Entity> thrower;
-   @Nullable
-   private UUID target;
+   private @Nullable EntityReference<Entity> thrower;
+   private @Nullable UUID target;
    public final float bobOffs;
 
    public ItemEntity(EntityType<? extends ItemEntity> var1, Level var2) {
@@ -78,8 +76,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return EntityReference.getEntity(this.thrower, this.level());
    }
 
@@ -269,7 +266,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isInvulnerableToBase(var2)) {
          return false;
-      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
+      } else if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
       } else if (!this.getItem().canBeHurtBy(var2)) {
          return false;
@@ -343,8 +340,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return false;
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       Entity var2 = super.teleport(var1);
       if (!this.level().isClientSide() && var2 instanceof ItemEntity var3) {
          var3.mergeWithNeighbours();
@@ -426,7 +422,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return 180.0F - getSpin((float)this.getAge() + 0.5F, this.bobOffs) / 6.2831855F * 360.0F;
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 

@@ -6,13 +6,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CorruptedFrameException;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class Varint21FrameDecoder extends ByteToMessageDecoder {
    private static final int MAX_VARINT21_BYTES = 3;
    private final ByteBuf helperBuf = Unpooled.directBuffer(3);
-   @Nullable
-   private final BandwidthDebugMonitor monitor;
+   private final @Nullable BandwidthDebugMonitor monitor;
 
    public Varint21FrameDecoder(@Nullable BandwidthDebugMonitor var1) {
       super();

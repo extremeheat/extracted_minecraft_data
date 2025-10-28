@@ -4,11 +4,11 @@ import com.mojang.blaze3d.platform.NativeImage;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jspecify.annotations.Nullable;
 
 public record TextureContents(NativeImage image, @Nullable TextureMetadataSection metadata) implements Closeable {
    public TextureContents(NativeImage var1, @Nullable TextureMetadataSection var2) {

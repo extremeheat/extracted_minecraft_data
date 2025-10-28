@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfi
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
@@ -39,8 +39,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    private static final boolean DEFAULT_EXACT_TELEPORT = false;
    private long age = 0L;
    private int teleportCooldown;
-   @Nullable
-   private BlockPos exitPortal;
+   private @Nullable BlockPos exitPortal;
    private boolean exactTeleport = false;
 
    public TheEndGatewayBlockEntity(BlockPos var1, BlockState var2) {
@@ -130,8 +129,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       }
    }
 
-   @Nullable
-   public Vec3 getPortalPosition(ServerLevel var1, BlockPos var2) {
+   public @Nullable Vec3 getPortalPosition(ServerLevel var1, BlockPos var2) {
       if (this.exitPortal == null && var1.dimension() == Level.END) {
          BlockPos var3 = findOrCreateValidTeleportPos(var1, var2);
          var3 = var3.above(10);
@@ -216,8 +214,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       return var0.getChunk(Mth.floor(var1.x / 16.0), Mth.floor(var1.z / 16.0));
    }
 
-   @Nullable
-   private static BlockPos findValidSpawnInChunk(LevelChunk var0) {
+   private static @Nullable BlockPos findValidSpawnInChunk(LevelChunk var0) {
       ChunkPos var1 = var0.getPos();
       BlockPos var2 = new BlockPos(var1.getMinBlockX(), 30, var1.getMinBlockZ());
       int var3 = var0.getHighestSectionPosition() + 16 - 1;

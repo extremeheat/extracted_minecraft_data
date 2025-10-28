@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -11,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLight implements DebugScreenEntry {
    public static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("light");

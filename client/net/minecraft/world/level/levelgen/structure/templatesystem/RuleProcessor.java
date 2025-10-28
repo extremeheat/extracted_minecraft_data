@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class RuleProcessor extends StructureProcessor {
    public static final MapCodec<RuleProcessor> CODEC;
@@ -20,8 +20,7 @@ public class RuleProcessor extends StructureProcessor {
       this.rules = ImmutableList.copyOf(var1);
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       RandomSource var7 = RandomSource.create(Mth.getSeed(var5.pos()));
       BlockState var8 = var1.getBlockState(var5.pos());
       UnmodifiableIterator var9 = this.rules.iterator();

@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -19,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class BoatItem extends Item {
    private final EntityType<? extends AbstractBoat> entityType;
@@ -73,8 +73,7 @@ public class BoatItem extends Item {
       }
    }
 
-   @Nullable
-   private AbstractBoat getBoat(Level var1, HitResult var2, ItemStack var3, Player var4) {
+   private @Nullable AbstractBoat getBoat(Level var1, HitResult var2, ItemStack var3, Player var4) {
       AbstractBoat var5 = this.entityType.create(var1, EntitySpawnReason.SPAWN_ITEM_USE);
       if (var5 != null) {
          Vec3 var6 = var2.getLocation();

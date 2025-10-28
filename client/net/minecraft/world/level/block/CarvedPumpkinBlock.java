@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,22 +27,17 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.jspecify.annotations.Nullable;
 
 public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    public static final MapCodec<CarvedPumpkinBlock> CODEC = simpleCodec(CarvedPumpkinBlock::new);
    public static final EnumProperty<Direction> FACING;
-   @Nullable
-   private BlockPattern snowGolemBase;
-   @Nullable
-   private BlockPattern snowGolemFull;
-   @Nullable
-   private BlockPattern ironGolemBase;
-   @Nullable
-   private BlockPattern ironGolemFull;
-   @Nullable
-   private BlockPattern copperGolemBase;
-   @Nullable
-   private BlockPattern copperGolemFull;
+   private @Nullable BlockPattern snowGolemBase;
+   private @Nullable BlockPattern snowGolemFull;
+   private @Nullable BlockPattern ironGolemBase;
+   private @Nullable BlockPattern ironGolemFull;
+   private @Nullable BlockPattern copperGolemBase;
+   private @Nullable BlockPattern copperGolemFull;
    private static final Predicate<BlockState> PUMPKINS_PREDICATE;
 
    public MapCodec<? extends CarvedPumpkinBlock> codec() {
@@ -166,7 +160,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    private BlockPattern getOrCreateIronGolemBase() {
       if (this.ironGolemBase == null) {
-         this.ironGolemBase = BlockPatternBuilder.start().aisle("~ ~", "###", "~#~").where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> var0.getState().isAir()).build();
+         this.ironGolemBase = BlockPatternBuilder.start().aisle("~ ~", "###", "~#~").where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', BlockInWorld.hasState(BlockBehaviour.BlockStateBase::isAir)).build();
       }
 
       return this.ironGolemBase;
@@ -174,7 +168,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    private BlockPattern getOrCreateIronGolemFull() {
       if (this.ironGolemFull == null) {
-         this.ironGolemFull = BlockPatternBuilder.start().aisle("~^~", "###", "~#~").where('^', BlockInWorld.hasState(PUMPKINS_PREDICATE)).where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> var0.getState().isAir()).build();
+         this.ironGolemFull = BlockPatternBuilder.start().aisle("~^~", "###", "~#~").where('^', BlockInWorld.hasState(PUMPKINS_PREDICATE)).where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', BlockInWorld.hasState(BlockBehaviour.BlockStateBase::isAir)).build();
       }
 
       return this.ironGolemFull;
@@ -206,6 +200,6 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      PUMPKINS_PREDICATE = (var0) -> var0 != null && (var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN));
+      PUMPKINS_PREDICATE = (var0) -> var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN);
    }
 }

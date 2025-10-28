@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,6 +38,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
@@ -56,12 +56,9 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    private Button selectButton;
    private Button trailerButton;
    private Button publisherButton;
-   @Nullable
-   WorldTemplate selectedTemplate;
-   @Nullable
-   String currentLink;
-   @Nullable
-   List<TextRenderingUtils.Line> noTemplatesMessage;
+   @Nullable WorldTemplate selectedTemplate;
+   @Nullable String currentLink;
+   @Nullable List<TextRenderingUtils.Line> noTemplatesMessage;
 
    public RealmsSelectWorldTemplateScreen(Component var1, Consumer<WorldTemplate> var2, RealmsServer.WorldType var3, @Nullable WorldTemplatePaginatedList var4) {
       this(var1, var2, var3, var4, List.of());
@@ -279,10 +276,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       private static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
       private static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
       public final WorldTemplate template;
-      @Nullable
-      private ImageButton websiteButton;
-      @Nullable
-      private ImageButton trailerButton;
+      private @Nullable ImageButton websiteButton;
+      private @Nullable ImageButton trailerButton;
 
       public Entry(final WorldTemplate var2) {
          super();

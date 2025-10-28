@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class EntityDataSerializers {
    private static final CrudeIncrementalIntIdentityHashBiMap<EntityDataSerializer<?>> SERIALIZERS = CrudeIncrementalIntIdentityHashBiMap.<EntityDataSerializer<?>>create(16);
@@ -88,8 +88,7 @@ public class EntityDataSerializers {
       SERIALIZERS.add(var0);
    }
 
-   @Nullable
-   public static EntityDataSerializer<?> getSerializer(int var0) {
+   public static @Nullable EntityDataSerializer<?> getSerializer(int var0) {
       return SERIALIZERS.byId(var0);
    }
 

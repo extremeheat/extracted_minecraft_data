@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.PositionalRandomFactory;
+import org.jspecify.annotations.Nullable;
 
 public class PerlinNoise {
    private static final int ROUND_OFF = 33554432;
-   private final ImprovedNoise[] noiseLevels;
+   private final @Nullable ImprovedNoise[] noiseLevels;
    private final int firstOctave;
    private final DoubleList amplitudes;
    private final double lowestFreqValueFactor;
@@ -186,8 +186,7 @@ public class PerlinNoise {
       return var3;
    }
 
-   @Nullable
-   public ImprovedNoise getOctaveNoise(int var1) {
+   public @Nullable ImprovedNoise getOctaveNoise(int var1) {
       return this.noiseLevels[this.noiseLevels.length - 1 - var1];
    }
 

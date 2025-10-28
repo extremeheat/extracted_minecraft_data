@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.toasts;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -8,6 +7,7 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public interface Toast {
    Object NO_TOKEN = new Object();
@@ -18,8 +18,7 @@ public interface Toast {
 
    void update(ToastManager var1, long var2);
 
-   @Nullable
-   default SoundEvent getSoundEvent() {
+   default @Nullable SoundEvent getSoundEvent() {
       return null;
    }
 

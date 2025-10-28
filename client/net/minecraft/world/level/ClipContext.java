@@ -10,6 +10,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -70,7 +71,7 @@ public class ClipContext {
 
                   if (var1 instanceof ServerLevel) {
                      ServerLevel var5 = (ServerLevel)var1;
-                     if (var0.is(Blocks.NETHER_PORTAL) && var5.getGameRules().getInt(GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY) == 0) {
+                     if (var0.is(Blocks.NETHER_PORTAL) && (Integer)var5.getGameRules().get(GameRules.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY) == 0) {
                         return Shapes.block();
                      }
                   }

@@ -3,7 +3,6 @@ package com.mojang.math;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
@@ -11,6 +10,7 @@ import net.minecraft.util.StringRepresentable;
 import org.joml.Matrix3f;
 import org.joml.Matrix3fc;
 import org.joml.Vector3i;
+import org.jspecify.annotations.Nullable;
 
 public enum OctahedralGroup implements StringRepresentable {
    IDENTITY("identity", SymmetricGroup3.P123, false, false, false),
@@ -64,8 +64,7 @@ public enum OctahedralGroup implements StringRepresentable {
 
    private final Matrix3fc transformation;
    private final String name;
-   @Nullable
-   private Map<Direction, Direction> rotatedDirections;
+   private @Nullable Map<Direction, Direction> rotatedDirections;
    private final boolean invertX;
    private final boolean invertY;
    private final boolean invertZ;

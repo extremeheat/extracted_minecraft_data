@@ -32,8 +32,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -112,7 +110,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -123,6 +120,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -141,6 +139,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter {
@@ -188,6 +187,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected static final EntityDimensions SLEEPING_DIMENSIONS;
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
+   private static final float WATER_FLOAT_IMPULSE = 0.04F;
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
    private static final Dynamic<?> EMPTY_BRAIN;
    private final AttributeMap attributes;
@@ -213,8 +213,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public float yHeadRot;
    public float yHeadRotO;
    public final ElytraAnimationState elytraAnimationState = new ElytraAnimationState(this);
-   @Nullable
-   protected EntityReference<Player> lastHurtByPlayer;
+   protected @Nullable EntityReference<Player> lastHurtByPlayer;
    protected int lastHurtByPlayerMemoryTime;
    protected boolean dead;
    protected int noActionTime;
@@ -227,11 +226,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected double lerpYHeadRot;
    protected int lerpHeadSteps;
    private boolean effectsDirty = true;
-   @Nullable
-   private EntityReference<LivingEntity> lastHurtByMob;
+   private @Nullable EntityReference<LivingEntity> lastHurtByMob;
    private int lastHurtByMobTimestamp;
-   @Nullable
-   private LivingEntity lastHurtMob;
+   private @Nullable LivingEntity lastHurtMob;
    private int lastHurtMobTimestamp;
    private float speed;
    private int noJumpDelay;
@@ -242,15 +239,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private long lastEnemyHitTime;
    private BlockPos lastPos;
    private Optional<BlockPos> lastClimbablePos;
-   @Nullable
-   private DamageSource lastDamageSource;
+   private @Nullable DamageSource lastDamageSource;
    private long lastDamageStamp;
    protected int autoSpinAttackTicks;
    protected float autoSpinAttackDmg;
-   @Nullable
-   protected ItemStack autoSpinAttackItemStack;
-   @Nullable
-   protected Object2LongMap<Entity> recentKineticEnemies;
+   protected @Nullable ItemStack autoSpinAttackItemStack;
+   protected @Nullable Object2LongMap<Entity> recentKineticEnemies;
    private float swimAmount;
    private float swimAmountO;
    protected Brain<?> brain;
@@ -276,8 +270,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.brain = this.makeBrain(EMPTY_BRAIN);
    }
 
-   @Nullable
-   public LivingEntity asLivingEntity() {
+   public @Nullable LivingEntity asLivingEntity() {
       return this;
    }
 
@@ -546,7 +539,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected boolean shouldDropLoot(ServerLevel var1) {
-      return !this.isBaby() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
+      return !this.isBaby() && (Boolean)var1.getGameRules().get(GameRules.MOB_DROPS);
    }
 
    protected int decreaseAirSupply(int var1) {
@@ -577,13 +570,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return false;
    }
 
-   @Nullable
-   public LivingEntity getLastHurtByMob() {
+   public @Nullable LivingEntity getLastHurtByMob() {
       return EntityReference.getLivingEntity(this.lastHurtByMob, this.level());
    }
 
-   @Nullable
-   public Player getLastHurtByPlayer() {
+   public @Nullable Player getLastHurtByPlayer() {
       return EntityReference.getPlayer(this.lastHurtByPlayer, this.level());
    }
 
@@ -613,8 +604,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.lastHurtByMobTimestamp = this.tickCount;
    }
 
-   @Nullable
-   public LivingEntity getLastHurtMob() {
+   public @Nullable LivingEntity getLastHurtMob() {
       return this.lastHurtMob;
    }
 
@@ -739,8 +729,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   @Nullable
-   public ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {
+   public @Nullable ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {
       if (var1.isEmpty()) {
          return null;
       } else if (this.level().isClientSide()) {
@@ -955,8 +944,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.activeEffects.containsKey(var1);
    }
 
-   @Nullable
-   public MobEffectInstance getEffect(Holder<MobEffect> var1) {
+   public @Nullable MobEffectInstance getEffect(Holder<MobEffect> var1) {
       return (MobEffectInstance)this.activeEffects.get(var1);
    }
 
@@ -1019,8 +1007,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.getType().is(EntityTypeTags.INVERTED_HEALING_AND_HARM);
    }
 
-   @Nullable
-   public final MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
+   public final @Nullable MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
       return (MobEffectInstance)this.activeEffects.remove(var1);
    }
 
@@ -1341,8 +1328,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   @Nullable
-   protected Player resolvePlayerResponsibleForDamage(DamageSource var1) {
+   protected @Nullable Player resolvePlayerResponsibleForDamage(DamageSource var1) {
       Entity var2 = var1.getEntity();
       if (var2 instanceof Player var3) {
          this.setLastHurtByPlayer((Player)var3, 100);
@@ -1402,8 +1388,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   @Nullable
-   public DamageSource getLastDamageSource() {
+   public @Nullable DamageSource getLastDamageSource() {
       if (this.level().getGameTime() - this.lastDamageStamp > 40L) {
          this.lastDamageSource = null;
       }
@@ -1473,7 +1458,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (var3 instanceof ServerLevel var2) {
          boolean var6 = false;
          if (var1 instanceof WitherBoss) {
-            if (var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if ((Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING)) {
                BlockPos var4 = this.blockPosition();
                BlockState var5 = Blocks.WITHER_ROSE.defaultBlockState();
                if (this.level().getBlockState(var4).isAir() && var5.canSurvive(this.level(), var4)) {
@@ -1506,7 +1491,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected void dropExperience(ServerLevel var1, @Nullable Entity var2) {
-      if (!this.wasExperienceConsumed() && (this.isAlwaysExperienceDropper() || this.lastHurtByPlayerMemoryTime > 0 && this.shouldDropExperience() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT))) {
+      if (!this.wasExperienceConsumed() && (this.isAlwaysExperienceDropper() || this.lastHurtByPlayerMemoryTime > 0 && this.shouldDropExperience() && (Boolean)var1.getGameRules().get(GameRules.MOB_DROPS))) {
          ExperienceOrb.award(var1, this.position(), this.getExperienceReward(var1, var2));
       }
 
@@ -1594,13 +1579,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public void indicateDamage(double var1, double var3) {
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.GENERIC_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.GENERIC_DEATH;
    }
 
@@ -1859,8 +1842,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.combatTracker;
    }
 
-   @Nullable
-   public LivingEntity getKillCredit() {
+   public @Nullable LivingEntity getKillCredit() {
       if (this.lastHurtByPlayer != null) {
          return (LivingEntity)this.lastHurtByPlayer.getEntity(this.level(), Player.class);
       } else {
@@ -2062,8 +2044,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.attackAnim = (float)this.swingTime / (float)var1;
    }
 
-   @Nullable
-   public AttributeInstance getAttribute(Holder<Attribute> var1) {
+   public @Nullable AttributeInstance getAttribute(Holder<Attribute> var1) {
       return this.getAttributes().getInstance(var1);
    }
 
@@ -2091,7 +2072,6 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.getMainArm() == var1 ? this.getMainHandItem() : this.getOffhandItem();
    }
 
-   @Nonnull
    public ItemStack getWeaponItem() {
       return this.getMainHandItem();
    }
@@ -2268,8 +2248,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void travel(Vec3 var1) {
-      FluidState var2 = this.level().getFluidState(this.blockPosition());
-      if ((this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(var2)) {
+      if (this.shouldTravelInFluid(this.level().getFluidState(this.blockPosition()))) {
          this.travelInFluid(var1);
       } else if (this.isFallFlying()) {
          this.travelFallFlying(var1);
@@ -2277,6 +2256,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.travelInAir(var1);
       }
 
+   }
+
+   protected boolean shouldTravelInFluid(FluidState var1) {
+      return (this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(var1);
    }
 
    protected void travelFlying(Vec3 var1, float var2) {
@@ -2333,50 +2316,73 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       double var3 = this.getY();
       double var5 = this.getEffectiveGravity();
       if (this.isInWater()) {
-         float var7 = this.isSprinting() ? 0.9F : this.getWaterSlowDown();
-         float var8 = 0.02F;
-         float var9 = (float)this.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY);
-         if (!this.onGround()) {
-            var9 *= 0.5F;
-         }
-
-         if (var9 > 0.0F) {
-            var7 += (0.54600006F - var7) * var9;
-            var8 += (this.getSpeed() - var8) * var9;
-         }
-
-         if (this.hasEffect(MobEffects.DOLPHINS_GRACE)) {
-            var7 = 0.96F;
-         }
-
-         this.moveRelative(var8, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         Vec3 var10 = this.getDeltaMovement();
-         if (this.horizontalCollision && this.onClimbable()) {
-            var10 = new Vec3(var10.x, 0.2, var10.z);
-         }
-
-         var10 = var10.multiply((double)var7, 0.800000011920929, (double)var7);
-         this.setDeltaMovement(this.getFluidFallingAdjustedMovement(var5, var2, var10));
+         this.travelInWater(var1, var5, var2, var3);
+         this.floatInWaterWhileRidden();
       } else {
-         this.moveRelative(0.02F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         if (this.getFluidHeight(FluidTags.LAVA) <= this.getFluidJumpThreshold()) {
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0.800000011920929, 0.5));
-            Vec3 var11 = this.getFluidFallingAdjustedMovement(var5, var2, this.getDeltaMovement());
-            this.setDeltaMovement(var11);
-         } else {
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
-         }
-
-         if (var5 != 0.0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -var5 / 4.0, 0.0));
-         }
+         this.travelInLava(var1, var5, var2, var3);
       }
 
-      Vec3 var12 = this.getDeltaMovement();
-      if (this.horizontalCollision && this.isFree(var12.x, var12.y + 0.6000000238418579 - this.getY() + var3, var12.z)) {
-         this.setDeltaMovement(var12.x, 0.30000001192092896, var12.z);
+   }
+
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      float var7 = this.isSprinting() ? 0.9F : this.getWaterSlowDown();
+      float var8 = 0.02F;
+      float var9 = (float)this.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY);
+      if (!this.onGround()) {
+         var9 *= 0.5F;
+      }
+
+      if (var9 > 0.0F) {
+         var7 += (0.54600006F - var7) * var9;
+         var8 += (this.getSpeed() - var8) * var9;
+      }
+
+      if (this.hasEffect(MobEffects.DOLPHINS_GRACE)) {
+         var7 = 0.96F;
+      }
+
+      this.moveRelative(var8, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      Vec3 var10 = this.getDeltaMovement();
+      if (this.horizontalCollision && this.onClimbable()) {
+         var10 = new Vec3(var10.x, 0.2, var10.z);
+      }
+
+      var10 = var10.multiply((double)var7, 0.800000011920929, (double)var7);
+      this.setDeltaMovement(this.getFluidFallingAdjustedMovement(var2, var4, var10));
+      this.jumpOutOfFluid(var5);
+   }
+
+   private void travelInLava(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(0.02F, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      if (this.getFluidHeight(FluidTags.LAVA) <= this.getFluidJumpThreshold()) {
+         this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0.800000011920929, 0.5));
+         Vec3 var7 = this.getFluidFallingAdjustedMovement(var2, var4, this.getDeltaMovement());
+         this.setDeltaMovement(var7);
+      } else {
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
+      }
+
+      if (var2 != 0.0) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -var2 / 4.0, 0.0));
+      }
+
+      this.jumpOutOfFluid(var5);
+   }
+
+   private void jumpOutOfFluid(double var1) {
+      Vec3 var3 = this.getDeltaMovement();
+      if (this.horizontalCollision && this.isFree(var3.x, var3.y + 0.6000000238418579 - this.getY() + var1, var3.z)) {
+         this.setDeltaMovement(var3.x, 0.30000001192092896, var3.z);
+      }
+
+   }
+
+   private void floatInWaterWhileRidden() {
+      boolean var1 = this.getType().is(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN);
+      if (var1 && this.isVehicle() && this.getFluidHeight(FluidTags.WATER) > this.getFluidJumpThreshold()) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.03999999910593033, 0.0));
       }
 
    }
@@ -2737,8 +2743,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   @Nullable
-   private Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
+   private @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
       EnumMap var1 = null;
 
       for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
@@ -3033,7 +3038,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
             ServerLevel var2 = (ServerLevel)var3;
-            int var8 = var2.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            int var8 = (Integer)var2.getGameRules().get(GameRules.MAX_ENTITY_CRAMMING);
             if (var8 > 0 && var1.size() > var8 - 1 && this.random.nextInt(4) == 0) {
                int var4 = 0;
 
@@ -3236,8 +3241,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   @Nullable
-   private ItemEntity createItemStackToDrop(ItemStack var1, boolean var2, boolean var3) {
+   private @Nullable ItemEntity createItemStackToDrop(ItemStack var1, boolean var2, boolean var3) {
       if (var1.isEmpty()) {
          return null;
       } else {
@@ -3428,8 +3432,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return this.getItemBlockingWith() != null;
    }
 
-   @Nullable
-   public ItemStack getItemBlockingWith() {
+   public @Nullable ItemStack getItemBlockingWith() {
       if (!this.isUsingItem()) {
          return null;
       } else {
@@ -3617,8 +3620,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.clearSleepingPos();
    }
 
-   @Nullable
-   public Direction getBedOrientation() {
+   public @Nullable Direction getBedOrientation() {
       BlockPos var1 = (BlockPos)this.getSleepingPos().orElse((Object)null);
       return var1 != null ? BedBlock.getBedOrientation(this.level(), var1) : null;
    }
@@ -3704,8 +3706,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return var1 != EquipmentSlot.HEAD && var1 != EquipmentSlot.MAINHAND && var1 != EquipmentSlot.OFFHAND ? SlotAccess.forEquipmentSlot(var0, var1, (var2) -> var2.isEmpty() || var0.getEquipmentSlotForItem(var2) == var1) : SlotAccess.forEquipmentSlot(var0, var1);
    }
 
-   @Nullable
-   private static EquipmentSlot getEquipmentSlot(int var0) {
+   private static @Nullable EquipmentSlot getEquipmentSlot(int var0) {
       if (var0 == 100 + EquipmentSlot.HEAD.getIndex()) {
          return EquipmentSlot.HEAD;
       } else if (var0 == 100 + EquipmentSlot.CHEST.getIndex()) {
@@ -3725,7 +3726,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       EquipmentSlot var2 = getEquipmentSlot(var1);
       return var2 != null ? createEquipmentSlotAccess(this, var2) : super.getSlot(var1);
    }

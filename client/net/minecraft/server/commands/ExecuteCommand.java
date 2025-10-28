@@ -31,7 +31,6 @@ import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandResultCallback;
@@ -101,6 +100,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.SlotProvider;
 import net.minecraft.world.entity.Targeting;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.inventory.SlotRange;
@@ -125,6 +125,7 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ExecuteCommand {
@@ -265,18 +266,20 @@ public class ExecuteCommand {
       return var1;
    }
 
-   private static int countItems(Iterable<? extends Entity> var0, SlotRange var1, Predicate<ItemStack> var2) {
+   private static int countItems(Iterable<? extends SlotProvider> var0, SlotRange var1, Predicate<ItemStack> var2) {
       int var3 = 0;
 
-      for(Entity var5 : var0) {
+      for(SlotProvider var5 : var0) {
          IntList var6 = var1.slots();
 
          for(int var7 = 0; var7 < var6.size(); ++var7) {
             int var8 = var6.getInt(var7);
             SlotAccess var9 = var5.getSlot(var8);
-            ItemStack var10 = var9.get();
-            if (var2.test(var10)) {
-               var3 += var10.getCount();
+            if (var9 != null) {
+               ItemStack var10 = var9.get();
+               if (var2.test(var10)) {
+                  var3 += var10.getCount();
+               }
             }
          }
       }

@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -18,6 +17,7 @@ import net.minecraft.util.debug.DebugBrainDump;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final boolean SHOW_NAME_FOR_ALL = true;
@@ -47,8 +47,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int PINK = -98404;
    private static final int ORANGE = -23296;
    private final Minecraft minecraft;
-   @Nullable
-   private UUID lastLookedAtUuid;
+   private @Nullable UUID lastLookedAtUuid;
 
    public BrainDebugRenderer(Minecraft var1) {
       super();

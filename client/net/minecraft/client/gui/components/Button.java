@@ -1,12 +1,12 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Button extends AbstractButton {
    public static final int SMALL_WIDTH = 120;
@@ -54,8 +54,7 @@ public abstract class Button extends AbstractButton {
    public static class Builder {
       private final Component message;
       private final OnPress onPress;
-      @Nullable
-      private Tooltip tooltip;
+      private @Nullable Tooltip tooltip;
       private int x;
       private int y;
       private int width = 150;

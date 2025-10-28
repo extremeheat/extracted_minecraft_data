@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -41,7 +40,6 @@ public class ChainBlock extends RotatedPillarBlock implements SimpleWaterloggedB
       return (VoxelShape)SHAPES.get(var1.getValue(AXIS));
    }
 
-   @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
       boolean var3 = var2.getType() == Fluids.WATER;

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -27,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
+import org.jspecify.annotations.Nullable;
 
 public class WitherSkeleton extends AbstractSkeleton {
    public WitherSkeleton(EntityType<? extends WitherSkeleton> var1, Level var2) {
@@ -70,8 +70,7 @@ public class WitherSkeleton extends AbstractSkeleton {
    protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
       this.reassessWeaponGoal();

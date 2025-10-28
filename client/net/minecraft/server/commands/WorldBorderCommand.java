@@ -11,6 +11,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +35,7 @@ public class WorldBorderCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("worldborder").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("ticks", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getLerpTime() + (long)IntegerArgumentType.getInteger(var0x, "ticks"))))))).then(Commands.literal("set").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("ticks", IntegerArgumentType.integer(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), (long)IntegerArgumentType.getInteger(var0x, "ticks"))))))).then(Commands.literal("center").then(Commands.argument("pos", Vec2Argument.vec2()).executes((var0x) -> setCenter((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "pos")))))).then(((LiteralArgumentBuilder)Commands.literal("damage").then(Commands.literal("amount").then(Commands.argument("damagePerBlock", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageAmount((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "damagePerBlock")))))).then(Commands.literal("buffer").then(Commands.argument("distance", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageBuffer((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "distance"))))))).then(Commands.literal("get").executes((var0x) -> getSize((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("warning").then(Commands.literal("distance").then(Commands.argument("distance", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningDistance((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "distance")))))).then(Commands.literal("time").then(Commands.argument("time", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningTime((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "time")))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("worldborder").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", TimeArgument.time(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getSize() + DoubleArgumentType.getDouble(var0x, "distance"), ((CommandSourceStack)var0x.getSource()).getLevel().getWorldBorder().getLerpTime() + (long)IntegerArgumentType.getInteger(var0x, "time"))))))).then(Commands.literal("set").then(((RequiredArgumentBuilder)Commands.argument("distance", DoubleArgumentType.doubleArg(-5.9999968E7, 5.9999968E7)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), 0L))).then(Commands.argument("time", TimeArgument.time(0)).executes((var0x) -> setSize((CommandSourceStack)var0x.getSource(), DoubleArgumentType.getDouble(var0x, "distance"), (long)IntegerArgumentType.getInteger(var0x, "time"))))))).then(Commands.literal("center").then(Commands.argument("pos", Vec2Argument.vec2()).executes((var0x) -> setCenter((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "pos")))))).then(((LiteralArgumentBuilder)Commands.literal("damage").then(Commands.literal("amount").then(Commands.argument("damagePerBlock", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageAmount((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "damagePerBlock")))))).then(Commands.literal("buffer").then(Commands.argument("distance", FloatArgumentType.floatArg(0.0F)).executes((var0x) -> setDamageBuffer((CommandSourceStack)var0x.getSource(), FloatArgumentType.getFloat(var0x, "distance"))))))).then(Commands.literal("get").executes((var0x) -> getSize((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("warning").then(Commands.literal("distance").then(Commands.argument("distance", IntegerArgumentType.integer(0)).executes((var0x) -> setWarningDistance((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "distance")))))).then(Commands.literal("time").then(Commands.argument("time", TimeArgument.time(0)).executes((var0x) -> setWarningTime((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "time")))))));
    }
 
    private static int setDamageBuffer(CommandSourceStack var0, float var1) throws CommandSyntaxException {
@@ -65,7 +66,7 @@ public class WorldBorderCommand {
          throw ERROR_SAME_WARNING_TIME.create();
       } else {
          var2.setWarningTime(var1);
-         var0.sendSuccess(() -> Component.translatable("commands.worldborder.warning.time.success", var1), true);
+         var0.sendSuccess(() -> Component.translatable("commands.worldborder.warning.time.success", formatTicksToSeconds((long)var1)), true);
          return var1;
       }
    }
@@ -111,19 +112,24 @@ public class WorldBorderCommand {
       } else if (var1 > 5.9999968E7) {
          throw ERROR_TOO_BIG.create();
       } else {
+         String var9 = String.format(Locale.ROOT, "%.1f", var1);
          if (var3 > 0L) {
             var6.lerpSizeBetween(var7, var1, var3, var5.getGameTime());
             if (var1 > var7) {
-               var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.grow", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 20L)), true);
+               var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.grow", var9, formatTicksToSeconds(var3)), true);
             } else {
-               var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.shrink", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 20L)), true);
+               var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.shrink", var9, formatTicksToSeconds(var3)), true);
             }
          } else {
             var6.setSize(var1);
-            var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.immediate", String.format(Locale.ROOT, "%.1f", var1)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.immediate", var9), true);
          }
 
          return (int)(var1 - var7);
       }
+   }
+
+   private static String formatTicksToSeconds(long var0) {
+      return String.format(Locale.ROOT, "%.2f", (double)var0 / 20.0);
    }
 }

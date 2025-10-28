@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -28,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class SocialInteractionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.socialInteractions.title");
@@ -54,10 +54,8 @@ public class SocialInteractionsScreen extends Screen {
    private static final int BUTTON_HEIGHT = 20;
    private static final int ITEM_HEIGHT = 36;
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   private final Screen lastScreen;
-   @Nullable
-   SocialInteractionsPlayerList socialInteractionsPlayerList;
+   private final @Nullable Screen lastScreen;
+   @Nullable SocialInteractionsPlayerList socialInteractionsPlayerList;
    EditBox searchBox;
    private String lastSearch;
    private Page page;
@@ -65,8 +63,7 @@ public class SocialInteractionsScreen extends Screen {
    private Button hiddenButton;
    private Button blockedButton;
    private Button blockingHintButton;
-   @Nullable
-   private Component serverLabel;
+   private @Nullable Component serverLabel;
    private int playerCount;
 
    public SocialInteractionsScreen() {

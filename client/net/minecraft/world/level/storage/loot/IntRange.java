@@ -9,20 +9,18 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import org.jspecify.annotations.Nullable;
 
 public class IntRange {
    private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((var0) -> var0.group(NumberProviders.CODEC.optionalFieldOf("min").forGetter((var0x) -> Optional.ofNullable(var0x.min)), NumberProviders.CODEC.optionalFieldOf("max").forGetter((var0x) -> Optional.ofNullable(var0x.max))).apply(var0, IntRange::new));
    public static final Codec<IntRange> CODEC;
-   @Nullable
-   private final NumberProvider min;
-   @Nullable
-   private final NumberProvider max;
+   private final @Nullable NumberProvider min;
+   private final @Nullable NumberProvider max;
    private final IntLimiter limiter;
    private final IntChecker predicate;
 

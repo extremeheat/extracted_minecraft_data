@@ -9,7 +9,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -26,6 +25,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class PlaySoundCommand {
    private static final SimpleCommandExceptionType ERROR_TOO_FAR = new SimpleCommandExceptionType(Component.translatable("commands.playsound.failed"));

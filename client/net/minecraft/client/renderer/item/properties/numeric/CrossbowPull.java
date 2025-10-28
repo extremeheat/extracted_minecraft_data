@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.item.properties.numeric;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class CrossbowPull implements RangeSelectItemModelProperty {
    public static final MapCodec<CrossbowPull> MAP_CODEC = MapCodec.unit(new CrossbowPull());

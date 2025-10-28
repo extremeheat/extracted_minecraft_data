@@ -11,7 +11,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -24,11 +23,12 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.jspecify.annotations.Nullable;
 
 public class FillCommand {
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.fill.toobig", var0, var1));
@@ -49,7 +49,7 @@ public class FillCommand {
 
    private static int fillBlocks(CommandSourceStack var0, BoundingBox var1, BlockInput var2, Mode var3, @Nullable Predicate<BlockInWorld> var4, boolean var5) throws CommandSyntaxException {
       int var6 = var1.getXSpan() * var1.getYSpan() * var1.getZSpan();
-      int var7 = var0.getLevel().getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+      int var7 = (Integer)var0.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
       if (var6 > var7) {
          throw ERROR_AREA_TOO_LARGE.create(var7, var6);
       } else {
@@ -141,8 +141,7 @@ public class FillCommand {
    public interface Filter {
       Filter NOOP = (var0, var1, var2, var3) -> var2;
 
-      @Nullable
-      BlockInput filter(BoundingBox var1, BlockPos var2, BlockInput var3, ServerLevel var4);
+      @Nullable BlockInput filter(BoundingBox var1, BlockPos var2, BlockInput var3, ServerLevel var4);
    }
 
    @FunctionalInterface
@@ -154,7 +153,6 @@ public class FillCommand {
 
    @FunctionalInterface
    interface NullableCommandFunction<T, R> {
-      @Nullable
-      R apply(T var1) throws CommandSyntaxException;
+      @Nullable R apply(T var1) throws CommandSyntaxException;
    }
 }

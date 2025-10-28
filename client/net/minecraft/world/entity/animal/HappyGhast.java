@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Dynamic;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -47,7 +46,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class HappyGhast extends Animal {
    public static final float BABY_SCALE = 0.2375F;
@@ -61,7 +60,6 @@ public class HappyGhast extends Animal {
    private static final int STILL_TIMEOUT_ON_LOAD_GRACE_PERIOD = 60;
    private static final int MAX_STILL_TIMEOUT = 10;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
-   public static final Predicate<ItemStack> IS_FOOD = (var0) -> var0.is(ItemTags.HAPPY_GHAST_FOOD);
    private int leashHolderTime = 0;
    private int serverStillTimeout;
    private static final EntityDataAccessor<Boolean> IS_LEASH_HOLDER;
@@ -94,7 +92,7 @@ public class HappyGhast extends Animal {
 
    protected void registerGoals() {
       this.goalSelector.addGoal(3, new HappyGhastFloatGoal());
-      this.goalSelector.addGoal(4, new TemptGoal.ForNonPathfinders(this, 1.0, (var1) -> !this.isWearingBodyArmor() && !this.isBaby() ? var1.is(ItemTags.HAPPY_GHAST_TEMPT_ITEMS) : IS_FOOD.test(var1), false, 7.0));
+      this.goalSelector.addGoal(4, new TemptGoal.ForNonPathfinders(this, 1.0, (var1) -> !this.isWearingBodyArmor() && !this.isBaby() ? var1.is(ItemTags.HAPPY_GHAST_TEMPT_ITEMS) : var1.is(ItemTags.HAPPY_GHAST_FOOD), false, 7.0));
       this.goalSelector.addGoal(5, new Ghast.RandomFloatAroundGoal(this, 16));
    }
 
@@ -215,7 +213,7 @@ public class HappyGhast extends Animal {
    }
 
    public boolean isFood(ItemStack var1) {
-      return IS_FOOD.test(var1);
+      return var1.is(ItemTags.HAPPY_GHAST_FOOD);
    }
 
    public boolean canUseSlot(EquipmentSlot var1) {

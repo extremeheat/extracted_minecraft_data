@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,6 +11,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Abilities;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public enum GameType implements StringRepresentable {
    SURVIVAL(0, "survival"),
@@ -99,9 +99,8 @@ public enum GameType implements StringRepresentable {
       return byName(var0, SURVIVAL);
    }
 
-   @Nullable
    @Contract("_,!null->!null;_,null->_")
-   public static GameType byName(String var0, @Nullable GameType var1) {
+   public static @Nullable GameType byName(String var0, @Nullable GameType var1) {
       GameType var2 = CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
@@ -110,8 +109,7 @@ public enum GameType implements StringRepresentable {
       return var0 != null ? var0.id : -1;
    }
 
-   @Nullable
-   public static GameType byNullableId(int var0) {
+   public static @Nullable GameType byNullableId(int var0) {
       return var0 == -1 ? null : byId(var0);
    }
 

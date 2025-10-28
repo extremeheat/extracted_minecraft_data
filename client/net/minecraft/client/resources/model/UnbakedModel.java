@@ -1,25 +1,22 @@
 package net.minecraft.client.resources.model;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public interface UnbakedModel {
    String PARTICLE_TEXTURE_REFERENCE = "particle";
 
-   @Nullable
-   default Boolean ambientOcclusion() {
+   default @Nullable Boolean ambientOcclusion() {
       return null;
    }
 
-   @Nullable
-   default GuiLight guiLight() {
+   default @Nullable GuiLight guiLight() {
       return null;
    }
 
-   @Nullable
-   default ItemTransforms transforms() {
+   default @Nullable ItemTransforms transforms() {
       return null;
    }
 
@@ -27,13 +24,11 @@ public interface UnbakedModel {
       return TextureSlots.Data.EMPTY;
    }
 
-   @Nullable
-   default UnbakedGeometry geometry() {
+   default @Nullable UnbakedGeometry geometry() {
       return null;
    }
 
-   @Nullable
-   default ResourceLocation parent() {
+   default @Nullable ResourceLocation parent() {
       return null;
    }
 

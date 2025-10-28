@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.mojang.serialization.DataResult;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +35,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleCategory;
+import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 
 public class EditGameRulesScreen extends Screen {
    private static final Component TITLE = Component.translatable("editGamerule.title");
@@ -43,11 +47,9 @@ public class EditGameRulesScreen extends Screen {
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Consumer<Optional<GameRules>> exitCallback;
    private final Set<RuleEntry> invalidEntries = Sets.newHashSet();
-   private final GameRules gameRules;
-   @Nullable
+   final GameRules gameRules;
    private RuleList ruleList;
-   @Nullable
-   private Button doneButton;
+   private @Nullable Button doneButton;
 
    public EditGameRulesScreen(GameRules var1, Consumer<Optional<GameRules>> var2) {
       super(TITLE);
@@ -97,8 +99,7 @@ public class EditGameRulesScreen extends Screen {
    }
 
    public abstract static class RuleEntry extends ContainerObjectSelectionList.Entry<RuleEntry> {
-      @Nullable
-      final List<FormattedCharSequence> tooltip;
+      final @Nullable List<FormattedCharSequence> tooltip;
 
       public RuleEntry(@Nullable List<FormattedCharSequence> var1) {
          super();
@@ -139,7 +140,7 @@ public class EditGameRulesScreen extends Screen {
       private final List<FormattedCharSequence> label;
       protected final List<AbstractWidget> children = Lists.newArrayList();
 
-      public GameRuleEntry(@Nullable final List<FormattedCharSequence> var2, final Component var3) {
+      public GameRuleEntry(final List<FormattedCharSequence> var2, final Component var3) {
          super(var2);
          this.label = EditGameRulesScreen.this.minecraft.font.split(var3, 175);
       }
@@ -166,9 +167,9 @@ public class EditGameRulesScreen extends Screen {
    public class BooleanRuleEntry extends GameRuleEntry {
       private final CycleButton<Boolean> checkbox;
 
-      public BooleanRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRules.BooleanValue var5) {
+      public BooleanRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRule<Boolean> var5) {
          super(var3, var2);
-         this.checkbox = CycleButton.onOffBuilder(var5.get()).displayOnlyValue().withCustomNarration((var1x) -> var1x.createDefaultNarrationMessage().append("\n").append(var4)).create(10, 5, 44, 20, var2, (var1x, var2x) -> var5.set(var2x, (MinecraftServer)null));
+         this.checkbox = CycleButton.onOffBuilder((Boolean)EditGameRulesScreen.this.gameRules.get(var5)).displayOnlyValue().withCustomNarration((var1x) -> var1x.createDefaultNarrationMessage().append("\n").append(var4)).create(10, 5, 44, 20, var2, (var2x, var3x) -> EditGameRulesScreen.this.gameRules.set(var5, var3x, (MinecraftServer)null));
          this.children.add(this.checkbox);
       }
 
@@ -183,14 +184,16 @@ public class EditGameRulesScreen extends Screen {
    public class IntegerRuleEntry extends GameRuleEntry {
       private final EditBox input;
 
-      public IntegerRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRules.IntegerValue var5) {
+      public IntegerRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRule<Integer> var5) {
          super(var3, var2);
          this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 44, 20, var2.copy().append("\n").append(var4).append("\n"));
-         this.input.setValue(Integer.toString(var5.get()));
+         this.input.setValue(EditGameRulesScreen.this.gameRules.getAsString(var5));
          this.input.setResponder((var2x) -> {
-            if (var5.tryDeserialize(var2x)) {
+            DataResult var3 = var5.deserialize(var2x);
+            if (var3.isSuccess()) {
                this.input.setTextColor(-2039584);
                EditGameRulesScreen.this.clearInvalid(this);
+               EditGameRulesScreen.this.gameRules.set(var5, (Integer)var3.getOrThrow(), (MinecraftServer)null);
             } else {
                this.input.setTextColor(-65536);
                EditGameRulesScreen.this.markInvalid(this);
@@ -214,44 +217,42 @@ public class EditGameRulesScreen extends Screen {
       public RuleList(final GameRules var2) {
          super(Minecraft.getInstance(), EditGameRulesScreen.this.width, EditGameRulesScreen.this.layout.getContentHeight(), EditGameRulesScreen.this.layout.getHeaderHeight(), 24);
          final HashMap var3 = Maps.newHashMap();
-         var2.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
-            public void visitBoolean(GameRules.Key<GameRules.BooleanValue> var1, GameRules.Type<GameRules.BooleanValue> var2x) {
-               this.addEntry(var1, (var1x, var2xx, var3x, var4) -> EditGameRulesScreen.thisx.new BooleanRuleEntry(var1x, var2xx, var3x, var4));
+         var2.visitGameRuleTypes(new GameRuleTypeVisitor() {
+            public void visitBoolean(GameRule<Boolean> var1) {
+               this.addEntry(var1, (var1x, var2, var3x, var4) -> EditGameRulesScreen.thisx.new BooleanRuleEntry(var1x, var2, var3x, var4));
             }
 
-            public void visitInteger(GameRules.Key<GameRules.IntegerValue> var1, GameRules.Type<GameRules.IntegerValue> var2x) {
-               this.addEntry(var1, (var1x, var2xx, var3x, var4) -> EditGameRulesScreen.thisx.new IntegerRuleEntry(var1x, var2xx, var3x, var4));
+            public void visitInteger(GameRule<Integer> var1) {
+               this.addEntry(var1, (var1x, var2, var3x, var4) -> EditGameRulesScreen.thisx.new IntegerRuleEntry(var1x, var2, var3x, var4));
             }
 
-            private <T extends GameRules.Value<T>> void addEntry(GameRules.Key<T> var1, EntryFactory<T> var2x) {
+            private <T> void addEntry(GameRule<T> var1, EntryFactory<T> var2) {
                MutableComponent var3x = Component.translatable(var1.getDescriptionId());
-               MutableComponent var4 = Component.literal(var1.getId()).withStyle(ChatFormatting.YELLOW);
-               GameRules.Value var5 = var2.getRule(var1);
-               String var6 = var5.serialize();
-               MutableComponent var7 = Component.translatable("editGamerule.default", Component.literal(var6)).withStyle(ChatFormatting.GRAY);
-               String var8 = var1.getDescriptionId() + ".description";
-               ImmutableList var9;
-               String var10;
-               if (I18n.exists(var8)) {
-                  ImmutableList.Builder var11 = ImmutableList.builder().add(var4.getVisualOrderText());
-                  MutableComponent var12 = Component.translatable(var8);
-                  List var10000 = EditGameRulesScreen.this.font.split(var12, 150);
-                  Objects.requireNonNull(var11);
-                  var10000.forEach(var11::add);
-                  var9 = var11.add(var7.getVisualOrderText()).build();
-                  String var13 = var12.getString();
-                  var10 = var13 + "\n" + var7.getString();
+               MutableComponent var4 = Component.literal(var1.id()).withStyle(ChatFormatting.YELLOW);
+               MutableComponent var5 = Component.translatable("editGamerule.default", Component.literal(var1.serialize(var1.defaultValue()))).withStyle(ChatFormatting.GRAY);
+               String var6 = var1.getDescriptionId() + ".description";
+               ImmutableList var7;
+               String var8;
+               if (I18n.exists(var6)) {
+                  ImmutableList.Builder var9 = ImmutableList.builder().add(var4.getVisualOrderText());
+                  MutableComponent var10 = Component.translatable(var6);
+                  List var10000 = EditGameRulesScreen.this.font.split(var10, 150);
+                  Objects.requireNonNull(var9);
+                  var10000.forEach(var9::add);
+                  var7 = var9.add(var5.getVisualOrderText()).build();
+                  String var11 = var10.getString();
+                  var8 = var11 + "\n" + var5.getString();
                } else {
-                  var9 = ImmutableList.of(var4.getVisualOrderText(), var7.getVisualOrderText());
-                  var10 = var7.getString();
+                  var7 = ImmutableList.of(var4.getVisualOrderText(), var5.getVisualOrderText());
+                  var8 = var5.getString();
                }
 
-               ((Map)var3.computeIfAbsent(var1.getCategory(), (var0) -> Maps.newHashMap())).put(var1, var2x.create(var3x, var9, var10, var5));
+               ((Map)var3.computeIfAbsent(var1.category(), (var0) -> Maps.newHashMap())).put(var1, var2.create(var3x, var7, var8, var1));
             }
          });
-         var3.entrySet().stream().sorted(Entry.comparingByKey()).forEach((var1x) -> {
-            this.addEntry(EditGameRulesScreen.this.new CategoryRuleEntry(Component.translatable(((GameRules.Category)var1x.getKey()).getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW)));
-            ((Map)var1x.getValue()).entrySet().stream().sorted(Entry.comparingByKey(Comparator.comparing(GameRules.Key::getId))).forEach((var1) -> this.addEntry((RuleEntry)var1.getValue()));
+         var3.entrySet().stream().sorted(Entry.comparingByKey(Comparator.comparing(GameRuleCategory::getDescriptionId))).forEach((var1x) -> {
+            this.addEntry(EditGameRulesScreen.this.new CategoryRuleEntry(((GameRuleCategory)var1x.getKey()).label().withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW)));
+            ((Map)var1x.getValue()).entrySet().stream().sorted(Entry.comparingByKey(Comparator.comparing(GameRule::getDescriptionId))).forEach((var1) -> this.addEntry((RuleEntry)var1.getValue()));
          });
       }
 
@@ -266,7 +267,7 @@ public class EditGameRulesScreen extends Screen {
    }
 
    @FunctionalInterface
-   interface EntryFactory<T extends GameRules.Value<T>> {
-      RuleEntry create(Component var1, List<FormattedCharSequence> var2, String var3, T var4);
+   interface EntryFactory<T> {
+      RuleEntry create(Component var1, List<FormattedCharSequence> var2, String var3, GameRule<T> var4);
    }
 }

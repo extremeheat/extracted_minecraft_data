@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,9 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ShaderManager;
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL31;
 import org.slf4j.Logger;
 
@@ -131,8 +131,7 @@ public class GlProgram implements AutoCloseable {
       GlStateManager.glDeleteProgram(this.programId);
    }
 
-   @Nullable
-   public Uniform getUniform(String var1) {
+   public @Nullable Uniform getUniform(String var1) {
       RenderSystem.assertOnRenderThread();
       return (Uniform)this.uniformsByName.get(var1);
    }

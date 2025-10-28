@@ -1,6 +1,5 @@
 package net.minecraft.data.recipes;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -10,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public interface RecipeBuilder {
    ResourceLocation ROOT_RECIPE_ADVANCEMENT = ResourceLocation.withDefaultNamespace("recipes/root");

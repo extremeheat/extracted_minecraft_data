@@ -5,8 +5,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.time.Instant;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record PendingInvite(String invitationId, String realmName, String realmOwnerName, UUID realmOwnerUuid, Instant date) {
@@ -21,8 +21,7 @@ public record PendingInvite(String invitationId, String realmName, String realmO
       this.date = var5;
    }
 
-   @Nullable
-   public static PendingInvite parse(JsonObject var0) {
+   public static @Nullable PendingInvite parse(JsonObject var0) {
       try {
          return new PendingInvite(JsonUtils.getStringOr("invitationId", var0, ""), JsonUtils.getStringOr("worldName", var0, ""), JsonUtils.getStringOr("worldOwnerName", var0, ""), JsonUtils.getUuidOr("worldOwnerUuid", var0, Util.NIL_UUID), JsonUtils.getDateOr("date", var0));
       } catch (Exception var2) {

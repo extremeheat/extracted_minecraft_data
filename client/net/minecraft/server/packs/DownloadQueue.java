@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
@@ -29,6 +28,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.util.eventlog.JsonEventLog;
 import net.minecraft.util.thread.ConsecutiveExecutor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DownloadQueue implements AutoCloseable {
@@ -133,8 +133,7 @@ public class DownloadQueue implements AutoCloseable {
 
    public static record DownloadRequest(URL url, @Nullable HashCode hash) {
       final URL url;
-      @Nullable
-      final HashCode hash;
+      final @Nullable HashCode hash;
 
       public DownloadRequest(URL var1, @Nullable HashCode var2) {
          super();

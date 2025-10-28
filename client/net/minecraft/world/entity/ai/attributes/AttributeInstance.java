@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class AttributeInstance {
    private final Holder<Attribute> attribute;
@@ -62,8 +62,7 @@ public class AttributeInstance {
       return ImmutableSet.copyOf(this.permanentModifiers.values());
    }
 
-   @Nullable
-   public AttributeModifier getModifier(ResourceLocation var1) {
+   public @Nullable AttributeModifier getModifier(ResourceLocation var1) {
       return (AttributeModifier)this.modifierById.get(var1);
    }
 

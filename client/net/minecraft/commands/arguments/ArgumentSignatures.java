@@ -3,10 +3,10 @@ package net.minecraft.commands.arguments;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.SignableCommand;
+import org.jspecify.annotations.Nullable;
 
 public record ArgumentSignatures(List<Entry> entries) {
    public static final ArgumentSignatures EMPTY = new ArgumentSignatures(List.of());
@@ -53,7 +53,6 @@ public record ArgumentSignatures(List<Entry> entries) {
 
    @FunctionalInterface
    public interface Signer {
-      @Nullable
-      MessageSignature sign(String var1);
+      @Nullable MessageSignature sign(String var1);
    }
 }

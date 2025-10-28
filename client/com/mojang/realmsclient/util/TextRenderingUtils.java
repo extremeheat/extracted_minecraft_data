@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TextRenderingUtils {
    private TextRenderingUtils() {
@@ -106,10 +106,8 @@ public class TextRenderingUtils {
 
    public static class LineSegment {
       private final String fullText;
-      @Nullable
-      private final String linkTitle;
-      @Nullable
-      private final String linkUrl;
+      private final @Nullable String linkTitle;
+      private final @Nullable String linkUrl;
 
       private LineSegment(String var1) {
          super();

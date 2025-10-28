@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.recipebook;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,6 +12,7 @@ import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
+import org.jspecify.annotations.Nullable;
 
 public class GhostSlots {
    private final Reference2ObjectMap<Slot, GhostSlot> ingredients = new Reference2ObjectArrayMap();

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.TickPriority;
+import org.jspecify.annotations.Nullable;
 
 public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    public static final MapCodec<ComparatorBlock> CODEC = simpleCodec(ComparatorBlock::new);
@@ -102,9 +102,8 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       return var4;
    }
 
-   @Nullable
-   private ItemFrame getItemFrame(Level var1, Direction var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(ItemFrame.class, new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)), (var1x) -> var1x != null && var1x.getDirection() == var2);
+   private @Nullable ItemFrame getItemFrame(Level var1, Direction var2, BlockPos var3) {
+      List var4 = var1.getEntitiesOfClass(ItemFrame.class, new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)), (var1x) -> var1x.getDirection() == var2);
       return var4.size() == 1 ? (ItemFrame)var4.get(0) : null;
    }
 

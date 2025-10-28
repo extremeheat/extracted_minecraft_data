@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.levelgen.structure.structures.NetherFortressStr
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class NaturalSpawner {
@@ -242,8 +242,7 @@ public final class NaturalSpawner {
       }
    }
 
-   @Nullable
-   private static Mob getMobForSpawn(ServerLevel var0, EntityType<?> var1) {
+   private static @Nullable Mob getMobForSpawn(ServerLevel var0, EntityType<?> var1) {
       try {
          Entity var3 = var1.create(var0, EntitySpawnReason.NATURAL);
          if (var3 instanceof Mob var2) {
@@ -406,10 +405,8 @@ public final class NaturalSpawner {
       private final PotentialCalculator spawnPotential;
       private final Object2IntMap<MobCategory> unmodifiableMobCategoryCounts;
       private final LocalMobCapCalculator localMobCapCalculator;
-      @Nullable
-      private BlockPos lastCheckedPos;
-      @Nullable
-      private EntityType<?> lastCheckedType;
+      private @Nullable BlockPos lastCheckedPos;
+      private @Nullable EntityType<?> lastCheckedType;
       private double lastCharge;
 
       SpawnState(int var1, Object2IntOpenHashMap<MobCategory> var2, PotentialCalculator var3, LocalMobCapCalculator var4) {

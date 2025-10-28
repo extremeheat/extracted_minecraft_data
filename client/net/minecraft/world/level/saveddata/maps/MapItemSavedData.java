@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -39,6 +38,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MapItemSavedData extends SavedData {
@@ -254,8 +254,7 @@ public class MapItemSavedData extends SavedData {
       }
    }
 
-   @Nullable
-   private MapDecorationLocation calculateDecorationLocationAndType(Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6) {
+   private @Nullable MapDecorationLocation calculateDecorationLocationAndType(Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6) {
       byte var7 = clampMapCoordinate(var5);
       byte var8 = clampMapCoordinate(var6);
       if (var1.is(MapDecorationTypes.PLAYER)) {
@@ -266,8 +265,7 @@ public class MapItemSavedData extends SavedData {
       }
    }
 
-   @Nullable
-   private Pair<Holder<MapDecorationType>, Byte> playerDecorationTypeAndRotation(Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6) {
+   private @Nullable Pair<Holder<MapDecorationType>, Byte> playerDecorationTypeAndRotation(Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6) {
       if (isInsideMap(var5, var6)) {
          return Pair.of(var1, this.calculateRotation(var2, var3));
       } else {
@@ -291,8 +289,7 @@ public class MapItemSavedData extends SavedData {
       return var0 >= -63.0F && var1 >= -63.0F && var0 <= 63.0F && var1 <= 63.0F;
    }
 
-   @Nullable
-   private Holder<MapDecorationType> decorationTypeForPlayerOutsideMap(float var1, float var2) {
+   private @Nullable Holder<MapDecorationType> decorationTypeForPlayerOutsideMap(float var1, float var2) {
       boolean var3 = true;
       boolean var4 = Math.abs(var1) < 320.0F && Math.abs(var2) < 320.0F;
       if (var4) {
@@ -311,8 +308,7 @@ public class MapItemSavedData extends SavedData {
       }
    }
 
-   @Nullable
-   public Packet<?> getUpdatePacket(MapId var1, Player var2) {
+   public @Nullable Packet<?> getUpdatePacket(MapId var1, Player var2) {
       HoldingPlayer var3 = (HoldingPlayer)this.carriedByPlayers.get(var2);
       return var3 == null ? null : var3.nextUpdatePacket(var1);
    }
@@ -530,8 +526,7 @@ public class MapItemSavedData extends SavedData {
          return new MapPatch(var1, var2, var3, var4, var5);
       }
 
-      @Nullable
-      Packet<?> nextUpdatePacket(MapId var1) {
+      @Nullable Packet<?> nextUpdatePacket(MapId var1) {
          MapPatch var2;
          if (this.dirtyData) {
             this.dirtyData = false;

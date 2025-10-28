@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -23,6 +22,7 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Mannequin extends Avatar {
    protected static final EntityDataAccessor<ResolvableProfile> DATA_PROFILE;
@@ -56,8 +56,7 @@ public class Mannequin extends Avatar {
       this(EntityType.MANNEQUIN, var1);
    }
 
-   @Nullable
-   public static Mannequin create(EntityType<Mannequin> var0, Level var1) {
+   public static @Nullable Mannequin create(EntityType<Mannequin> var0, Level var1) {
       return constructor.create(var0, var1);
    }
 
@@ -84,8 +83,7 @@ public class Mannequin extends Avatar {
       this.entityData.set(DATA_IMMOVABLE, var1);
    }
 
-   @Nullable
-   protected Component getDescription() {
+   protected @Nullable Component getDescription() {
       return (Component)((Optional)this.entityData.get(DATA_DESCRIPTION)).orElse((Object)null);
    }
 
@@ -140,8 +138,7 @@ public class Mannequin extends Avatar {
       this.setDescription((Component)var1.read("description", ComponentSerialization.CODEC).orElse(DEFAULT_DESCRIPTION));
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.PROFILE ? castComponentValue(var1, this.getProfile()) : super.get(var1));
    }
 

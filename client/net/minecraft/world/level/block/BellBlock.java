@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class BellBlock extends BaseEntityBlock {
    public static final MapCodec<BellBlock> CODEC = simpleCodec(BellBlock::new);
@@ -169,8 +169,7 @@ public class BellBlock extends BaseEntityBlock {
       return this.getVoxelShape(var1);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Direction var3 = var1.getClickedFace();
       BlockPos var4 = var1.getClickedPos();
       Level var5 = var1.getLevel();
@@ -248,13 +247,11 @@ public class BellBlock extends BaseEntityBlock {
       var1.add(FACING, ATTACHMENT, POWERED);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BellBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.BELL, var1.isClientSide() ? BellBlockEntity::clientTick : BellBlockEntity::serverTick);
    }
 

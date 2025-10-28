@@ -24,11 +24,11 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 
-public class TextureManager implements PreparableReloadListener, Tickable, AutoCloseable {
+public class TextureManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = ResourceLocation.withDefaultNamespace("");
    private final Map<ResourceLocation, AbstractTexture> byPath = new HashMap();
-   private final Set<Tickable> tickableTextures = new HashSet();
+   private final Set<TickableTexture> tickableTextures = new HashSet();
    private final ResourceManager resourceManager;
 
    public TextureManager(ResourceManager var1) {
@@ -72,8 +72,8 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
             this.safeClose(var1, var3);
          }
 
-         if (var2 instanceof Tickable) {
-            Tickable var4 = (Tickable)var2;
+         if (var2 instanceof TickableTexture) {
+            TickableTexture var4 = (TickableTexture)var2;
             this.tickableTextures.add(var4);
          }
       }
@@ -103,7 +103,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    }
 
    public void tick() {
-      for(Tickable var2 : this.tickableTextures) {
+      for(TickableTexture var2 : this.tickableTextures) {
          var2.tick();
       }
 

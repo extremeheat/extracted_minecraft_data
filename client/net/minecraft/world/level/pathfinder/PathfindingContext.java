@@ -1,17 +1,16 @@
 package net.minecraft.world.level.pathfinder;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class PathfindingContext {
    private final CollisionGetter level;
-   @Nullable
-   private final PathTypeCache cache;
+   private final @Nullable PathTypeCache cache;
    private final BlockPos mobPosition;
    private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 

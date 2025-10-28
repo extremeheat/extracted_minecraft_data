@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class MerchantOffers extends ArrayList<MerchantOffer> {
    public static final Codec<MerchantOffers> CODEC;
@@ -27,8 +27,7 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
       super(var1);
    }
 
-   @Nullable
-   public MerchantOffer getRecipeFor(ItemStack var1, ItemStack var2, int var3) {
+   public @Nullable MerchantOffer getRecipeFor(ItemStack var1, ItemStack var2, int var3) {
       if (var3 > 0 && var3 < this.size()) {
          MerchantOffer var6 = (MerchantOffer)this.get(var3);
          return var6.satisfiedBy(var1, var2) ? var6 : null;

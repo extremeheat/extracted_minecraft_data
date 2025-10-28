@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,17 +9,16 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class GenericWaitingScreen extends Screen {
    private static final int TITLE_Y = 80;
    private static final int MESSAGE_Y = 120;
    private static final int MESSAGE_MAX_WIDTH = 360;
-   @Nullable
-   private final Component messageText;
+   private final @Nullable Component messageText;
    private final Component buttonLabel;
    private final Runnable buttonCallback;
-   @Nullable
-   private MultiLineLabel message;
+   private @Nullable MultiLineLabel message;
    private Button button;
    private int disableButtonTicks;
 

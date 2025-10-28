@@ -8,7 +8,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameModeArgument;
@@ -17,6 +16,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class PublishCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.publish.failed"));

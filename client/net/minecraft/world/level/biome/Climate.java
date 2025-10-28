@@ -15,13 +15,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.QuartPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
+import org.jspecify.annotations.Nullable;
 
 public class Climate {
    private static final boolean DEBUG_SLOW_BIOME_SEARCH = false;
@@ -65,7 +65,7 @@ public class Climate {
    protected static final class RTree<T> {
       private static final int CHILDREN_PER_NODE = 6;
       private final Node<T> root;
-      private final ThreadLocal<Leaf<T>> lastResult = new ThreadLocal();
+      private final ThreadLocal<@Nullable Leaf<T>> lastResult = new ThreadLocal();
 
       private RTree(Node<T> var1) {
          super();

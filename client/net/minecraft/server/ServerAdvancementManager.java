@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -17,6 +16,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<Advancement> {
@@ -58,8 +58,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
 
    }
 
-   @Nullable
-   public AdvancementHolder get(ResourceLocation var1) {
+   public @Nullable AdvancementHolder get(ResourceLocation var1) {
       return (AdvancementHolder)this.advancements.get(var1);
    }
 

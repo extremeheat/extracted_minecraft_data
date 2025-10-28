@@ -47,7 +47,7 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
       OptionInstance[] var1 = options(this.options);
       Button var2 = Button.builder(OptionsScreen.CONTROLS, (var1x) -> this.minecraft.setScreen(new ControlsScreen(this, this.options))).build();
       OptionInstance var3 = var1[0];
-      this.list.addSmall(var3.createButton(this.options), var2);
+      this.list.addSmall(var3.createButton(this.options), this.options.narrator(), var2);
       this.list.addSmall((OptionInstance[])Arrays.stream(var1).filter((var1x) -> var1x != var3).toArray((var0) -> new OptionInstance[var0]));
    }
 

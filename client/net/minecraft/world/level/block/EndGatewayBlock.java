@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    public static final MapCodec<EndGatewayBlock> CODEC = simpleCodec(EndGatewayBlock::new);
@@ -39,8 +39,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       return new TheEndGatewayBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide() ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick);
    }
 
@@ -93,8 +92,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
 
    }
 
-   @Nullable
-   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       BlockEntity var4 = var1.getBlockEntity(var3);
       if (var4 instanceof TheEndGatewayBlockEntity var5) {
          Vec3 var6 = var5.getPortalPosition(var1, var3);

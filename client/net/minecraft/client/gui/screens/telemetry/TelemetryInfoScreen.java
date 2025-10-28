@@ -2,10 +2,8 @@ package net.minecraft.client.gui.screens.telemetry;
 
 import java.net.URI;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -19,6 +17,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class TelemetryInfoScreen extends Screen {
    private static final Component TITLE = Component.translatable("telemetry_info.screen.title");
@@ -32,10 +31,9 @@ public class TelemetryInfoScreen extends Screen {
    private final Screen lastScreen;
    private final Options options;
    private final HeaderAndFooterLayout layout;
-   @Nullable
-   private TelemetryEventWidget telemetryEventWidget;
-   @Nullable
-   private MultiLineTextWidget description;
+   private @Nullable TelemetryEventWidget telemetryEventWidget;
+   private @Nullable MultiLineTextWidget description;
+   private @Nullable Checkbox checkbox;
    private double savedScroll;
 
    public TelemetryInfoScreen(Screen var1, Options var2) {
@@ -59,8 +57,9 @@ public class TelemetryInfoScreen extends Screen {
       var2.addChild(Button.builder(BUTTON_PRIVACY_STATEMENT, this::openPrivacyStatementLink).build());
       var2.addChild(Button.builder(BUTTON_GIVE_FEEDBACK, this::openFeedbackLink).build());
       LinearLayout var3 = (LinearLayout)this.layout.addToFooter(LinearLayout.vertical().spacing(4));
+      var3.defaultCellSetting().alignHorizontallyCenter();
       if (EXTRA_TELEMETRY_AVAILABLE) {
-         var3.addChild(this.createTelemetryCheckbox());
+         this.checkbox = (Checkbox)var3.addChild(Checkbox.builder(CHECKBOX_OPT_IN, this.font).maxWidth(this.width - 40).selected(this.options.telemetryOptInExtra()).onValueChange(this::onOptInChanged).build());
       }
 
       LinearLayout var4 = (LinearLayout)var3.addChild(LinearLayout.horizontal().spacing(8));
@@ -87,6 +86,10 @@ public class TelemetryInfoScreen extends Screen {
          this.description.setMaxWidth(this.width - 16);
       }
 
+      if (this.checkbox != null) {
+         this.checkbox.adjustWidth(this.width - 40, this.font);
+      }
+
       this.layout.arrangeElements();
    }
 
@@ -95,11 +98,6 @@ public class TelemetryInfoScreen extends Screen {
          this.setInitialFocus(this.telemetryEventWidget);
       }
 
-   }
-
-   private AbstractWidget createTelemetryCheckbox() {
-      OptionInstance var1 = this.options.telemetryOptInExtra();
-      return Checkbox.builder(CHECKBOX_OPT_IN, this.font).selected(var1).onValueChange(this::onOptInChanged).build();
    }
 
    private void onOptInChanged(AbstractWidget var1, boolean var2) {

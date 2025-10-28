@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.dialog;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -8,14 +7,14 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class WaitingForResponseScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.waitingForResponse.title");
    private static final Component[] BUTTON_LABELS;
    private static final int BUTTON_VISIBLE_AFTER = 1;
    private static final int BUTTON_ACTIVE_AFTER = 5;
-   @Nullable
-   private final Screen previousScreen;
+   private final @Nullable Screen previousScreen;
    private final HeaderAndFooterLayout layout;
    private final Button closeButton;
    private int ticks;
@@ -70,8 +69,7 @@ public class WaitingForResponseScreen extends Screen {
       this.minecraft.setScreen(this.previousScreen);
    }
 
-   @Nullable
-   public Screen previousScreen() {
+   public @Nullable Screen previousScreen() {
       return this.previousScreen;
    }
 

@@ -38,7 +38,7 @@ public record Unstitcher(ResourceLocation resource, List<Region> regions, double
          LazyLoadedImage var5 = new LazyLoadedImage(var3, (Resource)var4.get(), this.regions.size());
 
          for(Region var7 : this.regions) {
-            var2.add(var7.sprite, (SpriteSource.SpriteSupplier)(new RegionInstance(var5, var7, this.xDivisor, this.yDivisor)));
+            var2.add(var7.sprite, (SpriteSource.DiscardableLoader)(new RegionInstance(var5, var7, this.xDivisor, this.yDivisor)));
          }
       } else {
          LOGGER.warn("Missing sprite: {}", var3);
@@ -68,7 +68,7 @@ public record Unstitcher(ResourceLocation resource, List<Region> regions, double
       }
    }
 
-   static class RegionInstance implements SpriteSource.SpriteSupplier {
+   static class RegionInstance implements SpriteSource.DiscardableLoader {
       private final LazyLoadedImage image;
       private final Region region;
       private final double xDivisor;
@@ -82,7 +82,7 @@ public record Unstitcher(ResourceLocation resource, List<Region> regions, double
          this.yDivisor = var5;
       }
 
-      public SpriteContents apply(SpriteResourceLoader var1) {
+      public SpriteContents get(SpriteResourceLoader var1) {
          try {
             NativeImage var2 = this.image.get();
             double var3 = (double)var2.getWidth() / this.xDivisor;
@@ -106,11 +106,6 @@ public record Unstitcher(ResourceLocation resource, List<Region> regions, double
 
       public void discard() {
          this.image.release();
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((SpriteResourceLoader)var1);
       }
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.phys.shapes;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
@@ -10,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class EntityCollisionContext implements CollisionContext {
    private final boolean descending;
@@ -17,8 +17,7 @@ public class EntityCollisionContext implements CollisionContext {
    private final boolean placement;
    private final ItemStack heldItem;
    private final boolean alwaysCollideWithFluid;
-   @Nullable
-   private final Entity entity;
+   private final @Nullable Entity entity;
 
    protected EntityCollisionContext(boolean var1, boolean var2, double var3, ItemStack var5, boolean var6, @Nullable Entity var7) {
       super();
@@ -74,8 +73,7 @@ public class EntityCollisionContext implements CollisionContext {
       return this.entityBottom > (double)var2.getY() + var1.max(Direction.Axis.Y) - 9.999999747378752E-6;
    }
 
-   @Nullable
-   public Entity getEntity() {
+   public @Nullable Entity getEntity() {
       return this.entity;
    }
 

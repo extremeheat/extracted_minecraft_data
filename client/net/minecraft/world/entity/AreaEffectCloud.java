@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final int TIME_BETWEEN_APPLICATIONS = 5;
@@ -48,8 +48,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final int DEFAULT_WAIT_TIME = 20;
    private static final int DEFAULT_REAPPLICATION_DELAY = 20;
    private static final ColorParticleOption DEFAULT_PARTICLE;
-   @Nullable
-   private ParticleOptions customParticle;
+   private @Nullable ParticleOptions customParticle;
    private PotionContents potionContents;
    private float potionDurationScale;
    private final Map<Entity, Integer> victims;
@@ -59,8 +58,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private int durationOnUse;
    private float radiusOnUse;
    private float radiusPerTick;
-   @Nullable
-   private EntityReference<LivingEntity> owner;
+   private @Nullable EntityReference<LivingEntity> owner;
 
    public AreaEffectCloud(EntityType<? extends AreaEffectCloud> var1, Level var2) {
       super(var1, var2);
@@ -319,8 +317,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.owner = EntityReference.of(var1);
    }
 
-   @Nullable
-   public LivingEntity getOwner() {
+   public @Nullable LivingEntity getOwner() {
       return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
@@ -380,8 +377,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       return false;
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.POTION_CONTENTS) {
          return (T)castComponentValue(var1, this.potionContents);
       } else {
@@ -408,8 +404,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return this.getOwner();
    }
 

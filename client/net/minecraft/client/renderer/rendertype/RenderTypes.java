@@ -310,8 +310,8 @@ public class RenderTypes {
    }
 
    static {
-      SOLID = RenderType.create("solid", RenderSetup.builder(RenderPipelines.SOLID).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
-      CUTOUT = RenderType.create("cutout", RenderSetup.builder(RenderPipelines.CUTOUT).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      SOLID = RenderType.create("solid", RenderSetup.builder(RenderPipelines.SOLID_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      CUTOUT = RenderType.create("cutout", RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       TRANSLUCENT_MOVING_BLOCK = RenderType.create("translucent_moving_block", RenderSetup.builder(RenderPipelines.TRANSLUCENT_MOVING_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).sortOnUpload().bufferSize(786432).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       ARMOR_CUTOUT_NO_CULL = Util.memoize((Function)((var0) -> {
          RenderSetup var1 = RenderSetup.builder(RenderPipelines.ARMOR_CUTOUT_NO_CULL).withTexture("Sampler0", var0).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
@@ -396,7 +396,7 @@ public class RenderTypes {
       LIGHTNING = RenderType.create("lightning", RenderSetup.builder(RenderPipelines.LIGHTNING).setOutputTarget(OutputTarget.WEATHER_TARGET).sortOnUpload().createRenderSetup());
       DRAGON_RAYS = RenderType.create("dragon_rays", RenderSetup.builder(RenderPipelines.DRAGON_RAYS).createRenderSetup());
       DRAGON_RAYS_DEPTH = RenderType.create("dragon_rays_depth", RenderSetup.builder(RenderPipelines.DRAGON_RAYS_DEPTH).createRenderSetup());
-      TRIPWIRE = RenderType.create("tripwire", RenderSetup.builder(RenderPipelines.TRIPWIRE).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).setOutputTarget(OutputTarget.WEATHER_TARGET).affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      TRIPWIRE = RenderType.create("tripwire", RenderSetup.builder(RenderPipelines.TRIPWIRE_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).setOutputTarget(OutputTarget.WEATHER_TARGET).affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       LINES = RenderType.create("lines", RenderSetup.builder(RenderPipelines.LINES).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());

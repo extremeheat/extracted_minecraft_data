@@ -2,8 +2,8 @@ package net.minecraft.client;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.FormattedText;
+import org.jspecify.annotations.Nullable;
 
 public class ComponentCollector {
    private final List<FormattedText> parts = Lists.newArrayList();
@@ -16,8 +16,7 @@ public class ComponentCollector {
       this.parts.add(var1);
    }
 
-   @Nullable
-   public FormattedText getResult() {
+   public @Nullable FormattedText getResult() {
       if (this.parts.isEmpty()) {
          return null;
       } else {

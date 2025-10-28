@@ -3,7 +3,6 @@ package net.minecraft.world.level;
 import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class PathNavigationRegion implements CollisionGetter {
    protected final int centerX;
@@ -88,8 +88,7 @@ public class PathNavigationRegion implements CollisionGetter {
       return List.of();
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       ChunkAccess var2 = this.getChunk(var1);
       return var2.getBlockEntity(var1);
    }

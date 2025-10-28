@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components.debug;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +11,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntrySpawnCounts implements DebugScreenEntry {
    public DebugEntrySpawnCounts() {

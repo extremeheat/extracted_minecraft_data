@@ -2,7 +2,6 @@ package net.minecraft.client.gui;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.font.ActiveArea;
 import net.minecraft.client.gui.font.EmptyArea;
@@ -18,6 +17,7 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 
 public interface ActiveTextCollector {
    double PERIOD_PER_SCROLLED_PIXEL = 0.5;
@@ -145,8 +145,7 @@ public interface ActiveTextCollector {
       private final int testX;
       private final int testY;
       private Parameters defaultParameters;
-      @Nullable
-      private Style result;
+      private @Nullable Style result;
       private final Consumer<Style> styleScanner;
 
       public ClickableStyleFinder(Font var1, int var2, int var3) {
@@ -184,8 +183,7 @@ public interface ActiveTextCollector {
          this.defaultScrollingHelper(var1, var2, var3, var4, var5, var6, var8, var9, var7);
       }
 
-      @Nullable
-      public Style result() {
+      public @Nullable Style result() {
          return this.result;
       }
    }

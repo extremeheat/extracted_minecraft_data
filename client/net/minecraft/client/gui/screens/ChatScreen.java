@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,6 +19,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class ChatScreen extends Screen {
    public static final double MOUSE_SCROLL_SPEED = 7.0;
@@ -213,8 +213,7 @@ public class ChatScreen extends Screen {
       }
    }
 
-   @Nullable
-   private FormattedCharSequence formatChat(String var1, int var2) {
+   private @Nullable FormattedCharSequence formatChat(String var1, int var2) {
       return this.isDraft ? FormattedCharSequence.forward(var1, Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(true)) : null;
    }
 

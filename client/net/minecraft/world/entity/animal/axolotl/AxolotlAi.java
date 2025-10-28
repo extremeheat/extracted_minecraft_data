@@ -5,10 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -37,7 +35,6 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class AxolotlAi {
@@ -116,9 +113,5 @@ public class AxolotlAi {
 
    private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, Axolotl var1) {
       return BehaviorUtils.isBreeding(var1) ? Optional.empty() : var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
-   }
-
-   public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> var0.is(ItemTags.AXOLOTL_FOOD);
    }
 }

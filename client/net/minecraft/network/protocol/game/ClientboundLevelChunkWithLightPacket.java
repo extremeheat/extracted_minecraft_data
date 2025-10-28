@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.BitSet;
-import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
@@ -9,6 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket>codec(ClientboundLevelChunkWithLightPacket::write, ClientboundLevelChunkWithLightPacket::new);

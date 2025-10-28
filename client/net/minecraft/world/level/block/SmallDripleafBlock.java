@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class SmallDripleafBlock extends DoublePlantBlock implements BonemealableBlock, SimpleWaterloggedBlock {
    public static final MapCodec<SmallDripleafBlock> CODEC = simpleCodec(SmallDripleafBlock::new);
@@ -50,13 +50,12 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
       return var1.is(BlockTags.SMALL_DRIPLEAF_PLACEABLE) || var2.getFluidState(var3.above()).isSourceOfType(Fluids.WATER) && super.mayPlaceOn(var1, var2, var3);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = super.getStateForPlacement(var1);
       return var2 != null ? copyWaterloggedFrom(var1.getLevel(), var1.getClickedPos(), (BlockState)var2.setValue(FACING, var1.getHorizontalDirection().getOpposite())) : null;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       if (!var1.isClientSide()) {
          BlockPos var6 = var2.above();
          BlockState var7 = DoublePlantBlock.copyWaterloggedFrom(var1, var6, (BlockState)((BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)).setValue(FACING, (Direction)var3.getValue(FACING)));

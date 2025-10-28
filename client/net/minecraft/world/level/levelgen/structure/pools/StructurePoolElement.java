@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -25,12 +24,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 
 public abstract class StructurePoolElement {
    public static final Codec<StructurePoolElement> CODEC;
    private static final Holder<StructureProcessorList> EMPTY;
-   @Nullable
-   private volatile StructureTemplatePool.Projection projection;
+   private volatile StructureTemplatePool.@Nullable Projection projection;
 
    protected static <E extends StructurePoolElement> RecordCodecBuilder<E, StructureTemplatePool.Projection> projectionCodec() {
       return StructureTemplatePool.Projection.CODEC.fieldOf("projection").forGetter(StructurePoolElement::getProjection);

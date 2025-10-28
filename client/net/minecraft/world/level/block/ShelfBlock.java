@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -46,6 +45,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContainer, SideChainPartBlock, SimpleWaterloggedBlock {
    public static final MapCodec<ShelfBlock> CODEC = simpleCodec(ShelfBlock::new);
@@ -76,8 +76,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       return var2 == PathComputationType.WATER && var1.getFluidState().is(FluidTags.WATER);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new ShelfBlockEntity(var1, var2);
    }
 

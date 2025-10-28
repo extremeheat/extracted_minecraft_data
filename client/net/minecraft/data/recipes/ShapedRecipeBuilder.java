@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
@@ -23,6 +22,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class ShapedRecipeBuilder implements RecipeBuilder {
    private final HolderGetter<Item> items;
@@ -32,8 +32,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    private final List<String> rows = Lists.newArrayList();
    private final Map<Character, Ingredient> key = Maps.newLinkedHashMap();
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
-   @Nullable
-   private String group;
+   private @Nullable String group;
    private boolean showNotification = true;
 
    private ShapedRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemLike var3, int var4) {
@@ -118,7 +117,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    }
 
    // $FF: synthetic method
-   public RecipeBuilder group(@Nullable final String var1) {
+   public RecipeBuilder group(final @Nullable String var1) {
       return this.group(var1);
    }
 

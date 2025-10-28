@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlockEntity, PistonHeadRenderState> {
    public PistonHeadRenderer() {
@@ -30,7 +30,7 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
       return new PistonHeadRenderState();
    }
 
-   public void extractRenderState(PistonMovingBlockEntity var1, PistonHeadRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(PistonMovingBlockEntity var1, PistonHeadRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.xOffset = var1.getXOff(var3);
       var2.yOffset = var1.getYOff(var3);

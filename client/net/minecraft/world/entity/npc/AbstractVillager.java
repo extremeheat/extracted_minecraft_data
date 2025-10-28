@@ -2,7 +2,6 @@ package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -34,15 +33,14 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractVillager extends AgeableMob implements InventoryCarrier, Npc, Merchant {
    private static final EntityDataAccessor<Integer> DATA_UNHAPPY_COUNTER;
    public static final int VILLAGER_SLOT_OFFSET = 300;
    private static final int VILLAGER_INVENTORY_SIZE = 8;
-   @Nullable
-   private Player tradingPlayer;
-   @Nullable
-   protected MerchantOffers offers;
+   private @Nullable Player tradingPlayer;
+   protected @Nullable MerchantOffers offers;
    private final SimpleContainer inventory = new SimpleContainer(8);
 
    public AbstractVillager(EntityType<? extends AbstractVillager> var1, Level var2) {
@@ -51,7 +49,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
@@ -80,8 +78,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       this.tradingPlayer = var1;
    }
 
-   @Nullable
-   public Player getTradingPlayer() {
+   public @Nullable Player getTradingPlayer() {
       return this.tradingPlayer;
    }
 
@@ -163,8 +160,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       this.readInventoryFromTag(var1);
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       this.stopTrading();
       return super.teleport(var1);
    }
@@ -196,9 +192,9 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       return this.inventory;
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       int var2 = var1 - 300;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? SlotAccess.forContainer(this.inventory, var2) : super.getSlot(var1);
+      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
    }
 
    protected abstract void updateTrades(ServerLevel var1);

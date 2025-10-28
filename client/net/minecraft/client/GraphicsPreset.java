@@ -1,10 +1,10 @@
 package net.minecraft.client;
 
 import com.mojang.serialization.Codec;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public enum GraphicsPreset implements StringRepresentable {
    FAST("fast", "options.graphics.fast"),
@@ -49,6 +49,7 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.cutoutLeaves(), true);
             this.set(var2, var1.options.improvedTransparency(), false);
             this.set(var2, var1.options.weatherRadius(), 5);
+            this.set(var2, var1.options.maxAnisotropyBit(), 0);
             break;
          case 1:
             boolean var4 = true;
@@ -67,6 +68,7 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.cutoutLeaves(), true);
             this.set(var2, var1.options.improvedTransparency(), false);
             this.set(var2, var1.options.weatherRadius(), 10);
+            this.set(var2, var1.options.maxAnisotropyBit(), 1);
             break;
          case 2:
             boolean var3 = true;
@@ -85,6 +87,7 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.cutoutLeaves(), true);
             this.set(var2, var1.options.improvedTransparency(), true);
             this.set(var2, var1.options.weatherRadius(), 10);
+            this.set(var2, var1.options.maxAnisotropyBit(), 2);
       }
 
    }

@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
@@ -18,6 +17,7 @@ import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 @FunctionalInterface
@@ -82,6 +82,5 @@ public interface SpriteResourceLoader {
       };
    }
 
-   @Nullable
-   SpriteContents loadSprite(ResourceLocation var1, Resource var2);
+   @Nullable SpriteContents loadSprite(ResourceLocation var1, Resource var2);
 }

@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.ItemDisplayWidget;
@@ -18,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.dialog.body.DialogBody;
 import net.minecraft.server.dialog.body.ItemBody;
 import net.minecraft.server.dialog.body.PlainMessage;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DialogBodyHandlers {
@@ -32,13 +32,11 @@ public class DialogBodyHandlers {
       HANDLERS.put(var0, var1);
    }
 
-   @Nullable
-   private static <B extends DialogBody> DialogBodyHandler<B> getHandler(B var0) {
+   private static <B extends DialogBody> @Nullable DialogBodyHandler<B> getHandler(B var0) {
       return (DialogBodyHandler)HANDLERS.get(var0.mapCodec());
    }
 
-   @Nullable
-   public static <B extends DialogBody> LayoutElement createBodyElement(DialogScreen<?> var0, B var1) {
+   public static <B extends DialogBody> @Nullable LayoutElement createBodyElement(DialogScreen<?> var0, B var1) {
       DialogBodyHandler var2 = getHandler(var1);
       if (var2 == null) {
          LOGGER.warn("Unrecognized dialog body {}", var1);

@@ -1,6 +1,5 @@
 package net.minecraft.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -13,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -74,6 +73,7 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Options {
@@ -116,6 +116,8 @@ public class Options {
    private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.tooltip");
    private final OptionInstance<Boolean> improvedTransparency;
    private final OptionInstance<Boolean> ambientOcclusion;
+   private static final Component GRAPHICS_TOOLTIP_CHUNK_FADE = Component.translatable("options.chunkFade.tooltip");
+   private final OptionInstance<Double> chunkSectionFadeInTime;
    private static final Component PRIORITIZE_CHUNK_TOOLTIP_NONE = Component.translatable("options.prioritizeChunkUpdates.none.tooltip");
    private static final Component PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED = Component.translatable("options.prioritizeChunkUpdates.byPlayer.tooltip");
    private static final Component PRIORITIZE_CHUNK_TOOLTIP_NEARBY = Component.translatable("options.prioritizeChunkUpdates.nearby.tooltip");
@@ -135,8 +137,7 @@ public class Options {
    private static final Component HIGH_CONTRAST_BLOCK_OUTLINE_TOOLTIP = Component.translatable("options.accessibility.high_contrast_block_outline.tooltip");
    private final OptionInstance<Boolean> highContrastBlockOutline;
    private final OptionInstance<Boolean> narratorHotkey;
-   @Nullable
-   public String fullscreenVideoModeString;
+   public @Nullable String fullscreenVideoModeString;
    public boolean hideServerAddress;
    public boolean advancedItemTooltips;
    public boolean pauseOnLostFocus;
@@ -152,7 +153,9 @@ public class Options {
    private static final Component ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
    private final OptionInstance<Double> notificationDisplayTime;
    private final OptionInstance<Integer> mipmapLevels;
-   public boolean useNativeTransport;
+   private static final Component GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING = Component.translatable("options.maxAnisotropy.tooltip");
+   private final OptionInstance<Integer> maxAnisotropyBit;
+   private boolean useNativeTransport;
    private final OptionInstance<AttackIndicatorStatus> attackIndicator;
    public TutorialSteps tutorialStep;
    public boolean joinedFirstServer;
@@ -372,6 +375,10 @@ public class Options {
       return this.ambientOcclusion;
    }
 
+   public OptionInstance<Double> chunkSectionFadeInTime() {
+      return this.chunkSectionFadeInTime;
+   }
+
    public OptionInstance<PrioritizeChunkUpdates> prioritizeChunkUpdates() {
       return this.prioritizeChunkUpdates;
    }
@@ -468,6 +475,14 @@ public class Options {
 
    public OptionInstance<Integer> mipmapLevels() {
       return this.mipmapLevels;
+   }
+
+   public OptionInstance<Integer> maxAnisotropyBit() {
+      return this.maxAnisotropyBit;
+   }
+
+   public int maxAnisotropyValue() {
+      return Math.min(1 << (Integer)this.maxAnisotropyBit.get(), RenderSystem.getDevice().getMaxSupportedAnisotropy());
    }
 
    public OptionInstance<AttackIndicatorStatus> attackIndicator() {
@@ -793,6 +808,8 @@ public class Options {
          Minecraft.getInstance().levelRenderer.allChanged();
          this.setGraphicsPresetToCustom();
       });
+      this.chunkSectionFadeInTime = new OptionInstance<Double>("options.chunkFade", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CHUNK_FADE), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chunkFade.none") : Component.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", var1x)), (new OptionInstance.IntRange(0, 40)).xmap((var0) -> (double)var0 / 20.0, (var0) -> (int)(var0 * 20.0), true), Codec.doubleRange(0.0, 2.0), 0.75, (var0) -> {
+      });
       this.prioritizeChunkUpdates = new OptionInstance<PrioritizeChunkUpdates>("options.prioritizeChunkUpdates", (var0) -> {
          Tooltip var10000;
          switch (var0) {
@@ -841,6 +858,10 @@ public class Options {
       this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)), (new OptionInstance.IntRange(5, 100)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (var0) -> {
       });
       this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var1x) -> this.setGraphicsPresetToCustom());
+      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(0, 3), 2, (var1x) -> {
+         this.setGraphicsPresetToCustom();
+         Minecraft.getInstance().levelRenderer.onChangeMaxAnisotropy();
+      });
       this.useNativeTransport = true;
       this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
       });
@@ -1093,6 +1114,7 @@ public class Options {
    private void processDumpedOptions(OptionAccess var1) {
       var1.process("ao", this.ambientOcclusion);
       var1.process("biomeBlendRadius", this.biomeBlendRadius);
+      var1.process("chunkSectionFadeInTime", this.chunkSectionFadeInTime);
       var1.process("cutoutLeaves", this.cutoutLeaves);
       var1.process("enableVsync", this.enableVsync);
       var1.process("entityDistanceScaling", this.entityDistanceScaling);
@@ -1109,6 +1131,7 @@ public class Options {
       var1.process("fullscreen", this.fullscreen);
       var1.process("gamma", this.gamma);
       var1.process("guiScale", this.guiScale);
+      var1.process("maxAnisotropyBit", this.maxAnisotropyBit);
       var1.process("maxFps", this.framerateLimit);
       var1.process("improvedTransparency", this.improvedTransparency);
       var1.process("inactivityFpsLimit", this.inactivityFpsLimit);
@@ -1237,7 +1260,7 @@ public class Options {
          }
 
          CompoundTag var1 = new CompoundTag();
-         BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8);
+         BufferedReader var2 = Files.newReader(this.optionsFile, StandardCharsets.UTF_8);
 
          try {
             var2.lines().forEach((var1x) -> {
@@ -1267,8 +1290,7 @@ public class Options {
 
          final CompoundTag var8 = this.dataFix(var1);
          this.processOptions(new FieldAccess() {
-            @Nullable
-            private String getValue(String var1) {
+            private @Nullable String getValue(String var1) {
                Tag var2 = var8.get(var1);
                if (var2 == null) {
                   return null;
@@ -1446,8 +1468,7 @@ public class Options {
       this.broadcastOptions();
    }
 
-   @Nullable
-   private String getFullscreenVideoModeString() {
+   private @Nullable String getFullscreenVideoModeString() {
       Window var1 = this.minecraft.getWindow();
       if (var1 == null) {
          return this.fullscreenVideoModeString;

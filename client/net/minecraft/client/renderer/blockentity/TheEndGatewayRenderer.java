@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.EndGatewayRenderState;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatewayBlockEntity, EndGatewayRenderState> {
    private static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_gateway_beam.png");
@@ -27,7 +27,7 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
       return new EndGatewayRenderState();
    }
 
-   public void extractRenderState(TheEndGatewayBlockEntity var1, EndGatewayRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(TheEndGatewayBlockEntity var1, EndGatewayRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       super.extractRenderState(var1, var2, var3, var4, var5);
       Level var6 = var1.getLevel();
       if (var1.isSpawning() || var1.isCoolingDown() && var6 != null) {

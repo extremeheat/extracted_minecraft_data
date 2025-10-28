@@ -11,12 +11,12 @@ import java.lang.reflect.Type;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockElementFace> faces, @Nullable BlockElementRotation rotation, boolean shade, int lightEmission) {
    private static final boolean DEFAULT_RESCALE = false;
@@ -71,8 +71,7 @@ public record BlockElement(Vector3fc from, Vector3fc to, Map<Direction, BlockEle
          }
       }
 
-      @Nullable
-      private BlockElementRotation getRotation(JsonObject var1) {
+      private @Nullable BlockElementRotation getRotation(JsonObject var1) {
          BlockElementRotation var2 = null;
          if (var1.has("rotation")) {
             JsonObject var3 = GsonHelper.getAsJsonObject(var1, "rotation");

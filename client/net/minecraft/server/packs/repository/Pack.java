@@ -3,7 +3,6 @@ package net.minecraft.server.packs.repository;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
@@ -15,6 +14,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.world.flag.FeatureFlagSet;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Pack {
@@ -24,8 +24,7 @@ public class Pack {
    private final Metadata metadata;
    private final PackSelectionConfig selectionConfig;
 
-   @Nullable
-   public static Pack readMetaAndCreate(PackLocationInfo var0, ResourcesSupplier var1, PackType var2, PackSelectionConfig var3) {
+   public static @Nullable Pack readMetaAndCreate(PackLocationInfo var0, ResourcesSupplier var1, PackType var2, PackSelectionConfig var3) {
       PackFormat var4 = SharedConstants.getCurrentVersion().packVersion(var2);
       Metadata var5 = readPackMetadata(var0, var1, var4, var2);
       return var5 != null ? new Pack(var0, var1, var5, var3) : null;
@@ -39,8 +38,7 @@ public class Pack {
       this.selectionConfig = var4;
    }
 
-   @Nullable
-   public static Metadata readPackMetadata(PackLocationInfo var0, ResourcesSupplier var1, PackFormat var2, PackType var3) {
+   public static @Nullable Metadata readPackMetadata(PackLocationInfo var0, ResourcesSupplier var1, PackFormat var2, PackType var3) {
       try (PackResources var4 = var1.openPrimary(var0)) {
          PackMetadataSection var5 = (PackMetadataSection)var4.getMetadataSection(PackMetadataSection.forPackType(var3));
          if (var5 == null) {

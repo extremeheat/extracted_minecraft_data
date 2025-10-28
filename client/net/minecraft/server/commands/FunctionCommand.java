@@ -12,7 +12,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -38,6 +37,7 @@ import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import org.jspecify.annotations.Nullable;
 
 public class FunctionCommand {
    private static final DynamicCommandExceptionType ERROR_ARGUMENT_NOT_COMPOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.function.error.argument_not_compound", var0));
@@ -75,8 +75,7 @@ public class FunctionCommand {
       }
 
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
-         @Nullable
-         protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
+         protected @Nullable CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
             return null;
          }
       })).then(Commands.argument("arguments", CompoundTagArgument.compoundTag()).executes(new FunctionCustomExecutor() {
@@ -194,8 +193,7 @@ public class FunctionCommand {
          super();
       }
 
-      @Nullable
-      protected abstract CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+      protected abstract @Nullable CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
 
       public void runGuarded(CommandSourceStack var1, ContextChain<CommandSourceStack> var2, ChainModifiers var3, ExecutionControl<CommandSourceStack> var4) throws CommandSyntaxException {
          CommandContext var5 = var2.getTopContext().copyFor(var1);

@@ -1,15 +1,14 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import org.jspecify.annotations.Nullable;
 
 public class GenericMessageScreen extends Screen {
-   @Nullable
-   private FocusableTextWidget textWidget;
+   private @Nullable FocusableTextWidget textWidget;
 
    public GenericMessageScreen(Component var1) {
       super(var1);

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class StartCelebratingIfTargetDead {
    public StartCelebratingIfTargetDead() {
@@ -24,7 +24,7 @@ public class StartCelebratingIfTargetDead {
                   }
 
                   var5.setWithExpiry(var11.blockPosition(), (long)var0);
-                  if (var11.getType() != EntityType.PLAYER || var7.getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+                  if (var11.getType() != EntityType.PLAYER || (Boolean)var7.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
                      var3.erase();
                      var4.erase();
                   }

@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -17,8 +16,10 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BaseCommandBlock {
    private static final Component DEFAULT_NAME = Component.literal("@");
@@ -27,11 +28,9 @@ public abstract class BaseCommandBlock {
    private boolean updateLastExecution = true;
    private int successCount;
    private boolean trackOutput = true;
-   @Nullable
-   Component lastOutput;
+   @Nullable Component lastOutput;
    private String command = "";
-   @Nullable
-   private Component customName;
+   private @Nullable Component customName;
 
    public BaseCommandBlock() {
       super();
@@ -136,8 +135,7 @@ public abstract class BaseCommandBlock {
       }
    }
 
-   @Nullable
-   private CloseableCommandBlockSource createSource(ServerLevel var1) {
+   private @Nullable CloseableCommandBlockSource createSource(ServerLevel var1) {
       return this.trackOutput ? new CloseableCommandBlockSource(var1) : null;
    }
 
@@ -145,8 +143,7 @@ public abstract class BaseCommandBlock {
       return this.customName != null ? this.customName : DEFAULT_NAME;
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.customName;
    }
 
@@ -183,7 +180,7 @@ public abstract class BaseCommandBlock {
       }
 
       public boolean acceptsSuccess() {
-         return !this.closed && this.level.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+         return !this.closed && (Boolean)this.level.getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK);
       }
 
       public boolean acceptsFailure() {
@@ -191,7 +188,7 @@ public abstract class BaseCommandBlock {
       }
 
       public boolean shouldInformAdmins() {
-         return !this.closed && this.level.getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
+         return !this.closed && (Boolean)this.level.getGameRules().get(GameRules.COMMAND_BLOCK_OUTPUT);
       }
 
       public void sendSystemMessage(Component var1) {

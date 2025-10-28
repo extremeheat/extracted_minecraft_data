@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
@@ -18,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.SkullBlock;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
    private final SkullModelBase model;
@@ -64,8 +64,7 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      @Nullable
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
+      public @Nullable SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          SkullModelBase var2 = SkullBlockRenderer.createModel(var1.entityModelSet(), this.kind);
          ResourceLocation var3 = (ResourceLocation)this.textureOverride.map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/entity/" + var0x + ".png"))).orElse((Object)null);
          if (var2 == null) {

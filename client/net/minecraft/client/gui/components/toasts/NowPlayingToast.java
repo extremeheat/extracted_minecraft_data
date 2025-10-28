@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.color.ColorLerper;
@@ -12,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
+import org.jspecify.annotations.Nullable;
 
 public class NowPlayingToast implements Toast {
    private static final ResourceLocation NOW_PLAYING_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/now_playing");
@@ -28,8 +28,7 @@ public class NowPlayingToast implements Toast {
    private static int musicNoteColor;
    private boolean updateToast;
    private double notificationDisplayTimeMultiplier;
-   @Nullable
-   private static String currentSong;
+   private static @Nullable String currentSong;
    private final Minecraft minecraft;
    private Toast.Visibility wantedVisibility;
 

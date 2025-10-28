@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
+import org.jspecify.annotations.Nullable;
 
 public class MobBucketItem extends BucketItem {
    private final EntityType<? extends Mob> type;

@@ -1,13 +1,11 @@
 package net.minecraft.client.renderer.blockentity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.level.block.entity.SignText;
+import org.jspecify.annotations.Nullable;
 
 public class SignRenderState extends BlockEntityRenderState {
-   @Nullable
-   public SignText frontText;
-   @Nullable
-   public SignText backText;
+   public @Nullable SignText frontText;
+   public @Nullable SignText backText;
    public int textLineHeight;
    public int maxTextLineWidth;
    public boolean isTextFilteringEnabled;

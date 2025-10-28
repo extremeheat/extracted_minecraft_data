@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentMap;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class CopperGolemStatueBlockEntity extends BlockEntity {
    public CopperGolemStatueBlockEntity(BlockPos var1, BlockState var2) {
@@ -26,8 +26,7 @@ public class CopperGolemStatueBlockEntity extends BlockEntity {
       super.setChanged();
    }
 
-   @Nullable
-   public CopperGolem removeStatue(BlockState var1) {
+   public @Nullable CopperGolem removeStatue(BlockState var1) {
       CopperGolem var2 = EntityType.COPPER_GOLEM.create(this.level, EntitySpawnReason.TRIGGERED);
       if (var2 != null) {
          var2.setCustomName((Component)this.components().get(DataComponents.CUSTOM_NAME));

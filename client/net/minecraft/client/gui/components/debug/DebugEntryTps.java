@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.server.IntegratedServer;
@@ -10,6 +9,7 @@ import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryTps implements DebugScreenEntry {
    public DebugEntryTps() {

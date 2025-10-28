@@ -34,7 +34,7 @@ public final class EntitySelector {
 
    public static Predicate<Entity> withinDistance(double var0, double var2, double var4, double var6) {
       double var8 = var6 * var6;
-      return (var8x) -> var8x != null && var8x.distanceToSqr(var0, var2, var4) <= var8;
+      return (var8x) -> var8x.distanceToSqr(var0, var2, var4) <= var8;
    }
 
    public static Predicate<Entity> pushableBy(Entity var0) {

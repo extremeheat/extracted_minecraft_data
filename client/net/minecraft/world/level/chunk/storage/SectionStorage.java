@@ -27,7 +27,6 @@ import java.util.concurrent.CompletionException;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
@@ -38,6 +37,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SectionStorage<R, P> implements AutoCloseable {
@@ -111,8 +111,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
       return !this.dirtyChunks.isEmpty();
    }
 
-   @Nullable
-   protected Optional<R> get(long var1) {
+   protected @Nullable Optional<R> get(long var1) {
       return (Optional)this.storage.get(var1);
    }
 

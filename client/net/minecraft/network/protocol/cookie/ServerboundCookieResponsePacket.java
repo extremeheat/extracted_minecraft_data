@@ -1,21 +1,21 @@
 package net.minecraft.network.protocol.cookie;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
-public record ServerboundCookieResponsePacket(ResourceLocation key, @Nullable byte[] payload) implements Packet<ServerCookiePacketListener> {
+public record ServerboundCookieResponsePacket(ResourceLocation key, byte @Nullable [] payload) implements Packet<ServerCookiePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundCookieResponsePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundCookieResponsePacket>codec(ServerboundCookieResponsePacket::write, ServerboundCookieResponsePacket::new);
 
    private ServerboundCookieResponsePacket(FriendlyByteBuf var1) {
       this(var1.readResourceLocation(), (byte[])var1.readNullable(ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC));
    }
 
-   public ServerboundCookieResponsePacket(ResourceLocation var1, @Nullable byte[] var2) {
+   public ServerboundCookieResponsePacket(ResourceLocation var1, byte @Nullable [] var2) {
       super();
       this.key = var1;
       this.payload = var2;

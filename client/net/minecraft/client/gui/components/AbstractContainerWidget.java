@@ -1,16 +1,15 @@
 package net.minecraft.client.gui.components;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerWidget extends AbstractScrollArea implements ContainerEventHandler {
-   @Nullable
-   private GuiEventListener focused;
+   private @Nullable GuiEventListener focused;
    private boolean isDragging;
 
    public AbstractContainerWidget(int var1, int var2, int var3, int var4, Component var5) {
@@ -25,8 +24,7 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
       this.isDragging = var1;
    }
 
-   @Nullable
-   public GuiEventListener getFocused() {
+   public @Nullable GuiEventListener getFocused() {
       return this.focused;
    }
 
@@ -42,8 +40,7 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
       this.focused = var1;
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return ContainerEventHandler.super.nextFocusPath(var1);
    }
 

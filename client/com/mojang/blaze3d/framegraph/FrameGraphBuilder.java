@@ -11,7 +11,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class FrameGraphBuilder {
    private final List<InternalVirtualResource<?>> internalResources = new ArrayList();
@@ -38,7 +38,7 @@ public class FrameGraphBuilder {
       return this.createInternalResource(var1, var2, (Pass)null).handle;
    }
 
-   <T> InternalVirtualResource<T> createInternalResource(String var1, ResourceDescriptor<T> var2, @Nullable Pass var3) {
+   <T> InternalVirtualResource<T> createInternalResource(String var1, ResourceDescriptor<T> var2, Pass var3) {
       int var4 = this.internalResources.size();
       InternalVirtualResource var5 = new InternalVirtualResource(var4, var1, var3, var2);
       this.internalResources.add(var5);
@@ -239,13 +239,11 @@ public class FrameGraphBuilder {
    static class Handle<T> implements ResourceHandle<T> {
       final VirtualResource<T> holder;
       private final int version;
-      @Nullable
       final Pass createdBy;
       final BitSet readBy = new BitSet();
-      @Nullable
-      private Handle<T> aliasedBy;
+      private @Nullable Handle<T> aliasedBy;
 
-      Handle(VirtualResource<T> var1, int var2, @Nullable Pass var3) {
+      Handle(VirtualResource<T> var1, int var2, Pass var3) {
          super();
          this.holder = var1;
          this.version = var2;
@@ -283,7 +281,7 @@ public class FrameGraphBuilder {
       public final String name;
       public Handle<T> handle;
 
-      public VirtualResource(String var1, @Nullable Pass var2) {
+      public VirtualResource(String var1, Pass var2) {
          super();
          this.name = var1;
          this.handle = new Handle<T>(this, 0, var2);
@@ -299,10 +297,9 @@ public class FrameGraphBuilder {
    static class InternalVirtualResource<T> extends VirtualResource<T> {
       final int id;
       private final ResourceDescriptor<T> descriptor;
-      @Nullable
-      private T physicalResource;
+      private @Nullable T physicalResource;
 
-      public InternalVirtualResource(int var1, String var2, @Nullable Pass var3, ResourceDescriptor<T> var4) {
+      public InternalVirtualResource(int var1, String var2, Pass var3, ResourceDescriptor<T> var4) {
          super(var2, var3);
          this.id = var1;
          this.descriptor = var4;
@@ -333,7 +330,7 @@ public class FrameGraphBuilder {
    static class ExternalResource<T> extends VirtualResource<T> {
       private final T resource;
 
-      public ExternalResource(String var1, @Nullable Pass var2, T var3) {
+      public ExternalResource(String var1, Pass var2, T var3) {
          super(var1, var2);
          this.resource = var3;
       }

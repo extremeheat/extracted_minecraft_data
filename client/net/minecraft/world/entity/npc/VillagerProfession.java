@@ -2,7 +2,6 @@ package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.Nullable;
 
 public record VillagerProfession(Component name, Predicate<Holder<PoiType>> heldJobSite, Predicate<Holder<PoiType>> acquirableJobSite, ImmutableSet<Item> requestedItems, ImmutableSet<Block> secondaryPoi, @Nullable SoundEvent workSound) {
    public static final Predicate<Holder<PoiType>> ALL_ACQUIRABLE_JOBS = (var0) -> var0.is(PoiTypeTags.ACQUIRABLE_JOB_SITE);

@@ -8,9 +8,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.math.Quadrant;
 import java.lang.reflect.Type;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 
 public record BlockElementFace(@Nullable Direction cullForDirection, int tintIndex, String texture, @Nullable UVs uvs, Quadrant rotation) {
    public static final int NO_TINT = -1;
@@ -76,8 +76,7 @@ public record BlockElementFace(@Nullable Direction cullForDirection, int tintInd
          return GsonHelper.getAsString(var0, "texture");
       }
 
-      @Nullable
-      private static Direction getCullFacing(JsonObject var0) {
+      private static @Nullable Direction getCullFacing(JsonObject var0) {
          String var1 = GsonHelper.getAsString(var0, "cullface", "");
          return Direction.byName(var1);
       }
@@ -87,8 +86,7 @@ public record BlockElementFace(@Nullable Direction cullForDirection, int tintInd
          return Quadrant.parseJson(var1);
       }
 
-      @Nullable
-      private static UVs getUVs(JsonObject var0) {
+      private static @Nullable UVs getUVs(JsonObject var0) {
          if (!var0.has("uv")) {
             return null;
          } else {

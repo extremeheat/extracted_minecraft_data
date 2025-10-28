@@ -1,7 +1,6 @@
 package net.minecraft.world.level.material;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -18,7 +17,6 @@ import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -28,6 +26,8 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 
 public abstract class WaterFluid extends FlowingFluid {
    public WaterFluid() {
@@ -57,13 +57,12 @@ public abstract class WaterFluid extends FlowingFluid {
 
    }
 
-   @Nullable
-   public ParticleOptions getDripParticle() {
+   public @Nullable ParticleOptions getDripParticle() {
       return ParticleTypes.DRIPPING_WATER;
    }
 
    protected boolean canConvertToSource(ServerLevel var1) {
-      return var1.getGameRules().getBoolean(GameRules.RULE_WATER_SOURCE_CONVERSION);
+      return (Boolean)var1.getGameRules().get(GameRules.WATER_SOURCE_CONVERSION);
    }
 
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {

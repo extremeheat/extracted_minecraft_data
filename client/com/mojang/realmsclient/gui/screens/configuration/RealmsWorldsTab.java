@@ -14,13 +14,13 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    static final Component TITLE = Component.translatable("mco.configure.worlds.title");

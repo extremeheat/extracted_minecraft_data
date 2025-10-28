@@ -14,6 +14,10 @@ import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -32,7 +36,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
@@ -69,6 +72,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.client.renderer.state.ParticlesRenderState;
 import net.minecraft.client.renderer.state.SkyRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -107,8 +111,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
 public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseable {
    private static final ResourceLocation TRANSPARENCY_POST_CHAIN_ID = ResourceLocation.withDefaultNamespace("transparency");
@@ -121,26 +125,22 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
    private final RenderBuffers renderBuffers;
-   @Nullable
-   private SkyRenderer skyRenderer;
+   private @Nullable SkyRenderer skyRenderer;
    private final CloudRenderer cloudRenderer = new CloudRenderer();
    private final WorldBorderRenderer worldBorderRenderer = new WorldBorderRenderer();
    private final WeatherEffectRenderer weatherEffectRenderer = new WeatherEffectRenderer();
    private final ParticlesRenderState particlesRenderState = new ParticlesRenderState();
    public final DebugRenderer debugRenderer = new DebugRenderer();
    public final GameTestBlockHighlightRenderer gameTestBlockHighlightRenderer = new GameTestBlockHighlightRenderer();
-   @Nullable
-   private ClientLevel level;
+   private @Nullable ClientLevel level;
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections = new ObjectArrayList(10000);
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> nearbyVisibleSections = new ObjectArrayList(50);
-   @Nullable
-   private ViewArea viewArea;
+   private @Nullable ViewArea viewArea;
    private int ticks;
    private final Int2ObjectMap<BlockDestructionProgress> destroyingBlocks = new Int2ObjectOpenHashMap();
    private final Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress = new Long2ObjectOpenHashMap();
-   @Nullable
-   private RenderTarget entityOutlineTarget;
+   private @Nullable RenderTarget entityOutlineTarget;
    private final LevelTargetBundle targets = new LevelTargetBundle();
    private int lastCameraSectionX = -2147483648;
    private int lastCameraSectionY = -2147483648;
@@ -150,18 +150,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private double prevCamZ = 4.9E-324;
    private double prevCamRotX = 4.9E-324;
    private double prevCamRotY = 4.9E-324;
-   @Nullable
-   private SectionRenderDispatcher sectionRenderDispatcher;
+   private @Nullable SectionRenderDispatcher sectionRenderDispatcher;
    private int lastViewDistance = -1;
    private boolean captureFrustum;
-   @Nullable
-   private Frustum capturedFrustum;
-   @Nullable
-   private BlockPos lastTranslucentSortBlockPos;
+   private @Nullable Frustum capturedFrustum;
+   private @Nullable BlockPos lastTranslucentSortBlockPos;
    private int translucencyResortIterationIndex;
    private final LevelRenderState levelRenderState;
    private final SubmitNodeStorage submitNodeStorage;
    private final FeatureRenderDispatcher featureRenderDispatcher;
+   private @Nullable GpuSampler chunkLayerSampler;
    private final SimpleGizmoCollector collectedGizmos = new SimpleGizmoCollector();
 
    public LevelRenderer(Minecraft var1, EntityRenderDispatcher var2, BlockEntityRenderDispatcher var3, RenderBuffers var4, LevelRenderState var5, FeatureRenderDispatcher var6) {
@@ -184,6 +182,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.skyRenderer.close();
       }
 
+      if (this.chunkLayerSampler != null) {
+         this.chunkLayerSampler.close();
+      }
+
       this.cloudRenderer.close();
    }
 
@@ -204,8 +206,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.entityOutlineTarget = new TextureTarget("Entity Outline", this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), true);
    }
 
-   @Nullable
-   private PostChain getTransparencyChain() {
+   private @Nullable PostChain getTransparencyChain() {
       if (!Minecraft.useShaderTransparency()) {
          return null;
       } else {
@@ -294,8 +295,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   @Nullable
-   public String getSectionStatistics() {
+   public @Nullable String getSectionStatistics() {
       if (this.viewArea == null) {
          return null;
       } else {
@@ -305,8 +305,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   @Nullable
-   public SectionRenderDispatcher getSectionRenderDispatcher() {
+   public @Nullable SectionRenderDispatcher getSectionRenderDispatcher() {
       return this.sectionRenderDispatcher;
    }
 
@@ -332,8 +331,15 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return var1;
    }
 
-   @Nullable
-   public String getEntityStatistics() {
+   public void onChangeMaxAnisotropy() {
+      if (this.chunkLayerSampler != null) {
+         this.chunkLayerSampler.close();
+      }
+
+      this.chunkLayerSampler = null;
+   }
+
+   public @Nullable String getEntityStatistics() {
       if (this.level == null) {
          return null;
       } else {
@@ -507,12 +513,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.addParticlesPass(var16, var8);
       CloudStatus var23 = this.minecraft.options.getCloudsType();
       if (var23 != CloudStatus.OFF) {
-         float var24 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.CLOUD_OPACITY, var11);
-         if (var24 > 0.0F) {
+         int var24 = this.level.getCloudColor(var11, var4);
+         if (ARGB.alpha(var24) > 0) {
             float var25 = (float)this.level.getGameTime() + var11;
-            int var26 = this.level.getCloudColor(var11);
-            float var27 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.CLOUD_HEIGHT, var11);
-            this.addCloudsPass(var16, var23, this.levelRenderState.cameraRenderState.pos, var25, ARGB.color(var24, var26), var27);
+            float var26 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.CLOUD_HEIGHT, var11);
+            this.addCloudsPass(var16, var23, this.levelRenderState.cameraRenderState.pos, var25, var24, var26);
          }
       }
 
@@ -567,8 +572,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          double var13x = var10x.y();
          double var15 = var10x.z();
          var8.push("terrain");
+         if (this.chunkLayerSampler == null) {
+            this.chunkLayerSampler = RenderSystem.getDevice().createSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, this.minecraft.options.maxAnisotropyValue());
+         }
+
          ChunkSectionsToRender var17 = this.prepareChunkRenders(var3, var11x, var13x, var15);
-         var17.renderGroup(ChunkSectionLayerGroup.OPAQUE);
+         var17.renderGroup(ChunkSectionLayerGroup.OPAQUE, this.chunkLayerSampler);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
          if (var12 != null) {
             ((RenderTarget)var12.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
@@ -626,9 +635,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          var8.push("translucent");
-         var17.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT);
+         var17.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
          var8.popPush("string");
-         var17.renderGroup(ChunkSectionLayerGroup.TRIPWIRE);
+         var17.renderGroup(ChunkSectionLayerGroup.TRIPWIRE, this.chunkLayerSampler);
          if (var5) {
             this.renderBlockOutline(var19, var21, true, var6);
          }
@@ -991,41 +1000,48 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var9.put(var14, new ArrayList());
       }
 
-      ArrayList var25 = new ArrayList();
-      Vector4f var26 = new Vector4f(1.0F, 1.0F, 1.0F, 1.0F);
-      Matrix4f var27 = new Matrix4f();
+      ArrayList var31 = new ArrayList();
+      long var32 = (long)Mth.floor((Double)this.minecraft.options.chunkSectionFadeInTime().get() * 1000.0);
+      GpuTextureView var33 = this.minecraft.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
+      int var15 = var33.getWidth(0);
+      int var16 = var33.getWidth(0);
 
       while(var8.hasNext()) {
-         SectionRenderDispatcher.RenderSection var28 = (SectionRenderDispatcher.RenderSection)var8.next();
-         SectionMesh var15 = var28.getSectionMesh();
+         SectionRenderDispatcher.RenderSection var17 = (SectionRenderDispatcher.RenderSection)var8.next();
+         SectionMesh var18 = var17.getSectionMesh();
+         BlockPos var19 = var17.getRenderOrigin();
+         long var20 = System.currentTimeMillis();
+         int var22 = -1;
 
-         for(ChunkSectionLayer var19 : ChunkSectionLayer.values()) {
-            SectionBuffers var20 = var15.getBuffers(var19);
-            if (var20 != null) {
-               GpuBuffer var21;
-               VertexFormat.IndexType var22;
-               if (var20.getIndexBuffer() == null) {
-                  if (var20.getIndexCount() > var10) {
-                     var10 = var20.getIndexCount();
-                  }
-
-                  var21 = null;
-                  var22 = null;
-               } else {
-                  var21 = var20.getIndexBuffer();
-                  var22 = var20.getIndexType();
+         for(ChunkSectionLayer var26 : ChunkSectionLayer.values()) {
+            SectionBuffers var27 = var18.getBuffers(var26);
+            if (var27 != null) {
+               if (var22 == -1) {
+                  var22 = var31.size();
+                  var31.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(var1), var19.getX(), var19.getY(), var19.getZ(), var17.getVisibility(var20, var32), var15, var16));
                }
 
-               BlockPos var23 = var28.getRenderOrigin();
-               int var24 = var25.size();
-               var25.add(new DynamicUniforms.Transform(var1, var26, new Vector3f((float)((double)var23.getX() - var2), (float)((double)var23.getY() - var4), (float)((double)var23.getZ() - var6)), var27));
-               ((List)var9.get(var19)).add(new RenderPass.Draw(0, var20.getVertexBuffer(), var21, var22, 0, var20.getIndexCount(), (var1x, var2x) -> var2x.upload("DynamicTransforms", var1x[var24])));
+               GpuBuffer var28;
+               VertexFormat.IndexType var29;
+               if (var27.getIndexBuffer() == null) {
+                  if (var27.getIndexCount() > var10) {
+                     var10 = var27.getIndexCount();
+                  }
+
+                  var28 = null;
+                  var29 = null;
+               } else {
+                  var28 = var27.getIndexBuffer();
+                  var29 = var27.getIndexType();
+               }
+
+               ((List)var9.get(var26)).add(new RenderPass.Draw(0, var27.getVertexBuffer(), var28, var29, 0, var27.getIndexCount(), (var1x, var2x) -> var2x.upload("ChunkSection", var1x[var22])));
             }
          }
       }
 
-      GpuBufferSlice[] var29 = RenderSystem.getDynamicUniforms().writeTransforms((DynamicUniforms.Transform[])var25.toArray(new DynamicUniforms.Transform[0]));
-      return new ChunkSectionsToRender(var9, var10, var29);
+      GpuBufferSlice[] var34 = RenderSystem.getDynamicUniforms().writeChunkSections((DynamicUniforms.ChunkSectionInfo[])var31.toArray(new DynamicUniforms.ChunkSectionInfo[0]));
+      return new ChunkSectionsToRender(var33, var9, var10, var34);
    }
 
    public void endFrame() {
@@ -1315,33 +1331,27 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return var2 != null && var2.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED;
    }
 
-   @Nullable
-   public RenderTarget entityOutlineTarget() {
+   public @Nullable RenderTarget entityOutlineTarget() {
       return this.targets.entityOutline != null ? (RenderTarget)this.targets.entityOutline.get() : null;
    }
 
-   @Nullable
-   public RenderTarget getTranslucentTarget() {
+   public @Nullable RenderTarget getTranslucentTarget() {
       return this.targets.translucent != null ? (RenderTarget)this.targets.translucent.get() : null;
    }
 
-   @Nullable
-   public RenderTarget getItemEntityTarget() {
+   public @Nullable RenderTarget getItemEntityTarget() {
       return this.targets.itemEntity != null ? (RenderTarget)this.targets.itemEntity.get() : null;
    }
 
-   @Nullable
-   public RenderTarget getParticlesTarget() {
+   public @Nullable RenderTarget getParticlesTarget() {
       return this.targets.particles != null ? (RenderTarget)this.targets.particles.get() : null;
    }
 
-   @Nullable
-   public RenderTarget getWeatherTarget() {
+   public @Nullable RenderTarget getWeatherTarget() {
       return this.targets.weather != null ? (RenderTarget)this.targets.weather.get() : null;
    }
 
-   @Nullable
-   public RenderTarget getCloudsTarget() {
+   public @Nullable RenderTarget getCloudsTarget() {
       return this.targets.clouds != null ? (RenderTarget)this.targets.clouds.get() : null;
    }
 
@@ -1355,8 +1365,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return this.sectionOcclusionGraph;
    }
 
-   @Nullable
-   public Frustum getCapturedFrustum() {
+   public @Nullable Frustum getCapturedFrustum() {
       return this.capturedFrustum;
    }
 

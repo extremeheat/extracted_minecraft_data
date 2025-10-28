@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DebugRenderer {
    private final List<SimpleDebugRenderer> renderers = new ArrayList();

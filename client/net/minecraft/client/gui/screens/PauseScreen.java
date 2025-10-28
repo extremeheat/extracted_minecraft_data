@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -36,6 +35,7 @@ import net.minecraft.server.dialog.Dialogs;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class PauseScreen extends Screen {
    private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
@@ -57,8 +57,7 @@ public class PauseScreen extends Screen {
    private static final Component PAUSED = Component.translatable("menu.paused");
    private static final Tooltip CUSTOM_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("menu.custom_options.tooltip"));
    private final boolean showPauseMenu;
-   @Nullable
-   private Button disconnectButton;
+   private @Nullable Button disconnectButton;
 
    public PauseScreen(boolean var1) {
       super(var1 ? GAME : PAUSED);

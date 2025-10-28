@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -32,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.function.TriConsumer;
+import org.jspecify.annotations.Nullable;
 
 public record ItemAttributeModifiers(List<Entry> modifiers) {
    public static final ItemAttributeModifiers EMPTY = new ItemAttributeModifiers(List.of());

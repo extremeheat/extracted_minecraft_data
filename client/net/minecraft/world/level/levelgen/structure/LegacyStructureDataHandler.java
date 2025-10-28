@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -24,6 +24,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.LegacyTagFixer;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import org.jspecify.annotations.Nullable;
 
 public class LegacyStructureDataHandler implements LegacyTagFixer {
    public static final int LAST_MONOLYTH_STRUCTURE_DATA_VERSION = 1493;
@@ -223,17 +224,17 @@ public class LegacyStructureDataHandler implements LegacyTagFixer {
       }
    }
 
-   public static LegacyStructureDataHandler getLegacyStructureHandler(ResourceKey<Level> var0, @Nullable DimensionDataStorage var1, DataFixer var2) {
+   public static Supplier<LegacyTagFixer> getLegacyTagFixer(ResourceKey<Level> var0, Supplier<@Nullable DimensionDataStorage> var1, DataFixer var2) {
       if (var0 == Level.OVERWORLD) {
-         return new LegacyStructureDataHandler(var1, ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"), var2);
+         return () -> new LegacyStructureDataHandler((DimensionDataStorage)var1.get(), ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"), var2);
       } else if (var0 == Level.NETHER) {
          ImmutableList var4 = ImmutableList.of("Fortress");
-         return new LegacyStructureDataHandler(var1, var4, var4, var2);
+         return () -> new LegacyStructureDataHandler((DimensionDataStorage)var1.get(), var4, var4, var2);
       } else if (var0 == Level.END) {
          ImmutableList var3 = ImmutableList.of("EndCity");
-         return new LegacyStructureDataHandler(var1, var3, var3, var2);
+         return () -> new LegacyStructureDataHandler((DimensionDataStorage)var1.get(), var3, var3, var2);
       } else {
-         throw new RuntimeException(String.format(Locale.ROOT, "Unknown dimension type : %s", var0));
+         return LegacyTagFixer.EMPTY;
       }
    }
 }

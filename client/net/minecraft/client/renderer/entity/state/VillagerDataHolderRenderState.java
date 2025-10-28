@@ -1,9 +1,8 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.npc.VillagerData;
+import org.jspecify.annotations.Nullable;
 
 public interface VillagerDataHolderRenderState {
-   @Nullable
-   VillagerData getVillagerData();
+   @Nullable VillagerData getVillagerData();
 }

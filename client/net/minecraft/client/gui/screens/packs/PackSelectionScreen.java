@@ -24,11 +24,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -52,6 +50,7 @@ import net.minecraft.server.packs.repository.PackDetector;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PackSelectionScreen extends Screen {
@@ -69,18 +68,13 @@ public class PackSelectionScreen extends Screen {
    private static final ResourceLocation DEFAULT_ICON;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final PackSelectionModel model;
-   @Nullable
-   private Watcher watcher;
+   private @Nullable Watcher watcher;
    private long ticksToReload;
-   @Nullable
-   private TransferableSelectionList availablePackList;
-   @Nullable
-   private TransferableSelectionList selectedPackList;
-   @Nullable
-   private EditBox search;
+   private @Nullable TransferableSelectionList availablePackList;
+   private @Nullable TransferableSelectionList selectedPackList;
+   private @Nullable EditBox search;
    private final Path packDir;
-   @Nullable
-   private Button doneButton;
+   private @Nullable Button doneButton;
    private final Map<String, ResourceLocation> packIcons = Maps.newHashMap();
 
    public PackSelectionScreen(PackRepository var1, Consumer<PackRepository> var2, Path var3, Component var4) {
@@ -119,8 +113,8 @@ public class PackSelectionScreen extends Screen {
       this.search = (EditBox)var1.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
       this.search.setHint(SEARCH);
       this.search.setResponder(this::updateFilteredEntries);
-      this.availablePackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
-      this.selectedPackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
+      this.availablePackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
+      this.selectedPackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
       this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
@@ -175,7 +169,7 @@ public class PackSelectionScreen extends Screen {
 
    }
 
-   private void populateLists(@Nullable PackSelectionModel.EntryBase var1) {
+   private void populateLists(PackSelectionModel.EntryBase var1) {
       if (this.selectedPackList != null) {
          this.selectedPackList.updateList(this.model.getSelected(), var1);
       }
@@ -190,17 +184,6 @@ public class PackSelectionScreen extends Screen {
 
       if (this.doneButton != null) {
          this.doneButton.active = !this.selectedPackList.children().isEmpty();
-      }
-
-   }
-
-   public void clearSelected() {
-      if (this.selectedPackList != null) {
-         this.selectedPackList.setSelected((AbstractSelectionList.Entry)null);
-      }
-
-      if (this.availablePackList != null) {
-         this.availablePackList.setSelected((AbstractSelectionList.Entry)null);
       }
 
    }
@@ -416,8 +399,7 @@ public class PackSelectionScreen extends Screen {
          }
       }
 
-      @Nullable
-      public static Watcher create(Path var0) {
+      public static @Nullable Watcher create(Path var0) {
          try {
             return new Watcher(var0);
          } catch (IOException var2) {

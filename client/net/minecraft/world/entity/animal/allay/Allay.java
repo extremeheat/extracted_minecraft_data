@@ -5,7 +5,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
@@ -53,7 +52,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -63,9 +61,11 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Allay extends PathfinderMob implements InventoryCarrier, VibrationSystem {
    private static final Vec3i ITEM_PICKUP_REACH = new Vec3i(1, 1, 1);
@@ -86,8 +86,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private final VibrationSystem.User vibrationUser;
    private final DynamicGameEventListener<JukeboxListener> dynamicJukeboxListener;
    private final SimpleContainer inventory = new SimpleContainer(1);
-   @Nullable
-   private BlockPos jukeboxPos;
+   private @Nullable BlockPos jukeboxPos;
    private long duplicationCooldown = 0L;
    private float holdingItemAnimationTicks;
    private float holdingItemAnimationTicks0;
@@ -309,7 +308,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
       ItemStack var3 = this.getItemInHand(InteractionHand.MAIN_HAND);
-      return !var3.isEmpty() && var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.inventory.canAddItem(var2) && this.allayConsidersItemEqual(var3, var2);
+      return !var3.isEmpty() && (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && this.inventory.canAddItem(var2) && this.allayConsidersItemEqual(var3, var2);
    }
 
    private boolean allayConsidersItemEqual(ItemStack var1, ItemStack var2) {

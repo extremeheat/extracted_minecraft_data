@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class ParallelMapTransform {
    private static final int DEFAULT_TASKS_PER_THREAD = 16;
@@ -16,7 +16,7 @@ public class ParallelMapTransform {
       super();
    }
 
-   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, V> var1, int var2, Executor var3) {
+   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, @Nullable V> var1, int var2, Executor var3) {
       int var4 = var0.size();
       if (var4 == 0) {
          return CompletableFuture.completedFuture(Map.of());
@@ -34,17 +34,17 @@ public class ParallelMapTransform {
       }
    }
 
-   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, V> var1, Executor var2) {
+   public static <K, U, V> CompletableFuture<Map<K, V>> schedule(Map<K, U> var0, BiFunction<K, U, @Nullable V> var1, Executor var2) {
       int var3 = Util.maxAllowedExecutorThreads() * 16;
       return schedule(var0, var1, var3, var2);
    }
 
-   static record Container<K, U, V>(BiFunction<K, U, V> operation, Object[] keys, Object[] values) {
+   static record Container<K, U, V>(BiFunction<K, U, V> operation, @Nullable Object[] keys, @Nullable Object[] values) {
       public Container(BiFunction<K, U, V> var1, int var2) {
          this(var1, new Object[var2], new Object[var2]);
       }
 
-      private Container(BiFunction<K, U, V> var1, Object[] var2, Object[] var3) {
+      private Container(BiFunction<K, U, V> var1, @Nullable Object[] var2, @Nullable Object[] var3) {
          super();
          this.operation = var1;
          this.keys = var2;
@@ -56,18 +56,15 @@ public class ParallelMapTransform {
          this.values[var1] = var3;
       }
 
-      @Nullable
-      private K key(int var1) {
+      private @Nullable K key(int var1) {
          return (K)this.keys[var1];
       }
 
-      @Nullable
-      private V output(int var1) {
+      private @Nullable V output(int var1) {
          return (V)this.values[var1];
       }
 
-      @Nullable
-      private U input(int var1) {
+      private @Nullable U input(int var1) {
          return (U)this.values[var1];
       }
 

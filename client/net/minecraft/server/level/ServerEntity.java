@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -46,6 +45,7 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerEntity {
@@ -69,8 +69,7 @@ public class ServerEntity {
    private List<Entity> lastPassengers = Collections.emptyList();
    private boolean wasRiding;
    private boolean wasOnGround;
-   @Nullable
-   private List<SynchedEntityData.DataValue<?>> trackedDataValues;
+   private @Nullable List<SynchedEntityData.DataValue<?>> trackedDataValues;
 
    public ServerEntity(ServerLevel var1, Entity var2, int var3, boolean var4, Synchronizer var5) {
       super();

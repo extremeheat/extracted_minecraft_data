@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
@@ -26,6 +25,7 @@ import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class FontSet implements AutoCloseable {
    private static final float LARGE_FORWARD_ADVANCE = 32.0F;
@@ -34,8 +34,7 @@ public class FontSet implements AutoCloseable {
          return SpecialGlyphs.MISSING;
       }
 
-      @Nullable
-      public TextRenderable.Styled createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
+      public TextRenderable.@Nullable Styled createGlyph(float var1, float var2, int var3, int var4, Style var5, float var6, float var7) {
          return null;
       }
    };
@@ -57,8 +56,7 @@ public class FontSet implements AutoCloseable {
    BakedGlyph missingGlyph;
    private final Supplier<BakedGlyph> missingGlyphGetter;
    private final SelectedGlyphs missingSelectedGlyphs;
-   @Nullable
-   private EffectGlyph whiteGlyph;
+   private @Nullable EffectGlyph whiteGlyph;
    private final GlyphSource anyGlyphs;
    private final GlyphSource nonFishyGlyphs;
 
@@ -181,8 +179,7 @@ public class FontSet implements AutoCloseable {
 
    class DelayedBake implements Supplier<BakedGlyph> {
       final UnbakedGlyph unbaked;
-      @Nullable
-      private BakedGlyph baked;
+      private @Nullable BakedGlyph baked;
 
       DelayedBake(final UnbakedGlyph var2) {
          super();

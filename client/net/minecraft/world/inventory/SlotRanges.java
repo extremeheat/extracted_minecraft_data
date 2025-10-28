@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
+import org.jspecify.annotations.Nullable;
 
 public class SlotRanges {
    private static final List<SlotRange> SLOTS = (List)Util.make(new ArrayList(), (var0) -> {
@@ -45,7 +45,7 @@ public class SlotRanges {
       addSlotRange(var0, "player.crafting.", 500, 4);
    });
    public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray((var0) -> new SlotRange[var0]));
-   private static final Function<String, SlotRange> NAME_LOOKUP;
+   private static final Function<String, @Nullable SlotRange> NAME_LOOKUP;
 
    public SlotRanges() {
       super();
@@ -83,8 +83,7 @@ public class SlotRanges {
       var0.add(create(var1, var2));
    }
 
-   @Nullable
-   public static SlotRange nameToIds(String var0) {
+   public static @Nullable SlotRange nameToIds(String var0) {
       return (SlotRange)NAME_LOOKUP.apply(var0);
    }
 

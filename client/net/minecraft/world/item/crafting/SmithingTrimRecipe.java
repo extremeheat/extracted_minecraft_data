@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -19,14 +18,14 @@ import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
+import org.jspecify.annotations.Nullable;
 
 public class SmithingTrimRecipe implements SmithingRecipe {
    final Ingredient template;
    final Ingredient base;
    final Ingredient addition;
    final Holder<TrimPattern> pattern;
-   @Nullable
-   private PlacementInfo placementInfo;
+   private @Nullable PlacementInfo placementInfo;
 
    public SmithingTrimRecipe(Ingredient var1, Ingredient var2, Ingredient var3, Holder<TrimPattern> var4) {
       super();

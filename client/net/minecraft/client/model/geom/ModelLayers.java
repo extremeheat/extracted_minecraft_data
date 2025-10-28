@@ -51,6 +51,8 @@ public class ModelLayers {
    public static final ModelLayerLocation CAMEL_BABY = register("camel_baby");
    public static final ModelLayerLocation CAMEL_SADDLE = register("camel", "saddle");
    public static final ModelLayerLocation CAMEL_BABY_SADDLE = register("camel_baby", "saddle");
+   public static final ModelLayerLocation CAMEL_HUSK_SADDLE = register("camel_husk", "saddle");
+   public static final ModelLayerLocation CAMEL_HUSK_BABY_SADDLE = register("camel_husk_baby", "saddle");
    public static final ModelLayerLocation CAT = register("cat");
    public static final ModelLayerLocation CAT_BABY = register("cat_baby");
    public static final ModelLayerLocation CAT_BABY_COLLAR = register("cat_baby", "collar");
@@ -177,6 +179,9 @@ public class ModelLayers {
    public static final ModelLayerLocation PALE_OAK_CHEST_BOAT = register("chest_boat/pale_oak");
    public static final ModelLayerLocation PANDA = register("panda");
    public static final ModelLayerLocation PANDA_BABY = register("panda_baby");
+   public static final ModelLayerLocation PARCHED = register("parched");
+   public static final ArmorModelSet<ModelLayerLocation> PARCHED_ARMOR = registerArmorSet("parched");
+   public static final ModelLayerLocation PARCHED_OUTER_LAYER = register("parched", "outer");
    public static final ModelLayerLocation PARROT = register("parrot");
    public static final ModelLayerLocation PHANTOM = register("phantom");
    public static final ModelLayerLocation PIG = register("pig");

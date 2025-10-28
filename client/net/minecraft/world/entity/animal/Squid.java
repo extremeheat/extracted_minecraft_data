@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Squid extends AgeableWaterCreature {
    public float xBodyRot;
@@ -88,8 +88,7 @@ public class Squid extends AgeableWaterCreature {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -212,8 +211,7 @@ public class Squid extends AgeableWaterCreature {
       return this.movementVector.lengthSqr() > 9.999999747378752E-6;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.05F));
       return super.finalizeSpawn(var1, var2, var3, var5);
    }

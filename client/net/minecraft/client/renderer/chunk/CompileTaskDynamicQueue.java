@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.chunk;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import javax.annotation.Nullable;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class CompileTaskDynamicQueue {
    private static final int MAX_RECOMPILE_QUOTA = 2;
@@ -19,8 +19,7 @@ public class CompileTaskDynamicQueue {
       this.tasks.add(var1);
    }
 
-   @Nullable
-   public synchronized SectionRenderDispatcher.RenderSection.CompileTask poll(Vec3 var1) {
+   public synchronized SectionRenderDispatcher.RenderSection.@Nullable CompileTask poll(Vec3 var1) {
       int var2 = -1;
       int var3 = -1;
       double var4 = 1.7976931348623157E308;
@@ -61,8 +60,7 @@ public class CompileTaskDynamicQueue {
       return this.tasks.size();
    }
 
-   @Nullable
-   private SectionRenderDispatcher.RenderSection.CompileTask removeTaskByIndex(int var1) {
+   private SectionRenderDispatcher.RenderSection.@Nullable CompileTask removeTaskByIndex(int var1) {
       return var1 >= 0 ? (SectionRenderDispatcher.RenderSection.CompileTask)this.tasks.remove(var1) : null;
    }
 

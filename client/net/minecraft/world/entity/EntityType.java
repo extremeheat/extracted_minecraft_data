@@ -3,13 +3,12 @@ package net.minecraft.world.entity;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,6 +59,7 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.camel.Camel;
+import net.minecraft.world.entity.animal.camel.CamelHusk;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.Tadpole;
@@ -103,6 +103,7 @@ import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.MagmaCube;
+import net.minecraft.world.entity.monster.Parched;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Ravager;
@@ -183,6 +184,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
@@ -212,6 +214,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Breeze> BREEZE;
    public static final EntityType<BreezeWindCharge> BREEZE_WIND_CHARGE;
    public static final EntityType<Camel> CAMEL;
+   public static final EntityType<CamelHusk> CAMEL_HUSK;
    public static final EntityType<Cat> CAT;
    public static final EntityType<CaveSpider> CAVE_SPIDER;
    public static final EntityType<Boat> CHERRY_BOAT;
@@ -288,6 +291,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Boat> PALE_OAK_BOAT;
    public static final EntityType<ChestBoat> PALE_OAK_CHEST_BOAT;
    public static final EntityType<Panda> PANDA;
+   public static final EntityType<Parched> PARCHED;
    public static final EntityType<Parrot> PARROT;
    public static final EntityType<Phantom> PHANTOM;
    public static final EntityType<Pig> PIG;
@@ -358,8 +362,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    private final int clientTrackingRange;
    private final int updateInterval;
    private final String descriptionId;
-   @Nullable
-   private Component description;
+   private @Nullable Component description;
    private final Optional<ResourceKey<LootTable>> lootTable;
    private final EntityDimensions dimensions;
    private final float spawnDimensionsScale;
@@ -406,8 +409,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       this.allowedInPeaceful = var15;
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
+   public @Nullable T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
       Consumer var8;
       if (var2 != null) {
          var8 = createDefaultStackConfig(var1, var2, var3);
@@ -437,13 +439,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var4 != null ? var0.andThen((var3x) -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
+   public @Nullable T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
       return (T)this.spawn(var1, (Consumer)null, var2, var3, false, false);
    }
 
-   @Nullable
-   public T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
+   public @Nullable T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
       Entity var7 = this.create(var1, var2, var3, var4, var5, var6);
       if (var7 != null) {
          var1.addFreshEntityWithPassengers(var7);
@@ -456,8 +456,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)var7;
    }
 
-   @Nullable
-   public T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
+   public @Nullable T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
       Entity var7 = this.create(var1, var4);
       if (var7 == null) {
          return null;
@@ -573,8 +572,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.requiredFeatures;
    }
 
-   @Nullable
-   public T create(Level var1, EntitySpawnReason var2) {
+   public @Nullable T create(Level var1, EntitySpawnReason var2) {
       return (T)(!this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1));
    }
 
@@ -612,31 +610,31 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var0.<EntityType<?>>read("id", CODEC);
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
+   public static @Nullable Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
       try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(LOGGER)) {
          return loadEntityRecursive(TagValueInput.create(var4, var1.registryAccess(), var0), var1, var2, var3);
       }
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(EntityType<?> var0, CompoundTag var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
+   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, CompoundTag var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
       try (ProblemReporter.ScopedCollector var5 = new ProblemReporter.ScopedCollector(LOGGER)) {
          return loadEntityRecursive(var0, TagValueInput.create(var5, var2.registryAccess(), var1), var2, var3, var4);
       }
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
-      return (Entity)loadStaticEntity(var0, var1, var2).map(var3).map((var4) -> loadPassengersRecursive(var4, var0, var1, var2, var3)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(ValueInput var0, Level var1, EntitySpawnReason var2, EntityProcessor var3) {
+      Optional var10000 = loadStaticEntity(var0, var1, var2);
+      Objects.requireNonNull(var3);
+      return (Entity)var10000.map(var3::process).map((var4) -> loadPassengersRecursive(var4, var0, var1, var2, var3)).orElse((Object)null);
    }
 
-   @Nullable
-   public static Entity loadEntityRecursive(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
-      return (Entity)loadStaticEntity(var0, var1, var2, var3).map(var4).map((var4x) -> loadPassengersRecursive(var4x, var1, var2, var3, var4)).orElse((Object)null);
+   public static @Nullable Entity loadEntityRecursive(EntityType<?> var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
+      Optional var10000 = loadStaticEntity(var0, var1, var2, var3);
+      Objects.requireNonNull(var4);
+      return (Entity)var10000.map(var4::process).map((var4x) -> loadPassengersRecursive(var4x, var1, var2, var3, var4)).orElse((Object)null);
    }
 
-   private static Entity loadPassengersRecursive(Entity var0, ValueInput var1, Level var2, EntitySpawnReason var3, Function<Entity, Entity> var4) {
+   private static Entity loadPassengersRecursive(Entity var0, ValueInput var1, Level var2, EntitySpawnReason var3, EntityProcessor var4) {
       for(ValueInput var6 : var1.childrenListOrEmpty("Passengers")) {
          Entity var7 = loadEntityRecursive(var6, var2, var3, var4);
          if (var7 != null) {
@@ -692,8 +690,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var1.contains(this.builtInRegistryHolder);
    }
 
-   @Nullable
-   public T tryCast(Entity var1) {
+   public @Nullable T tryCast(Entity var1) {
       return (T)(var1.getType() == this ? var1 : null);
    }
 
@@ -754,6 +751,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       BREEZE = register("breeze", EntityType.Builder.of(Breeze::new, MobCategory.MONSTER).sized(0.6F, 1.77F).eyeHeight(1.3452F).clientTrackingRange(10).notInPeaceful());
       BREEZE_WIND_CHARGE = register("breeze_wind_charge", EntityType.Builder.of(BreezeWindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
       CAMEL = register("camel", EntityType.Builder.of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10));
+      CAMEL_HUSK = register("camel_husk", EntityType.Builder.of(CamelHusk::new, MobCategory.MONSTER).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10));
       CAT = register("cat", EntityType.Builder.of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.35F).passengerAttachments(0.5125F).clientTrackingRange(8));
       CAVE_SPIDER = register("cave_spider", EntityType.Builder.of(CaveSpider::new, MobCategory.MONSTER).sized(0.7F, 0.5F).eyeHeight(0.45F).clientTrackingRange(8).notInPeaceful());
       CHERRY_BOAT = register("cherry_boat", EntityType.Builder.of(boatFactory(() -> Items.CHERRY_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -830,6 +828,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       PALE_OAK_BOAT = register("pale_oak_boat", EntityType.Builder.of(boatFactory(() -> Items.PALE_OAK_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PALE_OAK_CHEST_BOAT = register("pale_oak_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.PALE_OAK_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PANDA = register("panda", EntityType.Builder.of(Panda::new, MobCategory.CREATURE).sized(1.3F, 1.25F).clientTrackingRange(10));
+      PARCHED = register("parched", EntityType.Builder.of(Parched::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       PARROT = register("parrot", EntityType.Builder.of(Parrot::new, MobCategory.CREATURE).sized(0.5F, 0.9F).eyeHeight(0.54F).passengerAttachments(0.4625F).clientTrackingRange(8));
       PHANTOM = register("phantom", EntityType.Builder.of(Phantom::new, MobCategory.MONSTER).sized(0.9F, 0.5F).eyeHeight(0.175F).passengerAttachments(0.3375F).ridingOffset(-0.125F).clientTrackingRange(8).notInPeaceful());
       PIG = register("pig", EntityType.Builder.of(Pig::new, MobCategory.CREATURE).sized(0.9F, 0.9F).passengerAttachments(0.86875F).clientTrackingRange(10));
@@ -1043,7 +1042,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
    @FunctionalInterface
    public interface EntityFactory<T extends Entity> {
-      @Nullable
-      T create(EntityType<T> var1, Level var2);
+      @Nullable T create(EntityType<T> var1, Level var2);
    }
 }

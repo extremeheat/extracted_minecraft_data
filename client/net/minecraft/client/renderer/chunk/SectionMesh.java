@@ -2,9 +2,9 @@ package net.minecraft.client.renderer.chunk;
 
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public interface SectionMesh extends AutoCloseable {
    default boolean isDifferentPointOfView(TranslucencyPointOfView var1) {
@@ -29,8 +29,7 @@ public interface SectionMesh extends AutoCloseable {
 
    boolean facesCanSeeEachother(Direction var1, Direction var2);
 
-   @Nullable
-   default SectionBuffers getBuffers(ChunkSectionLayer var1) {
+   default @Nullable SectionBuffers getBuffers(ChunkSectionLayer var1) {
       return null;
    }
 

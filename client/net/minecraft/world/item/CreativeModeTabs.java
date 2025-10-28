@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
+import org.jspecify.annotations.Nullable;
 
 public class CreativeModeTabs {
    private static final ResourceLocation INVENTORY_BACKGROUND = CreativeModeTab.createTextureLocation("inventory");
@@ -59,8 +59,7 @@ public class CreativeModeTabs {
    private static final ResourceKey<CreativeModeTab> OP_BLOCKS = createKey("op_blocks");
    private static final ResourceKey<CreativeModeTab> INVENTORY = createKey("inventory");
    private static final Comparator<Holder<PaintingVariant>> PAINTING_COMPARATOR = Comparator.comparing(Holder::value, Comparator.comparingInt(PaintingVariant::area).thenComparing(PaintingVariant::width));
-   @Nullable
-   private static CreativeModeTab.ItemDisplayParameters CACHED_PARAMETERS;
+   private static CreativeModeTab.@Nullable ItemDisplayParameters CACHED_PARAMETERS;
 
    public CreativeModeTabs() {
       super();
@@ -1711,6 +1710,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BOGGED_SPAWN_EGG);
          var1.accept((ItemLike)Items.BREEZE_SPAWN_EGG);
          var1.accept((ItemLike)Items.CAMEL_SPAWN_EGG);
+         var1.accept((ItemLike)Items.CAMEL_HUSK_SPAWN_EGG);
          var1.accept((ItemLike)Items.CAT_SPAWN_EGG);
          var1.accept((ItemLike)Items.CAVE_SPIDER_SPAWN_EGG);
          var1.accept((ItemLike)Items.CHICKEN_SPAWN_EGG);
@@ -1744,6 +1744,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.NAUTILUS_SPAWN_EGG);
          var1.accept((ItemLike)Items.OCELOT_SPAWN_EGG);
          var1.accept((ItemLike)Items.PANDA_SPAWN_EGG);
+         var1.accept((ItemLike)Items.PARCHED_SPAWN_EGG);
          var1.accept((ItemLike)Items.PARROT_SPAWN_EGG);
          var1.accept((ItemLike)Items.PHANTOM_SPAWN_EGG);
          var1.accept((ItemLike)Items.PIG_SPAWN_EGG);

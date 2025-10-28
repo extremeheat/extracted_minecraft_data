@@ -6,13 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.util.thread.ConsecutiveExecutor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerList {
@@ -86,8 +86,7 @@ public class ServerList {
       return (ServerData)this.serverList.get(var1);
    }
 
-   @Nullable
-   public ServerData get(String var1) {
+   public @Nullable ServerData get(String var1) {
       for(ServerData var3 : this.serverList) {
          if (var3.ip.equals(var1)) {
             return var3;
@@ -103,8 +102,7 @@ public class ServerList {
       return null;
    }
 
-   @Nullable
-   public ServerData unhide(String var1) {
+   public @Nullable ServerData unhide(String var1) {
       for(int var2 = 0; var2 < this.hiddenServerList.size(); ++var2) {
          ServerData var3 = (ServerData)this.hiddenServerList.get(var2);
          if (var3.ip.equals(var1)) {

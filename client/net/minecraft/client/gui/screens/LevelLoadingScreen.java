@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
@@ -24,6 +23,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.jspecify.annotations.Nullable;
 
 public class LevelLoadingScreen extends Screen {
    private static final Component DOWNLOADING_TERRAIN_TEXT = Component.translatable("multiplayer.downloadingTerrain");
@@ -34,8 +34,7 @@ public class LevelLoadingScreen extends Screen {
    private float smoothedProgress;
    private long lastNarration = -1L;
    private Reason reason;
-   @Nullable
-   private TextureAtlasSprite cachedNetherPortalSprite;
+   private @Nullable TextureAtlasSprite cachedNetherPortalSprite;
    private static final Object2IntMap<ChunkStatus> COLORS = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (var0) -> {
       var0.defaultReturnValue(0);
       var0.put(ChunkStatus.EMPTY, 5526612);

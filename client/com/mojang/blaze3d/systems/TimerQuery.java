@@ -1,13 +1,11 @@
 package com.mojang.blaze3d.systems;
 
 import java.util.OptionalLong;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TimerQuery {
-   @Nullable
-   private CommandEncoder activeEncoder;
-   @Nullable
-   private GpuQuery activeGpuQuery;
+   private @Nullable CommandEncoder activeEncoder;
+   private @Nullable GpuQuery activeGpuQuery;
 
    public TimerQuery() {
       super();

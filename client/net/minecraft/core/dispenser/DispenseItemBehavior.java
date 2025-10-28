@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -35,7 +36,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -59,6 +59,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
@@ -127,10 +128,13 @@ public interface DispenseItemBehavior {
             BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
 
             for(AbstractChestedHorse var6 : var1.level().getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), (var0) -> var0.isAlive() && !var0.hasChest())) {
-               if (var6.isTamed() && var6.getSlot(499).set(var2)) {
-                  var2.shrink(1);
-                  this.setSuccess(true);
-                  return var2;
+               if (var6.isTamed()) {
+                  SlotAccess var7 = var6.getSlot(499);
+                  if (var7 != null && var7.set(var2)) {
+                     var2.shrink(1);
+                     this.setSuccess(true);
+                     return var2;
+                  }
                }
             }
 
@@ -251,7 +255,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Blocks.TNT, new OptionalDispenseItemBehavior() {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
-            if (!var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            if (!(Boolean)var3.getGameRules().get(GameRules.TNT_EXPLODES)) {
                this.setSuccess(false);
                return var2;
             } else {

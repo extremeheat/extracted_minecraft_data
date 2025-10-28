@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -59,6 +58,7 @@ import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EndDragonFight {
@@ -84,16 +84,12 @@ public class EndDragonFight {
    private boolean dragonKilled;
    private boolean previouslyKilled;
    private boolean skipArenaLoadedCheck;
-   @Nullable
-   private UUID dragonUUID;
+   private @Nullable UUID dragonUUID;
    private boolean needsStateScanning;
-   @Nullable
-   private BlockPos portalLocation;
-   @Nullable
-   private DragonRespawnAnimation respawnStage;
+   private @Nullable BlockPos portalLocation;
+   private @Nullable DragonRespawnAnimation respawnStage;
    private int respawnTime;
-   @Nullable
-   private List<EndCrystal> respawnCrystals;
+   private @Nullable List<EndCrystal> respawnCrystals;
 
    public EndDragonFight(ServerLevel var1, long var2, Data var4) {
       this(var1, var2, var4, BlockPos.ZERO);
@@ -262,8 +258,7 @@ public class EndDragonFight {
       return false;
    }
 
-   @Nullable
-   private BlockPattern.BlockPatternMatch findExitPortal() {
+   private BlockPattern.@Nullable BlockPatternMatch findExitPortal() {
       ChunkPos var1 = new ChunkPos(this.origin);
 
       for(int var2 = -8 + var1.x; var2 <= 8 + var1.x; ++var2) {
@@ -408,8 +403,7 @@ public class EndDragonFight {
 
    }
 
-   @Nullable
-   private EnderDragon createNewDragon() {
+   private @Nullable EnderDragon createNewDragon() {
       this.level.getChunkAt(new BlockPos(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ()));
       EnderDragon var1 = EntityType.ENDER_DRAGON.create(this.level, EntitySpawnReason.EVENT);
       if (var1 != null) {
@@ -528,8 +522,7 @@ public class EndDragonFight {
 
    }
 
-   @Nullable
-   public UUID getDragonUUID() {
+   public @Nullable UUID getDragonUUID() {
       return this.dragonUUID;
    }
 

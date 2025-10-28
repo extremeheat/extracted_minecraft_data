@@ -36,7 +36,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -86,6 +85,7 @@ import net.minecraft.util.CommonLinks;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsMainScreen extends RealmsScreen {
@@ -132,7 +132,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final boolean SNAPSHOT;
    private static boolean snapshotToggle;
    private final CompletableFuture<RealmsAvailability.Result> availability = RealmsAvailability.get();
-   @Nullable
    private DataFetcher.Subscription dataSubscription;
    private final Set<UUID> handledSeenNotifications = new HashSet();
    private static boolean regionsPinged;
@@ -148,15 +147,13 @@ public class RealmsMainScreen extends RealmsScreen {
    List<RealmsServer> availableSnapshotServers = List.of();
    RealmsServerPlayerLists onlinePlayersPerRealm = new RealmsServerPlayerLists(Map.of());
    private volatile boolean trialsAvailable;
-   @Nullable
-   private volatile String newsLink;
+   private volatile @Nullable String newsLink;
    final List<RealmsNotification> notifications = new ArrayList();
    private Button addRealmButton;
    private NotificationButton pendingInvitesButton;
    private NotificationButton newsButton;
    private LayoutState activeLayoutState;
-   @Nullable
-   private HeaderAndFooterLayout layout;
+   private @Nullable HeaderAndFooterLayout layout;
 
    public RealmsMainScreen(Screen var1) {
       super(TITLE);
@@ -506,8 +503,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
    }
 
-   @Nullable
-   private RealmsServer getSelectedServer() {
+   private @Nullable RealmsServer getSelectedServer() {
       AbstractSelectionList.Entry var2 = this.realmSelectionList.getSelected();
       if (var2 instanceof ServerEntry var1) {
          return var1.getServer();
@@ -665,7 +661,7 @@ public class RealmsMainScreen extends RealmsScreen {
          super(Minecraft.getInstance(), RealmsMainScreen.this.width, RealmsMainScreen.this.height, 0, 36);
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          RealmsMainScreen.this.updateButtonStates();
       }
@@ -689,7 +685,7 @@ public class RealmsMainScreen extends RealmsScreen {
          this.refreshServerEntries(var2);
       }
 
-      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, @Nullable Entry var3) {
+      private void addEntriesForNotification(RealmsNotification.VisitUrl var1, RealmsMainScreen var2, Entry var3) {
          Component var4 = var1.getMessage();
          int var5 = RealmsMainScreen.this.font.wordWrapHeight(var4, RealmsMainScreen.NotificationMessageEntry.textWidth(this.getRowWidth()));
          NotificationMessageEntry var6 = RealmsMainScreen.this.new NotificationMessageEntry(var2, var5, var4, var1);
@@ -702,7 +698,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      private void refreshServerEntries(@Nullable Entry var1) {
+      private void refreshServerEntries(Entry var1) {
          for(RealmsServer var3 : RealmsMainScreen.this.availableSnapshotServers) {
             this.addEntry(RealmsMainScreen.this.new AvailableSnapshotEntry(var3));
          }
@@ -877,8 +873,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public static final int HEIGHT_WITHOUT_TEXT = 38;
       private final Component text;
       private final List<AbstractWidget> children = new ArrayList();
-      @Nullable
-      private final CrossButton dismissButton;
+      private final @Nullable CrossButton dismissButton;
       private final MultiLineTextWidget textWidget;
       private final GridLayout gridLayout;
       private final FrameLayout textFrame;
@@ -908,15 +903,15 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public boolean keyPressed(KeyEvent var1) {
-         if (this.dismissButton != null && this.dismissButton.keyPressed(var1)) {
+         if (this.button.keyPressed(var1)) {
             return true;
          } else {
-            return this.button.keyPressed(var1) ? true : super.keyPressed(var1);
+            return this.dismissButton != null && this.dismissButton.keyPressed(var1) ? true : super.keyPressed(var1);
          }
       }
 
       private void updateEntryWidth() {
-         int var1 = this.getContentWidth();
+         int var1 = this.getWidth();
          if (this.lastEntryWidth != var1) {
             this.refreshLayout(var1);
             this.lastEntryWidth = var1;
@@ -938,7 +933,14 @@ public class RealmsMainScreen extends RealmsScreen {
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          this.gridLayout.setPosition(this.getContentX(), this.getContentY());
          this.updateEntryWidth();
-         this.children.forEach((var4x) -> var4x.render(var1, var2, var3, var5));
+         this.children.forEach((var5x) -> {
+            if (var5x == this.button && this.isFocused()) {
+               this.button.render(var1, this.button.getX(), this.button.getY(), var5);
+            } else {
+               var5x.render(var1, var2, var3, var5);
+            }
+
+         });
       }
 
       public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {

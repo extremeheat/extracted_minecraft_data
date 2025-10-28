@@ -18,11 +18,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.PngInfo;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.stb.STBIWriteCallback;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageResize;
@@ -478,7 +478,7 @@ public final class NativeImage implements AutoCloseable {
          throw new UnsupportedOperationException("resizeSubRectTo only works for images of the same format.");
       } else {
          int var6 = this.format.components();
-         STBImageResize.nstbir_resize_uint8_linear(this.pixels + (long)((var1 + var2 * this.getWidth()) * var6), var3, var4, this.getWidth() * var6, var5.pixels, var5.getWidth(), var5.getHeight(), 0, var6);
+         STBImageResize.nstbir_resize_uint8(this.pixels + (long)((var1 + var2 * this.getWidth()) * var6), var3, var4, this.getWidth() * var6, var5.pixels, var5.getWidth(), var5.getHeight(), 0, var6);
       }
    }
 
@@ -496,8 +496,7 @@ public final class NativeImage implements AutoCloseable {
 
    static class WriteCallback extends STBIWriteCallback {
       private final WritableByteChannel output;
-      @Nullable
-      private IOException exception;
+      private @Nullable IOException exception;
 
       WriteCallback(WritableByteChannel var1) {
          super();

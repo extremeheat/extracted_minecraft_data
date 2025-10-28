@@ -1,12 +1,12 @@
 package net.minecraft.world.damagesource;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public record FallLocation(String id) {
    public static final FallLocation GENERIC = new FallLocation("generic");
@@ -41,8 +41,7 @@ public record FallLocation(String id) {
       }
    }
 
-   @Nullable
-   public static FallLocation getCurrentFallLocation(LivingEntity var0) {
+   public static @Nullable FallLocation getCurrentFallLocation(LivingEntity var0) {
       Optional var1 = var0.getLastClimbablePos();
       if (var1.isPresent()) {
          BlockState var2 = var0.level().getBlockState((BlockPos)var1.get());

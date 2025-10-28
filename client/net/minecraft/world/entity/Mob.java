@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -69,12 +68,12 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -87,6 +86,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
    private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID;
@@ -122,8 +122,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    protected PathNavigation navigation;
    protected final GoalSelector goalSelector;
    protected final GoalSelector targetSelector;
-   @Nullable
-   private LivingEntity target;
+   private @Nullable LivingEntity target;
    private final Sensing sensing;
    private DropChances dropChances;
    private boolean canPickUpLoot;
@@ -131,8 +130,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private final Map<PathType, Float> pathfindingMalus;
    private Optional<ResourceKey<LootTable>> lootTable;
    private long lootTableSeed;
-   @Nullable
-   private Leashable.LeashData leashData;
+   private Leashable.@Nullable LeashData leashData;
    private BlockPos homePosition;
    private int homeRadius;
 
@@ -232,8 +230,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       }
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
       Mob var10000;
       if (!this.isNoAi() && var1 instanceof Mob var2) {
@@ -251,13 +248,11 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.sensing;
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.target;
    }
 
-   @Nullable
-   protected final LivingEntity getTargetFromBrain() {
+   protected final @Nullable LivingEntity getTargetFromBrain() {
       return (LivingEntity)this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
    }
 
@@ -368,8 +363,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.bodyRotationControl.clientTick();
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return null;
    }
 
@@ -465,7 +459,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       var1.push("looting");
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
-         if (this.canPickUpLoot() && this.isAlive() && !this.dead && var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (this.canPickUpLoot() && this.isAlive() && !this.dead && (Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING)) {
             Vec3i var7 = this.getPickupReach();
 
             for(ItemEntity var6 : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)var7.getX(), (double)var7.getY(), (double)var7.getZ()))) {
@@ -655,8 +649,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.canHoldItem(var2);
    }
 
-   @Nullable
-   public TagKey<Item> getPreferredWeaponType() {
+   public @Nullable TagKey<Item> getPreferredWeaponType() {
       return null;
    }
 
@@ -972,8 +965,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    }
 
-   @Nullable
-   public static Item getEquipmentForSlot(EquipmentSlot var0, int var1) {
+   public static @Nullable Item getEquipmentForSlot(EquipmentSlot var0, int var1) {
       switch (var0) {
          case HEAD:
             if (var1 == 0) {
@@ -1064,8 +1056,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       AttributeInstance var6 = (AttributeInstance)Objects.requireNonNull(this.getAttribute(Attributes.FOLLOW_RANGE));
       if (!var6.hasModifier(RANDOM_SPAWN_BONUS_ID)) {
@@ -1134,12 +1125,12 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          }
       }
 
-      if (var3.getItem() instanceof SpawnEggItem) {
+      Item var5 = var3.getItem();
+      if (var5 instanceof SpawnEggItem var6) {
          if (this.level() instanceof ServerLevel) {
-            SpawnEggItem var6 = (SpawnEggItem)var3.getItem();
-            Optional var5 = var6.spawnOffspringFromSpawnEgg(var1, this, this.getType(), (ServerLevel)this.level(), this.position(), var3);
-            var5.ifPresent((var2x) -> this.onOffspringSpawnedFromEgg(var1, var2x));
-            if (var5.isEmpty()) {
+            Optional var7 = var6.spawnOffspringFromSpawnEgg(var1, this, this.getType(), (ServerLevel)this.level(), this.position(), var3);
+            var7.ifPresent((var2x) -> this.onOffspringSpawnedFromEgg(var1, var2x));
+            if (var7.isEmpty()) {
                return InteractionResult.PASS;
             }
          }
@@ -1211,8 +1202,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.homeRadius != -1;
    }
 
-   @Nullable
-   public <T extends Mob> T convertTo(EntityType<T> var1, ConversionParams var2, EntitySpawnReason var3, ConversionParams.AfterConversion<T> var4) {
+   public <T extends Mob> @Nullable T convertTo(EntityType<T> var1, ConversionParams var2, EntitySpawnReason var3, ConversionParams.AfterConversion<T> var4) {
       if (this.isRemoved()) {
          return null;
       } else {
@@ -1237,13 +1227,11 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       }
    }
 
-   @Nullable
-   public <T extends Mob> T convertTo(EntityType<T> var1, ConversionParams var2, ConversionParams.AfterConversion<T> var3) {
+   public <T extends Mob> @Nullable T convertTo(EntityType<T> var1, ConversionParams var2, ConversionParams.AfterConversion<T> var3) {
       return (T)this.convertTo(var1, var2, EntitySpawnReason.CONVERSION, var3);
    }
 
-   @Nullable
-   public Leashable.LeashData getLeashData() {
+   public Leashable.@Nullable LeashData getLeashData() {
       return this.leashData;
    }
 
@@ -1254,7 +1242,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    }
 
-   public void setLeashData(@Nullable Leashable.LeashData var1) {
+   public void setLeashData(Leashable.@Nullable LeashData var1) {
       this.leashData = var1;
    }
 
@@ -1394,8 +1382,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    }
 
-   @Nullable
-   public ItemStack getPickResult() {
+   public @Nullable ItemStack getPickResult() {
       SpawnEggItem var1 = SpawnEggItem.byId(this.getType());
       return var1 == null ? null : new ItemStack(var1);
    }
@@ -1423,6 +1410,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          var2.register(DebugSubscriptions.BRAINS, () -> DebugBrainDump.takeBrainDump(var1, this));
       }
 
+   }
+
+   public float chargeSpeedModifier() {
+      return 1.0F;
    }
 
    static {

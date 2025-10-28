@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.decoration;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -12,11 +11,12 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BlockAttachedEntity extends Entity {
@@ -71,7 +71,7 @@ public abstract class BlockAttachedEntity extends Entity {
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isInvulnerableToBase(var2)) {
          return false;
-      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
+      } else if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
       } else {
          if (!this.isRemoved()) {

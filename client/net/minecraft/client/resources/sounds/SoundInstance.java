@@ -1,20 +1,18 @@
 package net.minecraft.client.resources.sounds;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public interface SoundInstance {
    ResourceLocation getLocation();
 
-   @Nullable
-   WeighedSoundEvents resolve(SoundManager var1);
+   @Nullable WeighedSoundEvents resolve(SoundManager var1);
 
-   @Nullable
-   Sound getSound();
+   @Nullable Sound getSound();
 
    SoundSource getSource();
 

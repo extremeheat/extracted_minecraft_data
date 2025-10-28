@@ -9,14 +9,13 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DynamicTexture extends AbstractTexture implements Dumpable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   private NativeImage pixels;
+   private @Nullable NativeImage pixels;
 
    public DynamicTexture(Supplier<String> var1, NativeImage var2) {
       super();
@@ -60,8 +59,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
 
    }
 
-   @Nullable
-   public NativeImage getPixels() {
+   public @Nullable NativeImage getPixels() {
       return this.pixels;
    }
 

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import java.util.List;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -11,10 +10,10 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.FollowFlockLeaderGoal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSchoolingFish extends AbstractFish {
-   @Nullable
-   private AbstractSchoolingFish leader;
+   private @Nullable AbstractSchoolingFish leader;
    private int schoolSize = 1;
 
    public AbstractSchoolingFish(EntityType<? extends AbstractSchoolingFish> var1, Level var2) {
@@ -95,8 +94,7 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
       var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((var1x) -> var1x != this).forEach((var1x) -> var1x.startFollowing(this));
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       if (var4 == null) {
          var4 = new SchoolSpawnGroupData(this);

@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.Sheets;
@@ -19,6 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity, EnchantTableRenderState> {
    public static final Material BOOK_LOCATION;
@@ -35,7 +35,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       return new EnchantTableRenderState();
    }
 
-   public void extractRenderState(EnchantingTableBlockEntity var1, EnchantTableRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(EnchantingTableBlockEntity var1, EnchantTableRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.flip = Mth.lerp(var3, var1.oFlip, var1.flip);
       var2.open = Mth.lerp(var3, var1.oOpen, var1.open);

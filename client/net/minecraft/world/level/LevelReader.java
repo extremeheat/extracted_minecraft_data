@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -22,10 +21,10 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public interface LevelReader extends BlockAndTintGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
-   @Nullable
-   ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
+   @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
 
    /** @deprecated */
    @Deprecated
@@ -132,8 +131,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return this.getChunk(var1, var2, var3, true);
    }
 
-   @Nullable
-   default BlockGetter getChunkForCollisions(int var1, int var2) {
+   default @Nullable BlockGetter getChunkForCollisions(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY, false);
    }
 

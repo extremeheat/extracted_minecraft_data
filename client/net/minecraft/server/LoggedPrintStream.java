@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LoggedPrintStream extends PrintStream {
@@ -20,7 +20,7 @@ public class LoggedPrintStream extends PrintStream {
       this.logLine(var1);
    }
 
-   public void println(Object var1) {
+   public void println(@Nullable Object var1) {
       this.logLine(String.valueOf(var1));
    }
 

@@ -27,7 +27,6 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -39,6 +38,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ShaderManager extends SimplePreparableReloadListener<Configs> implements AutoCloseable {
@@ -117,7 +117,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       return new GlslPreprocessor() {
          private final Set<ResourceLocation> importedLocations = new ObjectArraySet();
 
-         public String applyImport(boolean var1, String var2x) {
+         public @Nullable String applyImport(boolean var1, String var2x) {
             ResourceLocation var3;
             try {
                if (var1) {
@@ -235,8 +235,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       }
    }
 
-   @Nullable
-   public PostChain getPostChain(ResourceLocation var1, Set<ResourceLocation> var2) {
+   public @Nullable PostChain getPostChain(ResourceLocation var1, Set<ResourceLocation> var2) {
       try {
          return this.compilationCache.getOrLoadPostChain(var1, var2);
       } catch (CompilationException var4) {
@@ -252,7 +251,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       this.postChainProjectionMatrixBuffer.close();
    }
 
-   public String getShader(ResourceLocation var1, ShaderType var2) {
+   public @Nullable String getShader(ResourceLocation var1, ShaderType var2) {
       return this.compilationCache.getShaderSource(var1, var2);
    }
 
@@ -283,8 +282,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          this.configs = var2;
       }
 
-      @Nullable
-      public PostChain getOrLoadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws CompilationException {
+      public @Nullable PostChain getOrLoadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws CompilationException {
          Optional var3 = (Optional)this.postChains.get(var1);
          if (var3 != null) {
             return (PostChain)var3.orElse((Object)null);
@@ -309,7 +307,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          this.postChains.clear();
       }
 
-      public String getShaderSource(ResourceLocation var1, ShaderType var2) {
+      public @Nullable String getShaderSource(ResourceLocation var1, ShaderType var2) {
          return (String)this.configs.shaderSources.get(new ShaderSourceKey(var1, var2));
       }
    }

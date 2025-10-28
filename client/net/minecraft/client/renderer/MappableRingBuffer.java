@@ -5,11 +5,12 @@ import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 public class MappableRingBuffer implements AutoCloseable {
    private static final int BUFFER_COUNT = 3;
    private final GpuBuffer[] buffers = new GpuBuffer[3];
-   private final GpuFence[] fences = new GpuFence[3];
+   private final @Nullable GpuFence[] fences = new GpuFence[3];
    private final int size;
    private int current = 0;
 

@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -153,14 +152,15 @@ import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Commands {
    public static final String COMMAND_PREFIX = "/";
-   private static final ThreadLocal<ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
+   private static final ThreadLocal<@Nullable ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final PermissionCheck LEVEL_ALL;
    public static final PermissionCheck LEVEL_MODERATORS;
@@ -331,8 +331,7 @@ public class Commands {
 
    }
 
-   @Nullable
-   private static ContextChain<CommandSourceStack> finishParsing(ParseResults<CommandSourceStack> var0, String var1, CommandSourceStack var2) {
+   private static @Nullable ContextChain<CommandSourceStack> finishParsing(ParseResults<CommandSourceStack> var0, String var1, CommandSourceStack var2) {
       try {
          validateParseResults(var0);
          return (ContextChain)ContextChain.tryFlatten(var0.getContext().build(var1)).orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader()));
@@ -364,8 +363,8 @@ public class Commands {
       boolean var3 = var2 == null;
       if (var3) {
          GameRules var4 = var0.getLevel().getGameRules();
-         int var5 = Math.max(1, var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH));
-         int var6 = var4.getInt(GameRules.RULE_MAX_COMMAND_FORK_COUNT);
+         int var5 = Math.max(1, (Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH));
+         int var6 = (Integer)var4.get(GameRules.MAX_COMMAND_FORKS);
 
          try {
             ExecutionContext var7 = new ExecutionContext(var5, var6, Profiler.get());
@@ -451,8 +450,7 @@ public class Commands {
       }
    }
 
-   @Nullable
-   public static <S> CommandSyntaxException getParseException(ParseResults<S> var0) {
+   public static <S> @Nullable CommandSyntaxException getParseException(ParseResults<S> var0) {
       if (!var0.getReader().canRead()) {
          return null;
       } else if (var0.getExceptions().size() == 1) {
@@ -529,8 +527,7 @@ public class Commands {
             this.noPermissionSource = Commands.createCompilationContext(PermissionSet.NO_PERMISSIONS);
          }
 
-         @Nullable
-         public ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
+         public @Nullable ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
             SuggestionProvider var2 = var1.getCustomSuggestions();
             return var2 != null ? SuggestionProviders.getName(var2) : null;
          }

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class StopBeingAngryIfTargetDead {
    public StopBeingAngryIfTargetDead() {
@@ -25,7 +25,7 @@ public class StopBeingAngryIfTargetDead {
                   }
 
                   return var10000;
-               }).filter(LivingEntity::isDeadOrDying).filter((var1x) -> var1x.getType() != EntityType.PLAYER || var2.getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)).ifPresent((var1x) -> var1.erase());
+               }).filter(LivingEntity::isDeadOrDying).filter((var1x) -> var1x.getType() != EntityType.PLAYER || (Boolean)var2.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)).ifPresent((var1x) -> var1.erase());
                return true;
             })));
    }

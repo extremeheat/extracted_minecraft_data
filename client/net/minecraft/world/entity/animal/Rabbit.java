@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -59,7 +58,6 @@ import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -69,10 +67,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Rabbit extends Animal {
    public static final double STROLL_SPEED_MOD = 0.6;
@@ -313,8 +313,7 @@ public class Rabbit extends Animal {
       return this.getVariant() == Rabbit.Variant.EVIL ? SoundSource.HOSTILE : SoundSource.NEUTRAL;
    }
 
-   @Nullable
-   public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Rabbit var3 = EntityType.RABBIT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4 = getRandomRabbitVariant(var1, this.blockPosition());
@@ -364,8 +363,7 @@ public class Rabbit extends Animal {
       this.entityData.set(DATA_TYPE_ID, var1.id);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.RABBIT_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -383,8 +381,7 @@ public class Rabbit extends Animal {
       }
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Variant var5 = getRandomRabbitVariant(var1, this.blockPosition());
       if (var4 instanceof RabbitGroupData) {
          var5 = ((RabbitGroupData)var4).variant;
@@ -432,8 +429,7 @@ public class Rabbit extends Animal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -589,7 +585,7 @@ public class Rabbit extends Animal {
 
       public boolean canUse() {
          if (this.nextStartTick <= 0) {
-            if (!getServerLevel(this.rabbit).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (!(Boolean)getServerLevel(this.rabbit).getGameRules().get(GameRules.MOB_GRIEFING)) {
                return false;
             }
 

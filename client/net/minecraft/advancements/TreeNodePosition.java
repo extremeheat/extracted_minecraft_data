@@ -2,19 +2,16 @@ package net.minecraft.advancements;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class TreeNodePosition {
    private final AdvancementNode node;
-   @Nullable
-   private final TreeNodePosition parent;
-   @Nullable
-   private final TreeNodePosition previousSibling;
+   private final @Nullable TreeNodePosition parent;
+   private final @Nullable TreeNodePosition previousSibling;
    private final int childIndex;
    private final List<TreeNodePosition> children = Lists.newArrayList();
    private TreeNodePosition ancestor;
-   @Nullable
-   private TreeNodePosition thread;
+   private @Nullable TreeNodePosition thread;
    private int x;
    private float y;
    private float mod;
@@ -42,8 +39,7 @@ public class TreeNodePosition {
       }
    }
 
-   @Nullable
-   private TreeNodePosition addChild(AdvancementNode var1, @Nullable TreeNodePosition var2) {
+   private @Nullable TreeNodePosition addChild(AdvancementNode var1, @Nullable TreeNodePosition var2) {
       if (var1.advancement().display().isPresent()) {
          var2 = new TreeNodePosition(var1, this, var2, this.children.size() + 1, this.x + 1);
          this.children.add(var2);
@@ -121,8 +117,7 @@ public class TreeNodePosition {
 
    }
 
-   @Nullable
-   private TreeNodePosition previousOrThread() {
+   private @Nullable TreeNodePosition previousOrThread() {
       if (this.thread != null) {
          return this.thread;
       } else {
@@ -130,8 +125,7 @@ public class TreeNodePosition {
       }
    }
 
-   @Nullable
-   private TreeNodePosition nextOrThread() {
+   private @Nullable TreeNodePosition nextOrThread() {
       if (this.thread != null) {
          return this.thread;
       } else {

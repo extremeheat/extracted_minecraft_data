@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.horse;
 
 import java.util.Objects;
 import java.util.function.DoubleSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -35,6 +34,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ZombieHorse extends AbstractHorse {
    private static final float SPEED_FACTOR = 42.16F;
@@ -97,8 +97,7 @@ public class ZombieHorse extends AbstractHorse {
       return SoundEvents.ZOMBIE_HORSE_ANGRY;
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.ZOMBIE_HORSE.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -107,8 +106,7 @@ public class ZombieHorse extends AbstractHorse {
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.ZOMBIE_HORSE_FOOD), false));
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var3 == EntitySpawnReason.NATURAL) {
          Zombie var5 = EntityType.ZOMBIE.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var5 != null) {
@@ -161,6 +159,10 @@ public class ZombieHorse extends AbstractHorse {
 
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   }
+
+   public float chargeSpeedModifier() {
+      return 1.4F;
    }
 
    static {

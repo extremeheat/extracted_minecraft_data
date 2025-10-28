@@ -60,7 +60,6 @@ import java.util.function.Function;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -255,6 +254,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
@@ -272,7 +272,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public static final String UPDATE_DRIVERS_ADVICE = "Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).";
    private final long canary = Double.doubleToLongBits(3.141592653589793);
    private final Path resourcePackDirectory;
-   private final CompletableFuture<ProfileResult> profileFuture;
+   private final CompletableFuture<@Nullable ProfileResult> profileFuture;
    private final TextureManager textureManager;
    private final ShaderManager shaderManager;
    private final DataFixer fixerUpper;
@@ -314,8 +314,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final LanguageManager languageManager;
    private final BlockColors blockColors;
    private final RenderTarget mainRenderTarget;
-   @Nullable
-   private final TracyFrameCapture tracyFrameCapture;
+   private final @Nullable TracyFrameCapture tracyFrameCapture;
    private final SoundManager soundManager;
    private final MusicManager musicManager;
    private final FontManager fontManager;
@@ -340,23 +339,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final QuickPlayLog quickPlayLog;
    private final Services services;
    private final PlayerSkinRenderCache playerSkinRenderCache;
-   @Nullable
-   public MultiPlayerGameMode gameMode;
-   @Nullable
-   public ClientLevel level;
-   @Nullable
-   public LocalPlayer player;
-   @Nullable
-   private IntegratedServer singleplayerServer;
-   @Nullable
-   private Connection pendingConnection;
+   public @Nullable MultiPlayerGameMode gameMode;
+   public @Nullable ClientLevel level;
+   public @Nullable LocalPlayer player;
+   private @Nullable IntegratedServer singleplayerServer;
+   private @Nullable Connection pendingConnection;
    private boolean isLocalServer;
-   @Nullable
-   private Entity cameraEntity;
-   @Nullable
-   public Entity crosshairPickEntity;
-   @Nullable
-   public HitResult hitResult;
+   private @Nullable Entity cameraEntity;
+   public @Nullable Entity crosshairPickEntity;
+   public @Nullable HitResult hitResult;
    private int rightClickDelay;
    protected int missTime;
    private volatile boolean pause;
@@ -364,33 +355,27 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private long lastTime;
    private int frames;
    public boolean noRender;
-   @Nullable
-   public Screen screen;
-   @Nullable
-   private Overlay overlay;
+   public @Nullable Screen screen;
+   private @Nullable Overlay overlay;
    private boolean clientLevelTeardownInProgress;
    Thread gameThread;
    private volatile boolean running;
-   @Nullable
-   private Supplier<CrashReport> delayedCrash;
+   private @Nullable Supplier<CrashReport> delayedCrash;
    private static int fps;
    private long frameTimeNs;
    private final FramerateLimitTracker framerateLimitTracker;
    public boolean wireframe;
    public boolean smartCull;
    private boolean windowActive;
-   @Nullable
-   private CompletableFuture<Void> pendingReload;
-   @Nullable
-   private TutorialToast socialInteractionsToast;
+   private @Nullable CompletableFuture<Void> pendingReload;
+   private @Nullable TutorialToast socialInteractionsToast;
    private int fpsPieRenderTicks;
    private final ContinuousProfiler fpsPieProfiler;
    private MetricsRecorder metricsRecorder;
    private final ResourceLoadStateTracker reloadStateTracker;
    private long savedCpuDuration;
    private double gpuUtilization;
-   @Nullable
-   private TimerQuery.FrameProfile currentFrameProfile;
+   private TimerQuery.@Nullable FrameProfile currentFrameProfile;
    private final GameNarrator narrator;
    private final ChatListener chatListener;
    private ReportingContext reportingContext;
@@ -1232,6 +1217,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var3.popPush("tick");
          if (var14 > 0) {
             this.perTickGizmos.drainGizmos();
+            if (this.isLevelRunningNormally()) {
+               var3.push("textures");
+               this.textureManager.tick();
+               var3.pop();
+            }
          }
 
          for(int var4 = 0; var4 < Math.min(10, var14); ++var4) {
@@ -1735,11 +1725,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.gameMode.tick();
       }
 
-      var1.popPush("textures");
-      if (this.isLevelRunningNormally()) {
-         this.textureManager.tick();
-      }
-
+      var1.popPush("screen");
       if (this.screen == null && this.player != null) {
          if (this.player.isDeadOrDying() && !(this.screen instanceof DeathScreen)) {
             this.setScreen((Screen)null);
@@ -2220,8 +2206,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.userProperties().flag(UserFlag.REALMS_ALLOWED) && this.multiplayerBan() == null;
    }
 
-   @Nullable
-   public BanDetails multiplayerBan() {
+   public @Nullable BanDetails multiplayerBan() {
       return (BanDetails)this.userProperties().bannedScopes().get("MULTIPLAYER");
    }
 
@@ -2256,8 +2241,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.player != null && this.gameMode != null;
    }
 
-   @Nullable
-   public ClientPacketListener getConnection() {
+   public @Nullable ClientPacketListener getConnection() {
       return this.player == null ? null : this.player.connection;
    }
 
@@ -2400,8 +2384,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    }
 
-   @Nullable
-   public ServerData getCurrentServer() {
+   public @Nullable ServerData getCurrentServer() {
       return (ServerData)Optionull.map(this.getConnection(), ClientPacketListener::getServerData);
    }
 
@@ -2413,8 +2396,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.isLocalServer && this.singleplayerServer != null;
    }
 
-   @Nullable
-   public IntegratedServer getSingleplayerServer() {
+   public @Nullable IntegratedServer getSingleplayerServer() {
       return this.singleplayerServer;
    }
 
@@ -2484,8 +2466,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.soundManager;
    }
 
-   @Nullable
-   public Music getSituationalMusic() {
+   public @Nullable Music getSituationalMusic() {
       Music var1 = (Music)Optionull.map(this.screen, Screen::getBackgroundMusic);
       if (var1 != null) {
          return var1;
@@ -2524,8 +2505,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.skinManager;
    }
 
-   @Nullable
-   public Entity getCameraEntity() {
+   public @Nullable Entity getCameraEntity() {
       return this.cameraEntity;
    }
 
@@ -2672,6 +2652,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             this.player.yRotO = this.player.getYRot();
             this.player.xRotO = this.player.getXRot();
+            this.gameRenderer.updateCamera(DeltaTracker.ONE);
             this.gameRenderer.renderLevel(DeltaTracker.ONE);
 
             try {
@@ -2708,8 +2689,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.splashManager;
    }
 
-   @Nullable
-   public Overlay getOverlay() {
+   public @Nullable Overlay getOverlay() {
       return this.overlay;
    }
 
@@ -2809,8 +2789,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return (this.screen == null || this.screen.canInterruptWithAnotherScreen()) && !this.clientLevelTeardownInProgress;
    }
 
-   @Nullable
-   public static String getLauncherBrand() {
+   public static @Nullable String getLauncherBrand() {
       return System.getProperty("minecraft.launcher.brand");
    }
 

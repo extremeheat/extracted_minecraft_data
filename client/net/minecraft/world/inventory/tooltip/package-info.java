@@ -1,8 +1,4 @@
-@ParametersAreNonnullByDefault
-@FieldsAreNonnullByDefault
-@MethodsReturnNonnullByDefault
+@NullMarked
 package net.minecraft.world.inventory.tooltip;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import net.minecraft.FieldsAreNonnullByDefault;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

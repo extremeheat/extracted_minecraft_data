@@ -19,13 +19,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class MappedRegistry<T> implements WritableRegistry<T> {
    private final ResourceKey<? extends Registry<T>> key;
@@ -39,8 +39,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    private final Map<TagKey<T>, HolderSet.Named<T>> frozenTags;
    TagSet<T> allTags;
    private boolean frozen;
-   @Nullable
-   private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
+   private @Nullable Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
 
    public Stream<HolderSet.Named<T>> listTags() {
       return this.getTags();
@@ -123,8 +122,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       }
    }
 
-   @Nullable
-   public ResourceLocation getKey(T var1) {
+   public @Nullable ResourceLocation getKey(T var1) {
       Holder.Reference var2 = (Holder.Reference)this.byValue.get(var1);
       return var2 != null ? var2.key().location() : null;
    }
@@ -137,13 +135,11 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return this.toId.getInt(var1);
    }
 
-   @Nullable
-   public T getValue(@Nullable ResourceKey<T> var1) {
+   public @Nullable T getValue(@Nullable ResourceKey<T> var1) {
       return (T)getValueFromNullable((Holder.Reference)this.byKey.get(var1));
    }
 
-   @Nullable
-   public T byId(int var1) {
+   public @Nullable T byId(int var1) {
       return (T)(var1 >= 0 && var1 < this.byId.size() ? ((Holder.Reference)this.byId.get(var1)).value() : null);
    }
 
@@ -195,14 +191,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return Iterators.transform(this.byId.iterator(), Holder::value);
    }
 
-   @Nullable
-   public T getValue(@Nullable ResourceLocation var1) {
+   public @Nullable T getValue(@Nullable ResourceLocation var1) {
       Holder.Reference var2 = (Holder.Reference)this.byLocation.get(var1);
       return (T)getValueFromNullable(var2);
    }
 
-   @Nullable
-   private static <T> T getValueFromNullable(@Nullable Holder.Reference<T> var0) {
+   private static <T> @Nullable T getValueFromNullable(Holder.@Nullable Reference<T> var0) {
       return (T)(var0 != null ? var0.value() : null);
    }
 

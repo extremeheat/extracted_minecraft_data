@@ -1,12 +1,12 @@
 package net.minecraft.client;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.util.FormattedCharSequence;
+import org.jspecify.annotations.Nullable;
 
 public record GuiMessage(int addedTime, Component content, @Nullable MessageSignature signature, @Nullable GuiMessageTag tag) {
    private static final int MESSAGE_TAG_MARGIN_LEFT = 4;

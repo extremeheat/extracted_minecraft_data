@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -47,6 +46,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class IronGolem extends AbstractGolem implements NeutralMob {
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
@@ -56,8 +56,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    private int offerFlowerTick;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public IronGolem(EntityType<? extends IronGolem> var1, Level var2) {
       super(var1, var2);
@@ -155,8 +154,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.persistentAngerTarget = var1;
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

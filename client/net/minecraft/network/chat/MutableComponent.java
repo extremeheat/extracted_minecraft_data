@@ -3,18 +3,17 @@ package net.minecraft.network.chat;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.util.FormattedCharSequence;
+import org.jspecify.annotations.Nullable;
 
 public final class MutableComponent implements Component {
    private final ComponentContents contents;
    private final List<Component> siblings;
    private Style style;
    private FormattedCharSequence visualOrderText;
-   @Nullable
-   private Language decomposedWith;
+   private @Nullable Language decomposedWith;
 
    MutableComponent(ComponentContents var1, List<Component> var2, Style var3) {
       super();

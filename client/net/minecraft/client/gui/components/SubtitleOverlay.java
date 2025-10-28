@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,6 +19,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class SubtitleOverlay implements SoundEventListener {
    private static final long DISPLAY_TIME = 3000L;
@@ -159,8 +159,7 @@ public class SubtitleOverlay implements SoundEventListener {
          return this.text;
       }
 
-      @Nullable
-      public SoundPlayedAt getClosest(Vec3 var1) {
+      public @Nullable SoundPlayedAt getClosest(Vec3 var1) {
          if (this.playedAt.isEmpty()) {
             return null;
          } else {

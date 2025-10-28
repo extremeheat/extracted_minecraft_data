@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyC
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.jspecify.annotations.Nullable;
 
 public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional<DistancePredicate> distanceToPlayer, Optional<MovementPredicate> movement, LocationWrapper location, Optional<MobEffectsPredicate> effects, Optional<NbtPredicate> nbt, Optional<EntityFlagsPredicate> flags, Optional<EntityEquipmentPredicate> equipment, Optional<EntitySubPredicate> subPredicate, Optional<Integer> periodicTick, Optional<EntityPredicate> vehicle, Optional<EntityPredicate> passenger, Optional<EntityPredicate> targetedEntity, Optional<String> team, Optional<SlotsPredicate> slots, DataComponentMatchers components) {
    public static final Codec<EntityPredicate> CODEC = Codec.recursive("EntityPredicate", (var0) -> RecordCodecBuilder.create((var1) -> var1.group(EntityTypePredicate.CODEC.optionalFieldOf("type").forGetter(EntityPredicate::entityType), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(EntityPredicate::distanceToPlayer), MovementPredicate.CODEC.optionalFieldOf("movement").forGetter(EntityPredicate::movement), EntityPredicate.LocationWrapper.CODEC.forGetter(EntityPredicate::location), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EntityPredicate::effects), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(EntityPredicate::nbt), EntityFlagsPredicate.CODEC.optionalFieldOf("flags").forGetter(EntityPredicate::flags), EntityEquipmentPredicate.CODEC.optionalFieldOf("equipment").forGetter(EntityPredicate::equipment), EntitySubPredicate.CODEC.optionalFieldOf("type_specific").forGetter(EntityPredicate::subPredicate), ExtraCodecs.POSITIVE_INT.optionalFieldOf("periodic_tick").forGetter(EntityPredicate::periodicTick), var0.optionalFieldOf("vehicle").forGetter(EntityPredicate::vehicle), var0.optionalFieldOf("passenger").forGetter(EntityPredicate::passenger), var0.optionalFieldOf("targeted_entity").forGetter(EntityPredicate::targetedEntity), Codec.STRING.optionalFieldOf("team").forGetter(EntityPredicate::team), SlotsPredicate.CODEC.optionalFieldOf("slots").forGetter(EntityPredicate::slots), DataComponentMatchers.CODEC.forGetter(EntityPredicate::components)).apply(var1, EntityPredicate::new)));

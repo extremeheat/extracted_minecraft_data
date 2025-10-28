@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
    public FileIOStat(Duration var1, @Nullable String var2, long var3) {

@@ -3,7 +3,6 @@ package net.minecraft.server.level;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerPlayerGameMode {
@@ -36,8 +36,7 @@ public class ServerPlayerGameMode {
    protected ServerLevel level;
    protected final ServerPlayer player;
    private GameType gameModeForPlayer;
-   @Nullable
-   private GameType previousGameModeForPlayer;
+   private @Nullable GameType previousGameModeForPlayer;
    private boolean isDestroyingBlock;
    private int destroyProgressStart;
    private BlockPos destroyPos;
@@ -94,8 +93,7 @@ public class ServerPlayerGameMode {
       return this.gameModeForPlayer;
    }
 
-   @Nullable
-   public GameType getPreviousGameModeForPlayer() {
+   public @Nullable GameType getPreviousGameModeForPlayer() {
       return this.previousGameModeForPlayer;
    }
 

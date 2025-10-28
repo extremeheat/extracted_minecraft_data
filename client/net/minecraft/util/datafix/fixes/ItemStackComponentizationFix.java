@@ -19,11 +19,11 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
+import org.jspecify.annotations.Nullable;
 
 public class ItemStackComponentizationFix extends DataFix {
    private static final int HIDE_ENCHANTMENTS = 1;
@@ -482,8 +482,7 @@ public class ItemStackComponentizationFix extends DataFix {
       var0.setComponent("minecraft:written_book_content", var5);
    }
 
-   @Nullable
-   private static Dynamic<?> fixBookPages(ItemStackData var0, Dynamic<?> var1) {
+   private static @Nullable Dynamic<?> fixBookPages(ItemStackData var0, Dynamic<?> var1) {
       List var2 = var0.removeTag("pages").asList((var0x) -> var0x.asString(""));
       Map var3 = var0.removeTag("filtered_pages").asMap((var0x) -> var0x.asString("0"), (var0x) -> var0x.asString(""));
       if (var2.isEmpty()) {
@@ -604,8 +603,7 @@ public class ItemStackComponentizationFix extends DataFix {
       return var0.length() > 16 ? false : var0.chars().filter((var0x) -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
    }
 
-   @Nullable
-   private static Dynamic<?> fixProfileProperties(OptionalDynamic<?> var0) {
+   private static @Nullable Dynamic<?> fixProfileProperties(OptionalDynamic<?> var0) {
       Map var1 = var0.asMap((var0x) -> var0x.asString(""), (var0x) -> var0x.asList((var0) -> {
             String var1 = var0.get("Value").asString("");
             Optional var2 = var0.get("Signature").asString().result();

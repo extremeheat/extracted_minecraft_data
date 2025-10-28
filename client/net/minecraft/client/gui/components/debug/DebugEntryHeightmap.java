@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components.debug;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryHeightmap implements DebugScreenEntry {
    private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES;

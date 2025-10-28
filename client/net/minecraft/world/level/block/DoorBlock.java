@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +38,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class DoorBlock extends Block {
    public static final MapCodec<DoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), propertiesCodec()).apply(var0, DoorBlock::new));
@@ -112,8 +112,7 @@ public class DoorBlock extends Block {
       return var10000;
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
       if (var2.getY() < var3.getMaxY() && var3.getBlockState(var2.above()).canBeReplaced(var1)) {
@@ -124,7 +123,7 @@ public class DoorBlock extends Block {
       }
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       var1.setBlock(var2.above(), (BlockState)var3.setValue(HALF, DoubleBlockHalf.UPPER), 3);
    }
 

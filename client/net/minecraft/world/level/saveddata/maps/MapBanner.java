@@ -3,7 +3,6 @@ package net.minecraft.world.level.saveddata.maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -12,6 +11,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
    public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new));
@@ -23,8 +23,7 @@ public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) 
       this.name = var3;
    }
 
-   @Nullable
-   public static MapBanner fromWorld(BlockGetter var0, BlockPos var1) {
+   public static @Nullable MapBanner fromWorld(BlockGetter var0, BlockPos var1) {
       BlockEntity var2 = var0.getBlockEntity(var1);
       if (var2 instanceof BannerBlockEntity var3) {
          DyeColor var4 = var3.getBaseColor();

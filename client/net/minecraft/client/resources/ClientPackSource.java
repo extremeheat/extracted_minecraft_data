@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +24,7 @@ import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
+import org.jspecify.annotations.Nullable;
 
 public class ClientPackSource extends BuiltInPackSource {
    private static final PackMetadataSection VERSION_METADATA_SECTION;
@@ -35,8 +35,7 @@ public class ClientPackSource extends BuiltInPackSource {
    private static final PackSelectionConfig VANILLA_SELECTION_CONFIG;
    private static final PackSelectionConfig BUILT_IN_SELECTION_CONFIG;
    private static final ResourceLocation PACKS_DIR;
-   @Nullable
-   private final Path externalAssetDir;
+   private final @Nullable Path externalAssetDir;
 
    public ClientPackSource(Path var1, DirectoryValidator var2) {
       super(PackType.CLIENT_RESOURCES, createVanillaPackSource(var1), PACKS_DIR, var2);
@@ -47,8 +46,7 @@ public class ClientPackSource extends BuiltInPackSource {
       return new PackLocationInfo(var0, var1, PackSource.BUILT_IN, Optional.of(KnownPack.vanilla(var0)));
    }
 
-   @Nullable
-   private Path findExplodedAssetPacks(Path var1) {
+   private @Nullable Path findExplodedAssetPacks(Path var1) {
       if (SharedConstants.IS_RUNNING_IN_IDE && var1.getFileSystem() == FileSystems.getDefault()) {
          Path var2 = var1.getParent().resolve("resourcepacks");
          if (Files.isDirectory(var2, new LinkOption[0])) {
@@ -69,13 +67,11 @@ public class ClientPackSource extends BuiltInPackSource {
       return (Component)(var2 != null ? var2 : Component.literal(var1));
    }
 
-   @Nullable
-   protected Pack createVanillaPack(PackResources var1) {
+   protected @Nullable Pack createVanillaPack(PackResources var1) {
       return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(var1), PackType.CLIENT_RESOURCES, VANILLA_SELECTION_CONFIG);
    }
 
-   @Nullable
-   protected Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
+   protected @Nullable Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
       return Pack.readMetaAndCreate(createBuiltInPackLocation(var1, var3), var2, PackType.CLIENT_RESOURCES, BUILT_IN_SELECTION_CONFIG);
    }
 

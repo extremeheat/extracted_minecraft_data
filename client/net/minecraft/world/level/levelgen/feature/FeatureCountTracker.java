@@ -57,7 +57,7 @@ public class FeatureCountTracker {
          boolean var3 = var0.getServer().isRunning();
          Registry var4 = var0.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
          String var5 = (var3 ? "running" : "dead") + " " + var2;
-         Integer var6 = var1.chunksWithFeatures().getValue();
+         int var6 = var1.chunksWithFeatures().intValue();
          LOGGER.debug("{} total_chunks: {}", var5, var6);
          var1.featureData().forEach((var3x, var4x) -> {
             Logger var10000 = LOGGER;

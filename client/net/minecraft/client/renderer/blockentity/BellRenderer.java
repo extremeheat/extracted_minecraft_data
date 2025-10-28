@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.BellModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.Sheets;
@@ -17,6 +16,7 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRenderState> {
    public static final Material BELL_RESOURCE_LOCATION;
@@ -33,7 +33,7 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
       return new BellRenderState();
    }
 
-   public void extractRenderState(BellBlockEntity var1, BellRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(BellBlockEntity var1, BellRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.ticks = (float)var1.ticks + var3;
       var2.shakeDirection = var1.shaking ? var1.clickDirection : null;

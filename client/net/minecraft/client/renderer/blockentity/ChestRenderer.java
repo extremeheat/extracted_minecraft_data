@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.Sheets;
@@ -34,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T, ChestRenderState> {
    private final MaterialSet materials;
@@ -59,7 +59,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       return new ChestRenderState();
    }
 
-   public void extractRenderState(T var1, ChestRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(T var1, ChestRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       DoubleBlockCombiner.NeighborCombineResult var8;
       label30: {
          BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);

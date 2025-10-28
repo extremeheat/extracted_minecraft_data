@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, LecternRenderState> {
    private final MaterialSet materials;
@@ -34,7 +34,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
       return new LecternRenderState();
    }
 
-   public void extractRenderState(LecternBlockEntity var1, LecternRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(LecternBlockEntity var1, LecternRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.hasBook = (Boolean)var1.getBlockState().getValue(LecternBlock.HAS_BOOK);
       var2.yRot = ((Direction)var1.getBlockState().getValue(LecternBlock.FACING)).getClockWise().toYRot();

@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.TracingExecutor;
 import net.minecraft.client.Minecraft;
@@ -168,15 +167,14 @@ public class SectionRenderDispatcher {
       public static final int SIZE = 16;
       public final int index;
       public final AtomicReference<SectionMesh> sectionMesh;
-      @Nullable
       private RebuildTask lastRebuildTask;
-      @Nullable
       private ResortTransparencyTask lastResortTransparencyTask;
       private AABB bb;
       private boolean dirty;
       volatile long sectionNode;
       final BlockPos.MutableBlockPos renderOrigin;
       private boolean playerChanged;
+      private long uploadedTime;
 
       public RenderSection(final int var2, final long var3) {
          super();
@@ -186,6 +184,11 @@ public class SectionRenderDispatcher {
          this.renderOrigin = new BlockPos.MutableBlockPos(-1, -1, -1);
          this.index = var2;
          this.setSectionNode(var3);
+      }
+
+      public float getVisibility(long var1, long var3) {
+         long var5 = var1 - this.uploadedTime;
+         return var5 >= var3 ? 1.0F : (float)var5 / (float)var3;
       }
 
       private boolean doesChunkExistAt(long var1) {
@@ -210,6 +213,10 @@ public class SectionRenderDispatcher {
                   try (Zone var4 = Profiler.get().zone("Upload Section Layer")) {
                      var2.uploadMeshLayer(var2x, var3, this.sectionNode);
                      var3.close();
+                  }
+
+                  if (this.uploadedTime == 0L) {
+                     this.uploadedTime = System.currentTimeMillis();
                   }
 
                }), SectionRenderDispatcher.this.mainThreadUploadExecutor);
@@ -249,6 +256,7 @@ public class SectionRenderDispatcher {
          this.cancelTasks();
          ((SectionMesh)this.sectionMesh.getAndSet(CompiledSectionMesh.UNCOMPILED)).close();
          this.dirty = true;
+         this.uploadedTime = 0L;
       }
 
       public BlockPos getRenderOrigin() {

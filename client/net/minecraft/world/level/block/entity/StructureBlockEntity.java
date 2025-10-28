@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
    private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
@@ -56,8 +56,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    private static final boolean DEFAULT_SHOW_BOUNDING_BOX = true;
    private static final float DEFAULT_INTEGRITY = 1.0F;
    private static final long DEFAULT_SEED = 0L;
-   @Nullable
-   private ResourceLocation structureName;
+   private @Nullable ResourceLocation structureName;
    private String author = "";
    private String metaData = "";
    private BlockPos structurePos;
@@ -411,8 +410,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
    }
 
-   @Nullable
-   private StructureTemplate getStructureTemplate(ServerLevel var1) {
+   private @Nullable StructureTemplate getStructureTemplate(ServerLevel var1) {
       return this.structureName == null ? null : (StructureTemplate)var1.getStructureManager().get(this.structureName).orElse((Object)null);
    }
 

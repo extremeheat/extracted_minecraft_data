@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<LadderBlock> CODEC = simpleCodec(LadderBlock::new);
@@ -65,8 +65,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       }
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       if (!var1.replacingClickedOnBlock()) {
          BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
          if (var2.is(this) && var2.getValue(FACING) == var1.getClickedFace()) {

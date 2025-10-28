@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -21,6 +20,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponentMap> {
    private final MaterialSet materials;
@@ -32,8 +32,7 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
       this.model = var2;
    }
 
-   @Nullable
-   public DataComponentMap extractArgument(ItemStack var1) {
+   public @Nullable DataComponentMap extractArgument(ItemStack var1) {
       return var1.immutableComponents();
    }
 
@@ -61,8 +60,7 @@ public class ShieldSpecialRenderer implements SpecialModelRenderer<DataComponent
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object extractArgument(final ItemStack var1) {
+   public @Nullable Object extractArgument(final ItemStack var1) {
       return this.extractArgument(var1);
    }
 

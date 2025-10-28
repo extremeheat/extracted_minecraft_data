@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.fog.environment;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -9,6 +8,7 @@ import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.material.FogType;
+import org.jspecify.annotations.Nullable;
 
 public class WaterFogEnvironment extends FogEnvironment {
    public WaterFogEnvironment() {
@@ -16,11 +16,12 @@ public class WaterFogEnvironment extends FogEnvironment {
    }
 
    public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      var1.environmentalStart = -8.0F;
-      var1.environmentalEnd = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_RADIUS, var5.getGameTimeDeltaPartialTick(false));
-      Entity var7 = var2.entity();
-      if (var7 instanceof LocalPlayer var6) {
-         var1.environmentalEnd *= Math.max(0.25F, var6.getWaterVision());
+      float var6 = var5.getGameTimeDeltaPartialTick(false);
+      var1.environmentalStart = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_START_DISTANCE, var6);
+      var1.environmentalEnd = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.WATER_FOG_END_DISTANCE, var6);
+      Entity var8 = var2.entity();
+      if (var8 instanceof LocalPlayer var7) {
+         var1.environmentalEnd *= Math.max(0.25F, var7.getWaterVision());
       }
 
       var1.skyEnd = var1.environmentalEnd;

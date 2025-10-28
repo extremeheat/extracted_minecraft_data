@@ -9,15 +9,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
+import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
@@ -25,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SpriteLoader {
@@ -49,22 +50,19 @@ public class SpriteLoader {
    private Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
       try (Zone var4 = Profiler.get().zone((Supplier)(() -> "stitch " + String.valueOf(this.location)))) {
          int var5 = this.maxSupportedTextureSize;
-         Stitcher var6 = new Stitcher(var5, var5, var2);
-         int var7 = 2147483647;
-         int var8 = 1 << var2;
+         int var6 = 2147483647;
+         int var7 = 1 << var2;
 
-         for(SpriteContents var10 : var1) {
-            var7 = Math.min(var7, Math.min(var10.width(), var10.height()));
-            int var11 = Math.min(Integer.lowestOneBit(var10.width()), Integer.lowestOneBit(var10.height()));
-            if (var11 < var8) {
-               LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[]{var10.name(), var10.width(), var10.height(), Mth.log2(var8), Mth.log2(var11)});
-               var8 = var11;
+         for(SpriteContents var9 : var1) {
+            var6 = Math.min(var6, Math.min(var9.width(), var9.height()));
+            int var10 = Math.min(Integer.lowestOneBit(var9.width()), Integer.lowestOneBit(var9.height()));
+            if (var10 < var7) {
+               LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[]{var9.name(), var9.width(), var9.height(), Mth.log2(var7), Mth.log2(var10)});
+               var7 = var10;
             }
-
-            var6.registerSprite(var10);
          }
 
-         int var21 = Math.min(var7, var8);
+         int var21 = Math.min(var6, var7);
          int var22 = Mth.log2(var21);
          int var23;
          if (var22 < var2) {
@@ -74,33 +72,39 @@ public class SpriteLoader {
             var23 = var2;
          }
 
-         try {
-            var6.stitch();
-         } catch (StitcherException var19) {
-            CrashReport var13 = CrashReport.forThrowable(var19, "Stitching");
-            CrashReportCategory var14 = var13.addCategory("Stitcher");
-            var14.setDetail("Sprites", var19.getAllSprites().stream().map((var0) -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height())).collect(Collectors.joining(",")));
-            var14.setDetail("Max Texture Size", var5);
-            throw new ReportedException(var13);
+         Stitcher var11 = new Stitcher(var5, var5, var23, var23 == 0 ? 0 : (Integer)Minecraft.getInstance().options.maxAnisotropyBit().get());
+
+         for(SpriteContents var13 : var1) {
+            var11.registerSprite(var13);
          }
 
-         int var12 = Math.max(var6.getWidth(), this.minWidth);
-         int var24 = Math.max(var6.getHeight(), this.minHeight);
-         Map var25 = this.getStitchedSprites(var6, var12, var24);
-         TextureAtlasSprite var15 = (TextureAtlasSprite)var25.get(MissingTextureAtlasSprite.getLocation());
+         try {
+            var11.stitch();
+         } catch (StitcherException var19) {
+            CrashReport var25 = CrashReport.forThrowable(var19, "Stitching");
+            CrashReportCategory var14 = var25.addCategory("Stitcher");
+            var14.setDetail("Sprites", var19.getAllSprites().stream().map((var0) -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height())).collect(Collectors.joining(",")));
+            var14.setDetail("Max Texture Size", var5);
+            throw new ReportedException(var25);
+         }
+
+         int var24 = Math.max(var11.getWidth(), this.minWidth);
+         int var26 = Math.max(var11.getHeight(), this.minHeight);
+         Map var27 = this.getStitchedSprites(var11, var24, var26);
+         TextureAtlasSprite var15 = (TextureAtlasSprite)var27.get(MissingTextureAtlasSprite.getLocation());
          CompletableFuture var16;
          if (var23 > 0) {
-            var16 = CompletableFuture.runAsync(() -> var25.values().forEach((var1) -> var1.contents().increaseMipLevel(var23)), var3);
+            var16 = CompletableFuture.runAsync(() -> var27.values().forEach((var1) -> var1.contents().increaseMipLevel(var23)), var3);
          } else {
             var16 = CompletableFuture.completedFuture((Object)null);
          }
 
-         return new Preparations(var12, var24, var23, var15, var25, var16);
+         return new Preparations(var24, var26, var23, var15, var27, var16);
       }
    }
 
-   private static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(SpriteResourceLoader var0, List<Function<SpriteResourceLoader, SpriteContents>> var1, Executor var2) {
-      List var3 = var1.stream().map((var2x) -> CompletableFuture.supplyAsync(() -> (SpriteContents)var2x.apply(var0), var2)).toList();
+   private static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(SpriteResourceLoader var0, List<SpriteSource.Loader> var1, Executor var2) {
+      List var3 = var1.stream().map((var2x) -> CompletableFuture.supplyAsync(() -> var2x.get(var0), var2)).toList();
       return Util.sequence(var3).thenApply((var0x) -> var0x.stream().filter(Objects::nonNull).toList());
    }
 
@@ -111,7 +115,7 @@ public class SpriteLoader {
 
    private Map<ResourceLocation, TextureAtlasSprite> getStitchedSprites(Stitcher<SpriteContents> var1, int var2, int var3) {
       HashMap var4 = new HashMap();
-      var1.gatherSprites((var4x, var5, var6) -> var4.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var2, var3, var5, var6)));
+      var1.gatherSprites((var4x, var5, var6, var7) -> var4.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var2, var3, var5, var6, var7)));
       return var4;
    }
 
@@ -126,8 +130,7 @@ public class SpriteLoader {
          this.readyForUpload = var6;
       }
 
-      @Nullable
-      public TextureAtlasSprite getSprite(ResourceLocation var1) {
+      public @Nullable TextureAtlasSprite getSprite(ResourceLocation var1) {
          return (TextureAtlasSprite)this.regions.get(var1);
       }
    }

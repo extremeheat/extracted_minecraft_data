@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,6 +39,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ComposterBlock extends Block implements WorldlyContainerHolder {
    public static final MapCodec<ComposterBlock> CODEC = simpleCodec(ComposterBlock::new);

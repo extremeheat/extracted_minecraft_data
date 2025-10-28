@@ -2,12 +2,12 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import org.jspecify.annotations.Nullable;
 
 public class RailState {
    private final Level level;
@@ -94,8 +94,7 @@ public class RailState {
       return BaseRailBlock.isRail(this.level, var1) || BaseRailBlock.isRail(this.level, var1.above()) || BaseRailBlock.isRail(this.level, var1.below());
    }
 
-   @Nullable
-   private RailState getRail(BlockPos var1) {
+   private @Nullable RailState getRail(BlockPos var1) {
       BlockState var3 = this.level.getBlockState(var1);
       if (BaseRailBlock.isRail(var3)) {
          return new RailState(this.level, var1, var3);

@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.flat.FlatLayerInfo;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
+import org.jspecify.annotations.Nullable;
 
 public class CreateFlatWorldScreen extends Screen {
    private static final Component TITLE = Component.translatable("createWorld.customize.flat.title");
@@ -41,10 +41,8 @@ public class CreateFlatWorldScreen extends Screen {
    protected final CreateWorldScreen parent;
    private final Consumer<FlatLevelGeneratorSettings> applySettings;
    FlatLevelGeneratorSettings generator;
-   @Nullable
-   private DetailsList list;
-   @Nullable
-   private Button deleteLayerButton;
+   private @Nullable DetailsList list;
+   private @Nullable Button deleteLayerButton;
 
    public CreateFlatWorldScreen(CreateWorldScreen var1, Consumer<FlatLevelGeneratorSettings> var2, FlatLevelGeneratorSettings var3) {
       super(TITLE);

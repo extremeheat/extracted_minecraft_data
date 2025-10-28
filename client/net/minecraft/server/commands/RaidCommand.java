@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -27,6 +26,7 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RaidCommand {
    public RaidCommand() {
@@ -152,8 +152,7 @@ public class RaidCommand {
       }
    }
 
-   @Nullable
-   private static Raid getRaid(ServerPlayer var0) {
+   private static @Nullable Raid getRaid(ServerPlayer var0) {
       return var0.level().getRaidAt(var0.blockPosition());
    }
 }

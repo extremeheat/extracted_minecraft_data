@@ -6,18 +6,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    public static final SimpleDateFormat DATE_FORMAT;
    public static final String EXPIRES_NEVER = "forever";
    protected final Date created;
    protected final String source;
-   @Nullable
-   protected final Date expires;
-   @Nullable
-   protected final String reason;
+   protected final @Nullable Date expires;
+   protected final @Nullable String reason;
 
    public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
       super(var1);
@@ -59,13 +57,11 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       return this.source;
    }
 
-   @Nullable
-   public Date getExpires() {
+   public @Nullable Date getExpires() {
       return this.expires;
    }
 
-   @Nullable
-   public String getReason() {
+   public @Nullable String getReason() {
       return this.reason;
    }
 

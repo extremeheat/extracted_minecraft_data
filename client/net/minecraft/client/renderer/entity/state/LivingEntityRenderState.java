@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
+import org.jspecify.annotations.Nullable;
 
 public class LivingEntityRenderState extends EntityRenderState {
    public float bodyRot;
@@ -24,15 +24,12 @@ public class LivingEntityRenderState extends EntityRenderState {
    public boolean isAutoSpinAttack;
    public boolean hasRedOverlay;
    public boolean isInvisibleToPlayer;
-   @Nullable
-   public Direction bedOrientation;
+   public @Nullable Direction bedOrientation;
    public Pose pose;
    public final ItemStackRenderState headItem;
    public float wornHeadAnimationPos;
-   @Nullable
-   public SkullBlock.Type wornHeadType;
-   @Nullable
-   public ResolvableProfile wornHeadProfile;
+   public SkullBlock.@Nullable Type wornHeadType;
+   public @Nullable ResolvableProfile wornHeadProfile;
 
    public LivingEntityRenderState() {
       super();

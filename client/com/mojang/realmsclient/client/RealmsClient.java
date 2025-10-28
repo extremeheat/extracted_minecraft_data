@@ -48,18 +48,17 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LenientJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsClient {
    public static final Environment ENVIRONMENT;
    private static final Logger LOGGER;
-   @Nullable
-   private static volatile RealmsClient realmsClientInstance;
+   private static volatile @Nullable RealmsClient realmsClientInstance;
    private final CompletableFuture<Set<String>> featureFlags;
    private final String sessionId;
    private final String username;
@@ -413,8 +412,7 @@ public class RealmsClient {
       return WorldDownload.parse(var5);
    }
 
-   @Nullable
-   public UploadInfo requestUploadInfo(long var1) throws RealmsServiceException {
+   public @Nullable UploadInfo requestUploadInfo(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$WORLD_ID/backups/upload".replace("$WORLD_ID", String.valueOf(var1)));
       String var4 = UploadTokenCache.get(var1);
       UploadInfo var5 = UploadInfo.parse(this.execute(Request.put(var3, UploadInfo.createRequest(var4))));

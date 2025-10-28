@@ -10,14 +10,14 @@ import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.gui.screens.UploadResult;
 import com.mojang.realmsclient.util.UploadTokenCache;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
+import java.util.concurrent.CompletionException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.User;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsWorldUpload {
@@ -30,8 +30,7 @@ public class RealmsWorldUpload {
    private final long realmId;
    private final RealmsWorldUploadStatusTracker statusCallback;
    private volatile boolean cancelled;
-   @Nullable
-   private FileUpload uploadTask;
+   private volatile @Nullable CompletableFuture<?> uploadTask;
 
    public RealmsWorldUpload(Path var1, RealmsSlot var2, User var3, long var4, RealmsWorldUploadStatusTracker var6) {
       super();
@@ -50,22 +49,58 @@ public class RealmsWorldUpload {
             UploadInfo var2 = this.requestUploadInfoWithRetries();
             var1 = RealmsUploadWorldPacker.pack(this.worldFolder, () -> this.cancelled);
             this.statusCallback.setUploading();
-            FileUpload var3 = new FileUpload(var1, this.realmId, this.realmsSlot.slotId, var2, this.user, SharedConstants.getCurrentVersion().name(), this.realmsSlot.options.version, this.statusCallback.getUploadStatus());
-            this.uploadTask = var3;
-            UploadResult var4 = var3.upload();
-            String var5 = var4.getSimplifiedErrorMessage();
-            if (var5 != null) {
-               throw new RealmsUploadFailedException(var5);
+            FileUpload var24 = new FileUpload(var1, this.realmId, this.realmsSlot.slotId, var2, this.user, SharedConstants.getCurrentVersion().name(), this.realmsSlot.options.version, this.statusCallback.getUploadStatus());
+
+            label163: {
+               try {
+                  CompletableFuture var4 = var24.startUpload();
+                  this.uploadTask = var4;
+                  if (this.cancelled) {
+                     var4.cancel(true);
+                     break label163;
+                  }
+
+                  UploadResult var5;
+                  try {
+                     var5 = (UploadResult)var4.join();
+                  } catch (CompletionException var17) {
+                     throw var17.getCause();
+                  }
+
+                  String var6 = var5.getSimplifiedErrorMessage();
+                  if (var6 != null) {
+                     throw new RealmsUploadFailedException(var6);
+                  }
+
+                  UploadTokenCache.invalidate(this.realmId);
+                  this.client.updateSlot(this.realmId, this.realmsSlot.slotId, this.realmsSlot.options, this.realmsSlot.settings);
+               } catch (Throwable var18) {
+                  try {
+                     var24.close();
+                  } catch (Throwable var16) {
+                     var18.addSuppressed(var16);
+                  }
+
+                  throw var18;
+               }
+
+               var24.close();
+               return;
             }
 
-            UploadTokenCache.invalidate(this.realmId);
-            this.client.updateSlot(this.realmId, this.realmsSlot.slotId, this.realmsSlot.options, this.realmsSlot.settings);
-         } catch (IOException var11) {
-            throw new RealmsUploadFailedException(var11.getMessage());
-         } catch (RealmsServiceException var12) {
-            throw new RealmsUploadFailedException(var12.realmsError.errorMessage());
-         } catch (CancellationException | InterruptedException var13) {
+            var24.close();
+         } catch (RealmsServiceException var19) {
+            throw new RealmsUploadFailedException(var19.realmsError.errorMessage());
+         } catch (CancellationException | InterruptedException var20) {
             throw new RealmsUploadCanceledException();
+         } catch (RealmsUploadException var21) {
+            throw var21;
+         } catch (Throwable var22) {
+            if (var22 instanceof Error var3) {
+               throw var3;
+            }
+
+            throw new RealmsUploadFailedException(var22.getMessage());
          } finally {
             if (var1 != null) {
                LOGGER.debug("Deleting file {}", var1.getAbsolutePath());
@@ -79,9 +114,9 @@ public class RealmsWorldUpload {
 
    public void cancel() {
       this.cancelled = true;
-      if (this.uploadTask != null) {
-         this.uploadTask.cancel();
-         this.uploadTask = null;
+      CompletableFuture var1 = this.uploadTask;
+      if (var1 != null) {
+         var1.cancel(true);
       }
 
    }

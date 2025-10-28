@@ -3,13 +3,13 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class BlockIgnoreProcessor extends StructureProcessor {
    public static final MapCodec<BlockIgnoreProcessor> CODEC;
@@ -23,8 +23,7 @@ public class BlockIgnoreProcessor extends StructureProcessor {
       this.toIgnore = ImmutableList.copyOf(var1);
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       return this.toIgnore.contains(var5.state().getBlock()) ? null : var5;
    }
 

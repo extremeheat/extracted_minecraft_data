@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
@@ -10,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ServerboundInteractPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundInteractPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundInteractPacket>codec(ServerboundInteractPacket::write, ServerboundInteractPacket::new);
@@ -71,8 +71,7 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       var1.handleInteract(this);
    }
 
-   @Nullable
-   public Entity getTarget(ServerLevel var1) {
+   public @Nullable Entity getTarget(ServerLevel var1) {
       return var1.getEntityOrPart(this.entityId);
    }
 

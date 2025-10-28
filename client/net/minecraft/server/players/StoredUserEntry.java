@@ -1,19 +1,17 @@
 package net.minecraft.server.players;
 
 import com.google.gson.JsonObject;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class StoredUserEntry<T> {
-   @Nullable
-   private final T user;
+   private final @Nullable T user;
 
    public StoredUserEntry(@Nullable T var1) {
       super();
       this.user = var1;
    }
 
-   @Nullable
-   public T getUser() {
+   public @Nullable T getUser() {
       return this.user;
    }
 

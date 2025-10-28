@@ -8,7 +8,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
@@ -17,6 +16,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StreamTagVisitor;
 import net.minecraft.util.ExceptionCollector;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public final class RegionFileStorage implements AutoCloseable {
    public static final String ANVIL_EXTENSION = ".mca";
@@ -53,8 +53,7 @@ public final class RegionFileStorage implements AutoCloseable {
       }
    }
 
-   @Nullable
-   public CompoundTag read(ChunkPos var1) throws IOException {
+   public @Nullable CompoundTag read(ChunkPos var1) throws IOException {
       RegionFile var2 = this.getRegionFile(var1);
       DataInputStream var3 = var2.getChunkDataInputStream(var1);
 

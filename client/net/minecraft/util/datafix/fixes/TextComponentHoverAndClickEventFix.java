@@ -12,9 +12,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
+import org.jspecify.annotations.Nullable;
 
 public class TextComponentHoverAndClickEventFix extends DataFix {
    public TextComponentHoverAndClickEventFix(Schema var1) {
@@ -79,8 +79,7 @@ public class TextComponentHoverAndClickEventFix extends DataFix {
       return var10000;
    }
 
-   @Nullable
-   private static <T> Dynamic<T> fixClickEvent(Dynamic<T> var0) {
+   private static <T> @Nullable Dynamic<T> fixClickEvent(Dynamic<T> var0) {
       String var1 = var0.get("action").asString("");
       String var2 = var0.get("value").asString("");
       Dynamic var10000;
@@ -111,8 +110,7 @@ public class TextComponentHoverAndClickEventFix extends DataFix {
       return var10000;
    }
 
-   @Nullable
-   private static Integer parseOldPage(Dynamic<?> var0) {
+   private static @Nullable Integer parseOldPage(Dynamic<?> var0) {
       Optional var1 = var0.asNumber().result();
       if (var1.isPresent()) {
          return ((Number)var1.get()).intValue();

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.goal.target;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -9,6 +8,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public abstract class TargetGoal extends Goal {
    private static final int EMPTY_REACH_CACHE = 0;
@@ -20,8 +20,7 @@ public abstract class TargetGoal extends Goal {
    private int reachCache;
    private int reachCacheTime;
    private int unseenTicks;
-   @Nullable
-   protected LivingEntity targetMob;
+   protected @Nullable LivingEntity targetMob;
    protected int unseenMemoryTicks;
 
    public TargetGoal(Mob var1, boolean var2) {

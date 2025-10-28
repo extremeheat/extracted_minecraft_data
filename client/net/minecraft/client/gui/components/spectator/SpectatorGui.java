@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.spectator;
 
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class SpectatorGui implements SpectatorMenuListener {
    private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
@@ -22,8 +22,7 @@ public class SpectatorGui implements SpectatorMenuListener {
    private static final long FADE_OUT_TIME = 2000L;
    private final Minecraft minecraft;
    private long lastSelectionTime;
-   @Nullable
-   private SpectatorMenu menu;
+   private @Nullable SpectatorMenu menu;
 
    public SpectatorGui(Minecraft var1) {
       super();

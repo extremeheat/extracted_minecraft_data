@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -32,6 +31,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.DependencySorter;
 import net.minecraft.util.StrictJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TagLoader<T> {
@@ -109,13 +109,11 @@ public class TagLoader<T> {
    public Map<ResourceLocation, List<T>> build(Map<ResourceLocation, List<EntryWithSource>> var1) {
       final HashMap var2 = new HashMap();
       TagEntry.Lookup var3 = new TagEntry.Lookup<T>() {
-         @Nullable
-         public T element(ResourceLocation var1, boolean var2x) {
+         public @Nullable T element(ResourceLocation var1, boolean var2x) {
             return (T)TagLoader.this.elementLookup.get(var1, var2x).orElse((Object)null);
          }
 
-         @Nullable
-         public Collection<T> tag(ResourceLocation var1) {
+         public @Nullable Collection<T> tag(ResourceLocation var1) {
             return (Collection)var2.get(var1);
          }
       };
@@ -161,8 +159,7 @@ public class TagLoader<T> {
       return var2;
    }
 
-   @Nullable
-   private static Registry.PendingTags<?> findTagsForRegistry(List<Registry.PendingTags<?>> var0, ResourceKey<? extends Registry<?>> var1) {
+   private static Registry.@Nullable PendingTags<?> findTagsForRegistry(List<Registry.PendingTags<?>> var0, ResourceKey<? extends Registry<?>> var1) {
       for(Registry.PendingTags var3 : var0) {
          if (var3.key() == var1) {
             return var3;

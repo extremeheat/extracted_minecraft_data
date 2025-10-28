@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.render.state.pip;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public record GuiBookModelRenderState(BookModel bookModel, ResourceLocation texture, float open, float flip, int x0, int y0, int x1, int y1, float scale, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
    public GuiBookModelRenderState(BookModel var1, ResourceLocation var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, @Nullable ScreenRectangle var10) {

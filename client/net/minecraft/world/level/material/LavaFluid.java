@@ -1,7 +1,6 @@
 package net.minecraft.world.level.material;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.InsideBlockEffectType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -28,6 +26,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LavaFluid extends FlowingFluid {
    public static final float MIN_LEVEL_CUTOFF = 0.44444445F;
@@ -67,42 +67,40 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public void randomTick(ServerLevel var1, BlockPos var2, FluidState var3, RandomSource var4) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_ALLOWFIRETICKAWAYFROMPLAYERS) || var1.anyPlayerCloseEnoughForSpawning(var2)) {
-            int var5 = var4.nextInt(3);
-            if (var5 > 0) {
-               BlockPos var6 = var2;
+      if (var1.canSpreadFireAround(var2)) {
+         int var5 = var4.nextInt(3);
+         if (var5 > 0) {
+            BlockPos var6 = var2;
 
-               for(int var7 = 0; var7 < var5; ++var7) {
-                  var6 = var6.offset(var4.nextInt(3) - 1, 1, var4.nextInt(3) - 1);
-                  if (!var1.isLoaded(var6)) {
-                     return;
-                  }
-
-                  BlockState var8 = var1.getBlockState(var6);
-                  if (var8.isAir()) {
-                     if (this.hasFlammableNeighbours(var1, var6)) {
-                        var1.setBlockAndUpdate(var6, BaseFireBlock.getState(var1, var6));
-                        return;
-                     }
-                  } else if (var8.blocksMotion()) {
-                     return;
-                  }
+            for(int var7 = 0; var7 < var5; ++var7) {
+               var6 = var6.offset(var4.nextInt(3) - 1, 1, var4.nextInt(3) - 1);
+               if (!var1.isLoaded(var6)) {
+                  return;
                }
-            } else {
-               for(int var9 = 0; var9 < 3; ++var9) {
-                  BlockPos var10 = var2.offset(var4.nextInt(3) - 1, 0, var4.nextInt(3) - 1);
-                  if (!var1.isLoaded(var10)) {
+
+               BlockState var8 = var1.getBlockState(var6);
+               if (var8.isAir()) {
+                  if (this.hasFlammableNeighbours(var1, var6)) {
+                     var1.setBlockAndUpdate(var6, BaseFireBlock.getState(var1, var6));
                      return;
                   }
-
-                  if (var1.isEmptyBlock(var10.above()) && this.isFlammable(var1, var10)) {
-                     var1.setBlockAndUpdate(var10.above(), BaseFireBlock.getState(var1, var10));
-                  }
+               } else if (var8.blocksMotion()) {
+                  return;
                }
             }
+         } else {
+            for(int var9 = 0; var9 < 3; ++var9) {
+               BlockPos var10 = var2.offset(var4.nextInt(3) - 1, 0, var4.nextInt(3) - 1);
+               if (!var1.isLoaded(var10)) {
+                  return;
+               }
 
+               if (var1.isEmptyBlock(var10.above()) && this.isFlammable(var1, var10)) {
+                  var1.setBlockAndUpdate(var10.above(), BaseFireBlock.getState(var1, var10));
+               }
+            }
          }
+
       }
    }
 
@@ -126,8 +124,7 @@ public abstract class LavaFluid extends FlowingFluid {
       return var1.isInsideBuildHeight(var2.getY()) && !var1.hasChunkAt(var2) ? false : var1.getBlockState(var2).ignitedByLava();
    }
 
-   @Nullable
-   public ParticleOptions getDripParticle() {
+   public @Nullable ParticleOptions getDripParticle() {
       return ParticleTypes.DRIPPING_LAVA;
    }
 
@@ -173,7 +170,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    protected boolean canConvertToSource(ServerLevel var1) {
-      return var1.getGameRules().getBoolean(GameRules.RULE_LAVA_SOURCE_CONVERSION);
+      return (Boolean)var1.getGameRules().get(GameRules.LAVA_SOURCE_CONVERSION);
    }
 
    protected void spreadTo(LevelAccessor var1, BlockPos var2, BlockState var3, Direction var4, FluidState var5) {

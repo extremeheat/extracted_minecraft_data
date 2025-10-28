@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -20,11 +19,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractMinecartContainer extends AbstractMinecart implements ContainerEntity {
    private NonNullList<ItemStack> itemStacks;
-   @Nullable
-   private ResourceKey<LootTable> lootTable;
+   private @Nullable ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    protected AbstractMinecartContainer(EntityType<?> var1, Level var2) {
@@ -109,8 +108,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       this.lootTableSeed = var2;
    }
 
-   @Nullable
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
+   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       if (this.lootTable != null && var3.isSpectator()) {
          return null;
       } else {
@@ -121,8 +119,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
 
    protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);
 
-   @Nullable
-   public ResourceKey<LootTable> getContainerLootTable() {
+   public @Nullable ResourceKey<LootTable> getContainerLootTable() {
       return this.lootTable;
    }
 

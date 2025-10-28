@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
@@ -41,6 +40,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public record PlayerPredicate(MinMaxBounds.Ints level, GameTypePredicate gameType, List<StatMatcher<?>> stats, Object2BooleanMap<ResourceKey<Recipe<?>>> recipes, Map<ResourceLocation, AdvancementPredicate> advancements, Optional<EntityPredicate> lookingAt, Optional<InputPredicate> input) implements EntitySubPredicate {
    public static final int LOOKING_AT_RANGE = 100;

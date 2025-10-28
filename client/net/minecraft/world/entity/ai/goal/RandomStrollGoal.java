@@ -1,10 +1,10 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RandomStrollGoal extends Goal {
    public static final int DEFAULT_INTERVAL = 120;
@@ -61,8 +61,7 @@ public class RandomStrollGoal extends Goal {
       }
    }
 
-   @Nullable
-   protected Vec3 getPosition() {
+   protected @Nullable Vec3 getPosition() {
       return DefaultRandomPos.getPos(this.mob, 10, 7);
    }
 

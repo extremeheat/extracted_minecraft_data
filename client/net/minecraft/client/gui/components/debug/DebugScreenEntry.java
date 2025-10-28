@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components.debug;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public interface DebugScreenEntry {
    void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4);

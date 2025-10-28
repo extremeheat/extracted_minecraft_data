@@ -6,8 +6,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
@@ -31,7 +31,7 @@ public class LargeFireball extends Fireball {
       super.onHit(var1);
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
-         boolean var4 = var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         boolean var4 = (Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING);
          this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var4, Level.ExplosionInteraction.MOB);
          this.discard();
       }

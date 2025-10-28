@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -27,11 +26,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class GameTestInfo {
    private final Holder.Reference<GameTestInstance> test;
-   @Nullable
-   private BlockPos testBlockPos;
+   private @Nullable BlockPos testBlockPos;
    private final ServerLevel level;
    private final Collection<GameTestListener> listeners = Lists.newArrayList();
    private final int timeoutTicks;
@@ -45,10 +44,8 @@ public class GameTestInfo {
    private final Stopwatch timer = Stopwatch.createUnstarted();
    private boolean done;
    private final Rotation extraRotation;
-   @Nullable
-   private GameTestException error;
-   @Nullable
-   private TestInstanceBlockEntity testInstanceBlockEntity;
+   private @Nullable GameTestException error;
+   private @Nullable TestInstanceBlockEntity testInstanceBlockEntity;
 
    public GameTestInfo(Holder.Reference<GameTestInstance> var1, Rotation var2, ServerLevel var3, RetryOptions var4) {
       super();
@@ -184,8 +181,7 @@ public class GameTestInfo {
       return this.test.key().location();
    }
 
-   @Nullable
-   public BlockPos getTestBlockPos() {
+   public @Nullable BlockPos getTestBlockPos() {
       return this.testBlockPos;
    }
 
@@ -270,8 +266,7 @@ public class GameTestInfo {
       this.error = var1;
    }
 
-   @Nullable
-   public GameTestException getError() {
+   public @Nullable GameTestException getError() {
       return this.error;
    }
 
@@ -283,8 +278,7 @@ public class GameTestInfo {
       this.listeners.add(var1);
    }
 
-   @Nullable
-   public GameTestInfo prepareTestStructure() {
+   public @Nullable GameTestInfo prepareTestStructure() {
       TestInstanceBlockEntity var1 = this.createTestInstanceBlock((BlockPos)Objects.requireNonNull(this.testBlockPos), this.extraRotation, this.level);
       if (var1 != null) {
          this.testInstanceBlockEntity = var1;
@@ -295,8 +289,7 @@ public class GameTestInfo {
       }
    }
 
-   @Nullable
-   private TestInstanceBlockEntity createTestInstanceBlock(BlockPos var1, Rotation var2, ServerLevel var3) {
+   private @Nullable TestInstanceBlockEntity createTestInstanceBlock(BlockPos var1, Rotation var2, ServerLevel var3) {
       var3.setBlockAndUpdate(var1, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());
       BlockEntity var5 = var3.getBlockEntity(var1);
       if (var5 instanceof TestInstanceBlockEntity var4) {

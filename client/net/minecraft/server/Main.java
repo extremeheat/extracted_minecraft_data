@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import joptsimple.AbstractOptionSpec;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
@@ -48,11 +47,11 @@ import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
@@ -61,6 +60,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.storage.WorldData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Main {

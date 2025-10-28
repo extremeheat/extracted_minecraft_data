@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public class DoublePlantBlock extends VegetationBlock {
    public static final MapCodec<DoublePlantBlock> CODEC = simpleCodec(DoublePlantBlock::new);
@@ -45,14 +45,13 @@ public class DoublePlantBlock extends VegetationBlock {
       }
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
       return var2.getY() < var3.getMaxY() && var3.getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       BlockPos var6 = var2.above();
       var1.setBlock(var6, copyWaterloggedFrom(var1, var6, (BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)), 3);
    }

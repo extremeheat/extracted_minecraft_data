@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -15,6 +14,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerSkinWidget extends AbstractWidget {
    private static final float MODEL_HEIGHT = 2.125F;
@@ -55,8 +55,7 @@ public class PlayerSkinWidget extends AbstractWidget {
    protected void updateWidgetNarration(NarrationElementOutput var1) {
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 }

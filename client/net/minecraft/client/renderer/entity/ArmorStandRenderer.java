@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.ArmorStandArmorModel;
 import net.minecraft.client.model.ArmorStandModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -21,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
    public static final ResourceLocation DEFAULT_SKIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/armorstand/wood.png");
@@ -78,8 +78,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       return var1.isCustomNameVisible();
    }
 
-   @Nullable
-   protected RenderType getRenderType(ArmorStandRenderState var1, boolean var2, boolean var3, boolean var4) {
+   protected @Nullable RenderType getRenderType(ArmorStandRenderState var1, boolean var2, boolean var3, boolean var4) {
       if (!var1.isMarker) {
          return super.getRenderType(var1, var2, var3, var4);
       } else {

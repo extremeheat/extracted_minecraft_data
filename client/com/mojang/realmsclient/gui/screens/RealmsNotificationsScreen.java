@@ -6,13 +6,13 @@ import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsNotificationsScreen extends RealmsScreen {
    private static final ResourceLocation UNSEEN_NOTIFICATION_SPRITE = ResourceLocation.withDefaultNamespace("icon/unseen_notification");
@@ -20,10 +20,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    private static final ResourceLocation INVITE_SPRITE = ResourceLocation.withDefaultNamespace("icon/invite");
    private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = ResourceLocation.withDefaultNamespace("icon/trial_available");
    private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply((var0) -> var0.type() == RealmsAvailability.Type.SUCCESS);
-   @Nullable
-   private DataFetcher.Subscription realmsDataSubscription;
-   @Nullable
-   private DataFetcherConfiguration currentConfiguration;
+   private DataFetcher.@Nullable Subscription realmsDataSubscription;
+   private @Nullable DataFetcherConfiguration currentConfiguration;
    private volatile int numberOfPendingInvites;
    private static boolean trialAvailable;
    private static boolean hasUnreadNews;
@@ -68,8 +66,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       this.minecraft.realmsDataFetcher().notificationsTask.reset();
    }
 
-   @Nullable
-   private DataFetcherConfiguration getConfiguration() {
+   private @Nullable DataFetcherConfiguration getConfiguration() {
       boolean var1 = this.inTitleScreen() && (Boolean)this.validClient.getNow(false);
       if (!var1) {
          return null;

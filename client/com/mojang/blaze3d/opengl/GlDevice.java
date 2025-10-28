@@ -6,6 +6,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
+import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -25,13 +26,13 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -47,20 +48,20 @@ public class GlDevice implements GpuDevice {
    protected static boolean USE_GL_ARB_direct_state_access = true;
    protected static boolean USE_GL_ARB_buffer_storage = true;
    private final CommandEncoder encoder;
-   @Nullable
-   private final GlDebug debugLog;
+   private final @Nullable GlDebug debugLog;
    private final GlDebugLabel debugLabels;
    private final int maxSupportedTextureSize;
    private final DirectStateAccess directStateAccess;
-   private final BiFunction<ResourceLocation, ShaderType, String> defaultShaderSource;
+   private final ShaderSource defaultShaderSource;
    private final Map<RenderPipeline, GlRenderPipeline> pipelineCache = new IdentityHashMap();
    private final Map<ShaderCompilationKey, GlShaderModule> shaderCache = new HashMap();
    private final VertexArrayCache vertexArrayCache;
    private final BufferStorage bufferStorage;
    private final Set<String> enabledExtensions = new HashSet();
    private final int uniformOffsetAlignment;
+   private final int maxSupportedAnisotropy;
 
-   public GlDevice(long var1, int var3, boolean var4, BiFunction<ResourceLocation, ShaderType, String> var5, boolean var6) {
+   public GlDevice(long var1, int var3, boolean var4, ShaderSource var5, boolean var6) {
       super();
       GLFW.glfwMakeContextCurrent(var1);
       GLCapabilities var7 = GL.createCapabilities();
@@ -78,6 +79,13 @@ public class GlDevice implements GpuDevice {
       this.uniformOffsetAlignment = GL11.glGetInteger(35380);
       GL11.glEnable(34895);
       GL11.glEnable(34370);
+      if (var7.GL_EXT_texture_filter_anisotropic) {
+         this.maxSupportedAnisotropy = Mth.floor(GL11.glGetFloat(34047));
+         this.enabledExtensions.add("GL_EXT_texture_filter_anisotropic");
+      } else {
+         this.maxSupportedAnisotropy = 1;
+      }
+
    }
 
    public GlDebugLabel debugLabels() {
@@ -88,8 +96,17 @@ public class GlDevice implements GpuDevice {
       return this.encoder;
    }
 
-   public GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4) {
-      return new GlSampler(var1, var2, var3, var4);
+   public int getMaxSupportedAnisotropy() {
+      return this.maxSupportedAnisotropy;
+   }
+
+   public GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5) {
+      if (var5 >= 1 && var5 <= this.maxSupportedAnisotropy) {
+         return new GlSampler(var1, var2, var3, var4, var5);
+      } else {
+         int var10002 = this.getMaxSupportedAnisotropy();
+         throw new IllegalArgumentException("maxAnisotropy out of range; must be >= 1 and <= " + var10002 + ", but was " + var5);
+      }
    }
 
    public GpuTexture createTexture(@Nullable Supplier<String> var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7) {
@@ -318,21 +335,21 @@ public class GlDevice implements GpuDevice {
    }
 
    protected GlRenderPipeline getOrCompilePipeline(RenderPipeline var1) {
-      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(var1, (var2) -> this.compilePipeline(var1, this.defaultShaderSource));
+      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(var1, (var1x) -> this.compilePipeline(var1x, this.defaultShaderSource));
    }
 
-   protected GlShaderModule getOrCompileShader(ResourceLocation var1, ShaderType var2, ShaderDefines var3, BiFunction<ResourceLocation, ShaderType, String> var4) {
+   protected GlShaderModule getOrCompileShader(ResourceLocation var1, ShaderType var2, ShaderDefines var3, ShaderSource var4) {
       ShaderCompilationKey var5 = new ShaderCompilationKey(var1, var2, var3);
-      return (GlShaderModule)this.shaderCache.computeIfAbsent(var5, (var3x) -> this.compileShader(var5, var4));
+      return (GlShaderModule)this.shaderCache.computeIfAbsent(var5, (var2x) -> this.compileShader(var2x, var4));
    }
 
-   public GlRenderPipeline precompilePipeline(RenderPipeline var1, @Nullable BiFunction<ResourceLocation, ShaderType, String> var2) {
-      BiFunction var3 = var2 == null ? this.defaultShaderSource : var2;
-      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(var1, (var3x) -> this.compilePipeline(var1, var3));
+   public GlRenderPipeline precompilePipeline(RenderPipeline var1, @Nullable ShaderSource var2) {
+      ShaderSource var3 = var2 == null ? this.defaultShaderSource : var2;
+      return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(var1, (var2x) -> this.compilePipeline(var2x, var3));
    }
 
-   private GlShaderModule compileShader(ShaderCompilationKey var1, BiFunction<ResourceLocation, ShaderType, String> var2) {
-      String var3 = (String)var2.apply(var1.id, var1.type);
+   private GlShaderModule compileShader(ShaderCompilationKey var1, ShaderSource var2) {
+      String var3 = var2.get(var1.id, var1.type);
       if (var3 == null) {
          LOGGER.error("Couldn't find source for {} shader ({})", var1.type, var1.id);
          return GlShaderModule.INVALID_SHADER;
@@ -353,28 +370,30 @@ public class GlDevice implements GpuDevice {
       }
    }
 
-   private GlRenderPipeline compilePipeline(RenderPipeline var1, BiFunction<ResourceLocation, ShaderType, String> var2) {
+   private GlProgram compileProgram(RenderPipeline var1, ShaderSource var2) {
       GlShaderModule var3 = this.getOrCompileShader(var1.getVertexShader(), ShaderType.VERTEX, var1.getShaderDefines(), var2);
       GlShaderModule var4 = this.getOrCompileShader(var1.getFragmentShader(), ShaderType.FRAGMENT, var1.getShaderDefines(), var2);
       if (var3 == GlShaderModule.INVALID_SHADER) {
          LOGGER.error("Couldn't compile pipeline {}: vertex shader {} was invalid", var1.getLocation(), var1.getVertexShader());
-         return new GlRenderPipeline(var1, GlProgram.INVALID_PROGRAM);
+         return GlProgram.INVALID_PROGRAM;
       } else if (var4 == GlShaderModule.INVALID_SHADER) {
          LOGGER.error("Couldn't compile pipeline {}: fragment shader {} was invalid", var1.getLocation(), var1.getFragmentShader());
-         return new GlRenderPipeline(var1, GlProgram.INVALID_PROGRAM);
+         return GlProgram.INVALID_PROGRAM;
       } else {
-         GlProgram var5;
          try {
-            var5 = GlProgram.link(var3, var4, var1.getVertexFormat(), var1.getLocation().toString());
-         } catch (ShaderManager.CompilationException var7) {
-            LOGGER.error("Couldn't compile program for pipeline {}: {}", var1.getLocation(), var7);
-            return new GlRenderPipeline(var1, GlProgram.INVALID_PROGRAM);
+            GlProgram var5 = GlProgram.link(var3, var4, var1.getVertexFormat(), var1.getLocation().toString());
+            var5.setupUniforms(var1.getUniforms(), var1.getSamplers());
+            this.debugLabels.applyLabel(var5);
+            return var5;
+         } catch (ShaderManager.CompilationException var6) {
+            LOGGER.error("Couldn't compile program for pipeline {}: {}", var1.getLocation(), var6);
+            return GlProgram.INVALID_PROGRAM;
          }
-
-         var5.setupUniforms(var1.getUniforms(), var1.getSamplers());
-         this.debugLabels.applyLabel(var5);
-         return new GlRenderPipeline(var1, var5);
       }
+   }
+
+   private GlRenderPipeline compilePipeline(RenderPipeline var1, ShaderSource var2) {
+      return new GlRenderPipeline(var1, this.compileProgram(var1, var2));
    }
 
    public VertexArrayCache vertexArrayCache() {
@@ -386,7 +405,7 @@ public class GlDevice implements GpuDevice {
    }
 
    // $FF: synthetic method
-   public CompiledRenderPipeline precompilePipeline(final RenderPipeline var1, @Nullable final BiFunction var2) {
+   public CompiledRenderPipeline precompilePipeline(final RenderPipeline var1, final @Nullable ShaderSource var2) {
       return this.precompilePipeline(var1, var2);
    }
 

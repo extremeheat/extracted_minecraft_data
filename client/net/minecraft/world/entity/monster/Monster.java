@@ -20,13 +20,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public abstract class Monster extends PathfinderMob implements Enemy {
    protected Monster(EntityType<? extends Monster> var1, Level var2) {
@@ -99,6 +99,10 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return var1.getDifficulty() != Difficulty.PEACEFUL && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
+   public static boolean checkSurfaceMonstersSpawnRules(EntityType<? extends Mob> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (EntitySpawnReason.isSpawner(var2) || var1.canSeeSky(var3));
+   }
+
    public static AttributeSupplier.Builder createMonsterAttributes() {
       return Mob.createMobAttributes().add(Attributes.ATTACK_DAMAGE);
    }
@@ -108,7 +112,7 @@ public abstract class Monster extends PathfinderMob implements Enemy {
    }
 
    protected boolean shouldDropLoot(ServerLevel var1) {
-      return var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
+      return (Boolean)var1.getGameRules().get(GameRules.MOB_DROPS);
    }
 
    public boolean isPreventingPlayerRest(ServerLevel var1, Player var2) {

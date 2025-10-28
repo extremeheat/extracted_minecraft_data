@@ -1,6 +1,5 @@
 package net.minecraft.client.model;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -10,6 +9,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class BellModel extends Model<State> {
    private static final String BELL_BODY = "bell_body";
@@ -48,8 +48,7 @@ public class BellModel extends Model<State> {
 
    public static record State(float ticks, @Nullable Direction shakeDirection) {
       final float ticks;
-      @Nullable
-      final Direction shakeDirection;
+      final @Nullable Direction shakeDirection;
 
       public State(float var1, @Nullable Direction var2) {
          super();

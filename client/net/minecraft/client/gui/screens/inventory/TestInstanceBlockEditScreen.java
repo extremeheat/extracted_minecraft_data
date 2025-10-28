@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class TestInstanceBlockEditScreen extends Screen {
    private static final Component ID_LABEL = Component.translatable("test_instance_block.test_id");
@@ -31,24 +31,15 @@ public class TestInstanceBlockEditScreen extends Screen {
    private static final int BUTTON_PADDING = 8;
    private static final int WIDTH = 316;
    private final TestInstanceBlockEntity blockEntity;
-   @Nullable
-   private EditBox idEdit;
-   @Nullable
-   private EditBox sizeXEdit;
-   @Nullable
-   private EditBox sizeYEdit;
-   @Nullable
-   private EditBox sizeZEdit;
-   @Nullable
-   private FittingMultiLineTextWidget infoWidget;
-   @Nullable
-   private Button saveButton;
-   @Nullable
-   private Button exportButton;
-   @Nullable
-   private CycleButton<Boolean> includeEntitiesButton;
-   @Nullable
-   private CycleButton<Rotation> rotationButton;
+   private @Nullable EditBox idEdit;
+   private @Nullable EditBox sizeXEdit;
+   private @Nullable EditBox sizeYEdit;
+   private @Nullable EditBox sizeZEdit;
+   private @Nullable FittingMultiLineTextWidget infoWidget;
+   private @Nullable Button saveButton;
+   private @Nullable Button exportButton;
+   private @Nullable CycleButton<Boolean> includeEntitiesButton;
+   private @Nullable CycleButton<Rotation> rotationButton;
 
    public TestInstanceBlockEditScreen(TestInstanceBlockEntity var1) {
       super(var1.getBlockState().getBlock().getName());

@@ -144,6 +144,7 @@ import net.minecraft.util.datafix.fixes.FoodToConsumableFix;
 import net.minecraft.util.datafix.fixes.ForcePoiRebuild;
 import net.minecraft.util.datafix.fixes.ForcedChunkToTicketFix;
 import net.minecraft.util.datafix.fixes.FurnaceRecipeFix;
+import net.minecraft.util.datafix.fixes.GameRuleRegistryFix;
 import net.minecraft.util.datafix.fixes.GoatHornIdFix;
 import net.minecraft.util.datafix.fixes.GossipUUIDFix;
 import net.minecraft.util.datafix.fixes.HeightmapRenamingFix;
@@ -264,6 +265,7 @@ import net.minecraft.util.datafix.fixes.VillagerSetCanPickUpLootFix;
 import net.minecraft.util.datafix.fixes.VillagerTradeFix;
 import net.minecraft.util.datafix.fixes.WallPropertyFix;
 import net.minecraft.util.datafix.fixes.WeaponSmithChestLootTableFix;
+import net.minecraft.util.datafix.fixes.WorldBorderWarningTimeFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsDisallowOldCustomWorldsFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsFix;
 import net.minecraft.util.datafix.fixes.WorldGenSettingsHeightAndBiomeFix;
@@ -376,6 +378,7 @@ import net.minecraft.util.datafix.schemas.V4532;
 import net.minecraft.util.datafix.schemas.V4533;
 import net.minecraft.util.datafix.schemas.V4543;
 import net.minecraft.util.datafix.schemas.V4648;
+import net.minecraft.util.datafix.schemas.V4656;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -875,9 +878,9 @@ public class DataFixers {
       Map var176 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var175, "Rename british shorthair", References.ENTITY, "minecraft:cat", var176));
       var0.addFixer(new CriteriaRenameFix(var175, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var176.getOrDefault(var1x, var1x)));
-      Set var293 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var293);
-      var0.addFixer(new PoiTypeRemoveFix(var175, "Remove unpopulated villager PoI types", var293::contains));
+      Set var296 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var296);
+      var0.addFixer(new PoiTypeRemoveFix(var175, "Remove unpopulated villager PoI types", var296::contains));
       Schema var177 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var177));
       Schema var178 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1141,6 +1144,12 @@ public class DataFixers {
       var0.addFixer(new OptionsGraphicsModeSplitFix(var291, "vignette", "false", "true", "true"));
       var0.addFixer(new OptionsGraphicsModeSplitFix(var291, "improvedTransparency", "false", "false", "true"));
       var0.addFixer(new OptionsSetGraphicsPresetToCustomFix(var291));
+      Schema var292 = var0.addSchema(4656, V4656::new);
+      var0.addFixer(new AddNewChoices(var292, "Added Parched and Camel Husk", References.ENTITY));
+      Schema var293 = var0.addSchema(4657, SAME_NAMESPACED);
+      var0.addFixer(new WorldBorderWarningTimeFix(var293));
+      Schema var294 = var0.addSchema(4658, SAME_NAMESPACED);
+      var0.addFixer(new GameRuleRegistryFix(var294));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

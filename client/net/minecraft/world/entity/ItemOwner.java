@@ -1,8 +1,8 @@
 package net.minecraft.world.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface ItemOwner {
    Level level();
@@ -11,8 +11,7 @@ public interface ItemOwner {
 
    float getVisualRotationYInDegrees();
 
-   @Nullable
-   default LivingEntity asLivingEntity() {
+   default @Nullable LivingEntity asLivingEntity() {
       return null;
    }
 
@@ -39,8 +38,7 @@ public interface ItemOwner {
          return this.owner.getVisualRotationYInDegrees();
       }
 
-      @Nullable
-      public LivingEntity asLivingEntity() {
+      public @Nullable LivingEntity asLivingEntity() {
          return this.owner.asLivingEntity();
       }
    }

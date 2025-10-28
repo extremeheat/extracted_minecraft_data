@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class SectionCompiler {
    private final BlockRenderDispatcher blockRenderer;
@@ -121,8 +121,7 @@ public class SectionCompiler {
       public final List<BlockEntity> blockEntities = new ArrayList();
       public final Map<ChunkSectionLayer, MeshData> renderedLayers = new EnumMap(ChunkSectionLayer.class);
       public VisibilitySet visibilitySet = new VisibilitySet();
-      @Nullable
-      public MeshData.SortState transparencyState;
+      public MeshData.@Nullable SortState transparencyState;
 
       public Results() {
          super();

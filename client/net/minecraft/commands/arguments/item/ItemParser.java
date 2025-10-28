@@ -72,7 +72,7 @@ public class ItemParser {
             var3.remove(var1);
          }
       });
-      Holder var4 = (Holder)Objects.requireNonNull((Holder)var2.getValue(), "Parser gave no item");
+      Holder var4 = (Holder)Objects.requireNonNull((Holder)var2.get(), "Parser gave no item");
       DataComponentPatch var5 = var3.build();
       validateComponents(var1, var4, var5);
       return new ItemResult(var4, var5);

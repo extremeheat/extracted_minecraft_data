@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
@@ -24,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record PalettedPermutations(List<ResourceLocation> textures, ResourceLocation paletteKey, Map<String, ResourceLocation> permutations, String separator) implements SpriteSource {
@@ -59,7 +59,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
             for(Map.Entry var11 : var4.entrySet()) {
                String var10001 = this.separator;
                ResourceLocation var12 = var6.withSuffix(var10001 + (String)var11.getKey());
-               var2.add(var12, (SpriteSource.SpriteSupplier)(new PalettedSpriteSupplier(var9, (java.util.function.Supplier)var11.getValue(), var12)));
+               var2.add(var12, (SpriteSource.DiscardableLoader)(new PalettedSpriteSupplier(var9, (java.util.function.Supplier)var11.getValue(), var12)));
             }
          }
       }
@@ -134,7 +134,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
       return MAP_CODEC;
    }
 
-   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) implements SpriteSource.SpriteSupplier {
+   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) implements SpriteSource.DiscardableLoader {
       PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, ResourceLocation var3) {
          super();
          this.baseImage = var1;
@@ -142,8 +142,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
          this.permutationLocation = var3;
       }
 
-      @Nullable
-      public SpriteContents apply(SpriteResourceLoader var1) {
+      public @Nullable SpriteContents get(SpriteResourceLoader var1) {
          SpriteContents var3;
          try {
             NativeImage var2 = this.baseImage.get().mappedCopy((IntUnaryOperator)this.palette.get());
@@ -161,12 +160,6 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
 
       public void discard() {
          this.baseImage.release();
-      }
-
-      // $FF: synthetic method
-      @Nullable
-      public Object apply(final Object var1) {
-         return this.apply((SpriteResourceLoader)var1);
       }
    }
 }

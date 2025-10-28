@@ -15,7 +15,6 @@ import java.util.NoSuchElementException;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
 import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;
@@ -29,6 +28,7 @@ import net.minecraft.util.profiling.jfr.stats.PacketIdentification;
 import net.minecraft.util.profiling.jfr.stats.StructureGenStat;
 import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
 import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
+import org.jspecify.annotations.Nullable;
 
 public class JfrStatsParser {
    private Instant recordingStarted;
@@ -48,8 +48,7 @@ public class JfrStatsParser {
    private final List<ThreadAllocationStat> threadAllocationStats;
    private final List<FpsStat> fps;
    private final List<TickTimeStat> serverTickTimes;
-   @Nullable
-   private Duration worldCreationDuration;
+   private @Nullable Duration worldCreationDuration;
 
    private JfrStatsParser(Stream<RecordedEvent> var1) {
       super();

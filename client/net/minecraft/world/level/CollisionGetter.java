@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -18,12 +17,12 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public interface CollisionGetter extends BlockGetter {
    WorldBorder getWorldBorder();
 
-   @Nullable
-   BlockGetter getChunkForCollisions(int var1, int var2);
+   @Nullable BlockGetter getChunkForCollisions(int var1, int var2);
 
    default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
       return true;
@@ -103,8 +102,7 @@ public interface CollisionGetter extends BlockGetter {
       return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
    }
 
-   @Nullable
-   private VoxelShape borderCollision(Entity var1, AABB var2) {
+   private @Nullable VoxelShape borderCollision(Entity var1, AABB var2) {
       WorldBorder var3 = this.getWorldBorder();
       return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
    }

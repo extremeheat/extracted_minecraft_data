@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.debug;
 
 import java.time.Duration;
 import java.time.Instant;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.Direction;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final Duration REFRESH_INTERVAL = Duration.ofMillis(500L);
@@ -26,8 +26,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
    private final Minecraft minecraft;
    private final LightLayer lightLayer;
    private Instant lastUpdateTime = Instant.now();
-   @Nullable
-   private SectionData data;
+   private @Nullable SectionData data;
 
    public LightSectionDebugRenderer(Minecraft var1, LightLayer var2) {
       super();

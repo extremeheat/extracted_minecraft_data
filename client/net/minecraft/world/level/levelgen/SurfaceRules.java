@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import org.jspecify.annotations.Nullable;
 
 public class SurfaceRules {
    public static final ConditionSource ON_FLOOR;
@@ -305,8 +305,7 @@ public class SurfaceRules {
    abstract static class LazyCondition implements Condition {
       protected final Context context;
       private long lastUpdate;
-      @Nullable
-      Boolean result;
+      @Nullable Boolean result;
 
       protected LazyCondition(Context var1) {
          super();
@@ -383,8 +382,7 @@ public class SurfaceRules {
          this.followup = var2;
       }
 
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
+      public @Nullable BlockState tryApply(int var1, int var2, int var3) {
          return !this.condition.test() ? null : this.followup.tryApply(var1, var2, var3);
       }
    }
@@ -395,8 +393,7 @@ public class SurfaceRules {
          this.rules = var1;
       }
 
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
+      public @Nullable BlockState tryApply(int var1, int var2, int var3) {
          for(SurfaceRule var5 : this.rules) {
             BlockState var6 = var5.tryApply(var1, var2, var3);
             if (var6 != null) {
@@ -962,7 +959,6 @@ public class SurfaceRules {
    }
 
    protected interface SurfaceRule {
-      @Nullable
-      BlockState tryApply(int var1, int var2, int var3);
+      @Nullable BlockState tryApply(int var1, int var2, int var3);
    }
 }

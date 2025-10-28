@@ -5,13 +5,11 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class NonNullList<E> extends AbstractList<E> {
    private final List<E> list;
-   @Nullable
-   private final E defaultValue;
+   private final @Nullable E defaultValue;
 
    public static <E> NonNullList<E> create() {
       return new NonNullList<E>(Lists.newArrayList(), (Object)null);
@@ -39,7 +37,6 @@ public class NonNullList<E> extends AbstractList<E> {
       this.defaultValue = var2;
    }
 
-   @Nonnull
    public E get(int var1) {
       return (E)this.list.get(var1);
    }

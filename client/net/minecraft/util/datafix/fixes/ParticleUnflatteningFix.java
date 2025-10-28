@@ -15,10 +15,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ParticleUnflatteningFix extends DataFix {
@@ -93,8 +93,7 @@ public class ParticleUnflatteningFix extends DataFix {
       return var1.set("item", var4);
    }
 
-   @Nullable
-   private static <T> Dynamic<T> parseTag(DynamicOps<T> var0, String var1) {
+   private static <T> @Nullable Dynamic<T> parseTag(DynamicOps<T> var0, String var1) {
       try {
          return new Dynamic(var0, TagParser.create(var0).parseFully(var1));
       } catch (Exception var3) {

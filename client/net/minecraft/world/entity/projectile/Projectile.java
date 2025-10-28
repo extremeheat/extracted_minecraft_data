@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -24,10 +23,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -35,17 +34,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Projectile extends Entity implements TraceableEntity {
    private static final boolean DEFAULT_LEFT_OWNER = false;
    private static final boolean DEFAULT_HAS_BEEN_SHOT = false;
-   @Nullable
-   protected EntityReference<Entity> owner;
+   protected @Nullable EntityReference<Entity> owner;
    private boolean leftOwner = false;
    private boolean leftOwnerChecked;
    private boolean hasBeenShot = false;
-   @Nullable
-   private Entity lastDeflectedBy;
+   private @Nullable Entity lastDeflectedBy;
 
    Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
@@ -59,8 +57,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setOwner(EntityReference.of(var1));
    }
 
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return EntityReference.getEntity(this.owner, this.level());
    }
 
@@ -320,12 +317,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       if (var3 instanceof Player) {
          return var3.mayInteract(var1, var2);
       } else {
-         return var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         return var3 == null || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING);
       }
    }
 
    public boolean mayBreak(ServerLevel var1) {
-      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
+      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)var1.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS);
    }
 
    public boolean isPickable() {

@@ -13,13 +13,13 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class RegistrySetBuilder {
    private final List<RegistryStub<?>> entries = new ArrayList();
@@ -144,7 +144,7 @@ public class RegistrySetBuilder {
          var9.listElements().forEach((var5x) -> {
             ResourceKey var6x = var5x.key();
             LazyHolder var7x = new LazyHolder(var1, var6x);
-            var7x.supplier = () -> var7.clone(var5x.value(), var4, (HolderLookup.Provider)var6.getValue());
+            var7x.supplier = () -> var7.clone(var5x.value(), var4, (HolderLookup.Provider)var6.get());
             var8.put(var6x, var7x);
          });
          HolderLookup.RegistryLookup var10 = var5.lookupOrThrow(var3);
@@ -152,7 +152,7 @@ public class RegistrySetBuilder {
             ResourceKey var6x = var5x.key();
             var8.computeIfAbsent(var6x, (var6xx) -> {
                LazyHolder var7x = new LazyHolder(var1, var6x);
-               var7x.supplier = () -> var7.clone(var5x.value(), var5, (HolderLookup.Provider)var6.getValue());
+               var7x.supplier = () -> var7.clone(var5x.value(), var5, (HolderLookup.Provider)var6.get());
                return var7x;
             });
          });
@@ -176,8 +176,7 @@ public class RegistrySetBuilder {
    }
 
    static class LazyHolder<T> extends Holder.Reference<T> {
-      @Nullable
-      Supplier<T> supplier;
+      @Nullable Supplier<T> supplier;
 
       protected LazyHolder(HolderOwner<T> var1, @Nullable ResourceKey<T> var2) {
          super(Holder.Reference.Type.STAND_ALONE, var1, var2, (Object)null);

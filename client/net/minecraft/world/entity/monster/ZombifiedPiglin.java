@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -42,6 +41,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private static final EntityDimensions BABY_DIMENSIONS;
@@ -51,8 +51,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private int playFirstAngerSoundIn;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
    private static final int ALERT_RANGE_Y = 10;
    private static final UniformInt ALERT_INTERVAL;
    private int ticksUntilNextAlert;
@@ -198,8 +197,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(0.0);
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

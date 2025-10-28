@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<MangroveRootsBlock> CODEC = simpleCodec(MangroveRootsBlock::new);
@@ -34,8 +34,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
       return var2.is(Blocks.MANGROVE_ROOTS) && var3.getAxis() == Direction.Axis.Y;
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
       boolean var3 = var2.getType() == Fluids.WATER;
       return (BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var3);

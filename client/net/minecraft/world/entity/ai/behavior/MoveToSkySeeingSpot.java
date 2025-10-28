@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -12,6 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class MoveToSkySeeingSpot {
    public MoveToSkySeeingSpot() {
@@ -30,8 +30,7 @@ public class MoveToSkySeeingSpot {
             })));
    }
 
-   @Nullable
-   private static Vec3 getOutdoorPosition(ServerLevel var0, LivingEntity var1) {
+   private static @Nullable Vec3 getOutdoorPosition(ServerLevel var0, LivingEntity var1) {
       RandomSource var2 = var1.getRandom();
       BlockPos var3 = var1.blockPosition();
 

@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -67,6 +66,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    private static final int MAX_STRENGTH = 5;
@@ -74,10 +74,8 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID;
    private static final EntityDimensions BABY_DIMENSIONS;
    boolean didSpit;
-   @Nullable
-   private Llama caravanHead;
-   @Nullable
-   private Llama caravanTail;
+   private @Nullable Llama caravanHead;
+   private @Nullable Llama caravanTail;
 
    public Llama(EntityType<? extends Llama> var1, Level var2) {
       super(var1, var2);
@@ -147,8 +145,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       this.entityData.set(DATA_VARIANT_ID, var1.id);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.LLAMA_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -221,8 +218,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return this.isDeadOrDying() || this.isEating();
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.setRandomStrength(var5);
       Variant var6;
@@ -257,7 +253,6 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return SoundEvents.LLAMA_DEATH;
    }
 
-   @Nullable
    protected SoundEvent getEatingSound() {
       return SoundEvents.LLAMA_EAT;
    }
@@ -286,8 +281,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return var1 != this && var1 instanceof Llama && this.canParent() && ((Llama)var1).canParent();
    }
 
-   @Nullable
-   public Llama getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Llama getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Llama var3 = this.makeNewLlama();
       if (var3 != null) {
          this.setOffspringAttributes(var2, var3);
@@ -304,8 +298,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return var3;
    }
 
-   @Nullable
-   protected Llama makeNewLlama() {
+   protected @Nullable Llama makeNewLlama() {
       return EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
@@ -367,8 +360,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return this.caravanHead != null;
    }
 
-   @Nullable
-   public Llama getCaravanHead() {
+   public @Nullable Llama getCaravanHead() {
       return this.caravanHead;
    }
 
@@ -408,8 +400,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

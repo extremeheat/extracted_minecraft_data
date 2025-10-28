@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Salmon extends AbstractSchoolingFish {
    private static final String TAG_TYPE = "type";
@@ -99,8 +99,7 @@ public class Salmon extends AbstractSchoolingFish {
       return (Variant)Salmon.Variant.BY_ID.apply((Integer)this.entityData.get(DATA_TYPE));
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.SALMON_SIZE ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -118,8 +117,7 @@ public class Salmon extends AbstractSchoolingFish {
       }
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       WeightedList.Builder var5 = WeightedList.builder();
       var5.add(Salmon.Variant.SMALL, 30);
       var5.add(Salmon.Variant.MEDIUM, 50);

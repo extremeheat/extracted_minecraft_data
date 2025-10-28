@@ -1,8 +1,8 @@
 package net.minecraft.world.attribute;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface EnvironmentAttributeReader {
    EnvironmentAttributeReader EMPTY = new EnvironmentAttributeReader() {

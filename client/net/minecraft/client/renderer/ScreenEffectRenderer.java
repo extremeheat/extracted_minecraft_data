@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ScreenEffectRenderer {
    private static final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/underwater.png");
@@ -35,8 +35,7 @@ public class ScreenEffectRenderer {
    private final MaterialSet materials;
    private final MultiBufferSource bufferSource;
    public static final int ITEM_ACTIVATION_ANIMATION_LENGTH = 40;
-   @Nullable
-   private ItemStack itemActivationItem;
+   private @Nullable ItemStack itemActivationItem;
    private int itemActivationTicks;
    private float itemActivationOffX;
    private float itemActivationOffY;
@@ -124,8 +123,7 @@ public class ScreenEffectRenderer {
       this.itemActivationOffY = var2.nextFloat() * 2.0F - 1.0F;
    }
 
-   @Nullable
-   private static BlockState getViewBlockingState(Player var0) {
+   private static @Nullable BlockState getViewBlockingState(Player var0) {
       BlockPos.MutableBlockPos var1 = new BlockPos.MutableBlockPos();
 
       for(int var2 = 0; var2 < 8; ++var2) {
@@ -186,31 +184,24 @@ public class ScreenEffectRenderer {
       VertexConsumer var3 = var1.getBuffer(RenderTypes.fireScreenEffect(var2.atlasLocation()));
       float var4 = var2.getU0();
       float var5 = var2.getU1();
-      float var6 = (var4 + var5) / 2.0F;
-      float var7 = var2.getV0();
-      float var8 = var2.getV1();
-      float var9 = (var7 + var8) / 2.0F;
-      float var10 = var2.uvShrinkRatio();
-      float var11 = Mth.lerp(var10, var4, var6);
-      float var12 = Mth.lerp(var10, var5, var6);
-      float var13 = Mth.lerp(var10, var7, var9);
-      float var14 = Mth.lerp(var10, var8, var9);
-      float var15 = 1.0F;
+      float var6 = var2.getV0();
+      float var7 = var2.getV1();
+      float var8 = 1.0F;
 
-      for(int var16 = 0; var16 < 2; ++var16) {
+      for(int var9 = 0; var9 < 2; ++var9) {
          var0.pushPose();
-         float var17 = -0.5F;
-         float var18 = 0.5F;
-         float var19 = -0.5F;
-         float var20 = 0.5F;
-         float var21 = -0.5F;
-         var0.translate((float)(-(var16 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
-         var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
-         Matrix4f var22 = var0.last().pose();
-         var3.addVertex((Matrix4fc)var22, -0.5F, -0.5F, -0.5F).setUv(var12, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex((Matrix4fc)var22, 0.5F, -0.5F, -0.5F).setUv(var11, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex((Matrix4fc)var22, 0.5F, 0.5F, -0.5F).setUv(var11, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var3.addVertex((Matrix4fc)var22, -0.5F, 0.5F, -0.5F).setUv(var12, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         float var10 = -0.5F;
+         float var11 = 0.5F;
+         float var12 = -0.5F;
+         float var13 = 0.5F;
+         float var14 = -0.5F;
+         var0.translate((float)(-(var9 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
+         var0.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(var9 * 2 - 1) * 10.0F));
+         Matrix4f var15 = var0.last().pose();
+         var3.addVertex((Matrix4fc)var15, -0.5F, -0.5F, -0.5F).setUv(var5, var7).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var15, 0.5F, -0.5F, -0.5F).setUv(var4, var7).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var15, 0.5F, 0.5F, -0.5F).setUv(var4, var6).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex((Matrix4fc)var15, -0.5F, 0.5F, -0.5F).setUv(var5, var6).setColor(1.0F, 1.0F, 1.0F, 0.9F);
          var0.popPose();
       }
 

@@ -1,16 +1,16 @@
 package net.minecraft.server.jsonrpc.internalapi;
 
-import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.jsonrpc.methods.GameRulesService;
+import net.minecraft.world.level.gamerules.GameRule;
 
 public interface MinecraftGameRuleService {
-   GameRulesService.TypedRule updateGameRule(GameRulesService.UntypedRule var1, ClientInfo var2);
+   <T> GameRulesService.GameRuleUpdate<T> updateGameRule(GameRulesService.GameRuleUpdate<T> var1, ClientInfo var2);
 
-   <T extends net.minecraft.world.level.GameRules.Value<T>> T getRule(net.minecraft.world.level.GameRules.Key<T> var1);
+   <T> T getRuleValue(GameRule<T> var1);
 
-   GameRulesService.TypedRule getTypedRule(String var1, net.minecraft.world.level.GameRules.Value<?> var2);
+   <T> GameRulesService.GameRuleUpdate<T> getTypedRule(GameRule<T> var1, T var2);
 
-   Stream<Map.Entry<net.minecraft.world.level.GameRules.Key<?>, net.minecraft.world.level.GameRules.Type<?>>> getAvailableGameRules();
+   Stream<GameRule<?>> getAvailableGameRules();
 }

@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DebugScreenEntryList {
@@ -30,8 +30,7 @@ public class DebugScreenEntryList {
    private Map<ResourceLocation, DebugScreenEntryStatus> allStatuses;
    private final List<ResourceLocation> currentlyEnabled = new ArrayList();
    private boolean isOverlayVisible = false;
-   @Nullable
-   private DebugScreenProfile profile;
+   private @Nullable DebugScreenProfile profile;
    private final File debugProfileFile;
    private long currentlyEnabledVersion;
    private final Codec<SerializedOptions> codec;

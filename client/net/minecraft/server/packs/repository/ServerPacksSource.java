@@ -3,7 +3,6 @@ package net.minecraft.server.packs.repository;
 import com.google.common.annotations.VisibleForTesting;
 import java.nio.file.Path;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +19,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
+import org.jspecify.annotations.Nullable;
 
 public class ServerPacksSource extends BuiltInPackSource {
    private static final PackMetadataSection VERSION_METADATA_SECTION;
@@ -47,13 +47,11 @@ public class ServerPacksSource extends BuiltInPackSource {
       return Component.literal(var1);
    }
 
-   @Nullable
-   protected Pack createVanillaPack(PackResources var1) {
+   protected @Nullable Pack createVanillaPack(PackResources var1) {
       return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(var1), PackType.SERVER_DATA, VANILLA_SELECTION_CONFIG);
    }
 
-   @Nullable
-   protected Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
+   protected @Nullable Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
       return Pack.readMetaAndCreate(createBuiltInPackLocation(var1, var3), var2, PackType.SERVER_DATA, FEATURE_SELECTION_CONFIG);
    }
 

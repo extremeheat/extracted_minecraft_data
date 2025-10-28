@@ -1,16 +1,15 @@
 package net.minecraft.client.gui;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import org.jspecify.annotations.Nullable;
 
 public interface ComponentPath {
    static ComponentPath leaf(GuiEventListener var0) {
       return new Leaf(var0);
    }
 
-   @Nullable
-   static ComponentPath path(ContainerEventHandler var0, @Nullable ComponentPath var1) {
+   static @Nullable ComponentPath path(ContainerEventHandler var0, @Nullable ComponentPath var1) {
       return var1 == null ? null : new Path(var0, var1);
    }
 

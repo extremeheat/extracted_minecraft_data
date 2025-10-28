@@ -3,7 +3,6 @@ package net.minecraft.world.attribute;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -12,6 +11,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
    private final EnvironmentAttributeMap dimensionAttributes;

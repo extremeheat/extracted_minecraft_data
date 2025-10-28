@@ -9,7 +9,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Backup extends ValueObject {
@@ -33,8 +33,7 @@ public class Backup extends ValueObject {
       return ZonedDateTime.ofInstant(this.lastModified, ZoneId.systemDefault());
    }
 
-   @Nullable
-   public static Backup parse(JsonElement var0) {
+   public static @Nullable Backup parse(JsonElement var0) {
       JsonObject var1 = var0.getAsJsonObject();
 
       try {

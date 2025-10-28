@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MetricsRegistry {
    public static final MetricsRegistry INSTANCE = new MetricsRegistry();

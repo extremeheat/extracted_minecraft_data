@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class PathNavigation {
    private static final int MAX_TIME_RECOMPUTE = 20;
@@ -36,8 +36,7 @@ public abstract class PathNavigation {
    private static final float STUCK_THRESHOLD_DISTANCE_FACTOR = 0.25F;
    protected final Mob mob;
    protected final Level level;
-   @Nullable
-   protected Path path;
+   protected @Nullable Path path;
    protected double speedModifier;
    protected int tick;
    protected int lastStuckCheck;
@@ -50,8 +49,7 @@ public abstract class PathNavigation {
    protected boolean hasDelayedRecomputation;
    protected long timeLastRecompute;
    protected NodeEvaluator nodeEvaluator;
-   @Nullable
-   private BlockPos targetPos;
+   private @Nullable BlockPos targetPos;
    private int reachRange;
    private float maxVisitedNodesMultiplier;
    private final PathFinder pathFinder;
@@ -97,8 +95,7 @@ public abstract class PathNavigation {
       this.maxVisitedNodesMultiplier = var1;
    }
 
-   @Nullable
-   public BlockPos getTargetPos() {
+   public @Nullable BlockPos getTargetPos() {
       return this.targetPos;
    }
 
@@ -122,43 +119,35 @@ public abstract class PathNavigation {
 
    }
 
-   @Nullable
-   public final Path createPath(double var1, double var3, double var5, int var7) {
+   public final @Nullable Path createPath(double var1, double var3, double var5, int var7) {
       return this.createPath(BlockPos.containing(var1, var3, var5), var7);
    }
 
-   @Nullable
-   public Path createPath(Stream<BlockPos> var1, int var2) {
+   public @Nullable Path createPath(Stream<BlockPos> var1, int var2) {
       return this.createPath((Set)var1.collect(Collectors.toSet()), 8, false, var2);
    }
 
-   @Nullable
-   public Path createPath(Set<BlockPos> var1, int var2) {
+   public @Nullable Path createPath(Set<BlockPos> var1, int var2) {
       return this.createPath(var1, 8, false, var2);
    }
 
-   @Nullable
-   public Path createPath(BlockPos var1, int var2) {
+   public @Nullable Path createPath(BlockPos var1, int var2) {
       return this.createPath(ImmutableSet.of(var1), 8, false, var2);
    }
 
-   @Nullable
-   public Path createPath(BlockPos var1, int var2, int var3) {
+   public @Nullable Path createPath(BlockPos var1, int var2, int var3) {
       return this.createPath(ImmutableSet.of(var1), 8, false, var2, (float)var3);
    }
 
-   @Nullable
-   public Path createPath(Entity var1, int var2) {
+   public @Nullable Path createPath(Entity var1, int var2) {
       return this.createPath(ImmutableSet.of(var1.blockPosition()), 16, true, var2);
    }
 
-   @Nullable
-   protected Path createPath(Set<BlockPos> var1, int var2, boolean var3, int var4) {
+   protected @Nullable Path createPath(Set<BlockPos> var1, int var2, boolean var3, int var4) {
       return this.createPath(var1, var2, var3, var4, this.getMaxPathLength());
    }
 
-   @Nullable
-   protected Path createPath(Set<BlockPos> var1, int var2, boolean var3, int var4, float var5) {
+   protected @Nullable Path createPath(Set<BlockPos> var1, int var2, boolean var3, int var4, float var5) {
       if (var1.isEmpty()) {
          return null;
       } else if (this.mob.getY() < (double)this.level.getMinY()) {
@@ -224,8 +213,7 @@ public abstract class PathNavigation {
       }
    }
 
-   @Nullable
-   public Path getPath() {
+   public @Nullable Path getPath() {
       return this.path;
    }
 

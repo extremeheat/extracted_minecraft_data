@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BannerModel;
 import net.minecraft.client.model.Model;
@@ -34,6 +33,7 @@ import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, BannerRenderState> {
    private static final int MAX_PATTERNS = 16;
@@ -65,7 +65,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       return new BannerRenderState();
    }
 
-   public void extractRenderState(BannerBlockEntity var1, BannerRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(BannerBlockEntity var1, BannerRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.baseColor = var1.getBaseColor();
       var2.patterns = var1.getPatterns();
@@ -101,7 +101,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       submitBanner(this.materials, var1, var2, var3, var4, 0.0F, this.standingModel, this.standingFlagModel, 0.0F, var5, var6, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
    }
 
-   private static void submitBanner(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10, @Nullable ModelFeatureRenderer.CrumblingOverlay var11, int var12) {
+   private static void submitBanner(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, float var5, BannerModel var6, BannerFlagModel var7, float var8, DyeColor var9, BannerPatternLayers var10, ModelFeatureRenderer.@Nullable CrumblingOverlay var11, int var12) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
@@ -112,7 +112,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       var1.popPose();
    }
 
-   public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, boolean var11, @Nullable ModelFeatureRenderer.CrumblingOverlay var12, int var13) {
+   public static <S> void submitPatterns(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, boolean var8, DyeColor var9, BannerPatternLayers var10, boolean var11, ModelFeatureRenderer.@Nullable CrumblingOverlay var12, int var13) {
       var2.submitModel(var5, var6, var1, var7.renderType(RenderTypes::entitySolid), var3, var4, -1, var0.get(var7), var13, var12);
       if (var11) {
          var2.submitModel(var5, var6, var1, RenderTypes.entityGlint(), var3, var4, -1, var0.get(var7), 0, var12);
@@ -128,7 +128,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
 
    }
 
-   private static <S> void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, DyeColor var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9) {
+   private static <S> void submitPatternLayer(MaterialSet var0, PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Model<S> var5, S var6, Material var7, DyeColor var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9) {
       int var10 = var8.getTextureDiffuseColor();
       var2.submitModel(var5, var6, var1, var7.renderType(RenderTypes::entityNoOutline), var3, var4, var10, var0.get(var7), 0, var9);
    }

@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryPosition implements DebugScreenEntry {
    public static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("position");

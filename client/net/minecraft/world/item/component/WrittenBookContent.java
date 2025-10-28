@@ -10,7 +10,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
@@ -31,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import org.jspecify.annotations.Nullable;
 
 public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) implements BookContent<Component, WrittenBookContent>, TooltipProvider {
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
@@ -65,8 +65,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       return pageCodec(var0).listOf();
    }
 
-   @Nullable
-   public WrittenBookContent tryCraftCopy() {
+   public @Nullable WrittenBookContent tryCraftCopy() {
       return this.generation >= 2 ? null : new WrittenBookContent(this.title, this.author, this.generation + 1, this.pages, this.resolved);
    }
 
@@ -85,8 +84,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       return false;
    }
 
-   @Nullable
-   public WrittenBookContent resolve(CommandSourceStack var1, @Nullable Player var2) {
+   public @Nullable WrittenBookContent resolve(CommandSourceStack var1, @Nullable Player var2) {
       if (this.resolved) {
          return null;
       } else {

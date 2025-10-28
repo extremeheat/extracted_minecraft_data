@@ -4,7 +4,7 @@ import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.shaders.ShaderType;
+import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
@@ -13,16 +13,14 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public interface GpuDevice {
    CommandEncoder createCommandEncoder();
 
-   GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4);
+   GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5);
 
    GpuTexture createTexture(@Nullable Supplier<String> var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
 
@@ -55,14 +53,16 @@ public interface GpuDevice {
    int getUniformOffsetAlignment();
 
    default CompiledRenderPipeline precompilePipeline(RenderPipeline var1) {
-      return this.precompilePipeline(var1, (BiFunction)null);
+      return this.precompilePipeline(var1, (ShaderSource)null);
    }
 
-   CompiledRenderPipeline precompilePipeline(RenderPipeline var1, @Nullable BiFunction<ResourceLocation, ShaderType, String> var2);
+   CompiledRenderPipeline precompilePipeline(RenderPipeline var1, @Nullable ShaderSource var2);
 
    void clearPipelineCache();
 
    List<String> getEnabledExtensions();
+
+   int getMaxSupportedAnisotropy();
 
    void close();
 }

@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class PostChain implements AutoCloseable {
    public static final ResourceLocation MAIN_TARGET_ID = ResourceLocation.withDefaultNamespace("main");
@@ -264,8 +264,7 @@ public class PostChain implements AutoCloseable {
                }
             }
 
-            @Nullable
-            public ResourceHandle<RenderTarget> get(ResourceLocation var1x) {
+            public @Nullable ResourceHandle<RenderTarget> get(ResourceLocation var1x) {
                return var1x.equals(var0) ? this.handle : null;
             }
          };
@@ -273,8 +272,7 @@ public class PostChain implements AutoCloseable {
 
       void replace(ResourceLocation var1, ResourceHandle<RenderTarget> var2);
 
-      @Nullable
-      ResourceHandle<RenderTarget> get(ResourceLocation var1);
+      @Nullable ResourceHandle<RenderTarget> get(ResourceLocation var1);
 
       default ResourceHandle<RenderTarget> getOrThrow(ResourceLocation var1) {
          ResourceHandle var2 = this.get(var1);

@@ -25,7 +25,7 @@ public class OutgoingRpcMethods {
    public static final Holder.Reference<OutgoingRpcMethod<String, Void>> IP_UNBANNED;
    public static final Holder.Reference<OutgoingRpcMethod<BanlistService.UserBanDto, Void>> PLAYER_BANNED;
    public static final Holder.Reference<OutgoingRpcMethod<PlayerDto, Void>> PLAYER_UNBANNED;
-   public static final Holder.Reference<OutgoingRpcMethod<GameRulesService.TypedRule, Void>> GAMERULE_CHANGED;
+   public static final Holder.Reference<OutgoingRpcMethod<GameRulesService.GameRuleUpdate<?>, Void>> GAMERULE_CHANGED;
    public static final Holder.Reference<OutgoingRpcMethod<ServerStateService.ServerState, Void>> STATUS_HEARTBEAT;
 
    public OutgoingRpcMethods() {

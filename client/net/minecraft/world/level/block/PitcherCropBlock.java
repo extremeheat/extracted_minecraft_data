@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
@@ -25,9 +23,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBlock {
    public static final MapCodec<PitcherCropBlock> CODEC = simpleCodec(PitcherCropBlock::new);
@@ -64,8 +64,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       });
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return this.defaultBlockState();
    }
 
@@ -104,7 +103,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
 
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
       if (var2 instanceof ServerLevel var7) {
-         if (var4 instanceof Ravager && var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (var4 instanceof Ravager && (Boolean)var7.getGameRules().get(GameRules.MOB_GRIEFING)) {
             var7.destroyBlock(var3, true, var4);
          }
       }
@@ -115,7 +114,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       return false;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
    }
 
    public boolean isRandomlyTicking(BlockState var1) {
@@ -168,8 +167,7 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       return (Integer)var1.getValue(AGE) >= 4;
    }
 
-   @Nullable
-   private PosAndState getLowerHalf(LevelReader var1, BlockPos var2, BlockState var3) {
+   private @Nullable PosAndState getLowerHalf(LevelReader var1, BlockPos var2, BlockState var3) {
       if (isLower(var3)) {
          return new PosAndState(var2, var3);
       } else {

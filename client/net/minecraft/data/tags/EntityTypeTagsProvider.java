@@ -13,8 +13,8 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
    }
 
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(EntityTypeTags.SKELETONS).add(EntityType.SKELETON, EntityType.STRAY, EntityType.WITHER_SKELETON, EntityType.SKELETON_HORSE, EntityType.BOGGED);
-      this.tag(EntityTypeTags.ZOMBIES).add(EntityType.ZOMBIE_HORSE, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIFIED_PIGLIN, EntityType.ZOGLIN, EntityType.DROWNED, EntityType.HUSK, EntityType.ZOMBIE_NAUTILUS);
+      this.tag(EntityTypeTags.SKELETONS).add(EntityType.SKELETON, EntityType.STRAY, EntityType.WITHER_SKELETON, EntityType.SKELETON_HORSE, EntityType.BOGGED, EntityType.PARCHED);
+      this.tag(EntityTypeTags.ZOMBIES).add(EntityType.ZOMBIE_HORSE, EntityType.CAMEL_HUSK, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIFIED_PIGLIN, EntityType.ZOGLIN, EntityType.DROWNED, EntityType.HUSK, EntityType.ZOMBIE_NAUTILUS);
       this.tag(EntityTypeTags.RAIDERS).add(EntityType.EVOKER, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH);
       this.tag(EntityTypeTags.UNDEAD).addTag(EntityTypeTags.SKELETONS).addTag(EntityTypeTags.ZOMBIES).add(EntityType.WITHER).add(EntityType.PHANTOM);
       this.tag(EntityTypeTags.BURN_IN_DAYLIGHT).add(EntityType.SKELETON, EntityType.STRAY, EntityType.WITHER_SKELETON, EntityType.BOGGED).add(EntityType.ZOMBIE, EntityType.ZOMBIE_HORSE, EntityType.ZOMBIE_VILLAGER, EntityType.DROWNED, EntityType.ZOMBIE_NAUTILUS).add(EntityType.PHANTOM);
@@ -49,7 +49,7 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add(EntityType.SILVERFISH);
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityType.SLIME);
       this.tag(EntityTypeTags.BOAT).add(EntityType.OAK_BOAT, EntityType.SPRUCE_BOAT, EntityType.BIRCH_BOAT, EntityType.JUNGLE_BOAT, EntityType.ACACIA_BOAT, EntityType.CHERRY_BOAT, EntityType.DARK_OAK_BOAT, EntityType.PALE_OAK_BOAT, EntityType.MANGROVE_BOAT, EntityType.BAMBOO_RAFT);
-      this.tag(EntityTypeTags.CAN_EQUIP_SADDLE).add(EntityType.HORSE, EntityType.SKELETON_HORSE, EntityType.ZOMBIE_HORSE, EntityType.DONKEY, EntityType.MULE, EntityType.PIG, EntityType.STRIDER, EntityType.CAMEL, EntityType.NAUTILUS, EntityType.ZOMBIE_NAUTILUS);
+      this.tag(EntityTypeTags.CAN_EQUIP_SADDLE).add(EntityType.HORSE, EntityType.SKELETON_HORSE, EntityType.ZOMBIE_HORSE, EntityType.DONKEY, EntityType.MULE, EntityType.PIG, EntityType.STRIDER, EntityType.CAMEL, EntityType.CAMEL_HUSK, EntityType.NAUTILUS, EntityType.ZOMBIE_NAUTILUS);
       this.tag(EntityTypeTags.CAN_EQUIP_HARNESS).add(EntityType.HAPPY_GHAST);
       this.tag(EntityTypeTags.CAN_WEAR_HORSE_ARMOR).add(EntityType.HORSE).add(EntityType.ZOMBIE_HORSE);
       this.tag(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR).add(EntityType.NAUTILUS, EntityType.ZOMBIE_NAUTILUS);
@@ -58,5 +58,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT).add(EntityType.COPPER_GOLEM);
       this.tag(EntityTypeTags.CANDIDATE_FOR_IRON_GOLEM_GIFT).add(EntityType.VILLAGER).addTag(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT);
       this.tag(EntityTypeTags.NAUTILUS_HOSTILES).add(EntityType.PUFFERFISH);
+      this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityType.HORSE, EntityType.ZOMBIE_HORSE, EntityType.MULE, EntityType.DONKEY, EntityType.CAMEL);
    }
 }

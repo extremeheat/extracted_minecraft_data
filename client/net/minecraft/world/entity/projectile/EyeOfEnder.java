@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -18,14 +17,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EyeOfEnder extends Entity implements ItemSupplier {
    private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
    private static final float TOO_FAR_SIGNAL_HEIGHT = 8.0F;
    private static final float TOO_FAR_DISTANCE = 12.0F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
-   @Nullable
-   private Vec3 target;
+   private @Nullable Vec3 target;
    private int life;
    private boolean surviveAfterDeath;
 

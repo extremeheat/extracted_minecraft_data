@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster.piglin;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class PiglinBrute extends AbstractPiglin {
    private static final int MAX_HEALTH = 50;
@@ -48,8 +48,7 @@ public class PiglinBrute extends AbstractPiglin {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 50.0).add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.ATTACK_DAMAGE, 7.0).add(Attributes.FOLLOW_RANGE, 12.0);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       PiglinBruteAi.initMemories(this);
       this.populateDefaultEquipmentSlots(var1.getRandom(), var2);
       return super.finalizeSpawn(var1, var2, var3, var4);

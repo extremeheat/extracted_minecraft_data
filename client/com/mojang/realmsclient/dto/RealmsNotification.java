@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.LenientJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsNotification {
@@ -129,8 +129,7 @@ public class RealmsNotification {
       private final RealmsText title;
       private final RealmsText message;
       private final ResourceLocation image;
-      @Nullable
-      private final UrlButton urlButton;
+      private final @Nullable UrlButton urlButton;
 
       private InfoPopup(RealmsNotification var1, RealmsText var2, RealmsText var3, ResourceLocation var4, @Nullable UrlButton var5) {
          super(var1.uuid, var1.dismissable, var1.seen, var1.type);
@@ -148,8 +147,7 @@ public class RealmsNotification {
          return new InfoPopup(var0, var2, var3, var4, var5);
       }
 
-      @Nullable
-      public PopupScreen buildScreen(Screen var1, Consumer<UUID> var2) {
+      public @Nullable PopupScreen buildScreen(Screen var1, Consumer<UUID> var2) {
          Component var3 = this.title.createComponent();
          if (var3 == null) {
             RealmsNotification.LOGGER.warn("Realms info popup had title with no available translation: {}", this.title);

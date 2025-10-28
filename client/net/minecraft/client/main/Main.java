@@ -21,7 +21,6 @@ import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
 import joptsimple.OptionParser;
@@ -51,6 +50,7 @@ import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Main {
@@ -249,8 +249,7 @@ public class Main {
       }
    }
 
-   @Nullable
-   private static String unescapeJavaArgument(@Nullable String var0) {
+   private static @Nullable String unescapeJavaArgument(@Nullable String var0) {
       return var0 == null ? null : StringEscapeUtils.unescapeJava(var0);
    }
 
@@ -262,8 +261,7 @@ public class Main {
       return var0 != null ? OptionalInt.of(var0) : OptionalInt.empty();
    }
 
-   @Nullable
-   private static <T> T parseArgument(OptionSet var0, OptionSpec<T> var1) {
+   private static <T> @Nullable T parseArgument(OptionSet var0, OptionSpec<T> var1) {
       try {
          return (T)var0.valueOf(var1);
       } catch (Throwable var5) {

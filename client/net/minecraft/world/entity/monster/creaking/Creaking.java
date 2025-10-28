@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.creaking;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -52,6 +51,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Creaking extends Monster {
    private static final EntityDataAccessor<Boolean> CAN_MOVE;
@@ -367,8 +367,7 @@ public class Creaking extends Monster {
       this.entityData.set(HOME_POS, Optional.of(var1));
    }
 
-   @Nullable
-   public BlockPos getHomePos() {
+   public @Nullable BlockPos getHomePos() {
       return (BlockPos)((Optional)this.entityData.get(HOME_POS)).orElse((Object)null);
    }
 
@@ -412,8 +411,7 @@ public class Creaking extends Monster {
       this.playSound(SoundEvents.CREAKING_STEP, 0.15F, 1.0F);
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

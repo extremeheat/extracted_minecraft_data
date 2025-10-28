@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class WolfRenderState extends LivingEntityRenderState {
    private static final ResourceLocation DEFAULT_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf.png");
@@ -15,8 +15,7 @@ public class WolfRenderState extends LivingEntityRenderState {
    public float shakeAnim;
    public float wetShade = 1.0F;
    public ResourceLocation texture;
-   @Nullable
-   public DyeColor collarColor;
+   public @Nullable DyeColor collarColor;
    public ItemStack bodyArmorItem;
 
    public WolfRenderState() {

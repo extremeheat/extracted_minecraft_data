@@ -3,7 +3,6 @@ package net.minecraft.world.damagesource;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -16,6 +15,7 @@ import net.minecraft.util.CommonLinks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class CombatTracker {
    public static final int RESET_DAMAGE_STATUS_TIME = 100;
@@ -83,8 +83,7 @@ public class CombatTracker {
       }
    }
 
-   @Nullable
-   private static Component getDisplayName(@Nullable Entity var0) {
+   private static @Nullable Component getDisplayName(@Nullable Entity var0) {
       return var0 == null ? null : var0.getDisplayName();
    }
 
@@ -108,8 +107,7 @@ public class CombatTracker {
       }
    }
 
-   @Nullable
-   private CombatEntry getMostSignificantFall() {
+   private @Nullable CombatEntry getMostSignificantFall() {
       CombatEntry var1 = null;
       CombatEntry var2 = null;
       float var3 = 0.0F;

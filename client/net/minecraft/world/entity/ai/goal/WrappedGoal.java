@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class WrappedGoal extends Goal {
    private final Goal goal;

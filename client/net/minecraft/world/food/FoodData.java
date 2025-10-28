@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -45,7 +45,7 @@ public class FoodData {
          }
       }
 
-      boolean var4 = var2.getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+      boolean var4 = (Boolean)var2.getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION);
       if (var4 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
          ++this.tickTimer;
          if (this.tickTimer >= 10) {

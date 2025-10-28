@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class RandomSupport {
@@ -35,7 +35,7 @@ public final class RandomSupport {
    }
 
    public static Seed128bit seedFromHashOf(String var0) {
-      byte[] var1 = MD5_128.hashString(var0, Charsets.UTF_8).asBytes();
+      byte[] var1 = MD5_128.hashString(var0, StandardCharsets.UTF_8).asBytes();
       long var2 = Longs.fromBytes(var1[0], var1[1], var1[2], var1[3], var1[4], var1[5], var1[6], var1[7]);
       long var4 = Longs.fromBytes(var1[8], var1[9], var1[10], var1[11], var1[12], var1[13], var1[14], var1[15]);
       return new Seed128bit(var2, var4);

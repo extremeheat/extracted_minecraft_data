@@ -2,12 +2,12 @@ package net.minecraft.world.level.redstone;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class DefaultRedstoneWireEvaluator extends RedstoneWireEvaluator {
    public DefaultRedstoneWireEvaluator(RedStoneWireBlock var1) {

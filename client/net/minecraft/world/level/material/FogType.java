@@ -4,7 +4,6 @@ public enum FogType {
    LAVA,
    WATER,
    POWDER_SNOW,
-   DIMENSION_OR_BOSS,
    ATMOSPHERIC,
    NONE;
 
@@ -13,6 +12,6 @@ public enum FogType {
 
    // $FF: synthetic method
    private static FogType[] $values() {
-      return new FogType[]{LAVA, WATER, POWDER_SNOW, DIMENSION_OR_BOSS, ATMOSPHERIC, NONE};
+      return new FogType[]{LAVA, WATER, POWDER_SNOW, ATMOSPHERIC, NONE};
    }
 }

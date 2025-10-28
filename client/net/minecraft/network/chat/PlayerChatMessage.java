@@ -10,10 +10,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
+import org.jspecify.annotations.Nullable;
 
 public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask) {
    public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link), MessageSignature.CODEC.optionalFieldOf("signature").forGetter((var0x) -> Optional.ofNullable(var0x.signature)), SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody), ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter((var0x) -> Optional.ofNullable(var0x.unsignedContent)), FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)).apply(var0, (var0x, var1, var2, var3, var4) -> new PlayerChatMessage(var0x, (MessageSignature)var1.orElse((Object)null), var2, (Component)var3.orElse((Object)null), var4)));

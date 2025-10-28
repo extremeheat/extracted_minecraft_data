@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSignEditScreen extends Screen {
    protected final SignBlockEntity sign;
@@ -28,8 +28,7 @@ public abstract class AbstractSignEditScreen extends Screen {
    protected final WoodType woodType;
    private int frame;
    private int line;
-   @Nullable
-   private TextFieldHelper signField;
+   private @Nullable TextFieldHelper signField;
 
    public AbstractSignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
       this(var1, var2, var3, Component.translatable("sign.edit"));

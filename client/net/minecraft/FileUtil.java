@@ -124,7 +124,7 @@ public class FileUtil {
                var10000 = DataResult.error(() -> "Invalid path '" + var0 + "'");
                break;
             default:
-               var10000 = !isValidStrictPathSegment(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
+               var10000 = !containsAllowedCharactersOnly(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
          }
 
          return var10000;
@@ -141,7 +141,7 @@ public class FileUtil {
                   return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
 
-            if (!isValidStrictPathSegment(var5)) {
+            if (!containsAllowedCharactersOnly(var5)) {
                return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
 
@@ -183,8 +183,12 @@ public class FileUtil {
       return var10000;
    }
 
-   public static boolean isValidStrictPathSegment(String var0) {
+   private static boolean containsAllowedCharactersOnly(String var0) {
       return STRICT_PATH_SEGMENT_CHECK.matcher(var0).matches();
+   }
+
+   public static boolean isValidPathSegment(String var0) {
+      return !var0.equals("..") && !var0.equals(".") && containsAllowedCharactersOnly(var0);
    }
 
    public static void validatePath(String... var0) {
@@ -192,7 +196,7 @@ public class FileUtil {
          throw new IllegalArgumentException("Path must have at least one element");
       } else {
          for(String var4 : var0) {
-            if (var4.equals("..") || var4.equals(".") || !isValidStrictPathSegment(var4)) {
+            if (!isValidPathSegment(var4)) {
                throw new IllegalArgumentException("Illegal segment " + var4 + " in path " + Arrays.toString(var0));
             }
          }

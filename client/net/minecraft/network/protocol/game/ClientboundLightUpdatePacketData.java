@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import java.util.BitSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundLightUpdatePacketData {
    private static final StreamCodec<ByteBuf, byte[]> DATA_LAYER_STREAM_CODEC = ByteBufCodecs.byteArray(2048);

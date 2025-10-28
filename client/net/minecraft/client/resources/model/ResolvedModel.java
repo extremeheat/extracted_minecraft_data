@@ -1,11 +1,11 @@
 package net.minecraft.client.resources.model;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 public interface ResolvedModel extends ModelDebugName {
    boolean DEFAULT_AMBIENT_OCCLUSION = true;
@@ -13,8 +13,7 @@ public interface ResolvedModel extends ModelDebugName {
 
    UnbakedModel wrapped();
 
-   @Nullable
-   ResolvedModel parent();
+   @Nullable ResolvedModel parent();
 
    static TextureSlots findTopTextureSlots(ResolvedModel var0) {
       ResolvedModel var1 = var0;

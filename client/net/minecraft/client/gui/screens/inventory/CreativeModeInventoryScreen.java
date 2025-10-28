@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.HotbarManager;
 import net.minecraft.client.Minecraft;
@@ -58,6 +57,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPickerMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
@@ -78,10 +78,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    private float scrollOffs;
    private boolean scrolling;
    private EditBox searchBox;
-   @Nullable
-   private List<Slot> originalSlots;
-   @Nullable
-   private Slot destroyItemSlot;
+   private @Nullable List<Slot> originalSlots;
+   private @Nullable Slot destroyItemSlot;
    private CreativeInventoryListener listener;
    private boolean ignoreTextInput;
    private boolean hasClickedOutside;
@@ -927,8 +925,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          return this.target.getMaxStackSize(var1);
       }
 
-      @Nullable
-      public ResourceLocation getNoItemIcon() {
+      public @Nullable ResourceLocation getNoItemIcon() {
          return this.target.getNoItemIcon();
       }
 

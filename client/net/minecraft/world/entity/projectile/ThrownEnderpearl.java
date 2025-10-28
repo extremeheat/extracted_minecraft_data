@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -19,14 +18,15 @@ import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ThrownEnderpearl extends ThrowableItemProjectile {
    private long ticketTimer = 0L;
@@ -65,8 +65,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    }
 
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       if (this.owner != null) {
          Level var2 = this.level();
          if (var2 instanceof ServerLevel) {
@@ -78,8 +77,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       return super.getOwner();
    }
 
-   @Nullable
-   private static Entity findOwnerIncludingDeadPlayer(ServerLevel var0, UUID var1) {
+   private static @Nullable Entity findOwnerIncludingDeadPlayer(ServerLevel var0, UUID var1) {
       Entity var2 = var0.getEntityInAnyDimension(var1);
       return (Entity)(var2 != null ? var2 : var0.getServer().getPlayerList().getPlayer(var1));
    }
@@ -169,7 +167,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             var3 = SectionPos.blockToSectionCoord(this.position().z());
             var4 = this.owner != null ? findOwnerIncludingDeadPlayer(var1, this.owner.getUUID()) : null;
             if (var4 instanceof ServerPlayer var5) {
-               if (!var4.isAlive() && !var5.wonGame && var5.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+               if (!var4.isAlive() && !var5.wonGame && (Boolean)var5.level().getGameRules().get(GameRules.ENDER_PEARLS_VANISH_ON_DEATH)) {
                   this.discard();
                   break label39;
                }
@@ -195,8 +193,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       var1.playSound((Entity)null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
    }
 
-   @Nullable
-   public Entity teleport(TeleportTransition var1) {
+   public @Nullable Entity teleport(TeleportTransition var1) {
       Entity var2 = super.teleport(var1);
       if (var2 != null) {
          var2.placePortalTicket(BlockPos.containing(var2.position()));

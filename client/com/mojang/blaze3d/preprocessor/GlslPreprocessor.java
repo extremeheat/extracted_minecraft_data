@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.util.StringUtil;
+import org.jspecify.annotations.Nullable;
 
 public abstract class GlslPreprocessor {
    private static final String C_COMMENT = "/\\*(?:[^*]|\\*+[^*/])*\\*+/";
@@ -123,8 +123,7 @@ public abstract class GlslPreprocessor {
       }
    }
 
-   @Nullable
-   public abstract String applyImport(boolean var1, String var2);
+   public abstract @Nullable String applyImport(boolean var1, String var2);
 
    public static String injectDefines(String var0, ShaderDefines var1) {
       if (var1.isEmpty()) {

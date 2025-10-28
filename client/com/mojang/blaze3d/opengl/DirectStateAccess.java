@@ -4,7 +4,7 @@ import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBDirectStateAccess;
 import org.lwjgl.opengl.GL30;
@@ -37,8 +37,7 @@ public abstract class DirectStateAccess {
 
    abstract void bufferStorage(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3);
 
-   @Nullable
-   abstract ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5);
+   abstract @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5);
 
    abstract void unmapBuffer(int var1, @GpuBuffer.Usage int var2);
 
@@ -82,8 +81,7 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glNamedBufferStorage(var1, var2, GlConst.bufferUsageToGlFlag(var3));
       }
 
-      @Nullable
-      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
+      @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
          return ARBDirectStateAccess.glMapNamedBufferRange(var1, (long)var2, (long)var3, var4);
       }
 
@@ -171,8 +169,7 @@ public abstract class DirectStateAccess {
          GlStateManager._glBindBuffer(var4, 0);
       }
 
-      @Nullable
-      ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
+      @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
          int var6 = this.selectBufferBindTarget(var5);
          GlStateManager._glBindBuffer(var6, var1);
          ByteBuffer var7 = GlStateManager._glMapBufferRange(var6, var2, var3, var4);

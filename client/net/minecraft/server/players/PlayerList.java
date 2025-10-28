@@ -6,7 +6,10 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.File;
+import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -22,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
@@ -86,12 +88,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelResource;
@@ -101,6 +103,7 @@ import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class PlayerList {
@@ -154,9 +157,9 @@ public abstract class PlayerList {
       var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess()), var11), var11);
       var11.suspendFlushing();
       GameRules var12 = var8.getGameRules();
-      boolean var13 = var12.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
-      boolean var14 = var12.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
-      boolean var15 = var12.getBoolean(GameRules.RULE_LIMITED_CRAFTING);
+      boolean var13 = (Boolean)var12.get(GameRules.IMMEDIATE_RESPAWN);
+      boolean var14 = (Boolean)var12.get(GameRules.REDUCED_DEBUG_INFO);
+      boolean var15 = (Boolean)var12.get(GameRules.LIMITED_CRAFTING);
       var11.send(new ClientboundLoginPacket(var2.getId(), var10.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.getViewDistance(), this.getSimulationDistance(), var14, !var13, var15, var2.createCommonSpawnInfo(var8), this.server.enforceSecureProfile()));
       var11.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
       var11.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
@@ -304,8 +307,7 @@ public abstract class PlayerList {
       this.broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(var1.getUUID())));
    }
 
-   @Nullable
-   public Component canPlayerLogin(SocketAddress var1, NameAndId var2) {
+   public @Nullable Component canPlayerLogin(SocketAddress var1, NameAndId var2) {
       if (this.bans.isBanned(var2)) {
          UserBanListEntry var5 = (UserBanListEntry)this.bans.get(var2);
          MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", var5.getReasonMessage());
@@ -542,8 +544,7 @@ public abstract class PlayerList {
       return this.ops.contains(var1) || this.server.isSingleplayerOwner(var1) && this.server.getWorldData().isAllowCommands() || this.allowCommandsForAllPlayers;
    }
 
-   @Nullable
-   public ServerPlayer getPlayerByName(String var1) {
+   public @Nullable ServerPlayer getPlayerByName(String var1) {
       int var2 = this.players.size();
 
       for(int var3 = 0; var3 < var2; ++var3) {
@@ -600,7 +601,7 @@ public abstract class PlayerList {
    public void sendLevelInfo(ServerPlayer var1, ServerLevel var2) {
       WorldBorder var3 = var2.getWorldBorder();
       var1.connection.send(new ClientboundInitializeBorderPacket(var3));
-      var1.connection.send(new ClientboundSetTimePacket(var2.getGameTime(), var2.getDayTime(), var2.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)));
+      var1.connection.send(new ClientboundSetTimePacket(var2.getGameTime(), var2.getDayTime(), (Boolean)var2.getGameRules().get(GameRules.ADVANCE_TIME)));
       var1.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var2.getRespawnData()));
       if (var2.isRaining()) {
          var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0.0F));
@@ -654,8 +655,7 @@ public abstract class PlayerList {
       return this.server;
    }
 
-   @Nullable
-   public CompoundTag getSingleplayerData() {
+   public @Nullable CompoundTag getSingleplayerData() {
       return null;
    }
 
@@ -720,24 +720,33 @@ public abstract class PlayerList {
 
    public ServerStatsCounter getPlayerStats(Player var1) {
       GameProfile var2 = var1.getGameProfile();
-      UUID var3 = var2.id();
-      ServerStatsCounter var4 = (ServerStatsCounter)this.stats.get(var3);
-      if (var4 == null) {
-         File var5 = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR).toFile();
-         File var6 = new File(var5, String.valueOf(var3) + ".json");
-         if (!var6.exists()) {
-            File var7 = new File(var5, var2.name() + ".json");
-            Path var8 = var7.toPath();
-            if (FileUtil.isPathNormalized(var8) && FileUtil.isPathPortable(var8) && var8.startsWith(var5.getPath()) && var7.isFile()) {
-               var7.renameTo(var6);
+      return (ServerStatsCounter)this.stats.computeIfAbsent(var2.id(), (var2x) -> {
+         Path var3 = this.locateStatsFile(var2);
+         return new ServerStatsCounter(this.server, var3);
+      });
+   }
+
+   private Path locateStatsFile(GameProfile var1) {
+      Path var2 = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR);
+      Path var3 = var2.resolve(String.valueOf(var1.id()) + ".json");
+      if (Files.exists(var3, new LinkOption[0])) {
+         return var3;
+      } else {
+         String var4 = var1.name() + ".json";
+         if (FileUtil.isValidPathSegment(var4)) {
+            Path var5 = var2.resolve(var4);
+            if (Files.isRegularFile(var5, new LinkOption[0])) {
+               try {
+                  return Files.move(var5, var3);
+               } catch (IOException var7) {
+                  LOGGER.warn("Failed to copy file {} to {}", var4, var3);
+                  return var5;
+               }
             }
          }
 
-         var4 = new ServerStatsCounter(this.server, var6);
-         this.stats.put(var3, var4);
+         return var3;
       }
-
-      return var4;
    }
 
    public PlayerAdvancements getPlayerAdvancements(ServerPlayer var1) {
@@ -758,9 +767,7 @@ public abstract class PlayerList {
       this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(var1));
 
       for(ServerLevel var3 : this.server.getAllLevels()) {
-         if (var3 != null) {
-            var3.getChunkSource().setViewDistance(var1);
-         }
+         var3.getChunkSource().setViewDistance(var1);
       }
 
    }
@@ -770,9 +777,7 @@ public abstract class PlayerList {
       this.broadcastAll(new ClientboundSetSimulationDistancePacket(var1));
 
       for(ServerLevel var3 : this.server.getAllLevels()) {
-         if (var3 != null) {
-            var3.getChunkSource().setSimulationDistance(var1);
-         }
+         var3.getChunkSource().setSimulationDistance(var1);
       }
 
    }
@@ -781,13 +786,11 @@ public abstract class PlayerList {
       return this.players;
    }
 
-   @Nullable
-   public ServerPlayer getPlayer(UUID var1) {
+   public @Nullable ServerPlayer getPlayer(UUID var1) {
       return (ServerPlayer)this.playersByUUID.get(var1);
    }
 
-   @Nullable
-   public ServerPlayer getPlayer(String var1) {
+   public @Nullable ServerPlayer getPlayer(String var1) {
       for(ServerPlayer var3 : this.players) {
          if (var3.getGameProfile().name().equalsIgnoreCase(var1)) {
             return var3;

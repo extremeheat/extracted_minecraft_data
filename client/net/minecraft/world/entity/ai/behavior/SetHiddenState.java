@@ -21,7 +21,7 @@ public class SetHiddenState {
       return BehaviorBuilder.create((Function)((var3x) -> var3x.group(var3x.present(MemoryModuleType.HIDING_PLACE), var3x.present(MemoryModuleType.HEARD_BELL_TIME)).apply(var3x, (var4, var5) -> (var6, var7, var8) -> {
                long var10 = (Long)var3x.get(var5);
                boolean var12 = var10 + 300L <= var8;
-               if (var3.getValue() <= var2 && !var12) {
+               if (var3.intValue() <= var2 && !var12) {
                   BlockPos var13 = ((GlobalPos)var3x.get(var4)).pos();
                   if (var13.closerThan(var7.blockPosition(), (double)var1)) {
                      var3.increment();

@@ -81,6 +81,7 @@ public class EntityRenderers {
       register(EntityType.BREEZE, BreezeRenderer::new);
       register(EntityType.BREEZE_WIND_CHARGE, WindChargeRenderer::new);
       register(EntityType.CAMEL, CamelRenderer::new);
+      register(EntityType.CAMEL_HUSK, CamelHuskRenderer::new);
       register(EntityType.CAT, CatRenderer::new);
       register(EntityType.CAVE_SPIDER, CaveSpiderRenderer::new);
       register(EntityType.CHERRY_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.CHERRY_BOAT));
@@ -158,6 +159,7 @@ public class EntityRenderers {
       register(EntityType.PALE_OAK_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.PALE_OAK_BOAT));
       register(EntityType.PALE_OAK_CHEST_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.PALE_OAK_CHEST_BOAT));
       register(EntityType.PANDA, PandaRenderer::new);
+      register(EntityType.PARCHED, ParchedRenderer::new);
       register(EntityType.PARROT, ParrotRenderer::new);
       register(EntityType.PHANTOM, PhantomRenderer::new);
       register(EntityType.PIG, PigRenderer::new);

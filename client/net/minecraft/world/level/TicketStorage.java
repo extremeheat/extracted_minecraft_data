@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
@@ -27,6 +26,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TicketStorage extends SavedData {
@@ -38,10 +38,8 @@ public class TicketStorage extends SavedData {
    private final Long2ObjectOpenHashMap<List<Ticket>> tickets;
    private final Long2ObjectOpenHashMap<List<Ticket>> deactivatedTickets;
    private LongSet chunksWithForcedTickets;
-   @Nullable
-   private ChunkUpdated loadingChunkUpdatedListener;
-   @Nullable
-   private ChunkUpdated simulationChunkUpdatedListener;
+   private @Nullable ChunkUpdated loadingChunkUpdatedListener;
+   private @Nullable ChunkUpdated simulationChunkUpdatedListener;
 
    private TicketStorage(Long2ObjectOpenHashMap<List<Ticket>> var1, Long2ObjectOpenHashMap<List<Ticket>> var2) {
       super();
@@ -203,8 +201,7 @@ public class TicketStorage extends SavedData {
       return var2 == null ? ChunkLevel.MAX_LEVEL + 1 : var2.getTicketLevel();
    }
 
-   @Nullable
-   private static Ticket getLowestTicket(@Nullable List<Ticket> var0, boolean var1) {
+   private static @Nullable Ticket getLowestTicket(@Nullable List<Ticket> var0, boolean var1) {
       if (var0 == null) {
          return null;
       } else {

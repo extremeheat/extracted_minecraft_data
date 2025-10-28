@@ -4,7 +4,6 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.util.RealmsTextureManager;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsWorldSlotButton extends Button {
    private static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
@@ -146,8 +146,7 @@ public class RealmsWorldSlotButton extends Button {
       final String slotVersion;
       final RealmsServer.Compatibility compatibility;
       final long imageId;
-      @Nullable
-      final String image;
+      final @Nullable String image;
       public final boolean empty;
       public final boolean minigame;
       public final Action action;

@@ -4,16 +4,14 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.util.UUIDTypeAdapter;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class OutboundPlayer implements ReflectionBasedSerialization {
-   @Nullable
    @SerializedName("name")
-   public String name;
-   @Nullable
+   public @Nullable String name;
    @SerializedName("uuid")
    @JsonAdapter(UUIDTypeAdapter.class)
-   public UUID uuid;
+   public @Nullable UUID uuid;
 
    public OutboundPlayer() {
       super();

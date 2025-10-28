@@ -2,23 +2,21 @@ package net.minecraft.client.gui.components.tabs;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvents;
+import org.jspecify.annotations.Nullable;
 
 public class TabManager {
    private final Consumer<AbstractWidget> addWidget;
    private final Consumer<AbstractWidget> removeWidget;
    private final Consumer<Tab> onSelected;
    private final Consumer<Tab> onDeselected;
-   @Nullable
-   private Tab currentTab;
-   @Nullable
-   private ScreenRectangle tabArea;
+   private @Nullable Tab currentTab;
+   private @Nullable ScreenRectangle tabArea;
 
    public TabManager(Consumer<AbstractWidget> var1, Consumer<AbstractWidget> var2) {
       this(var1, var2, (var0) -> {
@@ -66,8 +64,7 @@ public class TabManager {
 
    }
 
-   @Nullable
-   public Tab getCurrentTab() {
+   public @Nullable Tab getCurrentTab() {
       return this.currentTab;
    }
 }

@@ -7,7 +7,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -43,6 +42,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractMinecart extends VehicleEntity {
    private static final Vec3 LOWERED_PASSENGER_ATTACHMENT = new Vec3(0.0, 0.0, 0.0);
@@ -80,8 +80,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.zo = var5;
    }
 
-   @Nullable
-   public static <T extends AbstractMinecart> T createMinecart(Level var0, double var1, double var3, double var5, EntityType<T> var7, EntitySpawnReason var8, ItemStack var9, @Nullable Player var10) {
+   public static <T extends AbstractMinecart> @Nullable T createMinecart(Level var0, double var1, double var3, double var5, EntityType<T> var7, EntitySpawnReason var8, ItemStack var9, @Nullable Player var10) {
       AbstractMinecart var11 = (AbstractMinecart)var7.create(var0, var8);
       if (var11 != null) {
          var11.setInitialPos(var1, var3, var5);

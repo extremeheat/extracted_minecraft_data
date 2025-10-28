@@ -41,7 +41,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -67,6 +66,7 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public class FriendlyByteBuf extends ByteBuf {
    public static final int DEFAULT_NBT_QUOTA = 2097152;
@@ -252,13 +252,11 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.readBoolean() ? Either.left(var1.decode(this)) : Either.right(var2.decode(this));
    }
 
-   @Nullable
-   public <T> T readNullable(StreamDecoder<? super FriendlyByteBuf, T> var1) {
+   public <T> @Nullable T readNullable(StreamDecoder<? super FriendlyByteBuf, T> var1) {
       return (T)readNullable(this, var1);
    }
 
-   @Nullable
-   public static <T, B extends ByteBuf> T readNullable(B var0, StreamDecoder<? super B, T> var1) {
+   public static <T, B extends ByteBuf> @Nullable T readNullable(B var0, StreamDecoder<? super B, T> var1) {
       return (T)(var0.readBoolean() ? var1.decode(var0) : null);
    }
 
@@ -565,13 +563,11 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public CompoundTag readNbt() {
+   public @Nullable CompoundTag readNbt() {
       return readNbt((ByteBuf)this);
    }
 
-   @Nullable
-   public static CompoundTag readNbt(ByteBuf var0) {
+   public static @Nullable CompoundTag readNbt(ByteBuf var0) {
       Tag var1 = readNbt(var0, NbtAccounter.create(2097152L));
       if (var1 != null && !(var1 instanceof CompoundTag)) {
          throw new DecoderException("Not a compound tag: " + String.valueOf(var1));
@@ -580,8 +576,7 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public static Tag readNbt(ByteBuf var0, NbtAccounter var1) {
+   public static @Nullable Tag readNbt(ByteBuf var0, NbtAccounter var1) {
       try {
          Tag var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
          return var2.getId() == 0 ? null : var2;
@@ -590,8 +585,7 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
-   @Nullable
-   public Tag readNbt(NbtAccounter var1) {
+   public @Nullable Tag readNbt(NbtAccounter var1) {
       return readNbt(this, var1);
    }
 

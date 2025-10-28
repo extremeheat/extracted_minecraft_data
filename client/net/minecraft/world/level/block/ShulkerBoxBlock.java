@@ -2,13 +2,10 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
@@ -31,21 +28,18 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
    public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), propertiesCodec()).apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse((Object)null), var1)));
    public static final Map<Direction, VoxelShape> SHAPES_OPEN_SUPPORT = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
    public static final EnumProperty<Direction> FACING;
-   public static final ResourceLocation CONTENTS;
-   @Nullable
-   private final DyeColor color;
+   private final @Nullable DyeColor color;
 
    public MapCodec<ShulkerBoxBlock> codec() {
       return CODEC;
@@ -61,8 +55,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return new ShulkerBoxBlockEntity(this.color, var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.SHULKER_BOX, ShulkerBoxBlockEntity::tick);
    }
 
@@ -113,20 +106,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);
-   }
-
-   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      BlockEntity var3 = (BlockEntity)var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-      if (var3 instanceof ShulkerBoxBlockEntity var4) {
-         var2 = var2.withDynamicDrop(CONTENTS, (var1x) -> {
-            for(int var2 = 0; var2 < var4.getContainerSize(); ++var2) {
-               var1x.accept(var4.getItem(var2));
-            }
-
-         });
-      }
-
-      return super.getDrops(var1, var2);
    }
 
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
@@ -194,8 +173,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       }
    }
 
-   @Nullable
-   public DyeColor getColor() {
+   public @Nullable DyeColor getColor() {
       return this.color;
    }
 
@@ -213,6 +191,5 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    static {
       FACING = DirectionalBlock.FACING;
-      CONTENTS = ResourceLocation.withDefaultNamespace("contents");
    }
 }

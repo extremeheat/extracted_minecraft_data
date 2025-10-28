@@ -3,7 +3,7 @@ package net.minecraft.util;
 import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class CommonLinks {
    public static final URI GDPR = URI.create("https://aka.ms/MinecraftGDPR");

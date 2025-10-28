@@ -3,10 +3,7 @@ package net.minecraft.world.entity.animal;
 import com.mojang.serialization.Codec;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.IntFunction;
-import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -59,16 +56,17 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Panda extends Animal {
    private static final EntityDataAccessor<Integer> UNHAPPY_COUNTER;
@@ -239,8 +237,7 @@ public class Panda extends Animal {
       this.setHiddenGene((Gene)var1.read("HiddenGene", Panda.Gene.CODEC).orElse(Panda.Gene.NORMAL));
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Panda var3 = EntityType.PANDA.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          if (var2 instanceof Panda) {
@@ -505,7 +502,7 @@ public class Panda extends Animal {
 
       Level var7 = this.level();
       if (var7 instanceof ServerLevel var6) {
-         if (var6.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         if ((Boolean)var6.getGameRules().get(GameRules.MOB_DROPS)) {
             this.dropFromGiftLootTable(var6, BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
          }
       }
@@ -529,8 +526,7 @@ public class Panda extends Animal {
       return super.hurtServer(var1, var2, var3);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.setMainGene(Panda.Gene.getRandom(var5));
       this.setHiddenGene(Panda.Gene.getRandom(var5));
@@ -639,8 +635,7 @@ public class Panda extends Animal {
       }
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       if (this.isAggressive()) {
          return SoundEvents.PANDA_AGGRESSIVE_AMBIENT;
       } else {
@@ -656,13 +651,11 @@ public class Panda extends Animal {
       return var1.is(ItemTags.PANDA_FOOD);
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.PANDA_DEATH;
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.PANDA_HURT;
    }
 
@@ -956,9 +949,7 @@ public class Panda extends Animal {
       private final Panda panda;
 
       public PandaAvoidGoal(Panda var1, Class<T> var2, float var3, double var4, double var6) {
-         Predicate var10006 = EntitySelector.NO_SPECTATORS;
-         Objects.requireNonNull(var10006);
-         super(var1, var2, var3, var4, var6, var10006::test);
+         super(var1, var2, var3, var4, var6, EntitySelector.NO_SPECTATORS);
          this.panda = var1;
       }
 

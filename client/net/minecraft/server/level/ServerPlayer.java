@@ -25,8 +25,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -149,6 +147,7 @@ import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Strider;
@@ -179,7 +178,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -192,6 +190,7 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -208,6 +207,7 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerPlayer extends Player {
@@ -246,34 +246,27 @@ public class ServerPlayer extends Player {
    private ParticleStatus particleStatus;
    private boolean canChatColor;
    private long lastActionTime;
-   @Nullable
-   private Entity camera;
+   private @Nullable Entity camera;
    private boolean isChangingDimension;
    public boolean seenCredits;
    private final ServerRecipeBook recipeBook;
-   @Nullable
-   private Vec3 levitationStartPos;
+   private @Nullable Vec3 levitationStartPos;
    private int levitationStartTime;
    private boolean disconnected;
    private int requestedViewDistance;
    private String language;
-   @Nullable
-   private Vec3 startingToFallPosition;
-   @Nullable
-   private Vec3 enteredNetherPosition;
-   @Nullable
-   private Vec3 enteredLavaOnVehiclePosition;
+   private @Nullable Vec3 startingToFallPosition;
+   private @Nullable Vec3 enteredNetherPosition;
+   private @Nullable Vec3 enteredLavaOnVehiclePosition;
    private SectionPos lastSectionPos;
    private ChunkTrackingView chunkTrackingView;
-   @Nullable
-   private RespawnConfig respawnConfig;
+   private @Nullable RespawnConfig respawnConfig;
    private final TextFilter textFilter;
    private boolean textFilteringEnabled;
    private boolean allowsListing;
    private boolean spawnExtraParticlesOnFall;
    private WardenSpawnTracker wardenSpawnTracker;
-   @Nullable
-   private BlockPos raidOmenPosition;
+   private @Nullable BlockPos raidOmenPosition;
    private Vec3 lastKnownClientMovement;
    private Input lastClientInput;
    private final Set<ThrownEnderpearl> enderPearls;
@@ -282,10 +275,8 @@ public class ServerPlayer extends Player {
    private CompoundTag shoulderEntityRight;
    private final ContainerSynchronizer containerSynchronizer;
    private final ContainerListener containerListener;
-   @Nullable
-   private RemoteChatSession chatSession;
-   @Nullable
-   public final Object object;
+   private @Nullable RemoteChatSession chatSession;
+   public final @Nullable Object object;
    private final CommandSource commandSource;
    private Set<DebugSubscription<?>> requestedDebugSubscriptions;
    private int containerCounter;
@@ -377,7 +368,7 @@ public class ServerPlayer extends Player {
       };
       this.commandSource = new CommandSource() {
          public boolean acceptsSuccess() {
-            return ServerPlayer.this.level().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+            return (Boolean)ServerPlayer.this.level().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK);
          }
 
          public boolean acceptsFailure() {
@@ -757,7 +748,7 @@ public class ServerPlayer extends Player {
    }
 
    protected void tickRegeneration() {
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && (Boolean)this.level().getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION)) {
          if (this.tickCount % 20 == 0) {
             if (this.getHealth() < this.getMaxHealth()) {
                this.heal(1.0F);
@@ -885,7 +876,7 @@ public class ServerPlayer extends Player {
 
    public void die(DamageSource var1) {
       this.gameEvent(GameEvent.ENTITY_DIE);
-      boolean var2 = this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
+      boolean var2 = (Boolean)this.level().getGameRules().get(GameRules.SHOW_DEATH_MESSAGES);
       if (var2) {
          Component var3 = this.getCombatTracker().getDeathMessage();
          this.connection.send(new ClientboundPlayerCombatKillPacket(this.getId(), var3), PacketSendListener.exceptionallySend(() -> {
@@ -910,7 +901,7 @@ public class ServerPlayer extends Player {
       }
 
       this.removeEntitiesOnShoulder();
-      if (this.level().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+      if ((Boolean)this.level().getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
          this.tellNeutralMobsThatIDied();
       }
 
@@ -1079,8 +1070,7 @@ public class ServerPlayer extends Player {
 
    }
 
-   @Nullable
-   public ServerPlayer teleport(TeleportTransition var1) {
+   public @Nullable ServerPlayer teleport(TeleportTransition var1) {
       if (this.isRemoved()) {
          return null;
       } else {
@@ -1439,6 +1429,8 @@ public class ServerPlayer extends Player {
             this.awardStat(Stats.STRIDER_ONE_CM, var7);
          } else if (var8 instanceof HappyGhast) {
             this.awardStat(Stats.HAPPY_GHAST_ONE_CM, var7);
+         } else if (var8 instanceof AbstractNautilus) {
+            this.awardStat(Stats.NAUTILUS_ONE_CM, var7);
          }
 
       }
@@ -1557,7 +1549,7 @@ public class ServerPlayer extends Player {
       } else {
          this.getAttributes().assignBaseValues(var1.getAttributes());
          this.setHealth(this.getMaxHealth());
-         if (this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
+         if ((Boolean)this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || var1.isSpectator()) {
             this.getInventory().replaceWith(var1.getInventory());
             this.experienceLevel = var1.experienceLevel;
             this.totalExperience = var1.totalExperience;
@@ -1685,7 +1677,6 @@ public class ServerPlayer extends Player {
       }
    }
 
-   @Nonnull
    public GameType gameMode() {
       return this.gameMode.getGameModeForPlayer();
    }
@@ -1845,8 +1836,7 @@ public class ServerPlayer extends Player {
       return this.lastActionTime;
    }
 
-   @Nullable
-   public Component getTabListDisplayName() {
+   public @Nullable Component getTabListDisplayName() {
       return null;
    }
 
@@ -1871,8 +1861,7 @@ public class ServerPlayer extends Player {
       return this.advancements;
    }
 
-   @Nullable
-   public RespawnConfig getRespawnConfig() {
+   public @Nullable RespawnConfig getRespawnConfig() {
       return this.respawnConfig;
    }
 
@@ -1930,8 +1919,7 @@ public class ServerPlayer extends Player {
       this.gameMode.setLevel(var1);
    }
 
-   @Nullable
-   private static GameType readPlayerMode(ValueInput var0, String var1) {
+   private static @Nullable GameType readPlayerMode(ValueInput var0, String var1) {
       return (GameType)var0.read(var1, GameType.LEGACY_ID_CODEC).orElse((Object)null);
    }
 
@@ -2010,8 +1998,7 @@ public class ServerPlayer extends Player {
       this.chatSession = var1;
    }
 
-   @Nullable
-   public RemoteChatSession getChatSession() {
+   public @Nullable RemoteChatSession getChatSession() {
       return this.chatSession != null && this.chatSession.hasExpired() ? null : this.chatSession;
    }
 
@@ -2063,8 +2050,7 @@ public class ServerPlayer extends Player {
       this.raidOmenPosition = null;
    }
 
-   @Nullable
-   public BlockPos getRaidOmenPosition() {
+   public @Nullable BlockPos getRaidOmenPosition() {
       return this.raidOmenPosition;
    }
 
@@ -2161,8 +2147,7 @@ public class ServerPlayer extends Player {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Entity teleport(final TeleportTransition var1) {
+   public @Nullable Entity teleport(final TeleportTransition var1) {
       return this.teleport(var1);
    }
 

@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import java.util.Locale;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.jsonrpc.api.MethodInfo;
@@ -16,6 +15,7 @@ import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.jsonrpc.methods.EncodeJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.InvalidParameterJsonRpcException;
+import org.jspecify.annotations.Nullable;
 
 public interface IncomingRpcMethod<Params, Result> {
    MethodInfo<Params, Result> info();
@@ -117,16 +117,12 @@ public interface IncomingRpcMethod<Params, Result> {
 
    public static class IncomingRpcMethodBuilder<Params, Result> {
       private String description = "";
-      @Nullable
-      private ParamInfo<Params> paramInfo;
-      @Nullable
-      private ResultInfo<Result> resultInfo;
+      private @Nullable ParamInfo<Params> paramInfo;
+      private @Nullable ResultInfo<Result> resultInfo;
       private boolean discoverable = true;
       private boolean runOnMainThread = true;
-      @Nullable
-      private ParameterlessRpcMethodFunction<Result> parameterlessFunction;
-      @Nullable
-      private RpcMethodFunction<Params, Result> parameterFunction;
+      private @Nullable ParameterlessRpcMethodFunction<Result> parameterlessFunction;
+      private @Nullable RpcMethodFunction<Params, Result> parameterFunction;
 
       public IncomingRpcMethodBuilder(ParameterlessRpcMethodFunction<Result> var1) {
          super();

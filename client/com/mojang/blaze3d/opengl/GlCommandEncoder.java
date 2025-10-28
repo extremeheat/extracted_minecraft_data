@@ -26,8 +26,8 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL31;
@@ -41,13 +41,10 @@ public class GlCommandEncoder implements CommandEncoder {
    private final GlDevice device;
    private final int readFbo;
    private final int drawFbo;
-   @Nullable
-   private RenderPipeline lastPipeline;
+   private @Nullable RenderPipeline lastPipeline;
    private boolean inRenderPass;
-   @Nullable
-   private GlProgram lastProgram;
-   @Nullable
-   private GlTimerQuery activeTimerQuery;
+   private @Nullable GlProgram lastProgram;
+   private @Nullable GlTimerQuery activeTimerQuery;
 
    protected GlCommandEncoder(GlDevice var1) {
       super();
@@ -91,7 +88,7 @@ public class GlCommandEncoder implements CommandEncoder {
 
             this.inRenderPass = true;
             this.device.debugLabels().pushDebugGroup(var1);
-            int var6 = ((GlTexture)var2.texture()).getFbo(this.device.directStateAccess(), var4 == null ? null : var4.texture());
+            int var6 = ((GlTextureView)var2).getFbo(this.device.directStateAccess(), var4 == null ? null : var4.texture());
             GlStateManager._glBindFramebuffer(36160, var6);
             int var7 = 0;
             if (var3.isPresent()) {
@@ -535,7 +532,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   protected <T> void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw<T>> var2, @Nullable GpuBuffer var3, @Nullable VertexFormat.IndexType var4, Collection<String> var5, T var6) {
+   protected <T> void executeDrawMultiple(GlRenderPass var1, Collection<RenderPass.Draw<T>> var2, @Nullable GpuBuffer var3, VertexFormat.@Nullable IndexType var4, Collection<String> var5, T var6) {
       if (this.trySetup(var1, var5)) {
          if (var4 == null) {
             var4 = VertexFormat.IndexType.SHORT;
@@ -589,7 +586,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   protected void executeDraw(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, int var6) {
+   protected void executeDraw(GlRenderPass var1, int var2, int var3, int var4, VertexFormat.@Nullable IndexType var5, int var6) {
       if (this.trySetup(var1, Collections.emptyList())) {
          if (GlRenderPass.VALIDATION) {
             if (var5 != null) {
@@ -624,7 +621,7 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, int var4, @Nullable VertexFormat.IndexType var5, GlRenderPipeline var6, int var7) {
+   private void drawFromBuffers(GlRenderPass var1, int var2, int var3, int var4, VertexFormat.@Nullable IndexType var5, GlRenderPipeline var6, int var7) {
       this.device.vertexArrayCache().bindVertexArray(var6.info().getVertexFormat(), (GlBuffer)var1.vertexBuffers[0]);
       if (var5 != null) {
          GlStateManager._glBindBuffer(34963, ((GlBuffer)var1.indexBuffer).handle);

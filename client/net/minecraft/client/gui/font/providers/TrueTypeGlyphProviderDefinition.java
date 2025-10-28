@@ -9,6 +9,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.List;
 import net.minecraft.Util;
@@ -107,7 +108,7 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float s
             }
          }
 
-         MemoryUtil.memFree((ByteBuffer)var3);
+         MemoryUtil.memFree((Buffer)var3);
          throw var17;
       }
    }

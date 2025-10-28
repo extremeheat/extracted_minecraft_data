@@ -2,17 +2,13 @@ package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import java.util.Locale;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureManager;
 
 public enum ChunkSectionLayer {
-   SOLID(RenderPipelines.SOLID, 4194304, false),
-   CUTOUT(RenderPipelines.CUTOUT, 4194304, false),
-   TRANSLUCENT(RenderPipelines.TRANSLUCENT, 786432, true),
-   TRIPWIRE(RenderPipelines.TRIPWIRE, 1536, true);
+   SOLID(RenderPipelines.SOLID_TERRAIN, 4194304, false),
+   CUTOUT(RenderPipelines.CUTOUT_TERRAIN, 4194304, false),
+   TRANSLUCENT(RenderPipelines.TRANSLUCENT_TERRAIN, 786432, true),
+   TRIPWIRE(RenderPipelines.TRIPWIRE_TERRAIN, 1536, true);
 
    private final RenderPipeline pipeline;
    private final int bufferSize;
@@ -40,11 +36,6 @@ public enum ChunkSectionLayer {
 
    public boolean sortOnUpload() {
       return this.sortOnUpload;
-   }
-
-   public AbstractTexture texture() {
-      TextureManager var1 = Minecraft.getInstance().getTextureManager();
-      return var1.getTexture(TextureAtlas.LOCATION_BLOCKS);
    }
 
    // $FF: synthetic method

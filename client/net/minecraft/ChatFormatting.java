@@ -10,9 +10,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public enum ChatFormatting implements StringRepresentable {
    BLACK("BLACK", '0', 0, 0),
@@ -48,14 +48,13 @@ public enum ChatFormatting implements StringRepresentable {
    private final boolean isFormat;
    private final String toString;
    private final int id;
-   @Nullable
-   private final Integer color;
+   private final @Nullable Integer color;
 
    private static String cleanName(String var0) {
       return var0.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
    }
 
-   private ChatFormatting(final String var3, final char var4, final int var5, @Nullable final Integer var6) {
+   private ChatFormatting(final String var3, final @Nullable char var4, final int var5, final Integer var6) {
       this(var3, var4, false, var5, var6);
    }
 
@@ -63,7 +62,7 @@ public enum ChatFormatting implements StringRepresentable {
       this(var3, var4, var5, -1, (Integer)null);
    }
 
-   private ChatFormatting(final String var3, final char var4, final boolean var5, final int var6, @Nullable final Integer var7) {
+   private ChatFormatting(final String var3, final char var4, final @Nullable boolean var5, final int var6, final Integer var7) {
       this.name = var3;
       this.code = var4;
       this.isFormat = var5;
@@ -88,8 +87,7 @@ public enum ChatFormatting implements StringRepresentable {
       return !this.isFormat && this != RESET;
    }
 
-   @Nullable
-   public Integer getColor() {
+   public @Nullable Integer getColor() {
       return this.color;
    }
 
@@ -101,19 +99,16 @@ public enum ChatFormatting implements StringRepresentable {
       return this.toString;
    }
 
-   @Nullable
    @Contract("!null->!null;_->_")
-   public static String stripFormatting(@Nullable String var0) {
+   public static @Nullable String stripFormatting(@Nullable String var0) {
       return var0 == null ? null : STRIP_FORMATTING_PATTERN.matcher(var0).replaceAll("");
    }
 
-   @Nullable
-   public static ChatFormatting getByName(@Nullable String var0) {
+   public static @Nullable ChatFormatting getByName(@Nullable String var0) {
       return var0 == null ? null : (ChatFormatting)FORMATTING_BY_NAME.get(cleanName(var0));
    }
 
-   @Nullable
-   public static ChatFormatting getById(int var0) {
+   public static @Nullable ChatFormatting getById(int var0) {
       if (var0 < 0) {
          return RESET;
       } else {
@@ -127,8 +122,7 @@ public enum ChatFormatting implements StringRepresentable {
       }
    }
 
-   @Nullable
-   public static ChatFormatting getByCode(char var0) {
+   public static @Nullable ChatFormatting getByCode(char var0) {
       char var1 = Character.toLowerCase(var0);
 
       for(ChatFormatting var5 : values()) {

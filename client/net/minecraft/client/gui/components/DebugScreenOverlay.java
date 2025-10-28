@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -62,6 +61,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
 public class DebugScreenOverlay {
    private static final float CROSSHAIR_SCALE = 0.01F;
@@ -73,12 +73,9 @@ public class DebugScreenOverlay {
    private final Font font;
    private final GpuBuffer crosshairBuffer;
    private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies;
-   @Nullable
-   private ChunkPos lastPos;
-   @Nullable
-   private LevelChunk clientChunk;
-   @Nullable
-   private CompletableFuture<LevelChunk> serverChunk;
+   private @Nullable ChunkPos lastPos;
+   private @Nullable LevelChunk clientChunk;
+   private @Nullable CompletableFuture<LevelChunk> serverChunk;
    private boolean renderProfilerChart;
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
@@ -315,8 +312,7 @@ public class DebugScreenOverlay {
 
    }
 
-   @Nullable
-   private ServerLevel getServerLevel() {
+   private @Nullable ServerLevel getServerLevel() {
       if (this.minecraft.level == null) {
          return null;
       } else {
@@ -325,13 +321,11 @@ public class DebugScreenOverlay {
       }
    }
 
-   @Nullable
-   private Level getLevel() {
+   private @Nullable Level getLevel() {
       return this.minecraft.level == null ? null : (Level)DataFixUtils.orElse(Optional.ofNullable(this.minecraft.getSingleplayerServer()).flatMap((var1) -> Optional.ofNullable(var1.getLevel(this.minecraft.level.dimension()))), this.minecraft.level);
    }
 
-   @Nullable
-   private LevelChunk getServerChunk() {
+   private @Nullable LevelChunk getServerChunk() {
       if (this.minecraft.level != null && this.lastPos != null) {
          if (this.serverChunk == null) {
             ServerLevel var1 = this.getServerLevel();
@@ -348,8 +342,7 @@ public class DebugScreenOverlay {
       }
    }
 
-   @Nullable
-   private LevelChunk getClientChunk() {
+   private @Nullable LevelChunk getClientChunk() {
       if (this.minecraft.level != null && this.lastPos != null) {
          if (this.clientChunk == null) {
             this.clientChunk = this.minecraft.level.getChunk(this.lastPos.x, this.lastPos.z);

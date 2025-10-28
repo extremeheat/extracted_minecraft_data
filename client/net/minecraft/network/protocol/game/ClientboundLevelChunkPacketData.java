@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundLevelChunkPacketData {
    private static final StreamCodec<ByteBuf, Map<Heightmap.Types, long[]>> HEIGHTMAPS_STREAM_CODEC;
@@ -126,8 +126,7 @@ public class ClientboundLevelChunkPacketData {
       final int packedXZ;
       final int y;
       final BlockEntityType<?> type;
-      @Nullable
-      final CompoundTag tag;
+      final @Nullable CompoundTag tag;
 
       private BlockEntityInfo(int var1, int var2, BlockEntityType<?> var3, @Nullable CompoundTag var4) {
          super();

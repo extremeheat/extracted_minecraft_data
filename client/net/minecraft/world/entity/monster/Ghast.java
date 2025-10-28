@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Ghast extends Mob implements Enemy {
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING;
@@ -354,8 +354,7 @@ public class Ghast extends Mob implements Enemy {
          return new Vec3(var2, var4, var6);
       }
 
-      @Nullable
-      private static Vec3 chooseRandomPositionWithRestriction(Mob var0, Vec3 var1, RandomSource var2) {
+      private static @Nullable Vec3 chooseRandomPositionWithRestriction(Mob var0, Vec3 var1, RandomSource var2) {
          Vec3 var3 = chooseRandomPosition(var1, var2);
          return var0.hasHome() && !var0.isWithinHome(var3) ? null : var3;
       }

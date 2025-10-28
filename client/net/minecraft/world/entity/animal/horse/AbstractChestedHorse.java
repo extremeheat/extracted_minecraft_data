@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final EntityDataAccessor<Boolean> DATA_ID_CHEST;
@@ -106,7 +107,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       return var1 == 499 ? new SlotAccess() {
          public ItemStack get() {
             return AbstractChestedHorse.this.hasChest() ? new ItemStack(Items.CHEST) : ItemStack.EMPTY;

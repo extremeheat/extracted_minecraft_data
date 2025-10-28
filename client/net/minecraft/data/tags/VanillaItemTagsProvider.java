@@ -128,6 +128,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.HAPPY_GHAST_FOOD).add(Items.SNOWBALL);
       this.tag(ItemTags.HAPPY_GHAST_TEMPT_ITEMS).addTag(ItemTags.HAPPY_GHAST_FOOD).addTag(ItemTags.HARNESSES);
       this.tag(ItemTags.CAMEL_FOOD).add(Items.CACTUS);
+      this.tag(ItemTags.CAMEL_HUSK_FOOD).add(Items.RABBIT_FOOT);
       this.tag(ItemTags.ARMADILLO_FOOD).add(Items.SPIDER_EYE);
       this.tag(ItemTags.CHICKEN_FOOD).add(Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD);
       this.tag(ItemTags.FROG_FOOD).add(Items.SLIME_BALL);

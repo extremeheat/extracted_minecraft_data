@@ -3,8 +3,6 @@ package net.minecraft.world.level;
 import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -28,6 +27,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BaseSpawner {
@@ -43,15 +43,13 @@ public abstract class BaseSpawner {
    private static final int DEFAULT_SPAWN_RANGE = 4;
    private int spawnDelay = 20;
    private WeightedList<SpawnData> spawnPotentials = WeightedList.<SpawnData>of();
-   @Nullable
-   private SpawnData nextSpawnData;
+   private @Nullable SpawnData nextSpawnData;
    private double spin;
    private double oSpin;
    private int minSpawnDelay = 200;
    private int maxSpawnDelay = 800;
    private int spawnCount = 4;
-   @Nullable
-   private Entity displayEntity;
+   private @Nullable Entity displayEntity;
    private int maxNearbyEntities = 6;
    private int requiredPlayerRange = 16;
    private int spawnRange = 4;
@@ -219,15 +217,14 @@ public abstract class BaseSpawner {
       var1.store("SpawnPotentials", SpawnData.LIST_CODEC, this.spawnPotentials);
    }
 
-   @Nullable
-   public Entity getOrCreateDisplayEntity(Level var1, BlockPos var2) {
+   public @Nullable Entity getOrCreateDisplayEntity(Level var1, BlockPos var2) {
       if (this.displayEntity == null) {
          CompoundTag var3 = this.getOrCreateNextSpawnData(var1, var1.getRandom(), var2).getEntityToSpawn();
          if (var3.getString("id").isEmpty()) {
             return null;
          }
 
-         this.displayEntity = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.SPAWNER, Function.identity());
+         this.displayEntity = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.SPAWNER, EntityProcessor.NOP);
          if (var3.size() == 1 && this.displayEntity instanceof Mob) {
          }
       }

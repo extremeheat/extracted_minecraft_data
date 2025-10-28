@@ -8,8 +8,8 @@ import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUniform> implements AutoCloseable {
@@ -19,8 +19,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
    private MappableRingBuffer ringBuffer;
    private int nextBlock;
    private int capacity;
-   @Nullable
-   private T lastUniform;
+   private @Nullable T lastUniform;
    private final String label;
 
    public DynamicUniformStorage(String var1, int var2, int var3) {

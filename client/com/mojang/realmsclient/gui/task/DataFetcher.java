@@ -10,8 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.util.TimeSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DataFetcher {
@@ -67,10 +67,8 @@ public class DataFetcher {
       private final Callable<T> updater;
       private final long period;
       private final RepeatedDelayStrategy repeatStrategy;
-      @Nullable
-      private CompletableFuture<ComputationResult<T>> pendingTask;
-      @Nullable
-      SuccessfulComputationResult<T> lastResult;
+      private @Nullable CompletableFuture<ComputationResult<T>> pendingTask;
+      @Nullable SuccessfulComputationResult<T> lastResult;
       private long nextUpdate = -1L;
 
       Task(final String var2, final Callable<T> var3, final long var4, final RepeatedDelayStrategy var6) {

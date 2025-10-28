@@ -1,12 +1,12 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundEntityEventPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundEntityEventPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundEntityEventPacket>codec(ClientboundEntityEventPacket::write, ClientboundEntityEventPacket::new);
@@ -38,8 +38,7 @@ public class ClientboundEntityEventPacket implements Packet<ClientGamePacketList
       var1.handleEntityEvent(this);
    }
 
-   @Nullable
-   public Entity getEntity(Level var1) {
+   public @Nullable Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
    }
 

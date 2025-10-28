@@ -4,18 +4,17 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class Material {
    public static final Comparator<Material> COMPARATOR = Comparator.comparing(Material::atlasLocation).thenComparing(Material::texture);
    private final ResourceLocation atlasLocation;
    private final ResourceLocation texture;
-   @Nullable
-   private RenderType renderType;
+   private @Nullable RenderType renderType;
 
    public Material(ResourceLocation var1, ResourceLocation var2) {
       super();

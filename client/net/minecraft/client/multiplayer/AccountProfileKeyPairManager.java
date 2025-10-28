@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.util.Crypt;
@@ -29,6 +28,7 @@ import net.minecraft.util.CryptException;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
@@ -135,8 +135,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
       }
    }
 
-   @Nullable
-   private ProfileKeyPair fetchProfileKeyPair(UserApiService var1) throws CryptException, IOException {
+   private @Nullable ProfileKeyPair fetchProfileKeyPair(UserApiService var1) throws CryptException, IOException {
       KeyPairResponse var2 = var1.getKeyPair();
       if (var2 != null) {
          ProfilePublicKey.Data var3 = parsePublicKey(var2);

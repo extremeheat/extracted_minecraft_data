@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public class CompiledSectionMesh implements SectionMesh {
    public static final SectionMesh UNCOMPILED = new SectionMesh() {
@@ -27,10 +27,8 @@ public class CompiledSectionMesh implements SectionMesh {
    };
    private final List<BlockEntity> renderableBlockEntities;
    private final VisibilitySet visibilitySet;
-   @Nullable
-   private final MeshData.SortState transparencyState;
-   @Nullable
-   private TranslucencyPointOfView translucencyPointOfView;
+   private final MeshData.@Nullable SortState transparencyState;
+   private @Nullable TranslucencyPointOfView translucencyPointOfView;
    private final Map<ChunkSectionLayer, SectionBuffers> buffers = new EnumMap(ChunkSectionLayer.class);
 
    public CompiledSectionMesh(TranslucencyPointOfView var1, SectionCompiler.Results var2) {
@@ -65,8 +63,7 @@ public class CompiledSectionMesh implements SectionMesh {
       return this.visibilitySet.visibilityBetween(var1, var2);
    }
 
-   @Nullable
-   public SectionBuffers getBuffers(ChunkSectionLayer var1) {
+   public @Nullable SectionBuffers getBuffers(ChunkSectionLayer var1) {
       return (SectionBuffers)this.buffers.get(var1);
    }
 
@@ -145,8 +142,7 @@ public class CompiledSectionMesh implements SectionMesh {
       return this.buffers.containsKey(ChunkSectionLayer.TRANSLUCENT);
    }
 
-   @Nullable
-   public MeshData.SortState getTransparencyState() {
+   public MeshData.@Nullable SortState getTransparencyState() {
       return this.transparencyState;
    }
 

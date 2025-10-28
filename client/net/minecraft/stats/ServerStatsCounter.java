@@ -1,7 +1,10 @@
 package net.minecraft.stats;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.datafixers.DataFixer;
@@ -11,8 +14,15 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,14 +39,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
 public class ServerStatsCounter extends StatsCounter {
+   private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Codec<Map<Stat<?>, Integer>> STATS_CODEC;
-   private final MinecraftServer server;
-   private final File file;
+   private final Path file;
    private final Set<Stat<?>> dirty = Sets.newHashSet();
 
    private static <T> Codec<Map<Stat<?>, Integer>> createTypedStatsCodec(StatType<T> var0) {
@@ -49,17 +58,35 @@ public class ServerStatsCounter extends StatsCounter {
       return Codec.unboundedMap(var2, Codec.INT);
    }
 
-   public ServerStatsCounter(MinecraftServer var1, File var2) {
+   public ServerStatsCounter(MinecraftServer var1, Path var2) {
       super();
-      this.server = var1;
       this.file = var2;
-      if (var2.isFile()) {
+      if (Files.isRegularFile(var2, new LinkOption[0])) {
          try {
-            this.parseLocal(var1.getFixerUpper(), FileUtils.readFileToString(var2));
-         } catch (IOException var4) {
-            LOGGER.error("Couldn't read statistics file {}", var2, var4);
-         } catch (JsonParseException var5) {
-            LOGGER.error("Couldn't parse statistics file {}", var2, var5);
+            BufferedReader var3 = Files.newBufferedReader(var2, StandardCharsets.UTF_8);
+
+            try {
+               JsonElement var4 = StrictJsonParser.parse((Reader)var3);
+               this.parse(var1.getFixerUpper(), var4);
+            } catch (Throwable var7) {
+               if (var3 != null) {
+                  try {
+                     ((Reader)var3).close();
+                  } catch (Throwable var6) {
+                     var7.addSuppressed(var6);
+                  }
+               }
+
+               throw var7;
+            }
+
+            if (var3 != null) {
+               ((Reader)var3).close();
+            }
+         } catch (IOException var8) {
+            LOGGER.error("Couldn't read statistics file {}", var2, var8);
+         } catch (JsonParseException var9) {
+            LOGGER.error("Couldn't parse statistics file {}", var2, var9);
          }
       }
 
@@ -67,9 +94,27 @@ public class ServerStatsCounter extends StatsCounter {
 
    public void save() {
       try {
-         FileUtils.writeStringToFile(this.file, this.toJson());
-      } catch (IOException var2) {
-         LOGGER.error("Couldn't save stats", var2);
+         BufferedWriter var1 = Files.newBufferedWriter(this.file, StandardCharsets.UTF_8);
+
+         try {
+            GSON.toJson(this.toJson(), GSON.newJsonWriter(var1));
+         } catch (Throwable var5) {
+            if (var1 != null) {
+               try {
+                  ((Writer)var1).close();
+               } catch (Throwable var4) {
+                  var5.addSuppressed(var4);
+               }
+            }
+
+            throw var5;
+         }
+
+         if (var1 != null) {
+            ((Writer)var1).close();
+         }
+      } catch (JsonIOException | IOException var6) {
+         LOGGER.error("Couldn't save stats to {}", this.file, var6);
       }
 
    }
@@ -85,28 +130,17 @@ public class ServerStatsCounter extends StatsCounter {
       return var1;
    }
 
-   public void parseLocal(DataFixer var1, String var2) {
-      try {
-         JsonElement var3 = StrictJsonParser.parse(var2);
-         if (var3.isJsonNull()) {
-            LOGGER.error("Unable to parse Stat data from {}", this.file);
-            return;
-         }
-
-         Dynamic var4 = new Dynamic(JsonOps.INSTANCE, var3);
-         var4 = DataFixTypes.STATS.updateToCurrentVersion(var1, var4, NbtUtils.getDataVersion((Dynamic)var4, 1343));
-         this.stats.putAll((Map)STATS_CODEC.parse(var4.get("stats").orElseEmptyMap()).resultOrPartial((var1x) -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, var1x)).orElse(Map.of()));
-      } catch (JsonParseException var5) {
-         LOGGER.error("Unable to parse Stat data from {}", this.file, var5);
-      }
-
+   public void parse(DataFixer var1, JsonElement var2) {
+      Dynamic var3 = new Dynamic(JsonOps.INSTANCE, var2);
+      var3 = DataFixTypes.STATS.updateToCurrentVersion(var1, var3, NbtUtils.getDataVersion((Dynamic)var3, 1343));
+      this.stats.putAll((Map)STATS_CODEC.parse(var3.get("stats").orElseEmptyMap()).resultOrPartial((var1x) -> LOGGER.error("Failed to parse statistics for {}: {}", this.file, var1x)).orElse(Map.of()));
    }
 
-   protected String toJson() {
+   protected JsonElement toJson() {
       JsonObject var1 = new JsonObject();
       var1.add("stats", (JsonElement)STATS_CODEC.encodeStart(JsonOps.INSTANCE, this.stats).getOrThrow());
       var1.addProperty("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
-      return var1.toString();
+      return var1;
    }
 
    public void markAllDirty() {

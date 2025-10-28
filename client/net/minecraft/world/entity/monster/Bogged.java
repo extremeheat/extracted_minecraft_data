@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -29,10 +28,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class Bogged extends AbstractSkeleton implements Shearable {
-   private static final int HARD_ATTACK_INTERVAL = 50;
-   private static final int NORMAL_ATTACK_INTERVAL = 70;
    private static final EntityDataAccessor<Boolean> DATA_SHEARED;
    private static final String SHEARED_TAG_NAME = "sheared";
    private static final boolean DEFAULT_SHEARED = false;

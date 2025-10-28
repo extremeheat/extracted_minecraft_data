@@ -1,18 +1,18 @@
 package net.minecraft.client.gui.components;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public abstract class SpriteIconButton extends Button {
    protected final WidgetSprites sprite;
    protected final int spriteWidth;
    protected final int spriteHeight;
 
-   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, Button.@Nullable CreateNarration var9) {
       super(0, 0, var1, var2, var3, var7, var9 == null ? DEFAULT_NARRATION : var9);
       if (var8 != null) {
          this.setTooltip(Tooltip.create(var8));
@@ -32,7 +32,7 @@ public abstract class SpriteIconButton extends Button {
    }
 
    public static class CenteredIcon extends SpriteIconButton {
-      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, Button.@Nullable CreateNarration var9) {
          super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
@@ -45,7 +45,7 @@ public abstract class SpriteIconButton extends Button {
    }
 
    public static class TextAndIcon extends SpriteIconButton {
-      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, @Nullable Button.CreateNarration var9) {
+      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, WidgetSprites var6, Button.OnPress var7, @Nullable Component var8, Button.@Nullable CreateNarration var9) {
          super(var1, var2, var3, var4, var5, var6, var7, var8, var9);
       }
 
@@ -68,14 +68,11 @@ public abstract class SpriteIconButton extends Button {
       private final boolean iconOnly;
       private int width = 150;
       private int height = 20;
-      @Nullable
-      private WidgetSprites sprite;
+      private @Nullable WidgetSprites sprite;
       private int spriteWidth;
       private int spriteHeight;
-      @Nullable
-      private Component tooltip;
-      @Nullable
-      private Button.CreateNarration narration;
+      private @Nullable Component tooltip;
+      private Button.@Nullable CreateNarration narration;
 
       public Builder(Component var1, Button.OnPress var2, boolean var3) {
          super();

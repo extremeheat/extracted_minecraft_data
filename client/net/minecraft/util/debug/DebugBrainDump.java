@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,6 +33,7 @@ import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.schedule.Activity;
+import org.jspecify.annotations.Nullable;
 
 public record DebugBrainDump(String name, String profession, int xp, float health, float maxHealth, String inventory, boolean wantsGolem, int angerLevel, List<String> activities, List<String> behaviors, List<String> memories, List<String> gossips, Set<BlockPos> pois, Set<BlockPos> potentialPois) {
    public static final StreamCodec<FriendlyByteBuf, DebugBrainDump> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, DebugBrainDump>of((var0, var1) -> var1.write(var0), DebugBrainDump::new);

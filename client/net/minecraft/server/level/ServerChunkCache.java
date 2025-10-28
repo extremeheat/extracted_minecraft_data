@@ -17,7 +17,6 @@ import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -34,7 +33,6 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.LocalMobCapCalculator;
@@ -49,11 +47,13 @@ import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerChunkCache extends ChunkSource {
@@ -70,13 +70,12 @@ public class ServerChunkCache extends ChunkSource {
    private boolean spawnEnemies = true;
    private static final int CACHE_SIZE = 4;
    private final long[] lastChunkPos = new long[4];
-   private final ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
-   private final ChunkAccess[] lastChunk = new ChunkAccess[4];
+   private final @Nullable ChunkStatus[] lastChunkStatus = new ChunkStatus[4];
+   private final @Nullable ChunkAccess[] lastChunk = new ChunkAccess[4];
    private final List<LevelChunk> spawningChunks = new ObjectArrayList();
    private final Set<ChunkHolder> chunkHoldersToBroadcast = new ReferenceOpenHashSet();
-   @Nullable
    @VisibleForDebug
-   private NaturalSpawner.SpawnState lastSpawnState;
+   private NaturalSpawner.@Nullable SpawnState lastSpawnState;
 
    public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, ChunkGenerator var6, int var7, int var8, boolean var9, ChunkStatusUpdateListener var10, Supplier<DimensionDataStorage> var11) {
       super();
@@ -104,8 +103,7 @@ public class ServerChunkCache extends ChunkSource {
       return this.lightEngine;
    }
 
-   @Nullable
-   private ChunkHolder getVisibleChunkIfPresent(long var1) {
+   private @Nullable ChunkHolder getVisibleChunkIfPresent(long var1) {
       return this.chunkMap.getVisibleChunkIfPresent(var1);
    }
 
@@ -121,8 +119,7 @@ public class ServerChunkCache extends ChunkSource {
       this.lastChunk[0] = var3;
    }
 
-   @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       if (Thread.currentThread() != this.mainThread) {
          return (ChunkAccess)CompletableFuture.supplyAsync(() -> this.getChunk(var1, var2, var3, var4), this.mainThreadProcessor).join();
       } else {
@@ -155,8 +152,7 @@ public class ServerChunkCache extends ChunkSource {
       }
    }
 
-   @Nullable
-   public LevelChunk getChunkNow(int var1, int var2) {
+   public @Nullable LevelChunk getChunkNow(int var1, int var2) {
       if (Thread.currentThread() != this.mainThread) {
          return null;
       } else {
@@ -240,8 +236,7 @@ public class ServerChunkCache extends ChunkSource {
       return !this.chunkAbsent(var3, var4);
    }
 
-   @Nullable
-   public LightChunk getChunkForLighting(int var1, int var2) {
+   public @Nullable LightChunk getChunkForLighting(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
       ChunkHolder var5 = this.getVisibleChunkIfPresent(var3);
       return var5 == null ? null : var5.getChunkIfPresentUnchecked(ChunkStatus.INITIALIZE_LIGHT.getParent());
@@ -345,8 +340,8 @@ public class ServerChunkCache extends ChunkSource {
       int var4 = this.distanceManager.getNaturalSpawnChunkCount();
       NaturalSpawner.SpawnState var5 = NaturalSpawner.createState(var4, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
       this.lastSpawnState = var5;
-      boolean var6 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
-      int var7 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
+      boolean var6 = (Boolean)this.level.getGameRules().get(GameRules.SPAWN_MOBS);
+      int var7 = (Integer)this.level.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
       List var8;
       if (var6) {
          boolean var9 = this.level.getGameTime() % 400L == 0L;
@@ -541,9 +536,8 @@ public class ServerChunkCache extends ChunkSource {
       return this.chunkMap.chunkScanner();
    }
 
-   @Nullable
    @VisibleForDebug
-   public NaturalSpawner.SpawnState getLastSpawnState() {
+   public NaturalSpawner.@Nullable SpawnState getLastSpawnState() {
       return this.lastSpawnState;
    }
 

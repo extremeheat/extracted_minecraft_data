@@ -8,7 +8,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Collection;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public interface SignatureValidator {
@@ -40,8 +40,7 @@ public interface SignatureValidator {
       };
    }
 
-   @Nullable
-   static SignatureValidator from(ServicesKeySet var0, ServicesKeyType var1) {
+   static @Nullable SignatureValidator from(ServicesKeySet var0, ServicesKeyType var1) {
       Collection var2 = var0.keys(var1);
       return var2.isEmpty() ? null : (var1x, var2x) -> var2.stream().anyMatch((var2xx) -> {
             Signature var3 = var2xx.signature();

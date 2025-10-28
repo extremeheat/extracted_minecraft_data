@@ -11,7 +11,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class StackedContents<T> {
    public final Reference2IntOpenHashMap<T> amounts = new Reference2IntOpenHashMap();
@@ -196,8 +196,7 @@ public class StackedContents<T> {
          return (var0 & 1) == 0;
       }
 
-      @Nullable
-      private IntList tryAssigningNewItem(int var1) {
+      private @Nullable IntList tryAssigningNewItem(int var1) {
          this.clearAllVisited();
 
          for(int var2 = 0; var2 < this.itemCount; ++var2) {
@@ -212,8 +211,7 @@ public class StackedContents<T> {
          return null;
       }
 
-      @Nullable
-      private IntList findNewItemAssignmentPath(int var1) {
+      private @Nullable IntList findNewItemAssignmentPath(int var1) {
          this.path.clear();
          this.visitItem(var1);
          this.path.add(var1);

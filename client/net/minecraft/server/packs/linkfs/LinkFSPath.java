@@ -21,7 +21,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class LinkFSPath implements Path {
    private static final BasicFileAttributes DIRECTORY_ATTRIBUTES = new DummyFileAttributes() {
@@ -45,12 +45,9 @@ class LinkFSPath implements Path {
    private static final Comparator<LinkFSPath> PATH_COMPARATOR = Comparator.comparing(LinkFSPath::pathToString);
    private final String name;
    private final LinkFileSystem fileSystem;
-   @Nullable
-   private final LinkFSPath parent;
-   @Nullable
-   private List<String> pathToRoot;
-   @Nullable
-   private String pathString;
+   private final @Nullable LinkFSPath parent;
+   private @Nullable List<String> pathToRoot;
+   private @Nullable String pathString;
    private final PathContents pathContents;
 
    public LinkFSPath(LinkFileSystem var1, String var2, @Nullable LinkFSPath var3, PathContents var4) {
@@ -82,8 +79,7 @@ class LinkFSPath implements Path {
       }
    }
 
-   @Nullable
-   public LinkFSPath getRoot() {
+   public @Nullable LinkFSPath getRoot() {
       return this.isAbsolute() ? this.fileSystem.rootPath() : null;
    }
 
@@ -91,8 +87,7 @@ class LinkFSPath implements Path {
       return this.createRelativePath((LinkFSPath)null, this.name);
    }
 
-   @Nullable
-   public LinkFSPath getParent() {
+   public @Nullable LinkFSPath getParent() {
       return this.parent;
    }
 
@@ -352,8 +347,7 @@ class LinkFSPath implements Path {
       return this.hasRealContents();
    }
 
-   @Nullable
-   public Path getTargetPath() {
+   public @Nullable Path getTargetPath() {
       PathContents var2 = this.pathContents;
       Path var10000;
       if (var2 instanceof PathContents.FileContents var1) {
@@ -365,8 +359,7 @@ class LinkFSPath implements Path {
       return var10000;
    }
 
-   @Nullable
-   public PathContents.DirectoryContents getDirectoryContents() {
+   public PathContents.@Nullable DirectoryContents getDirectoryContents() {
       PathContents var2 = this.pathContents;
       PathContents.DirectoryContents var10000;
       if (var2 instanceof PathContents.DirectoryContents var1) {
@@ -440,8 +433,7 @@ class LinkFSPath implements Path {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Path getParent() {
+   public @Nullable Path getParent() {
       return this.getParent();
    }
 
@@ -451,8 +443,7 @@ class LinkFSPath implements Path {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Path getRoot() {
+   public @Nullable Path getRoot() {
       return this.getRoot();
    }
 

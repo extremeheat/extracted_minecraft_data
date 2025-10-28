@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.block.model;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
@@ -9,6 +8,7 @@ import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
    public SimpleModelWrapper(QuadCollection var1, boolean var2, TextureAtlasSprite var3) {

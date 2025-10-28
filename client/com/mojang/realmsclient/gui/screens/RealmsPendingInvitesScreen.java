@@ -10,7 +10,6 @@ import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -31,6 +30,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsPendingInvitesScreen extends RealmsScreen {
@@ -46,8 +46,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       }
    }, Util.ioPool());
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-   @Nullable
-   PendingInvitationSelectionList pendingInvitationSelectionList;
+   @Nullable PendingInvitationSelectionList pendingInvitationSelectionList;
 
    public RealmsPendingInvitesScreen(Screen var1, Component var2) {
       super(var2);

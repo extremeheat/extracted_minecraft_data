@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,6 +48,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jspecify.annotations.Nullable;
 
 public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
    public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new));
@@ -67,8 +67,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PART, BedPart.FOOT)).setValue(OCCUPIED, false));
    }
 
-   @Nullable
-   public static Direction getBedOrientation(BlockGetter var0, BlockPos var1) {
+   public static @Nullable Direction getBedOrientation(BlockGetter var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
       return var2.getBlock() instanceof BedBlock ? (Direction)var2.getValue(FACING) : null;
    }
@@ -175,8 +174,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Direction var2 = var1.getHorizontalDirection();
       BlockPos var3 = var1.getClickedPos();
       BlockPos var4 = var3.relative(var2);

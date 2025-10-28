@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
+import org.jspecify.annotations.Nullable;
 
 public class OverlayRecipeComponent implements Renderable, GuiEventListener {
    private static final ResourceLocation OVERLAY_RECIPE_SPRITE = ResourceLocation.withDefaultNamespace("recipe_book/overlay_recipe");
@@ -38,8 +38,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
    private int x;
    private int y;
    private RecipeCollection collection;
-   @Nullable
-   private RecipeDisplayId lastRecipeClicked;
+   private @Nullable RecipeDisplayId lastRecipeClicked;
    final SlotSelectTime slotSelectTime;
    private final boolean isFurnaceMenu;
 
@@ -100,8 +99,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       return this.collection;
    }
 
-   @Nullable
-   public RecipeDisplayId getLastRecipeClicked() {
+   public @Nullable RecipeDisplayId getLastRecipeClicked() {
       return this.lastRecipeClicked;
    }
 

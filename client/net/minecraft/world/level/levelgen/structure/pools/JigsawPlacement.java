@@ -230,7 +230,7 @@ public class JigsawPlacement {
                      MutableObject var29;
                      if (var30) {
                         var29 = var14;
-                        if (var14.getValue() == null) {
+                        if (var14.get() == null) {
                            var14.setValue(Shapes.create(AABB.of(var15)));
                         }
                      } else {
@@ -301,8 +301,8 @@ public class JigsawPlacement {
                                     var52.encapsulate(new BlockPos(var52.minX(), var52.minY() + var54, var52.minZ()));
                                  }
 
-                                 if (!Shapes.joinIsNotEmpty((VoxelShape)var29.getValue(), Shapes.create(AABB.of(var52).deflate(0.25)), BooleanOp.ONLY_SECOND)) {
-                                    var29.setValue(Shapes.joinUnoptimized((VoxelShape)var29.getValue(), Shapes.create(AABB.of(var52)), BooleanOp.ONLY_FIRST));
+                                 if (!Shapes.joinIsNotEmpty((VoxelShape)var29.get(), Shapes.create(AABB.of(var52).deflate(0.25)), BooleanOp.ONLY_SECOND)) {
+                                    var29.setValue(Shapes.joinUnoptimized((VoxelShape)var29.get(), Shapes.create(AABB.of(var52)), BooleanOp.ONLY_FIRST));
                                     int var59 = var1.getGroundLevelDelta();
                                     int var55;
                                     if (var47) {

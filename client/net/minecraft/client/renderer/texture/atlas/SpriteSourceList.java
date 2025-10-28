@@ -12,10 +12,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -33,11 +31,11 @@ public class SpriteSourceList {
       this.sources = var1;
    }
 
-   public List<Function<SpriteResourceLoader, SpriteContents>> list(ResourceManager var1) {
+   public List<SpriteSource.Loader> list(ResourceManager var1) {
       final HashMap var2 = new HashMap();
       SpriteSource.Output var3 = new SpriteSource.Output() {
-         public void add(ResourceLocation var1, SpriteSource.SpriteSupplier var2x) {
-            SpriteSource.SpriteSupplier var3 = (SpriteSource.SpriteSupplier)var2.put(var1, var2x);
+         public void add(ResourceLocation var1, SpriteSource.DiscardableLoader var2x) {
+            SpriteSource.DiscardableLoader var3 = (SpriteSource.DiscardableLoader)var2.put(var1, var2x);
             if (var3 != null) {
                var3.discard();
             }
@@ -50,7 +48,7 @@ public class SpriteSourceList {
             while(var2x.hasNext()) {
                Map.Entry var3 = (Map.Entry)var2x.next();
                if (var1.test((ResourceLocation)var3.getKey())) {
-                  ((SpriteSource.SpriteSupplier)var3.getValue()).discard();
+                  ((SpriteSource.DiscardableLoader)var3.getValue()).discard();
                   var2x.remove();
                }
             }
@@ -59,7 +57,7 @@ public class SpriteSourceList {
       };
       this.sources.forEach((var2x) -> var2x.run(var1, var3));
       ImmutableList.Builder var4 = ImmutableList.builder();
-      var4.add((Function)(var0) -> MissingTextureAtlasSprite.create());
+      var4.add((SpriteSource.Loader)(var0) -> MissingTextureAtlasSprite.create());
       var4.addAll(var2.values());
       return var4.build();
    }

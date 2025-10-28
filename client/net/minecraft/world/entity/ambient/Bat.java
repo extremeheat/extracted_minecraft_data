@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ambient;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,7 +10,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.SpecialDates;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -28,6 +26,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Bat extends AmbientCreature {
    public static final float FLAP_LENGTH_SECONDS = 0.5F;
@@ -38,8 +37,7 @@ public class Bat extends AmbientCreature {
    private static final byte DEFAULT_FLAGS = 0;
    public final AnimationState flyAnimationState = new AnimationState();
    public final AnimationState restAnimationState = new AnimationState();
-   @Nullable
-   private BlockPos targetPosition;
+   private @Nullable BlockPos targetPosition;
 
    public Bat(EntityType<? extends Bat> var1, Level var2) {
       super(var1, var2);
@@ -66,8 +64,7 @@ public class Bat extends AmbientCreature {
       return super.getVoicePitch() * 0.95F;
    }
 
-   @Nullable
-   public SoundEvent getAmbientSound() {
+   public @Nullable SoundEvent getAmbientSound() {
       return this.isResting() && this.random.nextInt(4) != 0 ? null : SoundEvents.BAT_AMBIENT;
    }
 
@@ -204,20 +201,12 @@ public class Bat extends AmbientCreature {
    public static boolean checkBatSpawnRules(EntityType<Bat> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       if (var3.getY() >= var1.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var3).getY()) {
          return false;
+      } else if (var4.nextBoolean()) {
+         return false;
+      } else if (var1.getMaxLocalRawBrightness(var3) > var4.nextInt(4)) {
+         return false;
       } else {
-         int var5 = var1.getMaxLocalRawBrightness(var3);
-         byte var6 = 4;
-         if (SpecialDates.isExtendedHalloween()) {
-            var6 = 7;
-         } else if (var4.nextBoolean()) {
-            return false;
-         }
-
-         if (var5 > var4.nextInt(var6)) {
-            return false;
-         } else {
-            return !var1.getBlockState(var3.below()).is(BlockTags.BATS_SPAWNABLE_ON) ? false : checkMobSpawnRules(var0, var1, var2, var3, var4);
-         }
+         return !var1.getBlockState(var3.below()).is(BlockTags.BATS_SPAWNABLE_ON) ? false : checkMobSpawnRules(var0, var1, var2, var3, var4);
       }
    }
 

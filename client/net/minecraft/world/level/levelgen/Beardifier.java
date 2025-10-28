@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import org.jspecify.annotations.Nullable;
 
 public class Beardifier implements DensityFunctions.BeardifierOrMarker {
    public static final int BEARD_KERNEL_RADIUS = 12;
@@ -35,8 +35,7 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
    public static final Beardifier EMPTY = new Beardifier(List.of(), List.of(), (BoundingBox)null);
    private final List<Rigid> pieces;
    private final List<JigsawJunction> junctions;
-   @Nullable
-   private final BoundingBox affectedBox;
+   private final @Nullable BoundingBox affectedBox;
 
    public static Beardifier forStructuresInChunk(StructureManager var0, ChunkPos var1) {
       List var2 = var0.startsForStructure((ChunkPos)var1, (Predicate)((var0x) -> var0x.terrainAdaptation() != TerrainAdjustment.NONE));

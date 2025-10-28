@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -9,6 +8,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public abstract class ImageWidget extends AbstractWidget {
    ImageWidget(int var1, int var2, int var3, int var4) {
@@ -35,8 +35,7 @@ public abstract class ImageWidget extends AbstractWidget {
 
    public abstract void updateResource(ResourceLocation var1);
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 

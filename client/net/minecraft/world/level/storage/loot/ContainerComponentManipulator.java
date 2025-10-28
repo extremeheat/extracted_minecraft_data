@@ -4,6 +4,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.slot.SlotCollection;
 
 public interface ContainerComponentManipulator<T> {
    DataComponentType<T> type();
@@ -39,5 +40,12 @@ public interface ContainerComponentManipulator<T> {
          this.setContents(var1, this.getContents(var3).map(var4));
       }
 
+   }
+
+   default SlotCollection getSlots(ItemStack var1) {
+      return () -> {
+         Object var2 = var1.get(this.type());
+         return var2 != null ? this.getContents(var2).filter((var0) -> !var0.isEmpty()) : Stream.empty();
+      };
    }
 }

@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -95,6 +94,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LocalPlayer extends AbstractClientPlayer {
@@ -139,8 +139,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public float portalEffectIntensity;
    public float oPortalEffectIntensity;
    private boolean startedUsingItem;
-   @Nullable
-   private InteractionHand usingItemHand;
+   private @Nullable InteractionHand usingItemHand;
    private boolean handsBusy;
    private boolean autoJumpEnabled;
    private int autoJumpTime;
@@ -537,8 +536,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   @Nullable
-   public PlayerRideableJumping jumpableVehicle() {
+   public @Nullable PlayerRideableJumping jumpableVehicle() {
       Entity var2 = this.getControlledVehicle();
       PlayerRideableJumping var10000;
       if (var2 instanceof PlayerRideableJumping var1) {

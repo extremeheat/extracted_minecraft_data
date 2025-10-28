@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
@@ -36,6 +35,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Horse extends AbstractHorse {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT;
@@ -93,8 +93,7 @@ public class Horse extends AbstractHorse {
       this.setTypeVariant(var1.getId() & 255 | this.getTypeVariant() & -256);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.HORSE_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -132,7 +131,6 @@ public class Horse extends AbstractHorse {
       return SoundEvents.HORSE_DEATH;
    }
 
-   @Nullable
    protected SoundEvent getEatingSound() {
       return SoundEvents.HORSE_EAT;
    }
@@ -176,8 +174,7 @@ public class Horse extends AbstractHorse {
       }
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       if (var2 instanceof Donkey) {
          Mule var9 = EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
          if (var9 != null) {
@@ -225,8 +222,7 @@ public class Horse extends AbstractHorse {
       this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       Variant var6;
       if (var4 instanceof HorseGroupData) {

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.piglin;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -51,14 +50,15 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Piglin extends AbstractPiglin implements CrossbowAttackMob, InventoryCarrier {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
@@ -141,8 +141,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       if (var3 != EntitySpawnReason.STRUCTURE) {
          if (var5.nextFloat() < 0.2F) {
@@ -258,8 +257,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return (double)this.random.nextFloat() < 0.5 ? new ItemStack(Items.CROSSBOW) : new ItemStack(this.random.nextInt(10) == 0 ? Items.GOLDEN_SPEAR : Items.GOLDEN_SWORD);
    }
 
-   @Nullable
-   public TagKey<Item> getPreferredWeaponType() {
+   public @Nullable TagKey<Item> getPreferredWeaponType() {
       return this.isBaby() ? null : ItemTags.PIGLIN_PREFERRED_WEAPONS;
    }
 
@@ -333,7 +331,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
-      return var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var2);
+      return (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var2);
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1) {
@@ -375,8 +373,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return var2 != 1 && !var3.isEmpty() ? this.getTopPassenger((Entity)var3.getFirst(), var2 - 1) : var1;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return this.level().isClientSide() ? null : (SoundEvent)PiglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
    }
 

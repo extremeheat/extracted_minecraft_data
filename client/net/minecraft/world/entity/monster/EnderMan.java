@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -50,13 +49,13 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -65,6 +64,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EnderMan extends Monster implements NeutralMob {
    private static final ResourceLocation SPEED_MODIFIER_ATTACKING_ID = ResourceLocation.withDefaultNamespace("attacking");
@@ -78,8 +78,7 @@ public class EnderMan extends Monster implements NeutralMob {
    private int targetChangeTime;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public EnderMan(EntityType<? extends EnderMan> var1, Level var2) {
       super(var1, var2);
@@ -150,8 +149,7 @@ public class EnderMan extends Monster implements NeutralMob {
       this.persistentAngerTarget = var1;
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -303,8 +301,7 @@ public class EnderMan extends Monster implements NeutralMob {
       this.entityData.set(DATA_CARRY_STATE, Optional.ofNullable(var1));
    }
 
-   @Nullable
-   public BlockState getCarriedBlock() {
+   public @Nullable BlockState getCarriedBlock() {
       return (BlockState)((Optional)this.entityData.get(DATA_CARRY_STATE)).orElse((Object)null);
    }
 
@@ -375,15 +372,14 @@ public class EnderMan extends Monster implements NeutralMob {
 
    static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
       private final EnderMan enderman;
-      @Nullable
-      private Player pendingTarget;
+      private @Nullable Player pendingTarget;
       private int aggroTime;
       private int teleportTime;
       private final TargetingConditions startAggroTargetConditions;
       private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
       private final TargetingConditions.Selector isAngerInducing;
 
-      public EndermanLookForPlayerGoal(EnderMan var1, @Nullable TargetingConditions.Selector var2) {
+      public EndermanLookForPlayerGoal(EnderMan var1, TargetingConditions.@Nullable Selector var2) {
          super(var1, Player.class, 10, false, false, var2);
          this.enderman = var1;
          this.isAngerInducing = (var1x, var2x) -> (var1.isBeingStaredBy((Player)var1x) || var1.isAngryAt(var1x, var2x)) && !var1.hasIndirectPassenger(var1x);
@@ -461,8 +457,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
    static class EndermanFreezeWhenLookedAt extends Goal {
       private final EnderMan enderman;
-      @Nullable
-      private LivingEntity target;
+      private @Nullable LivingEntity target;
 
       public EndermanFreezeWhenLookedAt(EnderMan var1) {
          super();
@@ -501,7 +496,7 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() == null) {
             return false;
-         } else if (!getServerLevel(this.enderman).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         } else if (!(Boolean)getServerLevel(this.enderman).getGameRules().get(GameRules.MOB_GRIEFING)) {
             return false;
          } else {
             return this.enderman.getRandom().nextInt(reducedTickDelay(2000)) == 0;
@@ -546,7 +541,7 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() != null) {
             return false;
-         } else if (!getServerLevel(this.enderman).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         } else if (!(Boolean)getServerLevel(this.enderman).getGameRules().get(GameRules.MOB_GRIEFING)) {
             return false;
          } else {
             return this.enderman.getRandom().nextInt(reducedTickDelay(20)) == 0;

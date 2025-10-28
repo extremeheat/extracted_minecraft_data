@@ -6,6 +6,7 @@ import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.shorts.ShortList;
 import it.unimi.dsi.fastutil.shorts.ShortListIterator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -62,6 +62,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.TickContainerAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelChunk extends ChunkAccess implements DebugValueSource {
@@ -85,10 +86,8 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    private final Map<BlockPos, RebindableTickingBlockEntityWrapper> tickersInLevel;
    private boolean loaded;
    final Level level;
-   @Nullable
-   private Supplier<FullChunkStatus> fullStatus;
-   @Nullable
-   private PostLoadProcessor postLoad;
+   private @Nullable Supplier<FullChunkStatus> fullStatus;
+   private @Nullable PostLoadProcessor postLoad;
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
    private final LevelChunkTicks<Block> blockTicks;
    private final LevelChunkTicks<Fluid> fluidTicks;
@@ -98,7 +97,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       this(var1, var2, UpgradeData.EMPTY, new LevelChunkTicks(), new LevelChunkTicks(), 0L, (LevelChunkSection[])null, (PostLoadProcessor)null, (BlendingData)null);
    }
 
-   public LevelChunk(Level var1, ChunkPos var2, UpgradeData var3, LevelChunkTicks<Block> var4, LevelChunkTicks<Fluid> var5, long var6, @Nullable LevelChunkSection[] var8, @Nullable PostLoadProcessor var9, @Nullable BlendingData var10) {
+   public LevelChunk(Level var1, ChunkPos var2, UpgradeData var3, LevelChunkTicks<Block> var4, LevelChunkTicks<Fluid> var5, long var6, LevelChunkSection @Nullable [] var8, @Nullable PostLoadProcessor var9, @Nullable BlendingData var10) {
       super(var2, var3, var1, var1.palettedContainerFactory(), var6, var8, var10);
       this.tickersInLevel = Maps.newHashMap();
       this.unsavedListener = (var0) -> {
@@ -243,8 +242,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       }
    }
 
-   @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
+   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
       int var4 = var1.getY();
       LevelChunkSection var5 = this.getSection(this.getSectionIndex(var4));
       boolean var6 = var5.hasOnlyAir();
@@ -340,19 +338,16 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    public void addEntity(Entity var1) {
    }
 
-   @Nullable
-   private BlockEntity createBlockEntity(BlockPos var1) {
+   private @Nullable BlockEntity createBlockEntity(BlockPos var1) {
       BlockState var2 = this.getBlockState(var1);
       return !var2.hasBlockEntity() ? null : ((EntityBlock)var2.getBlock()).newBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1, EntityCreationType var2) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1, EntityCreationType var2) {
       BlockEntity var3 = (BlockEntity)this.blockEntities.get(var1);
       if (var3 == null) {
          CompoundTag var4 = (CompoundTag)this.pendingBlockEntities.remove(var1);
@@ -442,8 +437,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       }
    }
 
-   @Nullable
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
       if (var3 != null && !var3.isRemoved()) {
          CompoundTag var5 = var3.saveWithFullMetadata((HolderLookup.Provider)this.level.registryAccess());
@@ -560,43 +554,43 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       ChunkPos var2 = this.getPos();
 
       for(int var3 = 0; var3 < this.postProcessing.length; ++var3) {
-         if (this.postProcessing[var3] != null) {
-            ShortListIterator var4 = this.postProcessing[var3].iterator();
+         ShortList var4 = this.postProcessing[var3];
+         if (var4 != null) {
+            ShortListIterator var5 = var4.iterator();
 
-            while(var4.hasNext()) {
-               Short var5 = (Short)var4.next();
-               BlockPos var6 = ProtoChunk.unpackOffsetCoordinates(var5, this.getSectionYFromSectionIndex(var3), var2);
-               BlockState var7 = this.getBlockState(var6);
-               FluidState var8 = var7.getFluidState();
-               if (!var8.isEmpty()) {
-                  var8.tick(var1, var6, var7);
+            while(var5.hasNext()) {
+               Short var6 = (Short)var5.next();
+               BlockPos var7 = ProtoChunk.unpackOffsetCoordinates(var6, this.getSectionYFromSectionIndex(var3), var2);
+               BlockState var8 = this.getBlockState(var7);
+               FluidState var9 = var8.getFluidState();
+               if (!var9.isEmpty()) {
+                  var9.tick(var1, var7, var8);
                }
 
-               if (!(var7.getBlock() instanceof LiquidBlock)) {
-                  BlockState var9 = Block.updateFromNeighbourShapes(var7, var1, var6);
-                  if (var9 != var7) {
-                     var1.setBlock(var6, var9, 276);
+               if (!(var8.getBlock() instanceof LiquidBlock)) {
+                  BlockState var10 = Block.updateFromNeighbourShapes(var8, var1, var7);
+                  if (var10 != var8) {
+                     var1.setBlock(var7, var10, 276);
                   }
                }
             }
 
-            this.postProcessing[var3].clear();
+            var4.clear();
          }
       }
 
-      UnmodifiableIterator var10 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
+      UnmodifiableIterator var11 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
 
-      while(var10.hasNext()) {
-         BlockPos var11 = (BlockPos)var10.next();
-         this.getBlockEntity(var11);
+      while(var11.hasNext()) {
+         BlockPos var12 = (BlockPos)var11.next();
+         this.getBlockEntity(var12);
       }
 
       this.pendingBlockEntities.clear();
       this.upgradeData.upgrade(this);
    }
 
-   @Nullable
-   private BlockEntity promotePendingBlockEntity(BlockPos var1, CompoundTag var2) {
+   private @Nullable BlockEntity promotePendingBlockEntity(BlockPos var1, CompoundTag var2) {
       BlockState var4 = this.getBlockState(var1);
       BlockEntity var3;
       if ("DUMMY".equals(var2.getStringOr("id", ""))) {

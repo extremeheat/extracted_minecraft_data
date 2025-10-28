@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,13 +34,6 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
 
    protected final void renderDefaultSprite(GuiGraphics var1) {
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-   }
-
-   private void handleCursor(GuiGraphics var1) {
-      if (this.isHovered()) {
-         var1.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
-      }
-
    }
 
    public void onClick(MouseButtonEvent var1, boolean var2) {

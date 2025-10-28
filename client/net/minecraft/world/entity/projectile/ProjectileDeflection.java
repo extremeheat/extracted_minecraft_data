@@ -1,9 +1,9 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ProjectileDeflection {

@@ -7,7 +7,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -17,6 +16,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 public class ToastManager {
    private static final int SLOT_COUNT = 5;
@@ -26,8 +26,7 @@ public class ToastManager {
    private final BitSet occupiedSlots = new BitSet(5);
    private final Deque<Toast> queued = Queues.newArrayDeque();
    private final Set<SoundEvent> playedToastSounds = new HashSet();
-   @Nullable
-   private ToastInstance<NowPlayingToast> nowPlayingToast;
+   private @Nullable ToastInstance<NowPlayingToast> nowPlayingToast;
 
    public ToastManager(Minecraft var1, Options var2) {
       super();
@@ -122,10 +121,9 @@ public class ToastManager {
       return 5 - this.occupiedSlots.cardinality();
    }
 
-   @Nullable
-   public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
+   public <T extends Toast> @Nullable T getToast(Class<? extends T> var1, Object var2) {
       for(ToastInstance var4 : this.visibleToasts) {
-         if (var4 != null && var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
+         if (var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
             return (T)var4.getToast();
          }
       }

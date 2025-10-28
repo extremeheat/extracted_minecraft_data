@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
@@ -521,8 +521,7 @@ public final class Window implements AutoCloseable {
       return this.guiScale;
    }
 
-   @Nullable
-   public Monitor findBestMonitor() {
+   public @Nullable Monitor findBestMonitor() {
       return this.screenManager.findBestMonitor(this);
    }
 

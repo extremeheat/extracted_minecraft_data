@@ -11,17 +11,23 @@ public class GlSampler extends GpuSampler {
    private final AddressMode addressModeV;
    private final FilterMode minFilter;
    private final FilterMode magFilter;
+   private final int maxAnisotropy;
    private boolean closed;
 
-   public GlSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4) {
+   public GlSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5) {
       super();
       this.addressModeU = var1;
       this.addressModeV = var2;
       this.minFilter = var3;
       this.magFilter = var4;
+      this.maxAnisotropy = var5;
       this.id = GL33C.glGenSamplers();
       GL33C.glSamplerParameteri(this.id, 10242, GlConst.toGl(var1));
       GL33C.glSamplerParameteri(this.id, 10243, GlConst.toGl(var2));
+      if (var5 > 1) {
+         GL33C.glSamplerParameterf(this.id, 34046, (float)var5);
+      }
+
       switch (var3) {
          case NEAREST -> GL33C.glSamplerParameteri(this.id, 10241, 9986);
          case LINEAR -> GL33C.glSamplerParameteri(this.id, 10241, 9987);
@@ -52,6 +58,10 @@ public class GlSampler extends GpuSampler {
 
    public FilterMode getMagFilter() {
       return this.magFilter;
+   }
+
+   public int getMaxAnisotropy() {
+      return this.maxAnisotropy;
    }
 
    public void close() {

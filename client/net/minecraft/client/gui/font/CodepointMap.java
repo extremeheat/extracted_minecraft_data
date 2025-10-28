@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.Arrays;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class CodepointMap<T> {
    private static final int BLOCK_BITS = 8;
@@ -13,7 +13,7 @@ public class CodepointMap<T> {
    private static final int MAX_BLOCK = 4351;
    private static final int BLOCK_COUNT = 4352;
    private final T[] empty;
-   private final T[][] blockMap;
+   private final @Nullable T[][] blockMap;
    private final IntFunction<T[]> blockConstructor;
 
    public CodepointMap(IntFunction<T[]> var1, IntFunction<T[][]> var2) {
@@ -28,15 +28,13 @@ public class CodepointMap<T> {
       Arrays.fill(this.blockMap, this.empty);
    }
 
-   @Nullable
-   public T get(int var1) {
+   public @Nullable T get(int var1) {
       int var2 = var1 >> 8;
       int var3 = var1 & 255;
       return (T)this.blockMap[var2][var3];
    }
 
-   @Nullable
-   public T put(int var1, T var2) {
+   public @Nullable T put(int var1, T var2) {
       int var3 = var1 >> 8;
       int var4 = var1 & 255;
       Object[] var5 = this.blockMap[var3];
@@ -71,8 +69,7 @@ public class CodepointMap<T> {
       }
    }
 
-   @Nullable
-   public T remove(int var1) {
+   public @Nullable T remove(int var1) {
       int var2 = var1 >> 8;
       int var3 = var1 & 255;
       Object[] var4 = this.blockMap[var2];

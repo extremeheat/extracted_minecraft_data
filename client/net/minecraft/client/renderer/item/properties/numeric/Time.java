@@ -3,13 +3,13 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.MoonPhase;
+import org.jspecify.annotations.Nullable;
 
 public class Time extends NeedleDirectionHelper implements RangeSelectItemModelProperty {
    public static final MapCodec<Time> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), Time.TimeSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, Time::new));

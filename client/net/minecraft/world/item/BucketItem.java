@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 public class BucketItem extends Item implements DispensibleContainerItem {
    private final Fluid content;

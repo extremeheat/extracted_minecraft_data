@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -10,6 +9,7 @@ import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class SignItem extends StandingAndWallBlockItem {
    public SignItem(Block var1, Block var2, Item.Properties var3) {

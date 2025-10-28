@@ -30,7 +30,6 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -50,6 +49,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.DependencySorter;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FontManager implements PreparableReloadListener, AutoCloseable {
@@ -303,7 +303,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          this.result = var3;
       }
 
-      public Optional<List<GlyphProvider.Conditional>> resolve(Function<ResourceLocation, List<GlyphProvider.Conditional>> var1) {
+      public Optional<List<GlyphProvider.Conditional>> resolve(Function<ResourceLocation, @Nullable List<GlyphProvider.Conditional>> var1) {
          return (Optional)this.result.map((var1x) -> ((Optional)var1x.join()).map((var1) -> List.of(new GlyphProvider.Conditional(var1, this.filter))), (var2) -> {
             List var3 = (List)var1.apply(var2);
             if (var3 == null) {
@@ -392,10 +392,8 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
    class CachedFontProvider implements Font.Provider, AutoCloseable {
       private final boolean nonFishyOnly;
-      @Nullable
-      private volatile CachedEntry lastEntry;
-      @Nullable
-      private volatile EffectGlyph whiteGlyph;
+      private volatile @Nullable CachedEntry lastEntry;
+      private volatile @Nullable EffectGlyph whiteGlyph;
 
       CachedFontProvider(final boolean var2) {
          super();

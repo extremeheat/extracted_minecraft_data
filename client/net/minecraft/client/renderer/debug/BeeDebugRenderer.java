@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -25,6 +24,7 @@ import net.minecraft.util.debug.DebugHiveInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final boolean SHOW_GOAL_FOR_ALL_BEES = true;
@@ -47,8 +47,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int GRAY = -3355444;
    private static final int PINK = -98404;
    private final Minecraft minecraft;
-   @Nullable
-   private UUID lastLookedAtUuid;
+   private @Nullable UUID lastLookedAtUuid;
 
    public BeeDebugRenderer(Minecraft var1) {
       super();

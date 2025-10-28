@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.debug;
 
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    final Minecraft minecraft;
@@ -46,8 +46,7 @@ public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRende
       }
    }
 
-   @Nullable
-   private Entity getServerEntity(Entity var1) {
+   private @Nullable Entity getServerEntity(Entity var1) {
       IntegratedServer var2 = this.minecraft.getSingleplayerServer();
       if (var2 != null) {
          ServerLevel var3 = var2.getLevel(var1.level().dimension());

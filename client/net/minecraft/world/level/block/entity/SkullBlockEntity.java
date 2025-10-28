@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
@@ -18,19 +17,17 @@ import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class SkullBlockEntity extends BlockEntity {
    private static final String TAG_PROFILE = "profile";
    private static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    private static final String TAG_CUSTOM_NAME = "custom_name";
-   @Nullable
-   private ResolvableProfile owner;
-   @Nullable
-   private ResourceLocation noteBlockSound;
+   private @Nullable ResolvableProfile owner;
+   private @Nullable ResourceLocation noteBlockSound;
    private int animationTickCount;
    private boolean isAnimating;
-   @Nullable
-   private Component customName;
+   private @Nullable Component customName;
 
    public SkullBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SKULL, var1, var2);
@@ -64,13 +61,11 @@ public class SkullBlockEntity extends BlockEntity {
       return this.isAnimating ? (float)this.animationTickCount + var1 : (float)this.animationTickCount;
    }
 
-   @Nullable
-   public ResolvableProfile getOwnerProfile() {
+   public @Nullable ResolvableProfile getOwnerProfile() {
       return this.owner;
    }
 
-   @Nullable
-   public ResourceLocation getNoteBlockSound() {
+   public @Nullable ResourceLocation getNoteBlockSound() {
       return this.noteBlockSound;
    }
 

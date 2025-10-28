@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.FileUtil;
@@ -74,6 +73,7 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.world.level.validation.PathAllowList;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LevelStorageSource {
@@ -298,8 +298,7 @@ public class LevelStorageSource {
       return var1 == null ? -1L : var1.toEpochMilli();
    }
 
-   @Nullable
-   static Instant getFileModificationTime(Path var0) {
+   static @Nullable Instant getFileModificationTime(Path var0) {
       try {
          return Files.getLastModifiedTime(var0).toInstant();
       } catch (IOException var2) {
@@ -329,8 +328,7 @@ public class LevelStorageSource {
       });
    }
 
-   @Nullable
-   private static Tag readLightweightData(Path var0) throws IOException {
+   private static @Nullable Tag readLightweightData(Path var0) throws IOException {
       SkipFields var1 = new SkipFields(new FieldSelector[]{new FieldSelector("Data", CompoundTag.TYPE, "Player"), new FieldSelector("Data", CompoundTag.TYPE, "WorldGenSettings")});
       NbtIo.parseCompressed((Path)var0, var1, NbtAccounter.create(104857600L));
       return var1.getResult();
@@ -536,7 +534,7 @@ public class LevelStorageSource {
                   }
 
                   // $FF: synthetic method
-                  public FileVisitResult postVisitDirectory(final Object var1x, @Nullable final IOException var2) throws IOException {
+                  public FileVisitResult postVisitDirectory(final Object var1x, final @Nullable IOException var2) throws IOException {
                      return this.postVisitDirectory((Path)var1x, var2);
                   }
 
@@ -642,8 +640,7 @@ public class LevelStorageSource {
          return Util.safeReplaceOrMoveFile(this.levelDirectory.dataFile(), this.levelDirectory.oldDataFile(), this.levelDirectory.corruptedDataFile(ZonedDateTime.now()), true);
       }
 
-      @Nullable
-      public Instant getFileModificationTime(boolean var1) {
+      public @Nullable Instant getFileModificationTime(boolean var1) {
          return LevelStorageSource.getFileModificationTime(var1 ? this.levelDirectory.oldDataFile() : this.levelDirectory.dataFile());
       }
    }

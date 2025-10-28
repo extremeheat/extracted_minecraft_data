@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.goal;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -12,14 +11,15 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RemoveBlockGoal extends MoveToBlockGoal {
    private final Block blockToRemove;
@@ -34,7 +34,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
    }
 
    public boolean canUse() {
-      if (!getServerLevel(this.removerMob).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+      if (!(Boolean)getServerLevel(this.removerMob).getGameRules().get(GameRules.MOB_GRIEFING)) {
          return false;
       } else if (this.nextStartTick > 0) {
          --this.nextStartTick;
@@ -107,8 +107,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
    }
 
-   @Nullable
-   private BlockPos getPosWithBlock(BlockPos var1, BlockGetter var2) {
+   private @Nullable BlockPos getPosWithBlock(BlockPos var1, BlockGetter var2) {
       if (var2.getBlockState(var1).is(this.blockToRemove)) {
          return var1;
       } else {

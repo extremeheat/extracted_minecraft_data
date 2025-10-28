@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile.windcharge;
 
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,6 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
    public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;
@@ -132,8 +132,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       return this.getInertia();
    }
 
-   @Nullable
-   protected ParticleOptions getTrailParticle() {
+   protected @Nullable ParticleOptions getTrailParticle() {
       return null;
    }
 

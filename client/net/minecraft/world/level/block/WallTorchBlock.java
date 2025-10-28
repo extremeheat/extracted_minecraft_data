@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class WallTorchBlock extends TorchBlock {
    public static final MapCodec<WallTorchBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PARTICLE_OPTIONS_FIELD.forGetter((var0x) -> var0x.flameParticle), propertiesCodec()).apply(var0, WallTorchBlock::new));
@@ -54,8 +54,7 @@ public class WallTorchBlock extends TorchBlock {
       return var4.isFaceSturdy(var0, var3, var2);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = this.defaultBlockState();
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();

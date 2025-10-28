@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.ByteBuf;
 import java.util.LinkedList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -17,22 +16,22 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class NewMinecartBehavior extends MinecartBehavior {
    public static final int POS_ROT_LERP_TICKS = 3;
    public static final double ON_RAIL_Y_OFFSET = 0.1;
    public static final double OPPOSING_SLOPES_REST_AT_SPEED_THRESHOLD = 0.005;
-   @Nullable
-   private StepPartialTicks cacheIndexAlpha;
+   private @Nullable StepPartialTicks cacheIndexAlpha;
    private int cachedLerpDelay;
    private float cachedPartialTick;
    private int lerpDelay = 0;
@@ -459,7 +458,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    public double getMaxSpeed(ServerLevel var1) {
-      return (double)var1.getGameRules().getInt(GameRules.RULE_MINECART_MAX_SPEED) * (this.minecart.isInWater() ? 0.5 : 1.0) / 20.0;
+      return (double)(Integer)var1.getGameRules().get(GameRules.MAX_MINECART_SPEED) * (this.minecart.isInWater() ? 0.5 : 1.0) / 20.0;
    }
 
    private boolean isDecending(Vec3 var1, RailShape var2) {

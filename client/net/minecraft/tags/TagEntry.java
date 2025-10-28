@@ -6,9 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public class TagEntry {
    private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> var0x.required)).apply(var0, TagEntry::new));
@@ -108,10 +108,8 @@ public class TagEntry {
    }
 
    public interface Lookup<T> {
-      @Nullable
-      T element(ResourceLocation var1, boolean var2);
+      @Nullable T element(ResourceLocation var1, boolean var2);
 
-      @Nullable
-      Collection<T> tag(ResourceLocation var1);
+      @Nullable Collection<T> tag(ResourceLocation var1);
    }
 }

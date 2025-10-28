@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Checkbox;
@@ -29,6 +28,7 @@ import net.minecraft.server.dialog.input.InputControl;
 import net.minecraft.server.dialog.input.NumberRangeInput;
 import net.minecraft.server.dialog.input.SingleOptionInput;
 import net.minecraft.server.dialog.input.TextInput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class InputControlHandlers {
@@ -43,8 +43,7 @@ public class InputControlHandlers {
       HANDLERS.put(var0, var1);
    }
 
-   @Nullable
-   private static <T extends InputControl> InputControlHandler<T> get(T var0) {
+   private static <T extends InputControl> @Nullable InputControlHandler<T> get(T var0) {
       return (InputControlHandler)HANDLERS.get(var0.mapCodec());
    }
 

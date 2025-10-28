@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
@@ -14,13 +13,12 @@ import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    private static final TargetingConditions NEW_TARGET_TARGETING = TargetingConditions.forCombat().ignoreLineOfSight();
-   @Nullable
-   private Path currentPath;
-   @Nullable
-   private Vec3 targetLocation;
+   private @Nullable Path currentPath;
+   private @Nullable Vec3 targetLocation;
    private boolean clockwise;
 
    public DragonHoldingPatternPhase(EnderDragon var1) {
@@ -44,8 +42,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
       this.targetLocation = null;
    }
 
-   @Nullable
-   public Vec3 getFlyTargetLocation() {
+   public @Nullable Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 

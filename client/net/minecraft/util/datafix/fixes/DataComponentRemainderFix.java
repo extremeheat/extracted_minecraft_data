@@ -7,7 +7,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class DataComponentRemainderFix extends DataFix {
    private final String name;
@@ -38,6 +38,5 @@ public abstract class DataComponentRemainderFix extends DataFix {
          }));
    }
 
-   @Nullable
-   protected abstract <T> Dynamic<T> fixComponent(Dynamic<T> var1);
+   protected abstract <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> var1);
 }

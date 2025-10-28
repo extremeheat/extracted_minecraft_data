@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
@@ -19,13 +18,13 @@ import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
    public static final int MAX_PATTERNS = 6;
    private static final String TAG_PATTERNS = "patterns";
    private static final Component DEFAULT_NAME = Component.translatable("block.minecraft.banner");
-   @Nullable
-   private Component name;
+   private @Nullable Component name;
    private final DyeColor baseColor;
    private BannerPatternLayers patterns;
 
@@ -43,8 +42,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return this.name != null ? this.name : DEFAULT_NAME;
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.name;
    }
 

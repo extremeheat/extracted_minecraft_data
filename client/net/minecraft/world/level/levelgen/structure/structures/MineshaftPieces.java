@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.structures;
 import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public class MineshaftPieces {
    private static final int DEFAULT_SHAFT_WIDTH = 3;
@@ -51,7 +51,7 @@ public class MineshaftPieces {
       super();
    }
 
-   private static MineShaftPiece createRandomShaftPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, @Nullable Direction var5, int var6, MineshaftStructure.Type var7) {
+   private static @Nullable MineShaftPiece createRandomShaftPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6, MineshaftStructure.Type var7) {
       int var8 = var1.nextInt(100);
       if (var8 >= 80) {
          BoundingBox var9 = MineshaftPieces.MineShaftCrossing.findCrossing(var0, var1, var2, var3, var4, var5);
@@ -73,7 +73,7 @@ public class MineshaftPieces {
       return null;
    }
 
-   static MineShaftPiece generateAndAddPiece(StructurePiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
+   static @Nullable MineShaftPiece generateAndAddPiece(StructurePiece var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
       if (var7 > 8) {
          return null;
       } else if (Math.abs(var3 - var0.getBoundingBox().minX()) <= 80 && Math.abs(var5 - var0.getBoundingBox().minZ()) <= 80) {
@@ -322,8 +322,7 @@ public class MineshaftPieces {
 
       }
 
-      @Nullable
-      public static BoundingBox findCorridorSize(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable BoundingBox findCorridorSize(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
          for(int var6 = var1.nextInt(3) + 2; var6 > 0; --var6) {
             int var8 = var6 * 5;
             BoundingBox var7;
@@ -666,8 +665,7 @@ public class MineshaftPieces {
          this.isTwoFloored = var2.getYSpan() > 3;
       }
 
-      @Nullable
-      public static BoundingBox findCrossing(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable BoundingBox findCrossing(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
          byte var6;
          if (var1.nextInt(4) == 0) {
             var6 = 6;
@@ -787,8 +785,7 @@ public class MineshaftPieces {
          super(StructurePieceType.MINE_SHAFT_STAIRS, var1);
       }
 
-      @Nullable
-      public static BoundingBox findStairs(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable BoundingBox findStairs(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
          BoundingBox var6;
          switch (var5) {
             case NORTH:

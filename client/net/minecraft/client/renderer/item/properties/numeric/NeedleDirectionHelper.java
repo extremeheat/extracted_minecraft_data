@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.item.properties.numeric;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public abstract class NeedleDirectionHelper {
    private final boolean wobble;

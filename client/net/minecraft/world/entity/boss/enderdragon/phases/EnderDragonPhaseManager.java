@@ -1,16 +1,16 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EnderDragonPhaseManager {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final EnderDragon dragon;
-   private final DragonPhaseInstance[] phases = new DragonPhaseInstance[EnderDragonPhase.getCount()];
-   @Nullable
-   private DragonPhaseInstance currentPhase;
+   private final @Nullable DragonPhaseInstance[] phases = new DragonPhaseInstance[EnderDragonPhase.getCount()];
+   private @Nullable DragonPhaseInstance currentPhase;
 
    public EnderDragonPhaseManager(EnderDragon var1) {
       super();
@@ -35,15 +35,17 @@ public class EnderDragonPhaseManager {
    }
 
    public DragonPhaseInstance getCurrentPhase() {
-      return this.currentPhase;
+      return (DragonPhaseInstance)Objects.requireNonNull(this.currentPhase);
    }
 
    public <T extends DragonPhaseInstance> T getPhase(EnderDragonPhase<T> var1) {
       int var2 = var1.getId();
-      if (this.phases[var2] == null) {
-         this.phases[var2] = var1.createInstance(this.dragon);
+      DragonPhaseInstance var3 = this.phases[var2];
+      if (var3 == null) {
+         var3 = var1.createInstance(this.dragon);
+         this.phases[var2] = var3;
       }
 
-      return (T)this.phases[var2];
+      return (T)var3;
    }
 }

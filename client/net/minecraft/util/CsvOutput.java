@@ -6,8 +6,8 @@ import java.io.Writer;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jspecify.annotations.Nullable;
 
 public class CsvOutput {
    private static final String LINE_SEPARATOR = "\r\n";
@@ -34,7 +34,7 @@ public class CsvOutput {
       }
    }
 
-   private void writeLine(Stream<?> var1) throws IOException {
+   private void writeLine(Stream<? extends @Nullable Object> var1) throws IOException {
       Writer var10000 = this.output;
       Stream var10001 = var1.map(CsvOutput::getStringValue);
       var10000.write((String)var10001.collect(Collectors.joining(",")) + "\r\n");

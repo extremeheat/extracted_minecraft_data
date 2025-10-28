@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
@@ -51,15 +50,14 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class MushroomCow extends AbstractCow implements Shearable {
    private static final EntityDataAccessor<Integer> DATA_TYPE;
    private static final int MUTATE_CHANCE = 1024;
    private static final String TAG_STEW_EFFECTS = "stew_effects";
-   @Nullable
-   private SuspiciousStewEffects stewEffects;
-   @Nullable
-   private UUID lastLightningBoltUUID;
+   private @Nullable SuspiciousStewEffects stewEffects;
+   private @Nullable UUID lastLightningBoltUUID;
 
    public MushroomCow(EntityType<? extends MushroomCow> var1, Level var2) {
       super(var1, var2);
@@ -193,8 +191,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
       return MushroomCow.Variant.byId((Integer)this.entityData.get(DATA_TYPE));
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.MOOSHROOM_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -212,8 +209,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
       }
    }
 
-   @Nullable
-   public MushroomCow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable MushroomCow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       MushroomCow var3 = EntityType.MOOSHROOM.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setVariant(this.getOffspringVariant((MushroomCow)var2));
@@ -236,8 +232,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

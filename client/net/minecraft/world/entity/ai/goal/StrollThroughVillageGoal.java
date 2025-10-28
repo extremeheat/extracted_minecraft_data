@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
@@ -11,13 +10,13 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class StrollThroughVillageGoal extends Goal {
    private static final int DISTANCE_THRESHOLD = 10;
    private final PathfinderMob mob;
    private final int interval;
-   @Nullable
-   private BlockPos wantedPos;
+   private @Nullable BlockPos wantedPos;
 
    public StrollThroughVillageGoal(PathfinderMob var1, int var2) {
       super();

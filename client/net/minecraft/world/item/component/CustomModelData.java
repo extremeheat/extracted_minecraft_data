@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public record CustomModelData(List<Float> floats, List<Boolean> flags, List<String> strings, List<Integer> colors) {
    public static final CustomModelData EMPTY = new CustomModelData(List.of(), List.of(), List.of(), List.of());
@@ -22,28 +22,23 @@ public record CustomModelData(List<Float> floats, List<Boolean> flags, List<Stri
       this.colors = var4;
    }
 
-   @Nullable
-   private static <T> T getSafe(List<T> var0, int var1) {
+   private static <T> @Nullable T getSafe(List<T> var0, int var1) {
       return (T)(var1 >= 0 && var1 < var0.size() ? var0.get(var1) : null);
    }
 
-   @Nullable
-   public Float getFloat(int var1) {
+   public @Nullable Float getFloat(int var1) {
       return (Float)getSafe(this.floats, var1);
    }
 
-   @Nullable
-   public Boolean getBoolean(int var1) {
+   public @Nullable Boolean getBoolean(int var1) {
       return (Boolean)getSafe(this.flags, var1);
    }
 
-   @Nullable
-   public String getString(int var1) {
+   public @Nullable String getString(int var1) {
       return (String)getSafe(this.strings, var1);
    }
 
-   @Nullable
-   public Integer getColor(int var1) {
+   public @Nullable Integer getColor(int var1) {
       return (Integer)getSafe(this.colors, var1);
    }
 

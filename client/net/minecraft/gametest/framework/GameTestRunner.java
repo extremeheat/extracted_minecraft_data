@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GameTestRunner {
@@ -28,8 +28,7 @@ public class GameTestRunner {
    private final List<GameTestInfo> scheduledForRerun = Lists.newArrayList();
    private final GameTestBatcher testBatcher;
    private boolean stopped = true;
-   @Nullable
-   private Holder<TestEnvironmentDefinition> currentEnvironment;
+   private @Nullable Holder<TestEnvironmentDefinition> currentEnvironment;
    private final StructureSpawner existingStructureSpawner;
    private final StructureSpawner newStructureSpawner;
    final boolean haltOnError;

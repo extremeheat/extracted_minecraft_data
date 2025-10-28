@@ -27,7 +27,7 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class LinkFSProvider extends FileSystemProvider {
    public static final String SCHEME = "x-mc-link";
@@ -142,8 +142,7 @@ class LinkFSProvider extends FileSystemProvider {
       }
    }
 
-   @Nullable
-   public <V extends FileAttributeView> V getFileAttributeView(Path var1, Class<V> var2, LinkOption... var3) {
+   public <V extends FileAttributeView> @Nullable V getFileAttributeView(Path var1, Class<V> var2, LinkOption... var3) {
       LinkFSPath var4 = toLinkPath(var1);
       return (V)(var2 == BasicFileAttributeView.class ? var4.getBasicAttributeView() : null);
    }

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.npc;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,10 +17,11 @@ import net.minecraft.world.entity.animal.horse.TraderLlama;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ServerLevelData;
+import org.jspecify.annotations.Nullable;
 
 public class WanderingTraderSpawner implements CustomSpawner {
    private static final int DEFAULT_TICK_DELAY = 1200;
@@ -53,7 +53,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
    }
 
    public void tick(ServerLevel var1, boolean var2) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_WANDERING_TRADERS)) {
          if (--this.tickDelay <= 0) {
             this.tickDelay = 1200;
             this.spawnDelay -= 1200;
@@ -120,8 +120,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
       }
    }
 
-   @Nullable
-   private BlockPos findSpawnPositionNear(LevelReader var1, BlockPos var2, int var3) {
+   private @Nullable BlockPos findSpawnPositionNear(LevelReader var1, BlockPos var2, int var3) {
       BlockPos var4 = null;
       SpawnPlacementType var5 = SpawnPlacements.getPlacementType(EntityType.WANDERING_TRADER);
 

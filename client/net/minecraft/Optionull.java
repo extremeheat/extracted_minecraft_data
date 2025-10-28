@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class Optionull {
    public Optionull() {
@@ -18,8 +18,7 @@ public class Optionull {
       return (T)Objects.requireNonNullElse(var0, var1);
    }
 
-   @Nullable
-   public static <T, R> R map(@Nullable T var0, Function<T, R> var1) {
+   public static <T, R> @Nullable R map(@Nullable T var0, Function<T, R> var1) {
       return (R)(var0 == null ? null : var1.apply(var0));
    }
 
@@ -31,8 +30,7 @@ public class Optionull {
       return (R)(var0 == null ? var2.get() : var1.apply(var0));
    }
 
-   @Nullable
-   public static <T> T first(Collection<T> var0) {
+   public static <T> @Nullable T first(Collection<T> var0) {
       Iterator var1 = var0.iterator();
       return (T)(var1.hasNext() ? var1.next() : null);
    }
@@ -47,39 +45,39 @@ public class Optionull {
       return (T)(var2.hasNext() ? var2.next() : var1.get());
    }
 
-   public static <T> boolean isNullOrEmpty(@Nullable T[] var0) {
+   public static <T> boolean isNullOrEmpty(T @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable boolean[] var0) {
+   public static boolean isNullOrEmpty(boolean @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable byte[] var0) {
+   public static boolean isNullOrEmpty(byte @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable char[] var0) {
+   public static boolean isNullOrEmpty(char @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable short[] var0) {
+   public static boolean isNullOrEmpty(short @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable int[] var0) {
+   public static boolean isNullOrEmpty(int @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable long[] var0) {
+   public static boolean isNullOrEmpty(long @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable float[] var0) {
+   public static boolean isNullOrEmpty(float @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 
-   public static boolean isNullOrEmpty(@Nullable double[] var0) {
+   public static boolean isNullOrEmpty(double @Nullable [] var0) {
       return var0 == null || var0.length == 0;
    }
 }

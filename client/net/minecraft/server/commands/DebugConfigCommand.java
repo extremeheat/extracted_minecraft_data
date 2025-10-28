@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.HashSet;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -22,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
+import org.jspecify.annotations.Nullable;
 
 public class DebugConfigCommand {
    public DebugConfigCommand() {
@@ -55,8 +55,7 @@ public class DebugConfigCommand {
       return 1;
    }
 
-   @Nullable
-   private static ServerConfigurationPacketListenerImpl findConfigPlayer(MinecraftServer var0, UUID var1) {
+   private static @Nullable ServerConfigurationPacketListenerImpl findConfigPlayer(MinecraftServer var0, UUID var1) {
       for(Connection var3 : var0.getConnection().getConnections()) {
          PacketListener var5 = var3.getPacketListener();
          if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {

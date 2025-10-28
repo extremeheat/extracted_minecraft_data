@@ -1,14 +1,14 @@
 package net.minecraft.gizmos;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Gizmos {
-   static final ThreadLocal<GizmoCollector> collector = new ThreadLocal();
+   static final ThreadLocal<@Nullable GizmoCollector> collector = new ThreadLocal();
 
    private Gizmos() {
       super();
@@ -102,8 +102,7 @@ public class Gizmos {
    }
 
    public static class TemporaryCollection implements AutoCloseable {
-      @Nullable
-      private final GizmoCollector old;
+      private final @Nullable GizmoCollector old;
       private boolean closed;
 
       TemporaryCollection() {

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -23,11 +22,11 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class BaseContainerBlockEntity extends BlockEntity implements Container, MenuProvider, Nameable {
    private LockCode lockKey;
-   @Nullable
-   private Component name;
+   private @Nullable Component name;
 
    protected BaseContainerBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
@@ -54,8 +53,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       return this.getName();
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       return this.name;
    }
 
@@ -124,8 +122,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       this.getItems().clear();
    }
 
-   @Nullable
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
+   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       return this.canOpen(var3) ? this.createMenu(var1, var2) : null;
    }
 

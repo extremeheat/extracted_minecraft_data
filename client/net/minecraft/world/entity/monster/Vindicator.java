@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -44,6 +43,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Vindicator extends AbstractIllager {
    private static final String TAG_JOHNNY = "Johnny";
@@ -111,8 +111,7 @@ public class Vindicator extends AbstractIllager {
       return SoundEvents.VINDICATOR_CELEBRATE;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       this.getNavigation().setCanOpenDoors(true);
       RandomSource var6 = var1.getRandom();

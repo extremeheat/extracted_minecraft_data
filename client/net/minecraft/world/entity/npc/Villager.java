@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -90,6 +89,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Villager extends AbstractVillager implements ReputationEventHandler, VillagerDataHolder {
@@ -114,8 +114,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private static final boolean DEFAULT_ASSIGN_PROFESSION_WHEN_SPAWNED = false;
    private int updateMerchantTimer;
    private boolean increaseProfessionLevelOnUpdate;
-   @Nullable
-   private Player lastTradedPlayer;
+   private @Nullable Player lastTradedPlayer;
    private boolean chasing;
    private int foodLevel;
    private final GossipContainer gossips;
@@ -478,8 +477,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return false;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       if (this.isSleeping()) {
          return null;
       } else {
@@ -665,8 +663,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var3 == EntitySpawnReason.BREEDING) {
          this.setVillagerData(this.getVillagerData().withProfession(var1.registryAccess(), VillagerProfession.NONE));
       }
@@ -682,8 +679,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   @Nullable
-   public Villager getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Villager getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       double var4 = this.random.nextDouble();
       Object var3;
       if (var4 < 0.5) {
@@ -860,8 +856,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return var3.filter((var2) -> var1 - var2 < 24000L).isPresent();
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.VILLAGER_VARIANT ? castComponentValue(var1, this.getVillagerData().type()) : super.get(var1));
    }
 
@@ -881,8 +876,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

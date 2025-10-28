@@ -33,7 +33,7 @@ public class OctreeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (var9 == 1L) {
          var4.add(1);
          int var11 = var5 ? -16711936 : -1;
-         Gizmos.billboardText(String.valueOf(var4.getValue()), var6.getCenter(), TextGizmo.Style.forColorAndCentered(var11).withScale(4.8F));
+         Gizmos.billboardText(String.valueOf(var4.intValue()), var6.getCenter(), TextGizmo.Style.forColorAndCentered(var11).withScale(4.8F));
       }
 
       long var13 = var9 + 5L;

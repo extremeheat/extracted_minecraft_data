@@ -41,6 +41,7 @@ public class TabButton extends AbstractWidget.WithInactiveMessage {
       }
 
       this.renderLabel(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      this.handleCursor(var1);
    }
 
    protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {

@@ -8,7 +8,7 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MainTarget extends RenderTarget {
    public static final int DEFAULT_WIDTH = 854;
@@ -67,8 +67,7 @@ public class MainTarget extends RenderTarget {
       throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (" + var10002 + ", " + (this.depthTexture == null ? "missing depth" : "have depth") + ")");
    }
 
-   @Nullable
-   private GpuTexture allocateColorAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateColorAttachment(Dimension var1) {
       try {
          return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1.width, var1.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
@@ -76,8 +75,7 @@ public class MainTarget extends RenderTarget {
       }
    }
 
-   @Nullable
-   private GpuTexture allocateDepthAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateDepthAttachment(Dimension var1) {
       try {
          return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1.width, var1.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {

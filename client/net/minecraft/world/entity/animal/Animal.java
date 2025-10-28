@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,21 +23,21 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
    private static final int DEFAULT_IN_LOVE_TIME = 0;
    private int inLove = 0;
-   @Nullable
-   private EntityReference<ServerPlayer> loveCause;
+   private @Nullable EntityReference<ServerPlayer> loveCause;
 
    protected Animal(EntityType<? extends Animal> var1, Level var2) {
       super(var1, var2);
@@ -173,8 +172,7 @@ public abstract class Animal extends AgeableMob {
       return this.inLove;
    }
 
-   @Nullable
-   public ServerPlayer getLoveCause() {
+   public @Nullable ServerPlayer getLoveCause() {
       return (ServerPlayer)EntityReference.get(this.loveCause, this.level(), ServerPlayer.class);
    }
 
@@ -216,7 +214,7 @@ public abstract class Animal extends AgeableMob {
       this.resetLove();
       var2.resetLove();
       var1.broadcastEntityEvent(this, (byte)18);
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.MOB_DROPS)) {
          var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
       }
 

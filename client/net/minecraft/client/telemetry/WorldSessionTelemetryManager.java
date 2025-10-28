@@ -2,7 +2,6 @@ package net.minecraft.client.telemetry;
 
 import java.time.Duration;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.telemetry.events.PerformanceMetricsEvent;
 import net.minecraft.client.telemetry.events.WorldLoadEvent;
@@ -11,6 +10,7 @@ import net.minecraft.client.telemetry.events.WorldUnloadEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class WorldSessionTelemetryManager {
    private final UUID worldSessionId = UUID.randomUUID();

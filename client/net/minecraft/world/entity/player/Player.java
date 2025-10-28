@@ -14,8 +14,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -105,7 +103,6 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.trading.MerchantOffers;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -118,12 +115,14 @@ import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Player extends Avatar implements ContainerUser {
    public static final int MAX_HEALTH = 20;
@@ -172,13 +171,10 @@ public abstract class Player extends Avatar implements ContainerUser {
    private ItemStack lastItemInMainHand;
    private final ItemCooldowns cooldowns;
    private Optional<GlobalPos> lastDeathLocation;
-   @Nullable
-   public FishingHook fishing;
+   public @Nullable FishingHook fishing;
    protected float hurtDir;
-   @Nullable
-   public Vec3 currentImpulseImpactPos;
-   @Nullable
-   public Entity currentExplosionCause;
+   public @Nullable Vec3 currentImpulseImpactPos;
+   public @Nullable Entity currentExplosionCause;
    private boolean ignoreFallDamageFromCurrentImpulse;
    private int currentImpulseContextResetGraceTime;
 
@@ -513,7 +509,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    }
 
-   @Nonnull
    public ItemStack getWeaponItem() {
       return this.isAutoSpinAttack() && this.autoSpinAttackItemStack != null ? this.autoSpinAttackItemStack : super.getWeaponItem();
    }
@@ -545,7 +540,7 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    protected void dropEquipment(ServerLevel var1) {
       super.dropEquipment(var1);
-      if (!var1.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+      if (!(Boolean)var1.getGameRules().get(GameRules.KEEP_INVENTORY)) {
          this.destroyVanishingCursedItems();
          this.inventory.dropAll();
       }
@@ -573,8 +568,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void handleCreativeModeItemDrop(ItemStack var1) {
    }
 
-   @Nullable
-   public ItemEntity drop(ItemStack var1, boolean var2) {
+   public @Nullable ItemEntity drop(ItemStack var1, boolean var2) {
       return this.drop(var1, false, var2);
    }
 
@@ -669,13 +663,13 @@ public abstract class Player extends Avatar implements ContainerUser {
       if (super.isInvulnerableTo(var1, var2)) {
          return true;
       } else if (var2.is(DamageTypeTags.IS_DROWNING)) {
-         return !var1.getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
+         return !(Boolean)var1.getGameRules().get(GameRules.DROWNING_DAMAGE);
       } else if (var2.is(DamageTypeTags.IS_FALL)) {
-         return !var1.getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
+         return !(Boolean)var1.getGameRules().get(GameRules.FALL_DAMAGE);
       } else if (var2.is(DamageTypeTags.IS_FIRE)) {
-         return !var1.getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
+         return !(Boolean)var1.getGameRules().get(GameRules.FIRE_DAMAGE);
       } else if (var2.is(DamageTypeTags.IS_FREEZING)) {
-         return !var1.getGameRules().getBoolean(GameRules.RULE_FREEZE_DAMAGE);
+         return !(Boolean)var1.getGameRules().get(GameRules.FREEZE_DAMAGE);
       } else {
          return false;
       }
@@ -1554,7 +1548,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    protected int getBaseExperienceReward(ServerLevel var1) {
-      return !var1.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
+      return !(Boolean)var1.getGameRules().get(GameRules.KEEP_INVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
    }
 
    protected boolean isAlwaysExperienceDropper() {
@@ -1592,8 +1586,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.inventory.add(var1);
    }
 
-   @Nullable
-   public abstract GameType gameMode();
+   public abstract @Nullable GameType gameMode();
 
    public boolean isSpectator() {
       return this.gameMode() == GameType.SPECTATOR;
@@ -1637,7 +1630,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       return (Float)this.getEntityData().get(DATA_PLAYER_ABSORPTION_ID);
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       if (var1 == 499) {
          return new SlotAccess() {
             public ItemStack get() {
@@ -1664,10 +1657,10 @@ public abstract class Player extends Avatar implements ContainerUser {
                }
             };
          } else if (var1 >= 0 && var1 < this.inventory.getNonEquipmentItems().size()) {
-            return SlotAccess.forContainer(this.inventory, var1);
+            return this.inventory.getSlot(var1);
          } else {
             int var3 = var1 - 200;
-            return var3 >= 0 && var3 < this.enderChestInventory.getContainerSize() ? SlotAccess.forContainer(this.enderChestInventory, var3) : super.getSlot(var1);
+            return var3 >= 0 && var3 < this.enderChestInventory.getContainerSize() ? this.enderChestInventory.getSlot(var3) : super.getSlot(var1);
          }
       }
    }

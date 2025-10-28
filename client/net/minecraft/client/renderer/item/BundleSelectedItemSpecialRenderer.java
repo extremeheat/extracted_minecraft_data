@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.item;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class BundleSelectedItemSpecialRenderer implements ItemModel {
    static final ItemModel INSTANCE = new BundleSelectedItemSpecialRenderer();

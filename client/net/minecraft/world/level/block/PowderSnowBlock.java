@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,17 +21,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class PowderSnowBlock extends Block implements BucketPickup {
    public static final MapCodec<PowderSnowBlock> CODEC = simpleCodec(PowderSnowBlock::new);
@@ -71,7 +71,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       BlockPos var9 = var3.immutable();
       var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var2x) -> {
          if (var2 instanceof ServerLevel var3) {
-            if (var2x.isOnFire() && (var3.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var9)) {
+            if (var2x.isOnFire() && ((Boolean)var3.getGameRules().get(GameRules.MOB_GRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var9)) {
                var2.destroyBlock(var9, false);
             }
          }

@@ -2,7 +2,6 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,7 @@ import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class MaceItem extends Item {
    private static final int DEFAULT_ATTACK_DAMAGE = 5;
@@ -179,8 +179,7 @@ public class MaceItem extends Item {
       return var0.fallDistance > 1.5 && !var0.isFallFlying();
    }
 
-   @Nullable
-   public DamageSource getItemDamageSource(LivingEntity var1) {
+   public @Nullable DamageSource getItemDamageSource(LivingEntity var1) {
       return canSmashAttack(var1) ? var1.damageSources().mace(var1) : super.getItemDamageSource(var1);
    }
 }

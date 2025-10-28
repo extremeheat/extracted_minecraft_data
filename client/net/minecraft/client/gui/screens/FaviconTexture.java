@@ -2,11 +2,11 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class FaviconTexture implements AutoCloseable {
    private static final ResourceLocation MISSING_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/unknown_server.png");
@@ -14,8 +14,7 @@ public class FaviconTexture implements AutoCloseable {
    private static final int HEIGHT = 64;
    private final TextureManager textureManager;
    private final ResourceLocation textureLocation;
-   @Nullable
-   private DynamicTexture texture;
+   private @Nullable DynamicTexture texture;
    private boolean closed;
 
    private FaviconTexture(TextureManager var1, ResourceLocation var2) {

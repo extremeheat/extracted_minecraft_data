@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class EntityRenderer<T extends Entity, S extends EntityRenderState> {
    private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
@@ -124,8 +124,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
 
    }
 
-   @Nullable
-   protected Component getNameTag(T var1) {
+   protected @Nullable Component getNameTag(T var1) {
       return var1.getDisplayName();
    }
 
@@ -325,8 +324,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       }
    }
 
-   @Nullable
-   private static Entity getServerSideEntity(Entity var0) {
+   private static @Nullable Entity getServerSideEntity(Entity var0) {
       IntegratedServer var1 = Minecraft.getInstance().getSingleplayerServer();
       if (var1 != null) {
          ServerLevel var2 = var1.getLevel(var0.level().dimension());

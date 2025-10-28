@@ -15,7 +15,6 @@ import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -48,6 +47,7 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public static final MapCodec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BiomeSource.CODEC.fieldOf("biome_source").forGetter((var0x) -> var0x.biomeSource), NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter((var0x) -> var0x.settings)).apply(var0, var0.stable(NoiseBasedChunkGenerator::new)));
@@ -111,7 +111,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
       MutableObject var5 = new MutableObject();
       this.iterateNoiseColumn(var3, var4, var1, var2, var5, (Predicate)null);
-      return (NoiseColumn)var5.getValue();
+      return (NoiseColumn)var5.get();
    }
 
    public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {

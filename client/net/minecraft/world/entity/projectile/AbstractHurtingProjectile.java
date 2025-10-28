@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractHurtingProjectile extends Projectile {
    public static final double INITAL_ACCELERATION_POWER = 0.1;
@@ -130,8 +130,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return true;
    }
 
-   @Nullable
-   protected ParticleOptions getTrailParticle() {
+   protected @Nullable ParticleOptions getTrailParticle() {
       return ParticleTypes.SMOKE;
    }
 

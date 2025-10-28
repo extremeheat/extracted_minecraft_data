@@ -1,13 +1,12 @@
 package net.minecraft.client.resources.sounds;
 
 import java.util.List;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SoundEventRegistration {
    private final List<Sound> sounds;
    private final boolean replace;
-   @Nullable
-   private final String subtitle;
+   private final @Nullable String subtitle;
 
    public SoundEventRegistration(List<Sound> var1, boolean var2, @Nullable String var3) {
       super();
@@ -24,8 +23,7 @@ public class SoundEventRegistration {
       return this.replace;
    }
 
-   @Nullable
-   public String getSubtitle() {
+   public @Nullable String getSubtitle() {
       return this.subtitle;
    }
 }

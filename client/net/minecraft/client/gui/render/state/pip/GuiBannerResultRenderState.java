@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.render.state.pip;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import org.jspecify.annotations.Nullable;
 
 public record GuiBannerResultRenderState(BannerFlagModel flag, DyeColor baseColor, BannerPatternLayers resultBannerPatterns, int x0, int y0, int x1, int y1, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements PictureInPictureRenderState {
    public GuiBannerResultRenderState(BannerFlagModel var1, DyeColor var2, BannerPatternLayers var3, int var4, int var5, int var6, int var7, @Nullable ScreenRectangle var8) {

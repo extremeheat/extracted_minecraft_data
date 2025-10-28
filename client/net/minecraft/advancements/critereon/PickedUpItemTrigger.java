@@ -3,13 +3,13 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import org.jspecify.annotations.Nullable;
 
 public class PickedUpItemTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public PickedUpItemTrigger() {

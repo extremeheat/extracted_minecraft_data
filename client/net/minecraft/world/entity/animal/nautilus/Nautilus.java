@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.nautilus;
 
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class Nautilus extends AbstractNautilus {
    private static final int NAUTILUS_TOTAL_AIR_SUPPLY = 300;
@@ -33,8 +33,7 @@ public class Nautilus extends AbstractNautilus {
       return super.getBrain();
    }
 
-   @Nullable
-   public Nautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Nautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Nautilus var3 = EntityType.NAUTILUS.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && this.isTame()) {
          var3.setOwnerReference(this.getOwnerReference());
@@ -115,8 +114,7 @@ public class Nautilus extends AbstractNautilus {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 }

@@ -22,10 +22,10 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FallbackResourceManager implements ResourceManager {
@@ -364,8 +364,7 @@ public class FallbackResourceManager implements ResourceManager {
 
    static record PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<ResourceLocation> filter) {
       final String name;
-      @Nullable
-      final PackResources resources;
+      final @Nullable PackResources resources;
 
       PackEntry(String var1, @Nullable PackResources var2, @Nullable Predicate<ResourceLocation> var3) {
          super();

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -9,11 +8,11 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.PathType;
+import org.jspecify.annotations.Nullable;
 
 public class FollowOwnerGoal extends Goal {
    private final TamableAnimal tamable;
-   @Nullable
-   private LivingEntity owner;
+   private @Nullable LivingEntity owner;
    private final double speedModifier;
    private final PathNavigation navigation;
    private int timeToRecalcPath;

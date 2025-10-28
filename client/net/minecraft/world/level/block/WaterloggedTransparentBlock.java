@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public class WaterloggedTransparentBlock extends TransparentBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<WaterloggedTransparentBlock> CODEC = simpleCodec(WaterloggedTransparentBlock::new);
@@ -30,8 +30,7 @@ public class WaterloggedTransparentBlock extends TransparentBlock implements Sim
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(WATERLOGGED, false));
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
       return (BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var2.is(Fluids.WATER));
    }

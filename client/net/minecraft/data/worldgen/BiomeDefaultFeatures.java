@@ -495,8 +495,9 @@ public class BiomeDefaultFeatures {
       var0.addSpawn(MobCategory.CREATURE, 12, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 3));
       var0.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.CAMEL, 1, 1));
       caveSpawns(var0);
-      monsters(var0, 19, 1, 0, 100, false);
+      monsters(var0, 19, 1, 0, 50, false);
       var0.addSpawn(MobCategory.MONSTER, 80, new MobSpawnSettings.SpawnerData(EntityType.HUSK, 4, 4));
+      var0.addSpawn(MobCategory.MONSTER, 50, new MobSpawnSettings.SpawnerData(EntityType.PARCHED, 4, 4));
    }
 
    public static void dripstoneCavesSpawns(MobSpawnSettings.Builder var0) {

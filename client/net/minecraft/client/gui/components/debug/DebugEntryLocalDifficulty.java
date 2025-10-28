@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -9,6 +8,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLocalDifficulty implements DebugScreenEntry {
    public DebugEntryLocalDifficulty() {

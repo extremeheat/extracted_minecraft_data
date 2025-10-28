@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
@@ -23,6 +22,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.FilteredText;
 import net.minecraft.server.permissions.Permissions;
+import org.jspecify.annotations.Nullable;
 
 public class MessageArgument implements SignedArgument<Message> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
@@ -89,7 +89,7 @@ public class MessageArgument implements SignedArgument<Message> {
    }
 
    // $FF: synthetic method
-   public Object parse(final StringReader var1, @Nullable final Object var2) throws CommandSyntaxException {
+   public Object parse(final StringReader var1, final @Nullable Object var2) throws CommandSyntaxException {
       return this.parse(var1, var2);
    }
 

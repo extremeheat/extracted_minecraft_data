@@ -2,10 +2,10 @@ package net.minecraft.world.scores;
 
 import com.mojang.authlib.GameProfile;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import org.jspecify.annotations.Nullable;
 
 public interface ScoreHolder {
    String WILDCARD_NAME = "*";
@@ -17,8 +17,7 @@ public interface ScoreHolder {
 
    String getScoreboardName();
 
-   @Nullable
-   default Component getDisplayName() {
+   default @Nullable Component getDisplayName() {
       return null;
    }
 

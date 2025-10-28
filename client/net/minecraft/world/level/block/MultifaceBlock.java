@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<MultifaceBlock> CODEC = simpleCodec(MultifaceBlock::new);
@@ -160,8 +160,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
       return !var2.getItemInHand().is(this.asItem()) || hasAnyVacantFace(var1);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
@@ -177,8 +176,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
       }
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   public @Nullable BlockState getStateForPlacement(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (!this.isValidStateForPlacement(var2, var1, var3, var4)) {
          return null;
       } else {

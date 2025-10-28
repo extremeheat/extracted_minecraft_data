@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,14 +39,14 @@ import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING;
    static final Predicate<ItemEntity> ALLOWED_ITEMS;
    private static final int DEFAULT_WAVE = 0;
    private static final boolean DEFAULT_CAN_JOIN_RAID = false;
-   @Nullable
-   protected Raid raid;
+   protected @Nullable Raid raid;
    private int wave = 0;
    private boolean canJoinRaid = false;
    private int ticksOutsideRaid;
@@ -138,8 +137,7 @@ public abstract class Raider extends PatrollingMonster {
       this.raid = var1;
    }
 
-   @Nullable
-   public Raid getCurrentRaid() {
+   public @Nullable Raid getCurrentRaid() {
       return this.raid;
    }
 
@@ -260,8 +258,7 @@ public abstract class Raider extends PatrollingMonster {
       return super.hurtServer(var1, var2, var3);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setCanJoinRaid(this.getType() != EntityType.WITCH || var3 != EntitySpawnReason.NATURAL);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
@@ -276,10 +273,8 @@ public abstract class Raider extends PatrollingMonster {
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
       private final T mob;
       private Int2LongOpenHashMap unreachableBannerCache = new Int2LongOpenHashMap();
-      @Nullable
-      private Path pathToBanner;
-      @Nullable
-      private ItemEntity pursuedBannerItemEntity;
+      private @Nullable Path pathToBanner;
+      private @Nullable ItemEntity pursuedBannerItemEntity;
 
       public ObtainRaidLeaderBannerGoal(final T var2) {
          super();

@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCloseable {

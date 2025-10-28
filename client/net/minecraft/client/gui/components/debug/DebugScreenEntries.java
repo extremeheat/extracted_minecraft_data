@@ -2,8 +2,8 @@ package net.minecraft.client.gui.components.debug;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class DebugScreenEntries {
    private static final Map<ResourceLocation, DebugScreenEntry> ENTRIES_BY_LOCATION = new HashMap();
@@ -65,8 +65,7 @@ public class DebugScreenEntries {
       return Map.copyOf(ENTRIES_BY_LOCATION);
    }
 
-   @Nullable
-   public static DebugScreenEntry getEntry(ResourceLocation var0) {
+   public static @Nullable DebugScreenEntry getEntry(ResourceLocation var0) {
       return (DebugScreenEntry)ENTRIES_BY_LOCATION.get(var0);
    }
 

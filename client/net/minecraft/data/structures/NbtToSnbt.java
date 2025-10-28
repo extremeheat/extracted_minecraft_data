@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -22,6 +21,7 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.FastBufferedInputStream;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class NbtToSnbt implements DataProvider {
@@ -83,8 +83,7 @@ public class NbtToSnbt implements DataProvider {
       return var2.substring(0, var2.length() - ".nbt".length());
    }
 
-   @Nullable
-   public static Path convertStructure(CachedOutput var0, Path var1, String var2, Path var3) {
+   public static @Nullable Path convertStructure(CachedOutput var0, Path var1, String var2, Path var3) {
       try {
          InputStream var4 = Files.newInputStream(var1);
 

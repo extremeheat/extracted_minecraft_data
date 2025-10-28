@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.coppergolem;
 
 import com.mojang.serialization.Dynamic;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -39,7 +38,6 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -52,10 +50,12 @@ import net.minecraft.world.level.block.entity.CopperGolemStatueBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class CopperGolem extends AbstractGolem implements ContainerUser, Shearable {
    private static final long IGNORE_WEATHERING_TICK = -2L;
@@ -70,10 +70,8 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private static final int SPAWN_COOLDOWN_MAX = 100;
    private static final EntityDataAccessor<WeatheringCopper.WeatherState> DATA_WEATHER_STATE;
    private static final EntityDataAccessor<CopperGolemState> COPPER_GOLEM_STATE;
-   @Nullable
-   private BlockPos openedChestPos;
-   @Nullable
-   private UUID lastLightningBoltUUID;
+   private @Nullable BlockPos openedChestPos;
+   private @Nullable UUID lastLightningBoltUUID;
    private long nextWeatheringTick = -1L;
    private int idleAnimationStartTick = 0;
    private final AnimationState idleAnimationState = new AnimationState();
@@ -283,7 +281,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          this.discard();
          this.playSound(SoundEvents.COPPER_GOLEM_BECOME_STATUE);
          if (this.isLeashed()) {
-            if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
                this.dropLeash();
             } else {
                this.removeLeash();
@@ -351,8 +349,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       this.playSpawnSound();
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.playSpawnSound();
       return super.finalizeSpawn(var1, var2, var3, var4);
    }

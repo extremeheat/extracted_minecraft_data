@@ -1,8 +1,7 @@
 package net.minecraft.world.entity;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface TraceableEntity {
-   @Nullable
-   Entity getOwner();
+   @Nullable Entity getOwner();
 }

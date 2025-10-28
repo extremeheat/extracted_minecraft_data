@@ -2,7 +2,6 @@ package net.minecraft.server.jsonrpc;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,6 +10,7 @@ import net.minecraft.server.jsonrpc.api.MethodInfo;
 import net.minecraft.server.jsonrpc.api.ParamInfo;
 import net.minecraft.server.jsonrpc.api.ResultInfo;
 import net.minecraft.server.jsonrpc.api.Schema;
+import org.jspecify.annotations.Nullable;
 
 public interface OutgoingRpcMethod<Params, Result> {
    String NOTIFICATION_PREFIX = "notification/";
@@ -19,13 +19,11 @@ public interface OutgoingRpcMethod<Params, Result> {
 
    Attributes attributes();
 
-   @Nullable
-   default JsonElement encodeParams(Params var1) {
+   default @Nullable JsonElement encodeParams(Params var1) {
       return null;
    }
 
-   @Nullable
-   default Result decodeResult(JsonElement var1) {
+   default @Nullable Result decodeResult(JsonElement var1) {
       return null;
    }
 
@@ -67,8 +65,7 @@ public interface OutgoingRpcMethod<Params, Result> {
          this.attributes = var2;
       }
 
-      @Nullable
-      public JsonElement encodeParams(Params var1) {
+      public @Nullable JsonElement encodeParams(Params var1) {
          if (this.info.params().isEmpty()) {
             throw new IllegalStateException("Method defined as having no parameters");
          } else {
@@ -100,8 +97,7 @@ public interface OutgoingRpcMethod<Params, Result> {
          this.attributes = var2;
       }
 
-      @Nullable
-      public JsonElement encodeParams(Params var1) {
+      public @Nullable JsonElement encodeParams(Params var1) {
          if (this.info.params().isEmpty()) {
             throw new IllegalStateException("Method defined as having no parameters");
          } else {
@@ -122,10 +118,8 @@ public interface OutgoingRpcMethod<Params, Result> {
       public static final Attributes DEFAULT_ATTRIBUTES = new Attributes(true);
       private final Factory<Params, Result> method;
       private String description = "";
-      @Nullable
-      private ParamInfo<Params> paramInfo;
-      @Nullable
-      private ResultInfo<Result> resultInfo;
+      private @Nullable ParamInfo<Params> paramInfo;
+      private @Nullable ResultInfo<Result> resultInfo;
 
       public OutgoingRpcMethodBuilder(Factory<Params, Result> var1) {
          super();

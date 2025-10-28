@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
@@ -19,13 +18,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public interface Leashable {
    String LEASH_TAG = "leash";
@@ -40,8 +40,7 @@ public interface Leashable {
    List<Vec3> LEASHER_ATTACHMENT_POINT = ImmutableList.of(new Vec3(0.0, 0.5, 0.0));
    List<Vec3> SHARED_QUAD_ATTACHMENT_POINTS = ImmutableList.of(new Vec3(-0.5, 0.5, 0.5), new Vec3(-0.5, 0.5, -0.5), new Vec3(0.5, 0.5, -0.5), new Vec3(0.5, 0.5, 0.5));
 
-   @Nullable
-   LeashData getLeashData();
+   @Nullable LeashData getLeashData();
 
    void setLeashData(@Nullable LeashData var1);
 
@@ -155,7 +154,7 @@ public interface Leashable {
 
       if (var2 != null && var2.leashHolder != null) {
          if (!var1.canInteractWithLevel() || !var2.leashHolder.canInteractWithLevel()) {
-            if (var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            if ((Boolean)var0.getGameRules().get(GameRules.ENTITY_DROPS)) {
                ((Leashable)var1).dropLeash();
             } else {
                ((Leashable)var1).removeLeash();
@@ -335,13 +334,11 @@ public interface Leashable {
 
    }
 
-   @Nullable
-   default Entity getLeashHolder() {
+   default @Nullable Entity getLeashHolder() {
       return getLeashHolder((Entity)this);
    }
 
-   @Nullable
-   private static <E extends Entity & Leashable> Entity getLeashHolder(E var0) {
+   private static <E extends Entity & Leashable> @Nullable Entity getLeashHolder(E var0) {
       LeashData var1 = ((Leashable)var0).getLeashData();
       if (var1 == null) {
          return null;
@@ -387,10 +384,8 @@ public interface Leashable {
    public static final class LeashData {
       public static final Codec<LeashData> CODEC;
       int delayedLeashHolderId;
-      @Nullable
-      public Entity leashHolder;
-      @Nullable
-      public Either<UUID, BlockPos> delayedLeashInfo;
+      public @Nullable Entity leashHolder;
+      public @Nullable Either<UUID, BlockPos> delayedLeashInfo;
       public double angularMomentum;
 
       private LeashData(Either<UUID, BlockPos> var1) {

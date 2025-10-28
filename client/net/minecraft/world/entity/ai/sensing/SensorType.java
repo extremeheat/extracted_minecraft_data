@@ -6,15 +6,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
-import net.minecraft.world.entity.animal.armadillo.ArmadilloAi;
-import net.minecraft.world.entity.animal.axolotl.AxolotlAi;
-import net.minecraft.world.entity.animal.camel.CamelAi;
 import net.minecraft.world.entity.animal.frog.FrogAi;
-import net.minecraft.world.entity.animal.goat.GoatAi;
 import net.minecraft.world.entity.animal.nautilus.NautilusAi;
-import net.minecraft.world.entity.animal.sniffer.SnifferAi;
 
 public class SensorType<U extends Sensor<?>> {
    public static final SensorType<DummySensor> DUMMY = register("dummy", DummySensor::new);
@@ -34,17 +28,12 @@ public class SensorType<U extends Sensor<?>> {
    public static final SensorType<AdultSensor> NEAREST_ADULT = register("nearest_adult", AdultSensor::new);
    public static final SensorType<AdultSensor> NEAREST_ADULT_ANY_TYPE = register("nearest_adult_any_type", AdultSensorAnyType::new);
    public static final SensorType<AxolotlAttackablesSensor> AXOLOTL_ATTACKABLES = register("axolotl_attackables", AxolotlAttackablesSensor::new);
-   public static final SensorType<TemptingSensor> AXOLOTL_TEMPTATIONS = register("axolotl_temptations", () -> new TemptingSensor(AxolotlAi.getTemptations()));
-   public static final SensorType<TemptingSensor> GOAT_TEMPTATIONS = register("goat_temptations", () -> new TemptingSensor(GoatAi.getTemptations()));
+   public static final SensorType<TemptingSensor> FOOD_TEMPTATIONS = register("food_temptations", TemptingSensor::forAnimal);
    public static final SensorType<TemptingSensor> FROG_TEMPTATIONS = register("frog_temptations", () -> new TemptingSensor(FrogAi.getTemptations()));
-   public static final SensorType<TemptingSensor> CAMEL_TEMPTATIONS = register("camel_temptations", () -> new TemptingSensor(CamelAi.getTemptations()));
-   public static final SensorType<TemptingSensor> ARMADILLO_TEMPTATIONS = register("armadillo_temptations", () -> new TemptingSensor(ArmadilloAi.getTemptations()));
-   public static final SensorType<TemptingSensor> HAPPY_GHAST_TEMPTATIONS = register("happy_ghast_temptations", () -> new TemptingSensor(HappyGhast.IS_FOOD));
    public static final SensorType<TemptingSensor> NAUTILUS_TEMPTATIONS = register("nautilus_temptations", () -> new TemptingSensor(NautilusAi.getTemptations()));
    public static final SensorType<FrogAttackablesSensor> FROG_ATTACKABLES = register("frog_attackables", FrogAttackablesSensor::new);
    public static final SensorType<IsInWaterSensor> IS_IN_WATER = register("is_in_water", IsInWaterSensor::new);
    public static final SensorType<WardenEntitySensor> WARDEN_ENTITY_SENSOR = register("warden_entity_sensor", WardenEntitySensor::new);
-   public static final SensorType<TemptingSensor> SNIFFER_TEMPTATIONS = register("sniffer_temptations", () -> new TemptingSensor(SnifferAi.getTemptations()));
    public static final SensorType<BreezeAttackEntitySensor> BREEZE_ATTACK_ENTITY_SENSOR = register("breeze_attack_entity_sensor", BreezeAttackEntitySensor::new);
    private final Supplier<U> factory;
 

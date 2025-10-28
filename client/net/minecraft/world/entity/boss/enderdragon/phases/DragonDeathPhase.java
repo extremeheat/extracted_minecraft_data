@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -8,10 +7,10 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DragonDeathPhase extends AbstractDragonPhaseInstance {
-   @Nullable
-   private Vec3 targetLocation;
+   private @Nullable Vec3 targetLocation;
    private int time;
 
    public DragonDeathPhase(EnderDragon var1) {
@@ -53,8 +52,7 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
       return 3.0F;
    }
 
-   @Nullable
-   public Vec3 getFlyTargetLocation() {
+   public @Nullable Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 

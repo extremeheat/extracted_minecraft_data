@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TextureSlots {
@@ -31,8 +31,7 @@ public class TextureSlots {
       this.resolvedValues = var1;
    }
 
-   @Nullable
-   public Material getMaterial(String var1) {
+   public @Nullable Material getMaterial(String var1) {
       if (isTextureReference(var1)) {
          var1 = var1.substring(1);
       }

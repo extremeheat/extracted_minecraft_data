@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
@@ -192,8 +192,7 @@ public class WorldUpgrader implements AutoCloseable {
       private final Component finishedStatus;
       private final String type;
       private final String folderName;
-      @Nullable
-      protected CompletableFuture<Void> previousWriteFuture;
+      protected @Nullable CompletableFuture<Void> previousWriteFuture;
       protected final DataFixTypes dataFixType;
 
       AbstractUpgrader(final DataFixTypes var2, final String var3, final String var4, final Component var5, final Component var6) {
@@ -478,7 +477,7 @@ public class WorldUpgrader implements AutoCloseable {
       }
 
       protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {
-         Supplier var3 = () -> LegacyStructureDataHandler.getLegacyStructureHandler(var1.dimension(), WorldUpgrader.this.overworldDataStorage, WorldUpgrader.this.dataFixer);
+         Supplier var3 = LegacyStructureDataHandler.getLegacyTagFixer(var1.dimension(), () -> WorldUpgrader.this.overworldDataStorage, WorldUpgrader.this.dataFixer);
          return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3));
       }
    }

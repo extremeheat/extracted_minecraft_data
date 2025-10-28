@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -36,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsBackupScreen extends RealmsScreen {
@@ -50,12 +50,10 @@ public class RealmsBackupScreen extends RealmsScreen {
    public static final DateTimeFormatter SHORT_DATE_FORMAT;
    final RealmsConfigureWorldScreen lastScreen;
    List<Backup> backups = Collections.emptyList();
-   @Nullable
    BackupObjectSelectionList backupList;
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final int slotId;
-   @Nullable
-   Button downloadButton;
+   @Nullable Button downloadButton;
    final RealmsServer serverData;
    boolean noBackups = false;
 
@@ -164,10 +162,8 @@ public class RealmsBackupScreen extends RealmsScreen {
    class Entry extends ContainerObjectSelectionList.Entry<Entry> {
       private static final int Y_PADDING = 2;
       private final Backup backup;
-      @Nullable
-      private Button restoreButton;
-      @Nullable
-      private Button changesButton;
+      private @Nullable Button restoreButton;
+      private @Nullable Button changesButton;
       private final List<AbstractWidget> children = new ArrayList();
 
       public Entry(final Backup var2) {

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -28,6 +27,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class TabNavigationBar extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
    private static final int NO_TAB = -1;
@@ -86,8 +86,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
 
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (!this.isFocused()) {
          TabButton var2 = this.currentTabButton();
          if (var2 != null) {
@@ -222,8 +221,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       return var2 != -1 ? var2 : -1;
    }
 
-   @Nullable
-   private TabButton currentTabButton() {
+   private @Nullable TabButton currentTabButton() {
       int var1 = this.currentTabIndex();
       return var1 != -1 ? (TabButton)this.tabButtons.get(var1) : null;
    }

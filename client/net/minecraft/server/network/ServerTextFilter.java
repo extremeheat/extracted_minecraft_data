@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.network.chat.FilterMask;
@@ -34,6 +33,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.thread.ConsecutiveExecutor;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class ServerTextFilter implements AutoCloseable {
@@ -70,8 +70,7 @@ public abstract class ServerTextFilter implements AutoCloseable {
       return var0 != null ? GsonHelper.getAsString(var0, var1, var2) : var2;
    }
 
-   @Nullable
-   public static ServerTextFilter createFromConfig(DedicatedServerProperties var0) {
+   public static @Nullable ServerTextFilter createFromConfig(DedicatedServerProperties var0) {
       String var1 = var0.textFilteringConfig;
       if (StringUtil.isBlank(var1)) {
          return null;

@@ -18,7 +18,6 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
@@ -32,6 +31,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class OptionInstance<T> {
@@ -258,8 +258,7 @@ public final class OptionInstance<T> {
       private final SliderableValueSet<N> values;
       private final TooltipSupplier<N> tooltipSupplier;
       private final Consumer<N> onValueChanged;
-      @Nullable
-      private Long delayedApplyAt;
+      private @Nullable Long delayedApplyAt;
       private final boolean applyValueImmediately;
 
       OptionInstanceSliderButton(Options var1, int var2, int var3, int var4, int var5, OptionInstance<N> var6, SliderableValueSet<N> var7, TooltipSupplier<N> var8, Consumer<N> var9, boolean var10) {
@@ -618,8 +617,7 @@ public final class OptionInstance<T> {
 
    @FunctionalInterface
    public interface TooltipSupplier<T> {
-      @Nullable
-      Tooltip apply(T var1);
+      @Nullable Tooltip apply(T var1);
    }
 
    interface ValueSet<T> {

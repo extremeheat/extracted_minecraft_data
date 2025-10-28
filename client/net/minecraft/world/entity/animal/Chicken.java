@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Chicken extends Animal {
    private static final EntityDimensions BABY_DIMENSIONS;
@@ -144,8 +144,7 @@ public class Chicken extends Animal {
       this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
-   @Nullable
-   public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Chicken var3 = EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Chicken var4) {
          var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
@@ -194,8 +193,7 @@ public class Chicken extends Animal {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.CHICKEN_VARIANT ? castComponentValue(var1, new EitherHolder(this.getVariant())) : super.get(var1));
    }
 
@@ -239,8 +237,7 @@ public class Chicken extends Animal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

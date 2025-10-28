@@ -156,7 +156,7 @@ public class LootCommand {
       for(int var5 = 0; var5 < var3; ++var5) {
          ItemStack var6 = var5 < var1.size() ? (ItemStack)var1.get(var5) : ItemStack.EMPTY;
          SlotAccess var7 = var0.getSlot(var2 + var5);
-         if (var7 != SlotAccess.NULL && var7.set(var6.copy())) {
+         if (var7 != null && var7.set(var6.copy())) {
             var4.add(var6);
          }
       }

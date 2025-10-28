@@ -22,7 +22,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,7 +52,6 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -66,6 +64,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -74,6 +73,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Block extends BlockBehaviour implements ItemLike {
@@ -110,8 +110,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_LIMIT = 512;
    protected final StateDefinition<Block, BlockState> stateDefinition;
    private BlockState defaultBlockState;
-   @Nullable
-   private Item item;
+   private @Nullable Item item;
    private static final int CACHE_SIZE = 256;
    private static final ThreadLocal<Object2ByteLinkedOpenHashMap<ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
       Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
@@ -378,7 +377,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    private static void popResource(Level var0, Supplier<ItemEntity> var1, ItemStack var2) {
       if (var0 instanceof ServerLevel var3) {
-         if (!var2.isEmpty() && var3.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+         if (!var2.isEmpty() && (Boolean)var3.getGameRules().get(GameRules.BLOCK_DROPS)) {
             ItemEntity var4 = (ItemEntity)var1.get();
             var4.setDefaultPickUpDelay();
             var0.addFreshEntity(var4);
@@ -389,7 +388,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    protected void popExperience(ServerLevel var1, BlockPos var2, int var3) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.BLOCK_DROPS)) {
          ExperienceOrb.award(var1, Vec3.atCenterOf(var2), var3);
       }
 
@@ -405,8 +404,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return this.defaultBlockState();
    }
 

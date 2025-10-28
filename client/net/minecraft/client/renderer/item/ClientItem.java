@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.item;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.util.RegistryContextSwapper;
+import org.jspecify.annotations.Nullable;
 
 public record ClientItem(ItemModel.Unbaked model, Properties properties, @Nullable RegistryContextSwapper registrySwapper) {
    public static final Codec<ClientItem> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemModels.CODEC.fieldOf("model").forGetter(ClientItem::model), ClientItem.Properties.MAP_CODEC.forGetter(ClientItem::properties)).apply(var0, ClientItem::new));

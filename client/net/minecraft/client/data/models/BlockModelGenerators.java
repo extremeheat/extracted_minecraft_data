@@ -18,7 +18,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.color.item.GrassColorSource;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
@@ -104,6 +103,7 @@ import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.block.state.properties.Tilt;
 import net.minecraft.world.level.block.state.properties.WallSide;
+import org.jspecify.annotations.Nullable;
 
 public class BlockModelGenerators {
    final Consumer<BlockModelDefinitionGenerator> blockStateOutput;
@@ -2575,10 +2575,8 @@ public class BlockModelGenerators {
    class BlockFamilyProvider {
       private final TextureMapping mapping;
       private final Map<ModelTemplate, ResourceLocation> models = new HashMap();
-      @Nullable
-      private BlockFamily family;
-      @Nullable
-      private Variant fullBlock;
+      private @Nullable BlockFamily family;
+      private @Nullable Variant fullBlock;
       private final Set<Block> skipGeneratingModelsFor = new HashSet();
 
       public BlockFamilyProvider(final TextureMapping var2) {

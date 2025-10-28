@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -50,6 +49,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements Renderable, GuiEventListener, NarratableEntry {
    public static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/button"), ResourceLocation.withDefaultNamespace("recipe_book/button_highlighted"));
@@ -67,32 +67,26 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    private int width;
    private int height;
    private float time;
-   @Nullable
-   private RecipeDisplayId lastPlacedRecipe;
+   private @Nullable RecipeDisplayId lastPlacedRecipe;
    private final GhostSlots ghostSlots;
    private final List<RecipeBookTabButton> tabButtons = Lists.newArrayList();
-   @Nullable
-   private RecipeBookTabButton selectedTab;
+   private @Nullable RecipeBookTabButton selectedTab;
    protected StateSwitchingButton filterButton;
    protected final T menu;
    protected Minecraft minecraft;
-   @Nullable
-   private EditBox searchBox;
+   private @Nullable EditBox searchBox;
    private String lastSearch = "";
    private final List<TabInfo> tabInfos;
    private ClientRecipeBook book;
    private final RecipeBookPage recipeBookPage;
-   @Nullable
-   private RecipeDisplayId lastRecipe;
-   @Nullable
-   private RecipeCollection lastRecipeCollection;
+   private @Nullable RecipeDisplayId lastRecipe;
+   private @Nullable RecipeCollection lastRecipeCollection;
    private final StackedItemContents stackedContents = new StackedItemContents();
    private int timesInventoryChanged;
    private boolean ignoreTextInput;
    private boolean visible;
    private boolean widthTooNarrow;
-   @Nullable
-   private ScreenRectangle magnifierIconPlacement;
+   private @Nullable ScreenRectangle magnifierIconPlacement;
 
    public RecipeBookComponent(T var1, List<TabInfo> var2) {
       super();

@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -51,6 +50,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import org.jspecify.annotations.Nullable;
 
 public class StatsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.stats");
@@ -69,8 +69,7 @@ public class StatsScreen extends Screen {
    private final TabManager tabManager = new TabManager((var1x) -> {
       AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
    }, (var1x) -> this.removeWidget(var1x));
-   @Nullable
-   private TabNavigationBar tabNavigationBar;
+   private @Nullable TabNavigationBar tabNavigationBar;
    final StatsCounter stats;
    private boolean isLoading = true;
 
@@ -258,8 +257,7 @@ public class StatsScreen extends Screen {
       protected final List<StatType<Block>> blockColumns = Lists.newArrayList();
       protected final List<StatType<Item>> itemColumns;
       protected final Comparator<ItemRow> itemStatSorter = new ItemRowComparator();
-      @Nullable
-      protected StatType<?> sortColumn;
+      protected @Nullable StatType<?> sortColumn;
       protected int sortOrder;
 
       public ItemStatisticsList(final Minecraft var2) {

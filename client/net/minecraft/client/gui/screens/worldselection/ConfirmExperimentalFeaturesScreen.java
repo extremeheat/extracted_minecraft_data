@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.worldselection;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -75,7 +74,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
       final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-      @Nullable
       private PackList list;
 
       DetailsScreen() {

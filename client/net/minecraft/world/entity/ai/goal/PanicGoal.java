@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class PanicGoal extends Goal {
    public static final int WATER_CHECK_DISTANCE_VERTICAL = 1;
@@ -91,8 +91,7 @@ public class PanicGoal extends Goal {
       return !this.mob.getNavigation().isDone();
    }
 
-   @Nullable
-   protected BlockPos lookForWater(BlockGetter var1, Entity var2, int var3) {
+   protected @Nullable BlockPos lookForWater(BlockGetter var1, Entity var2, int var3) {
       BlockPos var4 = var2.blockPosition();
       return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, (var1x) -> var1.getFluidState(var1x).is(FluidTags.WATER)).orElse((Object)null);
    }

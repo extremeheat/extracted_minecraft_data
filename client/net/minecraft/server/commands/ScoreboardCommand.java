@@ -19,7 +19,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -46,6 +45,7 @@ import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 
 public class ScoreboardCommand {
    private static final SimpleCommandExceptionType ERROR_OBJECTIVE_ALREADY_EXISTS = new SimpleCommandExceptionType(Component.translatable("commands.scoreboard.objectives.add.duplicate"));

@@ -1,16 +1,15 @@
 package net.minecraft.client.resources.sounds;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSoundInstance implements SoundInstance {
-   @Nullable
-   protected Sound sound;
+   protected @Nullable Sound sound;
    protected final SoundSource source;
    protected final ResourceLocation location;
    protected float volume;
@@ -42,8 +41,7 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       return this.location;
    }
 
-   @Nullable
-   public WeighedSoundEvents resolve(SoundManager var1) {
+   public @Nullable WeighedSoundEvents resolve(SoundManager var1) {
       if (this.location.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
          return SoundManager.INTENTIONALLY_EMPTY_SOUND_EVENT;
@@ -59,8 +57,7 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       }
    }
 
-   @Nullable
-   public Sound getSound() {
+   public @Nullable Sound getSound() {
       return this.sound;
    }
 

@@ -3,14 +3,14 @@ package net.minecraft.world.item.crafting;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class RecipeCache {
-   private final Entry[] entries;
-   private WeakReference<RecipeManager> cachedRecipeManager = new WeakReference((Object)null);
+   private final @Nullable RecipeCache.Entry[] entries;
+   private WeakReference<@Nullable RecipeManager> cachedRecipeManager = new WeakReference((Object)null);
 
    public RecipeCache(int var1) {
       super();

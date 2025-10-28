@@ -1,15 +1,15 @@
 package net.minecraft.network.chat;
 
+import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayDeque;
 import java.util.List;
-import javax.annotation.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 
 public class MessageSignatureCache {
    public static final int NOT_FOUND = -1;
    private static final int DEFAULT_CAPACITY = 128;
-   private final MessageSignature[] entries;
+   private final @Nullable MessageSignature[] entries;
 
    public MessageSignatureCache(int var1) {
       super();
@@ -30,8 +30,7 @@ public class MessageSignatureCache {
       return -1;
    }
 
-   @Nullable
-   public MessageSignature unpack(int var1) {
+   public @Nullable MessageSignature unpack(int var1) {
       return this.entries[var1];
    }
 

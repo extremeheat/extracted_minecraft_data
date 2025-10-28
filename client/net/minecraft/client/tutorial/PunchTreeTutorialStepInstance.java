@@ -1,6 +1,5 @@
 package net.minecraft.client.tutorial;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,14 +10,14 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
    private static final int HINT_DELAY = 600;
    private static final Component TITLE = Component.translatable("tutorial.punch_tree.title");
    private static final Component DESCRIPTION = Component.translatable("tutorial.punch_tree.description", Tutorial.key("attack"));
    private final Tutorial tutorial;
-   @Nullable
-   private TutorialToast toast;
+   private @Nullable TutorialToast toast;
    private int timeWaiting;
    private int resetCount;
 

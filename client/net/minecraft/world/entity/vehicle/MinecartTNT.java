@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -20,13 +19,14 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class MinecartTNT extends AbstractMinecart {
    private static final byte EVENT_PRIME = 10;
@@ -36,8 +36,7 @@ public class MinecartTNT extends AbstractMinecart {
    private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
    private static final int NO_FUSE = -1;
-   @Nullable
-   private DamageSource ignitionSource;
+   private @Nullable DamageSource ignitionSource;
    private int fuse = -1;
    private float explosionPowerBase = 4.0F;
    private float explosionSpeedFactor = 1.0F;
@@ -104,7 +103,7 @@ public class MinecartTNT extends AbstractMinecart {
    protected void explode(@Nullable DamageSource var1, double var2) {
       Level var5 = this.level();
       if (var5 instanceof ServerLevel var4) {
-         if (var4.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+         if ((Boolean)var4.getGameRules().get(GameRules.TNT_EXPLODES)) {
             double var7 = Math.min(Math.sqrt(var2), 5.0);
             var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
             this.discard();
@@ -143,7 +142,7 @@ public class MinecartTNT extends AbstractMinecart {
    public void primeFuse(@Nullable DamageSource var1) {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
-         if (!var2.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+         if (!(Boolean)var2.getGameRules().get(GameRules.TNT_EXPLODES)) {
             return;
          }
       }

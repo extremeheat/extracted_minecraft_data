@@ -1,8 +1,4 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@NullMarked
 package net.minecraft.world.entity.ai.sensing;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import net.minecraft.FieldsAreNonnullByDefault;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

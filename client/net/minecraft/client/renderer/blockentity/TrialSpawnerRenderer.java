@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SpawnerRenderState;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerStateData;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlockEntity, SpawnerRenderState> {
    private final EntityRenderDispatcher entityRenderer;
@@ -27,7 +27,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
       return new SpawnerRenderState();
    }
 
-   public void extractRenderState(TrialSpawnerBlockEntity var1, SpawnerRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(TrialSpawnerBlockEntity var1, SpawnerRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       if (var1.getLevel() != null) {
          TrialSpawner var6 = var1.getTrialSpawner();

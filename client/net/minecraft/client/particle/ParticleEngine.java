@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
-import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -20,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public class ParticleEngine {
    private static final List<ParticleRenderType> RENDER_ORDER;
@@ -45,8 +45,7 @@ public class ParticleEngine {
       this.trackingEmitters.add(new TrackingEmitter(this.level, var1, var2, var3));
    }
 
-   @Nullable
-   public Particle createParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   public @Nullable Particle createParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       Particle var14 = this.makeParticle(var1, var2, var4, var6, var8, var10, var12);
       if (var14 != null) {
          this.add(var14);
@@ -56,8 +55,7 @@ public class ParticleEngine {
       }
    }
 
-   @Nullable
-   private <T extends ParticleOptions> Particle makeParticle(T var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   private <T extends ParticleOptions> @Nullable Particle makeParticle(T var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       ParticleProvider var14 = (ParticleProvider)this.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(var1.getType()));
       return var14 == null ? null : var14.createParticle(var1, this.level, var2, var4, var6, var8, var10, var12, this.random);
    }

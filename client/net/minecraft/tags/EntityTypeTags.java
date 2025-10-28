@@ -50,6 +50,7 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> ACCEPTS_IRON_GOLEM_GIFT = create("accepts_iron_golem_gift");
    TagKey<EntityType<?>> CANDIDATE_FOR_IRON_GOLEM_GIFT = create("candidate_for_iron_golem_gift");
    TagKey<EntityType<?>> NAUTILUS_HOSTILES = create("nautilus_hostiles");
+   TagKey<EntityType<?>> CAN_FLOAT_WHILE_RIDDEN = create("can_float_while_ridden");
 
    private static TagKey<EntityType<?>> create(String var0) {
       return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));

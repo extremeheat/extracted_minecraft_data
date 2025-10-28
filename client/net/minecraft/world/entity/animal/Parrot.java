@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -73,6 +72,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID;
@@ -85,8 +85,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    private float flapping = 1.0F;
    private float nextFlap = 1.0F;
    private boolean partyParrot;
-   @Nullable
-   private BlockPos jukebox;
+   private @Nullable BlockPos jukebox;
 
    public Parrot(EntityType<? extends Parrot> var1, Level var2) {
       super(var1, var2);
@@ -96,8 +95,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       this.setPathfindingMalus(PathType.COCOA, -1.0F);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setVariant((Variant)Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
@@ -245,13 +243,11 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       return false;
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
 
-   @Nullable
-   public SoundEvent getAmbientSound() {
+   public @Nullable SoundEvent getAmbientSound() {
       return getAmbient(this.level(), this.level().random);
    }
 
@@ -328,8 +324,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       this.entityData.set(DATA_VARIANT_ID, var1.id);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.PARROT_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -382,7 +377,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable final Object var1) {
+         public boolean test(final @Nullable Object var1) {
             return this.test((Mob)var1);
          }
       };
@@ -390,6 +385,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
          var0.put(EntityType.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED);
          var0.put(EntityType.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE);
+         var0.put(EntityType.CAMEL_HUSK, SoundEvents.PARROT_IMITATE_CAMEL_HUSK);
          var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
          var0.put(EntityType.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING);
          var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
@@ -405,6 +401,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          var0.put(EntityType.HUSK, SoundEvents.PARROT_IMITATE_HUSK);
          var0.put(EntityType.ILLUSIONER, SoundEvents.PARROT_IMITATE_ILLUSIONER);
          var0.put(EntityType.MAGMA_CUBE, SoundEvents.PARROT_IMITATE_MAGMA_CUBE);
+         var0.put(EntityType.PARCHED, SoundEvents.PARROT_IMITATE_PARCHED);
          var0.put(EntityType.PHANTOM, SoundEvents.PARROT_IMITATE_PHANTOM);
          var0.put(EntityType.PIGLIN, SoundEvents.PARROT_IMITATE_PIGLIN);
          var0.put(EntityType.PIGLIN_BRUTE, SoundEvents.PARROT_IMITATE_PIGLIN_BRUTE);
@@ -424,6 +421,8 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          var0.put(EntityType.WITHER_SKELETON, SoundEvents.PARROT_IMITATE_WITHER_SKELETON);
          var0.put(EntityType.ZOGLIN, SoundEvents.PARROT_IMITATE_ZOGLIN);
          var0.put(EntityType.ZOMBIE, SoundEvents.PARROT_IMITATE_ZOMBIE);
+         var0.put(EntityType.ZOMBIE_HORSE, SoundEvents.PARROT_IMITATE_ZOMBIE_HORSE);
+         var0.put(EntityType.ZOMBIE_NAUTILUS, SoundEvents.PARROT_IMITATE_ZOMBIE_NAUTILUS);
          var0.put(EntityType.ZOMBIE_VILLAGER, SoundEvents.PARROT_IMITATE_ZOMBIE_VILLAGER);
       });
    }
@@ -481,8 +480,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          super(var1, var2);
       }
 
-      @Nullable
-      protected Vec3 getPosition() {
+      protected @Nullable Vec3 getPosition() {
          Vec3 var1 = null;
          if (this.mob.isInWater()) {
             var1 = LandRandomPos.getPos(this.mob, 15, 15);
@@ -495,8 +493,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          return var1 == null ? super.getPosition() : var1;
       }
 
-      @Nullable
-      private Vec3 getTreePos() {
+      private @Nullable Vec3 getTreePos() {
          BlockPos var1 = this.mob.blockPosition();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();

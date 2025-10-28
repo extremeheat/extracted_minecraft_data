@@ -1,18 +1,17 @@
 package net.minecraft.world.entity.ai.util;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class AirRandomPos {
    public AirRandomPos() {
       super();
    }
 
-   @Nullable
-   public static Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, int var3, Vec3 var4, double var5) {
+   public static @Nullable Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, int var3, Vec3 var4, double var5) {
       Vec3 var7 = var4.subtract(var0.getX(), var0.getY(), var0.getZ());
       boolean var8 = GoalUtils.mobRestricted(var0, (double)var1);
       return RandomPos.generateRandomPos(var0, (Supplier)(() -> {

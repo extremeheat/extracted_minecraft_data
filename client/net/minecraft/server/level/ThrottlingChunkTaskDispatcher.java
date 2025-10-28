@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public class ThrottlingChunkTaskDispatcher extends ChunkTaskDispatcher {
    private final LongSet chunkPositionsInExecution = new LongOpenHashSet();
@@ -24,8 +24,7 @@ public class ThrottlingChunkTaskDispatcher extends ChunkTaskDispatcher {
       this.chunkPositionsInExecution.remove(var1);
    }
 
-   @Nullable
-   protected ChunkTaskPriorityQueue.TasksForChunk popTasks() {
+   protected ChunkTaskPriorityQueue.@Nullable TasksForChunk popTasks() {
       return this.chunkPositionsInExecution.size() < this.maxChunksInExecution ? super.popTasks() : null;
    }
 

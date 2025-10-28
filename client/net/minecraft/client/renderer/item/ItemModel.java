@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.item;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
@@ -13,6 +12,7 @@ import net.minecraft.util.RegistryContextSwapper;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public interface ItemModel {
    void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7);

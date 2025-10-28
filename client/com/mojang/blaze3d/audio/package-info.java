@@ -1,8 +1,4 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@NullMarked
 package com.mojang.blaze3d.audio;
 
-import com.mojang.blaze3d.FieldsAreNonnullByDefault;
-import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

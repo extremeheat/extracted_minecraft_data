@@ -3,7 +3,6 @@ package net.minecraft.data.recipes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
@@ -17,6 +16,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class SingleItemRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
@@ -24,8 +24,7 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
    private final Ingredient ingredient;
    private final int count;
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
-   @Nullable
-   private String group;
+   private @Nullable String group;
    private final SingleItemRecipe.Factory<?> factory;
 
    public SingleItemRecipeBuilder(RecipeCategory var1, SingleItemRecipe.Factory<?> var2, Ingredient var3, ItemLike var4, int var5) {
@@ -76,7 +75,7 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
    }
 
    // $FF: synthetic method
-   public RecipeBuilder group(@Nullable final String var1) {
+   public RecipeBuilder group(final @Nullable String var1) {
       return this.group(var1);
    }
 

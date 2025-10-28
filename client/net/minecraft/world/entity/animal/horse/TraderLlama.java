@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class TraderLlama extends Llama {
    private static final int DEFAULT_DESPAWN_DELAY = 47999;
@@ -35,8 +35,7 @@ public class TraderLlama extends Llama {
       return true;
    }
 
-   @Nullable
-   protected Llama makeNewLlama() {
+   protected @Nullable Llama makeNewLlama() {
       return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
@@ -100,8 +99,7 @@ public class TraderLlama extends Llama {
       return this.isLeashed() && !this.isLeashedToWanderingTrader();
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var3 == EntitySpawnReason.EVENT) {
          this.setAge(0);
       }

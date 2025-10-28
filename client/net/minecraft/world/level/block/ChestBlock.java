@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -58,6 +57,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
    public static final MapCodec<ChestBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(var0, (var0x, var1, var2) -> new ChestBlock(() -> BlockEntityType.CHEST, var0x, var1, var2)));
@@ -173,8 +173,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   @Nullable
-   private Direction candidatePartnerFacing(Level var1, BlockPos var2, Direction var3) {
+   private @Nullable Direction candidatePartnerFacing(Level var1, BlockPos var2, Direction var3) {
       BlockState var4 = var1.getBlockState(var2.relative(var3));
       return this.chestCanConnectTo(var4) && var4.getValue(TYPE) == ChestType.SINGLE ? (Direction)var4.getValue(FACING) : null;
    }
@@ -204,8 +203,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return (BlockEntityType)this.blockEntityType.get();
    }
 
-   @Nullable
-   public static Container getContainer(ChestBlock var0, BlockState var1, Level var2, BlockPos var3, boolean var4) {
+   public static @Nullable Container getContainer(ChestBlock var0, BlockState var1, Level var2, BlockPos var3, boolean var4) {
       return (Container)((Optional)var0.combine(var1, var2, var3, var4).apply(CHEST_COMBINER)).orElse((Object)null);
    }
 
@@ -220,8 +218,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return DoubleBlockCombiner.<ChestBlockEntity>combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, var1, var2, var3, var5);
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return (MenuProvider)((Optional)this.combine(var1, var2, var3, false).apply(MENU_PROVIDER_COMBINER)).orElse((Object)null);
    }
 
@@ -253,8 +250,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return new ChestBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return var1.isClientSide() ? createTickerHelper(var3, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
    }
 
@@ -348,8 +344,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
             final CompoundContainer var3 = new CompoundContainer(var1, var2);
             return Optional.of(new MenuProvider() {
-               @Nullable
-               public AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
+               public @Nullable AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
                   if (var1.canOpen(var3x) && var2.canOpen(var3x)) {
                      var1.unpackLootTable(var2x.player);
                      var2.unpackLootTable(var2x.player);

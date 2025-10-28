@@ -17,7 +17,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.network.chat.Component;
@@ -30,6 +29,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EntitySelectorParser {
    public static final char SYNTAX_SELECTOR_START = '@';
@@ -60,34 +60,22 @@ public class EntitySelectorParser {
    private int maxResults;
    private boolean includesEntities;
    private boolean worldLimited;
-   @Nullable
-   private MinMaxBounds.Doubles distance;
-   @Nullable
-   private MinMaxBounds.Ints level;
-   @Nullable
-   private Double x;
-   @Nullable
-   private Double y;
-   @Nullable
-   private Double z;
-   @Nullable
-   private Double deltaX;
-   @Nullable
-   private Double deltaY;
-   @Nullable
-   private Double deltaZ;
-   @Nullable
-   private MinMaxBounds.FloatDegrees rotX;
-   @Nullable
-   private MinMaxBounds.FloatDegrees rotY;
+   private MinMaxBounds.@Nullable Doubles distance;
+   private MinMaxBounds.@Nullable Ints level;
+   private @Nullable Double x;
+   private @Nullable Double y;
+   private @Nullable Double z;
+   private @Nullable Double deltaX;
+   private @Nullable Double deltaY;
+   private @Nullable Double deltaZ;
+   private MinMaxBounds.@Nullable FloatDegrees rotX;
+   private MinMaxBounds.@Nullable FloatDegrees rotY;
    private final List<Predicate<Entity>> predicates = new ArrayList();
    private BiConsumer<Vec3, List<? extends Entity>> order;
    private boolean currentEntity;
-   @Nullable
-   private String playerName;
+   private @Nullable String playerName;
    private int startPosition;
-   @Nullable
-   private UUID entityUUID;
+   private @Nullable UUID entityUUID;
    private BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> suggestions;
    private boolean hasNameEquals;
    private boolean hasNameNotEquals;
@@ -97,8 +85,7 @@ public class EntitySelectorParser {
    private boolean hasGamemodeNotEquals;
    private boolean hasTeamEquals;
    private boolean hasTeamNotEquals;
-   @Nullable
-   private EntityType<?> type;
+   private @Nullable EntityType<?> type;
    private boolean typeInverse;
    private boolean hasScores;
    private boolean hasAdvancements;
@@ -391,8 +378,7 @@ public class EntitySelectorParser {
       this.worldLimited = true;
    }
 
-   @Nullable
-   public MinMaxBounds.Doubles getDistance() {
+   public MinMaxBounds.@Nullable Doubles getDistance() {
       return this.distance;
    }
 
@@ -400,8 +386,7 @@ public class EntitySelectorParser {
       this.distance = var1;
    }
 
-   @Nullable
-   public MinMaxBounds.Ints getLevel() {
+   public MinMaxBounds.@Nullable Ints getLevel() {
       return this.level;
    }
 
@@ -409,8 +394,7 @@ public class EntitySelectorParser {
       this.level = var1;
    }
 
-   @Nullable
-   public MinMaxBounds.FloatDegrees getRotX() {
+   public MinMaxBounds.@Nullable FloatDegrees getRotX() {
       return this.rotX;
    }
 
@@ -418,8 +402,7 @@ public class EntitySelectorParser {
       this.rotX = var1;
    }
 
-   @Nullable
-   public MinMaxBounds.FloatDegrees getRotY() {
+   public MinMaxBounds.@Nullable FloatDegrees getRotY() {
       return this.rotY;
    }
 
@@ -427,18 +410,15 @@ public class EntitySelectorParser {
       this.rotY = var1;
    }
 
-   @Nullable
-   public Double getX() {
+   public @Nullable Double getX() {
       return this.x;
    }
 
-   @Nullable
-   public Double getY() {
+   public @Nullable Double getY() {
       return this.y;
    }
 
-   @Nullable
-   public Double getZ() {
+   public @Nullable Double getZ() {
       return this.z;
    }
 
@@ -466,18 +446,15 @@ public class EntitySelectorParser {
       this.deltaZ = var1;
    }
 
-   @Nullable
-   public Double getDeltaX() {
+   public @Nullable Double getDeltaX() {
       return this.deltaX;
    }
 
-   @Nullable
-   public Double getDeltaY() {
+   public @Nullable Double getDeltaY() {
       return this.deltaY;
    }
 
-   @Nullable
-   public Double getDeltaZ() {
+   public @Nullable Double getDeltaZ() {
       return this.deltaZ;
    }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,8 +26,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class TntBlock extends Block {
    public static final MapCodec<TntBlock> CODEC = simpleCodec(TntBlock::new);
@@ -69,7 +69,7 @@ public class TntBlock extends Block {
    }
 
    public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.TNT_EXPLODES)) {
          PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
          int var5 = var4.getFuse();
          var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
@@ -83,7 +83,7 @@ public class TntBlock extends Block {
 
    private static boolean prime(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
       if (var0 instanceof ServerLevel var3) {
-         if (var3.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+         if ((Boolean)var3.getGameRules().get(GameRules.TNT_EXPLODES)) {
             PrimedTnt var4 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
             var0.addFreshEntity(var4);
             var0.playSound((Entity)null, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -111,7 +111,7 @@ public class TntBlock extends Block {
             var5.awardStat(Stats.ITEM_USED.get(var9));
          } else if (var3 instanceof ServerLevel) {
             ServerLevel var8 = (ServerLevel)var3;
-            if (!var8.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+            if (!(Boolean)var8.getGameRules().get(GameRules.TNT_EXPLODES)) {
                var5.displayClientMessage(Component.translatable("block.minecraft.tnt.disabled"), true);
                return InteractionResult.PASS;
             }

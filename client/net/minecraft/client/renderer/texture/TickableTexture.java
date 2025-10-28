@@ -1,5 +1,5 @@
 package net.minecraft.client.renderer.texture;
 
-public interface Tickable {
+public interface TickableTexture {
    void tick();
 }

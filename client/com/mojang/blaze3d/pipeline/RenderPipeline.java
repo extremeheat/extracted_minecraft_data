@@ -13,10 +13,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public class RenderPipeline {

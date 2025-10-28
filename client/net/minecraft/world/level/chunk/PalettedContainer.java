@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.LongStream;
-import javax.annotation.Nullable;
 import net.minecraft.core.IdMap;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.BitStorage;
@@ -21,6 +20,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.ThreadingDetector;
 import net.minecraft.util.ZeroBitStorage;
+import org.jspecify.annotations.Nullable;
 
 public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainerRO<T> {
    private static final int MIN_PALETTE_BITS = 0;

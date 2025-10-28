@@ -2,9 +2,9 @@ package net.minecraft.world.attribute;
 
 import com.mojang.serialization.Codec;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
+import org.jspecify.annotations.Nullable;
 
 public class EnvironmentAttribute<Value> {
    private final AttributeType<Value> type;
@@ -65,8 +65,7 @@ public class EnvironmentAttribute<Value> {
 
    public static class Builder<Value> {
       private final AttributeType<Value> type;
-      @Nullable
-      private Value defaultValue;
+      private @Nullable Value defaultValue;
       private AttributeRange<Value> valueRange = AttributeRange.<Value>any();
       private boolean isSyncable = false;
       private boolean isPositional = true;

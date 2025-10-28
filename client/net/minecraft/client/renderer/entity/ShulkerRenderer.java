@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.ShulkerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.Sheets;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, ShulkerModel> {
    private static final ResourceLocation DEFAULT_TEXTURE_LOCATION;

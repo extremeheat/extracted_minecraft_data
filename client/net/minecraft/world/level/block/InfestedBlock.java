@@ -14,10 +14,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class InfestedBlock extends Block {
    public static final MapCodec<InfestedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(var0, InfestedBlock::new));
@@ -56,7 +56,7 @@ public class InfestedBlock extends Block {
 
    protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var2.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS) && !EnchantmentHelper.hasTag(var4, EnchantmentTags.PREVENTS_INFESTED_SPAWNS)) {
+      if ((Boolean)var2.getGameRules().get(GameRules.BLOCK_DROPS) && !EnchantmentHelper.hasTag(var4, EnchantmentTags.PREVENTS_INFESTED_SPAWNS)) {
          this.spawnInfestation(var2, var3);
       }
 

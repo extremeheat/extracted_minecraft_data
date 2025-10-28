@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.Nullable;
 
 public class Stray extends AbstractSkeleton {
    public Stray(EntityType<? extends Stray> var1, Level var2) {

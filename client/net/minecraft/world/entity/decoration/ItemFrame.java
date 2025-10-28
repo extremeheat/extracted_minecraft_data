@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.decoration;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -28,18 +27,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ItemFrame extends HangingEntity {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM;
@@ -216,7 +216,7 @@ public class ItemFrame extends HangingEntity {
       if (!this.fixed) {
          ItemStack var4 = this.getItem();
          this.setItem(ItemStack.EMPTY);
-         if (!var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+         if (!(Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
             if (var2 == null) {
                this.removeFramedMap(var4);
             }
@@ -262,8 +262,7 @@ public class ItemFrame extends HangingEntity {
       return (ItemStack)this.getEntityData().get(DATA_ITEM);
    }
 
-   @Nullable
-   public MapId getFramedMapId(ItemStack var1) {
+   public @Nullable MapId getFramedMapId(ItemStack var1) {
       return (MapId)var1.get(DataComponents.MAP_ID);
    }
 
@@ -296,7 +295,7 @@ public class ItemFrame extends HangingEntity {
       return SoundEvents.ITEM_FRAME_ADD_ITEM;
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 

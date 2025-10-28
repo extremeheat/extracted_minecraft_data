@@ -5,7 +5,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,6 +48,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT;
@@ -78,8 +78,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    private float bubbleMultiplier;
    private float bubbleAngle;
    private float bubbleAngleO;
-   @Nullable
-   private Leashable.LeashData leashData;
+   private Leashable.@Nullable LeashData leashData;
    private final Supplier<Item> dropItem;
 
    public AbstractBoat(EntityType<? extends AbstractBoat> var1, Level var2, Supplier<Item> var3) {
@@ -310,8 +309,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    }
 
-   @Nullable
-   protected SoundEvent getPaddleSound() {
+   protected @Nullable SoundEvent getPaddleSound() {
       SoundEvent var10000;
       switch (this.getStatus().ordinal()) {
          case 0:
@@ -338,12 +336,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return this.getPaddleState(var1) ? Mth.clampedLerp(this.paddlePositions[var1] - 0.3926991F, this.paddlePositions[var1], var2) : 0.0F;
    }
 
-   @Nullable
-   public Leashable.LeashData getLeashData() {
+   public Leashable.@Nullable LeashData getLeashData() {
       return this.leashData;
    }
 
-   public void setLeashData(@Nullable Leashable.LeashData var1) {
+   public void setLeashData(Leashable.@Nullable LeashData var1) {
       this.leashData = var1;
    }
 
@@ -477,8 +474,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return var8;
    }
 
-   @Nullable
-   private Status isUnderwater() {
+   private @Nullable Status isUnderwater() {
       AABB var1 = this.getBoundingBox();
       double var2 = var1.maxY + 0.001;
       int var4 = Mth.floor(var1.minX);
@@ -718,8 +714,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return 2;
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       Entity var2 = this.getFirstPassenger();
       LivingEntity var10000;
       if (var2 instanceof LivingEntity var1) {

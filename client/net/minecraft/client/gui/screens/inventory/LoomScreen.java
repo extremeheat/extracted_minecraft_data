@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -28,6 +27,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import org.jspecify.annotations.Nullable;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final ResourceLocation BANNER_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/banner");
@@ -52,8 +52,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final float BANNER_PATTERN_WIDTH = 21.0F;
    private static final float BANNER_PATTERN_HEIGHT = 40.0F;
    private BannerFlagModel flag;
-   @Nullable
-   private BannerPatternLayers resultBannerPatterns;
+   private @Nullable BannerPatternLayers resultBannerPatterns;
    private ItemStack bannerStack;
    private ItemStack dyeStack;
    private ItemStack patternStack;

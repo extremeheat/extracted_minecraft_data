@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +37,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    private static final int NUM_ILLUSIONS = 4;
@@ -209,8 +209,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          Illusioner.this.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 1200));
       }
 
-      @Nullable
-      protected SoundEvent getSpellPrepareSound() {
+      protected @Nullable SoundEvent getSpellPrepareSound() {
          return SoundEvents.ILLUSIONER_PREPARE_MIRROR;
       }
 

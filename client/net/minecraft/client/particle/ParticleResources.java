@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -36,6 +35,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ParticleResources implements PreparableReloadListener {
@@ -43,8 +43,7 @@ public class ParticleResources implements PreparableReloadListener {
    private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particles");
    private final Map<ResourceLocation, MutableSpriteSet> spriteSets = Maps.newHashMap();
    private final Int2ObjectMap<ParticleProvider<?>> providers = new Int2ObjectOpenHashMap();
-   @Nullable
-   private Runnable onReload;
+   private @Nullable Runnable onReload;
 
    public ParticleResources() {
       super();

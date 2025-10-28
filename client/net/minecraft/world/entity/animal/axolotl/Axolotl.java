@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -71,6 +70,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Axolotl extends Animal implements Bucketable {
    public static final int TOTAL_PLAYDEAD_TIME = 200;
@@ -218,8 +218,7 @@ public class Axolotl extends Animal implements Bucketable {
       this.entityData.set(DATA_VARIANT, var1.getId());
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.AXOLOTL_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -265,8 +264,7 @@ public class Axolotl extends Animal implements Bucketable {
       this.entityData.set(FROM_BUCKET, var1);
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Axolotl var3 = EntityType.AXOLOTL.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4;
@@ -406,13 +404,11 @@ public class Axolotl extends Animal implements Bucketable {
       return SoundEvents.AXOLOTL_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.AXOLOTL_DEATH;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return this.isInWater() ? SoundEvents.AXOLOTL_IDLE_WATER : SoundEvents.AXOLOTL_IDLE_AIR;
    }
 
@@ -436,15 +432,10 @@ public class Axolotl extends Animal implements Bucketable {
       return super.getBrain();
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(this.getSpeed(), var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-      } else {
-         super.travel(var1);
-      }
-
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(this.getSpeed(), var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
@@ -460,8 +451,7 @@ public class Axolotl extends Animal implements Bucketable {
       return !this.fromBucket() && !this.hasCustomName();
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 
@@ -470,7 +460,7 @@ public class Axolotl extends Animal implements Bucketable {
    }
 
    static {
-      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.AXOLOTL_ATTACKABLES, SensorType.AXOLOTL_TEMPTATIONS);
+      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.AXOLOTL_ATTACKABLES, SensorType.FOOD_TEMPTATIONS);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_ADULT, new MemoryModuleType[]{MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.PLAY_DEAD_TICKS, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED, MemoryModuleType.HAS_HUNTING_COOLDOWN, MemoryModuleType.IS_PANICKING});
       DATA_VARIANT = SynchedEntityData.<Integer>defineId(Axolotl.class, EntityDataSerializers.INT);
       DATA_PLAYING_DEAD = SynchedEntityData.<Boolean>defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);

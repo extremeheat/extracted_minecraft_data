@@ -9,8 +9,8 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderPipelines;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RenderTarget {
    private static int UNNAMED_RENDER_TARGETS = 0;
@@ -18,14 +18,10 @@ public abstract class RenderTarget {
    public int height;
    protected final String label;
    public final boolean useDepth;
-   @Nullable
-   protected GpuTexture colorTexture;
-   @Nullable
-   protected GpuTextureView colorTextureView;
-   @Nullable
-   protected GpuTexture depthTexture;
-   @Nullable
-   protected GpuTextureView depthTextureView;
+   protected @Nullable GpuTexture colorTexture;
+   protected @Nullable GpuTextureView colorTextureView;
+   protected @Nullable GpuTexture depthTexture;
+   protected @Nullable GpuTextureView depthTextureView;
 
    public RenderTarget(@Nullable String var1, boolean var2) {
       super();
@@ -113,23 +109,19 @@ public abstract class RenderTarget {
 
    }
 
-   @Nullable
-   public GpuTexture getColorTexture() {
+   public @Nullable GpuTexture getColorTexture() {
       return this.colorTexture;
    }
 
-   @Nullable
-   public GpuTextureView getColorTextureView() {
+   public @Nullable GpuTextureView getColorTextureView() {
       return this.colorTextureView;
    }
 
-   @Nullable
-   public GpuTexture getDepthTexture() {
+   public @Nullable GpuTexture getDepthTexture() {
       return this.depthTexture;
    }
 
-   @Nullable
-   public GpuTextureView getDepthTextureView() {
+   public @Nullable GpuTextureView getDepthTextureView() {
       return this.depthTextureView;
    }
 }

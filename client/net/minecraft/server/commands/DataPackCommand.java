@@ -79,7 +79,7 @@ public class DataPackCommand {
 
    private static int createPack(CommandSourceStack var0, String var1, Component var2) throws CommandSyntaxException {
       Path var3 = var0.getServer().getWorldPath(LevelResource.DATAPACK_DIR);
-      if (!FileUtil.isValidStrictPathSegment(var1)) {
+      if (!FileUtil.isValidPathSegment(var1)) {
          throw ERROR_PACK_INVALID_NAME.create(var1);
       } else if (!FileUtil.isPathPartPortable(var1)) {
          throw ERROR_PACK_INVALID_FULL_NAME.create(var1);

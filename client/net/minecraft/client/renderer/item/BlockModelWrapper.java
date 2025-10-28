@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class BlockModelWrapper implements ItemModel {
    private final List<ItemTintSource> tints;

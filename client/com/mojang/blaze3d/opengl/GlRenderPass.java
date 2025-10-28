@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import org.jspecify.annotations.Nullable;
 
 public class GlRenderPass implements RenderPass {
    protected static final int MAX_VERTEX_BUFFERS = 1;
@@ -22,11 +22,9 @@ public class GlRenderPass implements RenderPass {
    private final GlCommandEncoder encoder;
    private final boolean hasDepthTexture;
    private boolean closed;
-   @Nullable
-   protected GlRenderPipeline pipeline;
-   protected final GpuBuffer[] vertexBuffers = new GpuBuffer[1];
-   @Nullable
-   protected GpuBuffer indexBuffer;
+   protected @Nullable GlRenderPipeline pipeline;
+   protected final @Nullable GpuBuffer[] vertexBuffers = new GpuBuffer[1];
+   protected @Nullable GpuBuffer indexBuffer;
    protected VertexFormat.IndexType indexType;
    private final ScissorState scissorState;
    protected final HashMap<String, GpuBufferSlice> uniforms;
@@ -78,7 +76,7 @@ public class GlRenderPass implements RenderPass {
       this.pipeline = this.encoder.getDevice().getOrCompilePipeline(var1);
    }
 
-   public void bindTexture(String var1, @Nullable GpuTextureView var2, GpuSampler var3) {
+   public void bindTexture(String var1, @Nullable GpuTextureView var2, @Nullable GpuSampler var3) {
       if (var3 == null) {
          this.samplers.remove(var1);
       } else {
@@ -152,7 +150,7 @@ public class GlRenderPass implements RenderPass {
       }
    }
 
-   public <T> void drawMultipleIndexed(Collection<RenderPass.Draw<T>> var1, @Nullable GpuBuffer var2, @Nullable VertexFormat.IndexType var3, Collection<String> var4, T var5) {
+   public <T> void drawMultipleIndexed(Collection<RenderPass.Draw<T>> var1, @Nullable GpuBuffer var2, VertexFormat.@Nullable IndexType var3, Collection<String> var4, T var5) {
       if (this.closed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {

@@ -1,10 +1,10 @@
 package net.minecraft.world.level;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public interface LevelWriter {
    boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4);

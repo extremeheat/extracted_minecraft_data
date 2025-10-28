@@ -1,18 +1,17 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundSeenAdvancementsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSeenAdvancementsPacket>codec(ServerboundSeenAdvancementsPacket::write, ServerboundSeenAdvancementsPacket::new);
    private final Action action;
-   @Nullable
-   private final ResourceLocation tab;
+   private final @Nullable ResourceLocation tab;
 
    public ServerboundSeenAdvancementsPacket(Action var1, @Nullable ResourceLocation var2) {
       super();
@@ -59,8 +58,7 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
       return this.action;
    }
 
-   @Nullable
-   public ResourceLocation getTab() {
+   public @Nullable ResourceLocation getTab() {
       return this.tab;
    }
 

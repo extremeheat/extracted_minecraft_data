@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,14 +39,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Phantom extends Mob implements Enemy {
    public static final float FLAP_DEGREES_PER_TICK = 7.448451F;
    public static final int TICKS_PER_FLAP = Mth.ceil(24.166098F);
    private static final EntityDataAccessor<Integer> ID_SIZE;
    Vec3 moveTargetPoint;
-   @Nullable
-   BlockPos anchorPoint;
+   @Nullable BlockPos anchorPoint;
    AttackPhase attackPhase;
 
    public Phantom(EntityType<? extends Phantom> var1, Level var2) {

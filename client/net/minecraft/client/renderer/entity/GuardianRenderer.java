@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.GuardianModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -25,6 +24,7 @@ import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState, GuardianModel> {
    private static final ResourceLocation GUARDIAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian.png");
@@ -164,8 +164,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
 
    }
 
-   @Nullable
-   private static Entity getEntityToLookAt(Guardian var0) {
+   private static @Nullable Entity getEntityToLookAt(Guardian var0) {
       Entity var1 = Minecraft.getInstance().getCameraEntity();
       return (Entity)(var0.hasActiveAttackTarget() ? var0.getActiveAttackTarget() : var1);
    }

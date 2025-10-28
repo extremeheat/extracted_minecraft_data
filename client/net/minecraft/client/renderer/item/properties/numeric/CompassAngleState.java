@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -17,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class CompassAngleState extends NeedleDirectionHelper {
    public static final MapCodec<CompassAngleState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), CompassAngleState.CompassTarget.CODEC.fieldOf("target").forGetter(CompassAngleState::target)).apply(var0, CompassAngleState::new));
@@ -89,14 +89,12 @@ public class CompassAngleState extends NeedleDirectionHelper {
 
    public static enum CompassTarget implements StringRepresentable {
       NONE("none") {
-         @Nullable
-         public GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
+         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
             return null;
          }
       },
       LODESTONE("lodestone") {
-         @Nullable
-         public GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
+         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
             LodestoneTracker var4 = (LodestoneTracker)var2.get(DataComponents.LODESTONE_TRACKER);
             return var4 != null ? (GlobalPos)var4.target().orElse((Object)null) : null;
          }
@@ -107,8 +105,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
          }
       },
       RECOVERY("recovery") {
-         @Nullable
-         public GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
+         public @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3) {
             LivingEntity var4 = var3 == null ? null : var3.asLivingEntity();
             GlobalPos var10000;
             if (var4 instanceof Player var5) {
@@ -132,8 +129,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
          return this.name;
       }
 
-      @Nullable
-      abstract GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3);
+      abstract @Nullable GlobalPos get(ClientLevel var1, ItemStack var2, @Nullable ItemOwner var3);
 
       // $FF: synthetic method
       private static CompassTarget[] $values() {

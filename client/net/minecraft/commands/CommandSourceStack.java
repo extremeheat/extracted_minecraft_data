@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -43,11 +42,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, SharedSuggestionProvider {
    public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(Component.translatable("permissions.requires.player"));
@@ -60,8 +60,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    private final Component displayName;
    private final MinecraftServer server;
    private final boolean silent;
-   @Nullable
-   private final Entity entity;
+   private final @Nullable Entity entity;
    private final CommandResultCallback resultCallback;
    private final EntityAnchorArgument.Anchor anchor;
    private final Vec2 rotation;
@@ -180,8 +179,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       return this.level;
    }
 
-   @Nullable
-   public Entity getEntity() {
+   public @Nullable Entity getEntity() {
       return this.entity;
    }
 
@@ -202,8 +200,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       }
    }
 
-   @Nullable
-   public ServerPlayer getPlayer() {
+   public @Nullable ServerPlayer getPlayer() {
       Entity var2 = this.entity;
       ServerPlayer var10000;
       if (var2 instanceof ServerPlayer var1) {
@@ -291,7 +288,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    private void broadcastToAdmins(Component var1) {
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       GameRules var3 = this.level.getGameRules();
-      if (var3.getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+      if ((Boolean)var3.get(GameRules.SEND_COMMAND_FEEDBACK)) {
          for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
             if (var5.commandSource() != this.source && this.server.getPlayerList().isOp(var5.nameAndId())) {
                var5.sendSystemMessage(var2);
@@ -299,7 +296,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
          }
       }
 
-      if (this.source != this.server && var3.getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
+      if (this.source != this.server && (Boolean)var3.get(GameRules.LOG_ADMIN_COMMANDS)) {
          this.server.sendSystemMessage(var2);
       }
 

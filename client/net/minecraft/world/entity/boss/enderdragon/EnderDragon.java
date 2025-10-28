@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -37,11 +36,11 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManage
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.pathfinder.BinaryHeap;
@@ -51,6 +50,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class EnderDragon extends Mob implements Enemy {
@@ -78,10 +78,8 @@ public class EnderDragon extends Mob implements Enemy {
    public boolean inWall;
    public int dragonDeathTime = 0;
    public float yRotA;
-   @Nullable
-   public EndCrystal nearestCrystal;
-   @Nullable
-   private EndDragonFight dragonFight;
+   public @Nullable EndCrystal nearestCrystal;
+   private @Nullable EndDragonFight dragonFight;
    private BlockPos fightOrigin;
    private final EnderDragonPhaseManager phaseManager;
    private int growlTime;
@@ -417,7 +415,7 @@ public class EnderDragon extends Mob implements Enemy {
                BlockPos var14 = new BlockPos(var11, var12, var13);
                BlockState var15 = var1.getBlockState(var14);
                if (!var15.isAir() && !var15.is(BlockTags.DRAGON_TRANSPARENT)) {
-                  if (var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && !var15.is(BlockTags.DRAGON_IMMUNE)) {
+                  if ((Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) && !var15.is(BlockTags.DRAGON_IMMUNE)) {
                      var10 = var1.removeBlock(var14, false) || var10;
                   } else {
                      var9 = true;
@@ -507,7 +505,7 @@ public class EnderDragon extends Mob implements Enemy {
 
       Level var10 = this.level();
       if (var10 instanceof ServerLevel var8) {
-         if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && var8.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && (Boolean)var8.getGameRules().get(GameRules.MOB_DROPS)) {
             ExperienceOrb.award(var8, this.position(), Mth.floor((float)var7 * 0.08F));
          }
 
@@ -528,7 +526,7 @@ public class EnderDragon extends Mob implements Enemy {
          Level var13 = this.level();
          if (var13 instanceof ServerLevel) {
             ServerLevel var12 = (ServerLevel)var13;
-            if (var12.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if ((Boolean)var12.getGameRules().get(GameRules.MOB_DROPS)) {
                ExperienceOrb.award(var12, this.position(), Mth.floor((float)var7 * 0.2F));
             }
 
@@ -618,8 +616,7 @@ public class EnderDragon extends Mob implements Enemy {
       return var8;
    }
 
-   @Nullable
-   public Path findPath(int var1, int var2, @Nullable Node var3) {
+   public @Nullable Path findPath(int var1, int var2, @Nullable Node var3) {
       for(int var4 = 0; var4 < 24; ++var4) {
          Node var5 = this.nodes[var4];
          var5.closed = false;
@@ -810,8 +807,7 @@ public class EnderDragon extends Mob implements Enemy {
       return this.phaseManager;
    }
 
-   @Nullable
-   public EndDragonFight getDragonFight() {
+   public @Nullable EndDragonFight getDragonFight() {
       return this.dragonFight;
    }
 

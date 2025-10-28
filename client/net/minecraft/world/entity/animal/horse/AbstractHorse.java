@@ -3,7 +3,6 @@ package net.minecraft.world.entity.animal.horse;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,6 +74,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractHorse extends Animal implements HasCustomInventoryScreen, OwnableEntity, PlayerRideableJumping {
    public static final int CHEST_SLOT_OFFSET = 499;
@@ -129,8 +129,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    private float mouthAnimO;
    protected boolean canGallop = true;
    protected int gallopSoundCounter;
-   @Nullable
-   private EntityReference<LivingEntity> owner;
+   private @Nullable EntityReference<LivingEntity> owner;
 
    protected AbstractHorse(EntityType<? extends AbstractHorse> var1, Level var2) {
       super(var1, var2);
@@ -180,8 +179,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return this.getFlag(2);
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getOwnerReference() {
+   public @Nullable EntityReference<LivingEntity> getOwnerReference() {
       return this.owner;
    }
 
@@ -330,13 +328,11 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return true;
    }
 
-   @Nullable
-   protected SoundEvent getEatingSound() {
+   protected @Nullable SoundEvent getEatingSound() {
       return null;
    }
 
-   @Nullable
-   protected SoundEvent getAngrySound() {
+   protected @Nullable SoundEvent getAngrySound() {
       return null;
    }
 
@@ -677,8 +673,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       this.standCounter = 0;
    }
 
-   @Nullable
-   public SoundEvent getAmbientStandSound() {
+   public @Nullable SoundEvent getAmbientStandSound() {
       return this.getAmbientSound();
    }
 
@@ -803,8 +798,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return false;
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
 
@@ -927,13 +921,12 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return false;
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       int var2 = var1 - 500;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? SlotAccess.forContainer(this.inventory, var2) : super.getSlot(var1);
+      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
@@ -945,8 +938,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       return super.getControllingPassenger();
    }
 
-   @Nullable
-   private Vec3 getDismountLocationInDirection(Vec3 var1, LivingEntity var2) {
+   private @Nullable Vec3 getDismountLocationInDirection(Vec3 var1, LivingEntity var2) {
       double var3 = this.getX() + var1.x;
       double var5 = this.getBoundingBox().minY;
       double var7 = this.getZ() + var1.z;
@@ -998,8 +990,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    protected void randomizeAttributes(RandomSource var1) {
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(0.2F);
       }

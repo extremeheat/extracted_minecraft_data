@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import java.util.Arrays;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CampfireBlockEntity extends BlockEntity implements Clearable {

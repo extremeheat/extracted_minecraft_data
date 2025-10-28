@@ -7,13 +7,16 @@ import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ContainerUser;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.SlotProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
-public interface Container extends Clearable, Iterable<ItemStack> {
+public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> {
    float DEFAULT_DISTANCE_BUFFER = 4.0F;
 
    int getContainerSize();
@@ -96,6 +99,19 @@ public interface Container extends Clearable, Iterable<ItemStack> {
       } else {
          return var3.getBlockEntity(var4) != var0 ? false : var1.canInteractWithBlock(var4, (double)var2);
       }
+   }
+
+   default @Nullable SlotAccess getSlot(final int var1) {
+      return var1 >= 0 && var1 < this.getContainerSize() ? new SlotAccess() {
+         public ItemStack get() {
+            return Container.this.getItem(var1);
+         }
+
+         public boolean set(ItemStack var1x) {
+            Container.this.setItem(var1, var1x);
+            return true;
+         }
+      } : null;
    }
 
    default Iterator<ItemStack> iterator() {

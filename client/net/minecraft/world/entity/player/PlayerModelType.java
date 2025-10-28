@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public enum PlayerModelType implements StringRepresentable {
    SLIM("slim", "slim"),

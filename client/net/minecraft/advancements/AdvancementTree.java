@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class AdvancementTree {
@@ -18,8 +18,7 @@ public class AdvancementTree {
    private final Map<ResourceLocation, AdvancementNode> nodes = new Object2ObjectOpenHashMap();
    private final Set<AdvancementNode> roots = new ObjectLinkedOpenHashSet();
    private final Set<AdvancementNode> tasks = new ObjectLinkedOpenHashSet();
-   @Nullable
-   private Listener listener;
+   private @Nullable Listener listener;
 
    public AdvancementTree() {
       super();
@@ -119,13 +118,11 @@ public class AdvancementTree {
       return this.nodes.values();
    }
 
-   @Nullable
-   public AdvancementNode get(ResourceLocation var1) {
+   public @Nullable AdvancementNode get(ResourceLocation var1) {
       return (AdvancementNode)this.nodes.get(var1);
    }
 
-   @Nullable
-   public AdvancementNode get(AdvancementHolder var1) {
+   public @Nullable AdvancementNode get(AdvancementHolder var1) {
       return (AdvancementNode)this.nodes.get(var1.id());
    }
 

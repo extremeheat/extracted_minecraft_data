@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientRegistryLayer;
 import net.minecraft.client.renderer.item.ClientItem;
@@ -20,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.PlaceholderLookupProvider;
 import net.minecraft.util.StrictJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientItemInfoLoader {
@@ -84,8 +84,7 @@ public class ClientItemInfoLoader {
 
    static record PendingLoad(ResourceLocation id, @Nullable ClientItem clientItemInfo) {
       final ResourceLocation id;
-      @Nullable
-      final ClientItem clientItemInfo;
+      final @Nullable ClientItem clientItemInfo;
 
       PendingLoad(ResourceLocation var1, @Nullable ClientItem var2) {
          super();

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.Layout;
@@ -12,12 +11,12 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class CodeOfConductScreen extends WarningScreen {
    private static final Component TITLE;
    private static final Component CHECK;
-   @Nullable
-   private final ServerData serverData;
+   private final @Nullable ServerData serverData;
    private final String codeOfConductText;
    private final BooleanConsumer resultConsumer;
    private final Screen parent;

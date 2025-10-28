@@ -1,7 +1,6 @@
 package net.minecraft.world.phys.shapes;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public interface CollisionContext {
    static CollisionContext empty() {

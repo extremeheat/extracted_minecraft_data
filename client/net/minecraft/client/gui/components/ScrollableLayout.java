@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -16,6 +15,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.CommonComponents;
+import org.jspecify.annotations.Nullable;
 
 public class ScrollableLayout implements Layout {
    private static final int SCROLLBAR_SPACING = 4;

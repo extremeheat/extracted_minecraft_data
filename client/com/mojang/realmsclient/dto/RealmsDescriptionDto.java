@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record RealmsDescriptionDto(@Nullable String name, String description) implements ReflectionBasedSerialization {
    public RealmsDescriptionDto(@Nullable String var1, String var2) {
@@ -11,8 +11,7 @@ public record RealmsDescriptionDto(@Nullable String name, String description) im
    }
 
    @SerializedName("name")
-   @Nullable
-   public String name() {
+   public @Nullable String name() {
       return this.name;
    }
 

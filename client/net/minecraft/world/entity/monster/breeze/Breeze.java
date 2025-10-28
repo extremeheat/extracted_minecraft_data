@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster.breeze;
 
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Breeze extends Monster {
    private static final int SLIDE_PARTICLES_AMOUNT = 20;
@@ -256,8 +256,7 @@ public class Breeze extends Monster {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

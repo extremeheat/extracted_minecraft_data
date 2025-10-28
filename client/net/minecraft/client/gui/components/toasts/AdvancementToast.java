@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components.toasts;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
@@ -17,6 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementToast implements Toast {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/advancement");
@@ -43,8 +43,7 @@ public class AdvancementToast implements Toast {
       }
    }
 
-   @Nullable
-   public SoundEvent getSoundEvent() {
+   public @Nullable SoundEvent getSoundEvent() {
       return this.isChallengeAdvancement() ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : null;
    }
 

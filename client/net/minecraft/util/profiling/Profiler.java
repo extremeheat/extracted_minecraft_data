@@ -3,10 +3,11 @@ package net.minecraft.util.profiling;
 import com.mojang.jtracy.TracyClient;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jspecify.annotations.Nullable;
 
 public final class Profiler {
    private static final ThreadLocal<TracyZoneFiller> TRACY_FILLER = ThreadLocal.withInitial(TracyZoneFiller::new);
-   private static final ThreadLocal<ProfilerFiller> ACTIVE = new ThreadLocal();
+   private static final ThreadLocal<@Nullable ProfilerFiller> ACTIVE = new ThreadLocal();
    private static final AtomicInteger ACTIVE_COUNT = new AtomicInteger();
 
    private Profiler() {

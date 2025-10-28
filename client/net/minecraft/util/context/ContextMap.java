@@ -4,8 +4,8 @@ import com.google.common.collect.Sets;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import javax.annotation.Nullable;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public class ContextMap {
    private final Map<ContextKey<?>, Object> params;
@@ -28,14 +28,12 @@ public class ContextMap {
       }
    }
 
-   @Nullable
-   public <T> T getOptional(ContextKey<T> var1) {
+   public <T> @Nullable T getOptional(ContextKey<T> var1) {
       return (T)this.params.get(var1);
    }
 
-   @Nullable
    @Contract("_,!null->!null; _,_->_")
-   public <T> T getOrDefault(ContextKey<T> var1, @Nullable T var2) {
+   public <T> @Nullable T getOrDefault(ContextKey<T> var1, @Nullable T var2) {
       return (T)this.params.getOrDefault(var1, var2);
    }
 
@@ -70,8 +68,7 @@ public class ContextMap {
          }
       }
 
-      @Nullable
-      public <T> T getOptionalParameter(ContextKey<T> var1) {
+      public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
          return (T)this.params.get(var1);
       }
 

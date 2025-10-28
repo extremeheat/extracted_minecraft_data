@@ -3,9 +3,9 @@ package net.minecraft.util.profiling;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
 public class InactiveProfiler implements ProfileCollector {
    public static final InactiveProfiler INSTANCE = new InactiveProfiler();
@@ -56,8 +56,7 @@ public class InactiveProfiler implements ProfileCollector {
       return EmptyProfileResults.EMPTY;
    }
 
-   @Nullable
-   public ActiveProfiler.PathEntry getEntry(String var1) {
+   public ActiveProfiler.@Nullable PathEntry getEntry(String var1) {
       return null;
    }
 

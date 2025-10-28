@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -62,6 +61,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Dolphin extends AgeableWaterCreature {
    private static final EntityDataAccessor<Boolean> GOT_FISH;
@@ -72,8 +72,7 @@ public class Dolphin extends AgeableWaterCreature {
    public static final Predicate<ItemEntity> ALLOWED_ITEMS;
    public static final float BABY_SCALE = 0.65F;
    private static final boolean DEFAULT_GOT_FISH = false;
-   @Nullable
-   BlockPos treasurePos;
+   @Nullable BlockPos treasurePos;
 
    public Dolphin(EntityType<? extends Dolphin> var1, Level var2) {
       super(var1, var2);
@@ -82,16 +81,14 @@ public class Dolphin extends AgeableWaterCreature {
       this.setCanPickUpLoot(true);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setAirSupply(this.getMaxAirSupply());
       this.setXRot(0.0F);
       SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.1F));
       return super.finalizeSpawn(var1, var2, var3, var5);
    }
 
-   @Nullable
-   public Dolphin getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Dolphin getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.DOLPHIN.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -286,13 +283,11 @@ public class Dolphin extends AgeableWaterCreature {
       return SoundEvents.DOLPHIN_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.DOLPHIN_DEATH;
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return this.isInWater() ? SoundEvents.DOLPHIN_AMBIENT_WATER : SoundEvents.DOLPHIN_AMBIENT;
    }
 
@@ -309,16 +304,12 @@ public class Dolphin extends AgeableWaterCreature {
       return var1 != null ? var1.closerToCenterThan(this.position(), 12.0) : false;
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(this.getSpeed(), var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-         if (this.getTarget() == null) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
-         }
-      } else {
-         super.travel(var1);
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(this.getSpeed(), var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      if (this.getTarget() == null) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
       }
 
    }
@@ -328,8 +319,7 @@ public class Dolphin extends AgeableWaterCreature {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -406,8 +396,7 @@ public class Dolphin extends AgeableWaterCreature {
    static class DolphinSwimWithPlayerGoal extends Goal {
       private final Dolphin dolphin;
       private final double speedModifier;
-      @Nullable
-      private Player player;
+      private @Nullable Player player;
 
       DolphinSwimWithPlayerGoal(Dolphin var1, double var2) {
          super();

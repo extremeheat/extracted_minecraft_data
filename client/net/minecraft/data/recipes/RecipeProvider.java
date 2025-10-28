@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -54,6 +53,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RecipeProvider {
    protected final HolderLookup.Provider registries;

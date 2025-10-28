@@ -29,7 +29,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -52,6 +51,7 @@ import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.LocalSampleLogger;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -69,12 +69,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private final Queue<Consumer<Connection>> pendingActions = Queues.newConcurrentLinkedQueue();
    private Channel channel;
    private SocketAddress address;
-   @Nullable
-   private volatile PacketListener disconnectListener;
-   @Nullable
-   private volatile PacketListener packetListener;
-   @Nullable
-   private DisconnectionDetails disconnectionDetails;
+   private volatile @Nullable PacketListener disconnectListener;
+   private volatile @Nullable PacketListener packetListener;
+   private @Nullable DisconnectionDetails disconnectionDetails;
    private boolean encrypted;
    private boolean disconnectionHandled;
    private int receivedPackets;
@@ -83,10 +80,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private float averageSentPackets;
    private int tickCount;
    private boolean handlingFault;
-   @Nullable
-   private volatile DisconnectionDetails delayedDisconnect;
-   @Nullable
-   BandwidthDebugMonitor bandwidthDebugMonitor;
+   private volatile @Nullable DisconnectionDetails delayedDisconnect;
+   @Nullable BandwidthDebugMonitor bandwidthDebugMonitor;
 
    public Connection(PacketFlow var1) {
       super();
@@ -518,13 +513,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       return this.channel == null;
    }
 
-   @Nullable
-   public PacketListener getPacketListener() {
+   public @Nullable PacketListener getPacketListener() {
       return this.packetListener;
    }
 
-   @Nullable
-   public DisconnectionDetails getDisconnectionDetails() {
+   public @Nullable DisconnectionDetails getDisconnectionDetails() {
       return this.disconnectionDetails;
    }
 

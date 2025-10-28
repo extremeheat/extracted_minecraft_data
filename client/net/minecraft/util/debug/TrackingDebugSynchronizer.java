@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
@@ -24,6 +23,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public abstract class TrackingDebugSynchronizer<T> {
    protected final DebugSubscription<T> subscription;
@@ -214,16 +214,14 @@ public abstract class TrackingDebugSynchronizer<T> {
 
    static class ValueSource<T> {
       private final DebugValueSource.ValueGetter<T> getter;
-      @Nullable
-      T lastSyncedValue;
+      @Nullable T lastSyncedValue;
 
       ValueSource(DebugValueSource.ValueGetter<T> var1) {
          super();
          this.getter = var1;
       }
 
-      @Nullable
-      public DebugSubscription.Update<T> pollUpdate(DebugSubscription<T> var1) {
+      public DebugSubscription.@Nullable Update<T> pollUpdate(DebugSubscription<T> var1) {
          Object var2 = this.getter.get();
          if (!Objects.equals(var2, this.lastSyncedValue)) {
             this.lastSyncedValue = (T)var2;

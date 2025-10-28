@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.LayeredRegistryAccess;
@@ -12,13 +11,14 @@ import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 
 public record WorldCreationContext(WorldOptions options, Registry<LevelStem> datapackDimensions, WorldDimensions selectedDimensions, LayeredRegistryAccess<RegistryLayer> worldgenRegistries, ReloadableServerResources dataPackResources, WorldDataConfiguration dataConfiguration, InitialWorldCreationOptions initialWorldCreationOptions) {
    public WorldCreationContext(WorldGenSettings var1, LayeredRegistryAccess<RegistryLayer> var2, ReloadableServerResources var3, WorldDataConfiguration var4) {
-      this(var1.options(), var1.dimensions(), var2, var3, var4, new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, Set.of(), (ResourceKey)null));
+      this(var1.options(), var1.dimensions(), var2, var3, var4, new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, GameRuleMap.of(), (ResourceKey)null));
    }
 
    public WorldCreationContext(WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5, InitialWorldCreationOptions var6) {

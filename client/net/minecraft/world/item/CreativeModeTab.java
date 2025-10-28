@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -11,6 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.ItemLike;
+import org.jspecify.annotations.Nullable;
 
 public class CreativeModeTab {
    static final ResourceLocation DEFAULT_BACKGROUND = createTextureLocation("items");
@@ -22,8 +22,7 @@ public class CreativeModeTab {
    private final Row row;
    private final int column;
    private final Type type;
-   @Nullable
-   private ItemStack iconItemStack;
+   private @Nullable ItemStack iconItemStack;
    private Collection<ItemStack> displayItems;
    private Set<ItemStack> displayItemsSearchTab;
    private final Supplier<ItemStack> iconGenerator;

@@ -21,7 +21,7 @@ public class TryFindWater {
       return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> (var5x, var6, var7) -> {
                if (var5x.getFluidState(var6.blockPosition()).is(FluidTags.WATER)) {
                   return false;
-               } else if (var7 < var2.getValue()) {
+               } else if (var7 < var2.longValue()) {
                   var2.setValue(var7 + 20L + 2L);
                   return true;
                } else {

@@ -5,7 +5,7 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class GlTexture extends GpuTexture {
    protected final int id;

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.HashCommon;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.ShelfRenderState;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.entity.ShelfBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity, ShelfRenderState> {
    private static final float ITEM_SIZE = 0.25F;
@@ -36,7 +36,7 @@ public class ShelfRenderer implements BlockEntityRenderer<ShelfBlockEntity, Shel
       return new ShelfRenderState();
    }
 
-   public void extractRenderState(ShelfBlockEntity var1, ShelfRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(ShelfBlockEntity var1, ShelfRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.alignToBottom = var1.getAlignItemsToBottom();
       NonNullList var6 = var1.getItems();

@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
+import org.jspecify.annotations.Nullable;
 
 public interface StringRepresentable {
    int PRE_BUILT_MAP_THRESHOLD = 16;
@@ -38,14 +38,15 @@ public interface StringRepresentable {
       return new StringRepresentableCodec<T>(var1, var2, var3);
    }
 
-   static <T extends StringRepresentable> Function<String, T> createNameLookup(T[] var0) {
+   static <T extends StringRepresentable> Function<String, @Nullable T> createNameLookup(T[] var0) {
       return createNameLookup(var0, StringRepresentable::getSerializedName);
    }
 
-   static <T> Function<String, T> createNameLookup(T[] var0, Function<T, String> var1) {
+   static <T> Function<String, @Nullable T> createNameLookup(T[] var0, Function<T, String> var1) {
       if (var0.length > 16) {
          Map var2 = (Map)Arrays.stream(var0).collect(Collectors.toMap(var1, (var0x) -> var0x));
-         return (var1x) -> var1x == null ? null : var2.get(var1x);
+         Objects.requireNonNull(var2);
+         return var2::get;
       } else {
          return (var2x) -> {
             for(Object var6 : var0) {
@@ -72,7 +73,7 @@ public interface StringRepresentable {
    public static class StringRepresentableCodec<S extends StringRepresentable> implements Codec<S> {
       private final Codec<S> codec;
 
-      public StringRepresentableCodec(S[] var1, Function<String, S> var2, ToIntFunction<S> var3) {
+      public StringRepresentableCodec(S[] var1, Function<String, @Nullable S> var2, ToIntFunction<S> var3) {
          super();
          this.codec = ExtraCodecs.orCompressed(Codec.stringResolver(StringRepresentable::getSerializedName, var2), ExtraCodecs.idResolverCodec(var3, (var1x) -> var1x >= 0 && var1x < var1.length ? var1[var1x] : null, -1));
       }
@@ -92,23 +93,22 @@ public interface StringRepresentable {
    }
 
    public static class EnumCodec<E extends Enum<E> & StringRepresentable> extends StringRepresentableCodec<E> {
-      private final Function<String, E> resolver;
+      private final Function<String, @Nullable E> resolver;
 
       public EnumCodec(E[] var1, Function<String, E> var2) {
          super(var1, var2, (var0) -> ((Enum)var0).ordinal());
          this.resolver = var2;
       }
 
-      @Nullable
-      public E byName(@Nullable String var1) {
+      public @Nullable E byName(String var1) {
          return (E)(this.resolver.apply(var1));
       }
 
-      public E byName(@Nullable String var1, E var2) {
+      public E byName(String var1, E var2) {
          return (E)(Objects.requireNonNullElse(this.byName(var1), var2));
       }
 
-      public E byName(@Nullable String var1, Supplier<? extends E> var2) {
+      public E byName(String var1, Supplier<? extends E> var2) {
          return (E)(Objects.requireNonNullElseGet(this.byName(var1), var2));
       }
    }

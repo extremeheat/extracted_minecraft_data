@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.Collection;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public class DebugStickItem extends Item {
    public DebugStickItem(Item.Properties var1) {

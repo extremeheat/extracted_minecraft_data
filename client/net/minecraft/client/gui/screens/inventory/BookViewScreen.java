@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,6 +25,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
+import org.jspecify.annotations.Nullable;
 
 public class BookViewScreen extends Screen {
    public static final int PAGE_INDICATOR_TEXT_Y_OFFSET = 16;
@@ -296,8 +296,7 @@ public class BookViewScreen extends Screen {
          return var1 >= 0 && var1 < this.getPageCount() ? (Component)this.pages.get(var1) : CommonComponents.EMPTY;
       }
 
-      @Nullable
-      public static BookAccess fromItem(ItemStack var0) {
+      public static @Nullable BookAccess fromItem(ItemStack var0) {
          boolean var1 = Minecraft.getInstance().isTextFilteringEnabled();
          WrittenBookContent var2 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
          if (var2 != null) {

@@ -8,7 +8,6 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessage;
@@ -36,6 +35,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChatComponent {
@@ -55,10 +55,8 @@ public class ChatComponent {
    private final List<GuiMessage.Line> trimmedMessages = Lists.newArrayList();
    private int chatScrollbarPos;
    private boolean newMessageSinceScroll;
-   @Nullable
-   private Draft latestDraft;
-   @Nullable
-   private ChatScreen preservedScreen;
+   private @Nullable Draft latestDraft;
+   private @Nullable ChatScreen preservedScreen;
    private final List<DelayedMessageDeletion> messageDeletionQueue = new ArrayList();
 
    public ChatComponent(Minecraft var1) {
@@ -81,12 +79,10 @@ public class ChatComponent {
       for(int var5 = Math.min(this.trimmedMessages.size() - this.chatScrollbarPos, var3) - 1; var5 >= 0; --var5) {
          int var6 = var5 + this.chatScrollbarPos;
          GuiMessage.Line var7 = (GuiMessage.Line)this.trimmedMessages.get(var6);
-         if (var7 != null) {
-            float var8 = var1.calculate(var7);
-            if (var8 > 1.0E-5F) {
-               ++var4;
-               var2.accept(var7, var5, var8);
-            }
+         float var8 = var1.calculate(var7);
+         if (var8 > 1.0E-5F) {
+            ++var4;
+            var2.accept(var7, var5, var8);
          }
       }
 
@@ -277,8 +273,7 @@ public class ChatComponent {
 
    }
 
-   @Nullable
-   private DelayedMessageDeletion deleteMessageOrDelay(MessageSignature var1) {
+   private @Nullable DelayedMessageDeletion deleteMessageOrDelay(MessageSignature var1) {
       int var2 = this.minecraft.gui.getGuiTicks();
       ListIterator var3 = this.allMessages.listIterator();
 
@@ -423,8 +418,7 @@ public class ChatComponent {
 
    }
 
-   @Nullable
-   public ChatScreen restoreChatScreen() {
+   public @Nullable ChatScreen restoreChatScreen() {
       ChatScreen var1 = this.preservedScreen;
       this.preservedScreen = null;
       return var1;
@@ -538,8 +532,7 @@ public class ChatComponent {
       private final int globalMouseX;
       private final int globalMouseY;
       private final Vector2f localMousePos = new Vector2f();
-      @Nullable
-      private Style hoveredStyle;
+      private @Nullable Style hoveredStyle;
 
       public DrawingGraphicsAccess(GuiGraphics var1, Font var2, int var3, int var4) {
          super();

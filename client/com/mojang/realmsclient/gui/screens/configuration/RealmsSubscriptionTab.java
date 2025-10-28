@@ -13,7 +13,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.FormatStyle;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -29,6 +28,7 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfigurationTab {
@@ -54,8 +54,7 @@ class RealmsSubscriptionTab extends GridLayoutTab implements RealmsConfiguration
    private RealmsServer serverData;
    private Component daysLeft;
    private Component startDate;
-   @Nullable
-   private Subscription.SubscriptionType type;
+   private Subscription.@Nullable SubscriptionType type;
 
    RealmsSubscriptionTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
       super(TITLE);

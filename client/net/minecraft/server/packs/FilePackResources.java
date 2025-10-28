@@ -15,11 +15,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class FilePackResources extends AbstractPackResources {
@@ -37,8 +37,7 @@ public class FilePackResources extends AbstractPackResources {
       return String.format(Locale.ROOT, "%s/%s/%s", var0.getDirectory(), var1.getNamespace(), var1.getPath());
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getRootResource(String... var1) {
+   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
       return this.getResource(String.join("/", var1));
    }
 
@@ -50,8 +49,7 @@ public class FilePackResources extends AbstractPackResources {
       return this.prefix.isEmpty() ? var1 : this.prefix + "/" + var1;
    }
 
-   @Nullable
-   private IoSupplier<InputStream> getResource(String var1) {
+   private @Nullable IoSupplier<InputStream> getResource(String var1) {
       ZipFile var2 = this.zipFileAccess.getOrCreateZipFile();
       if (var2 == null) {
          return null;
@@ -131,8 +129,7 @@ public class FilePackResources extends AbstractPackResources {
 
    static class SharedZipFileAccess implements AutoCloseable {
       final File file;
-      @Nullable
-      private ZipFile zipFile;
+      private @Nullable ZipFile zipFile;
       private boolean failedToLoad;
 
       SharedZipFileAccess(File var1) {
@@ -140,8 +137,7 @@ public class FilePackResources extends AbstractPackResources {
          this.file = var1;
       }
 
-      @Nullable
-      ZipFile getOrCreateZipFile() {
+      @Nullable ZipFile getOrCreateZipFile() {
          if (this.failedToLoad) {
             return null;
          } else {

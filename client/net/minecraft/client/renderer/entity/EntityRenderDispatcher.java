@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -40,14 +39,14 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<EntityType<?>, EntityRenderer<?, ?>> renderers = ImmutableMap.of();
    private Map<PlayerModelType, AvatarRenderer<AbstractClientPlayer>> playerRenderers = Map.of();
    private Map<PlayerModelType, AvatarRenderer<ClientMannequin>> mannequinRenderers = Map.of();
    public final TextureManager textureManager;
-   @Nullable
-   public Camera camera;
+   public @Nullable Camera camera;
    public Entity crosshairPickEntity;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;

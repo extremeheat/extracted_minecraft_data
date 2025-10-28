@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -11,12 +10,12 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class FollowBoatGoal extends Goal {
    private int timeToRecalcPath;
    private final PathfinderMob mob;
-   @Nullable
-   private Player following;
+   private @Nullable Player following;
    private BoatGoals currentGoal;
 
    public FollowBoatGoal(PathfinderMob var1) {

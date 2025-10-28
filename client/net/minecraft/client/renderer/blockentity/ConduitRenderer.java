@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -29,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, CondiutRenderState> {
    public static final MaterialMapper MAPPER;
@@ -85,7 +85,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
       return new CondiutRenderState();
    }
 
-   public void extractRenderState(ConduitBlockEntity var1, CondiutRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(ConduitBlockEntity var1, CondiutRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.isActive = var1.isActive();
       var2.activeRotation = var1.getActiveRotation(var1.isActive() ? var3 : 0.0F);

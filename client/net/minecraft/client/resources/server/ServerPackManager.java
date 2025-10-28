@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.server.packs.DownloadQueue;
+import org.jspecify.annotations.Nullable;
 
 public class ServerPackManager {
    private final PackDownloader downloader;
@@ -83,8 +83,7 @@ public class ServerPackManager {
       var1.promptAccepted = true;
    }
 
-   @Nullable
-   private ServerPackData findPackInfo(UUID var1) {
+   private @Nullable ServerPackData findPackInfo(UUID var1) {
       for(ServerPackData var3 : this.packs) {
          if (!var3.isRemoved() && var3.id.equals(var1)) {
             return var3;
@@ -348,10 +347,9 @@ public class ServerPackManager {
       SERVER_REMOVED((PackLoadFeedback.FinalResult)null),
       SERVER_REPLACED((PackLoadFeedback.FinalResult)null);
 
-      @Nullable
-      final PackLoadFeedback.FinalResult serverResponse;
+      final PackLoadFeedback.@Nullable FinalResult serverResponse;
 
-      private RemovalReason(@Nullable final PackLoadFeedback.FinalResult var3) {
+      private RemovalReason(final PackLoadFeedback.FinalResult var3) {
          this.serverResponse = var3;
       }
 
@@ -378,12 +376,9 @@ public class ServerPackManager {
    static class ServerPackData {
       final UUID id;
       final URL url;
-      @Nullable
-      final HashCode hash;
-      @Nullable
-      Path path;
-      @Nullable
-      RemovalReason removalReason;
+      final @Nullable HashCode hash;
+      @Nullable Path path;
+      @Nullable RemovalReason removalReason;
       PackDownloadStatus downloadStatus;
       ActivationStatus activationStatus;
       boolean promptAccepted;

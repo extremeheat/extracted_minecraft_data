@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import org.jspecify.annotations.Nullable;
 
 public final class EnvironmentAttributeMap {
    public static final EnvironmentAttributeMap EMPTY = new EnvironmentAttributeMap(Map.of());
@@ -35,8 +35,7 @@ public final class EnvironmentAttributeMap {
       return new Builder();
    }
 
-   @Nullable
-   public <Value> Entry<Value, ?> get(EnvironmentAttribute<Value> var1) {
+   public <Value> @Nullable Entry<Value, ?> get(EnvironmentAttribute<Value> var1) {
       return (Entry)this.entries.get(var1);
    }
 

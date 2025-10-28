@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -21,7 +19,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
-import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -85,10 +82,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new PanicGoal(this, 1.25));
-      GoalSelector var10000 = this.goalSelector;
-      Predicate var10009 = EntitySelector.NO_SPECTATORS;
-      Objects.requireNonNull(var10009);
-      var10000.addGoal(2, new AvoidEntityGoal(this, Player.class, 8.0F, 1.6, 1.4, var10009::test));
+      this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Player.class, 8.0F, 1.6, 1.4, EntitySelector.NO_SPECTATORS));
       this.goalSelector.addGoal(4, new FishSwimGoal(this));
    }
 
@@ -96,16 +90,12 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       return new WaterBoundPathNavigation(this, var1);
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         this.moveRelative(0.01F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-         if (this.getTarget() == null) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
-         }
-      } else {
-         super.travel(var1);
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(0.01F, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      if (this.getTarget() == null) {
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
       }
 
    }

@@ -15,11 +15,11 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ModelDiscovery {
@@ -155,10 +155,9 @@ public class ModelDiscovery {
       private static final int SLOT_COUNT = 7;
       private final ResourceLocation id;
       boolean valid;
-      @Nullable
-      ModelWrapper parent;
+      @Nullable ModelWrapper parent;
       final UnbakedModel wrapped;
-      private final AtomicReferenceArray<Object> fixedSlots = new AtomicReferenceArray(7);
+      private final AtomicReferenceArray<@Nullable Object> fixedSlots = new AtomicReferenceArray(7);
       private final Map<ModelState, QuadCollection> modelBakeCache = new ConcurrentHashMap();
 
       private static <T> Slot<T> slot(int var0) {
@@ -177,8 +176,7 @@ public class ModelDiscovery {
          return this.wrapped;
       }
 
-      @Nullable
-      public ResolvedModel parent() {
+      public @Nullable ResolvedModel parent() {
          return this.parent;
       }
 
@@ -186,8 +184,7 @@ public class ModelDiscovery {
          return this.id.toString();
       }
 
-      @Nullable
-      private <T> T getSlot(Slot<T> var1) {
+      private <T> @Nullable T getSlot(Slot<T> var1) {
          return (T)this.fixedSlots.get(var1.index);
       }
 

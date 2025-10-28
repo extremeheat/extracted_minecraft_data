@@ -1,12 +1,12 @@
 package net.minecraft.world.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import org.jspecify.annotations.Nullable;
 
 public interface SpawnPlacementTypes {
    SpawnPlacementType NO_RESTRICTIONS = (var0, var1, var2) -> true;

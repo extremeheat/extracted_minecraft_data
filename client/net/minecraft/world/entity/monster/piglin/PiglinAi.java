@@ -67,7 +67,7 @@ import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -430,7 +430,7 @@ public class PiglinAi {
    public static void angerNearbyPiglins(ServerLevel var0, Player var1, boolean var2) {
       List var3 = var1.level().getEntitiesOfClass(Piglin.class, var1.getBoundingBox().inflate(16.0));
       var3.stream().filter(PiglinAi::isIdle).filter((var2x) -> !var2 || BehaviorUtils.canSee(var2x, var1)).forEach((var2x) -> {
-         if (var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if ((Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             setAngerTargetToNearestTargetablePlayerIfFound(var0, var2x, var1);
          } else {
             setAngerTarget(var0, var2x, var1);
@@ -495,7 +495,7 @@ public class PiglinAi {
       if (!var1.getBrain().isActive(Activity.AVOID)) {
          if (Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, var2)) {
             if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var1, var2, 4.0)) {
-               if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+               if (var2.getType() == EntityType.PLAYER && (Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
                   setAngerTargetToNearestTargetablePlayerIfFound(var0, var1, var2);
                   broadcastUniversalAnger(var0, var1);
                } else {
@@ -583,7 +583,7 @@ public class PiglinAi {
             dontKillAnyMoreHoglinsForAWhile(var1);
          }
 
-         if (var2.getType() == EntityType.PLAYER && var0.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var2.getType() == EntityType.PLAYER && (Boolean)var0.getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             var1.getBrain().setMemoryWithExpiry(MemoryModuleType.UNIVERSAL_ANGER, true, 600L);
          }
 

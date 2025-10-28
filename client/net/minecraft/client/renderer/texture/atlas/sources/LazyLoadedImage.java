@@ -7,11 +7,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
+import org.jspecify.annotations.Nullable;
 
 public class LazyLoadedImage {
    private final ResourceLocation id;
    private final Resource resource;
-   private final AtomicReference<NativeImage> image = new AtomicReference();
+   private final AtomicReference<@Nullable NativeImage> image = new AtomicReference();
    private final AtomicInteger referenceCount;
 
    public LazyLoadedImage(ResourceLocation var1, Resource var2, int var3) {

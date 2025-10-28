@@ -1,6 +1,5 @@
 package net.minecraft.client.particle;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -10,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class FallingDustParticle extends SingleQuadParticle {
    private final float rotSpeed;
@@ -66,8 +66,7 @@ public class FallingDustParticle extends SingleQuadParticle {
          this.sprite = var1;
       }
 
-      @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
+      public @Nullable Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          BlockState var16 = var1.getState();
          if (!var16.isAir() && var16.getRenderShape() == RenderShape.INVISIBLE) {
             return null;

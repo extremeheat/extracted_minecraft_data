@@ -3,15 +3,15 @@ package net.minecraft.world.level.storage;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.timers.TimerQueue;
+import org.jspecify.annotations.Nullable;
 
 public interface ServerLevelData extends WritableLevelData {
    String getLevelName();
@@ -45,8 +45,7 @@ public interface ServerLevelData extends WritableLevelData {
 
    void setWanderingTraderSpawnChance(int var1);
 
-   @Nullable
-   UUID getWanderingTraderId();
+   @Nullable UUID getWanderingTraderId();
 
    void setWanderingTraderId(UUID var1);
 

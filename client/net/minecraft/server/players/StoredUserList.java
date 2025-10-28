@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
@@ -60,8 +60,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
       }
    }
 
-   @Nullable
-   public V get(K var1) {
+   public @Nullable V get(K var1) {
       this.removeExpired();
       return (V)(this.map.get(this.getKeyForUser(var1)));
    }

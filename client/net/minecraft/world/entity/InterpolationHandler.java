@@ -2,22 +2,19 @@ package net.minecraft.world.entity;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class InterpolationHandler {
    public static final int DEFAULT_INTERPOLATION_STEPS = 3;
    private final Entity entity;
    private int interpolationSteps;
    private final InterpolationData interpolationData;
-   @Nullable
-   private Vec3 previousTickPosition;
-   @Nullable
-   private Vec2 previousTickRot;
-   @Nullable
-   private final Consumer<InterpolationHandler> onInterpolationStart;
+   private @Nullable Vec3 previousTickPosition;
+   private @Nullable Vec2 previousTickRot;
+   private final @Nullable Consumer<InterpolationHandler> onInterpolationStart;
 
    public InterpolationHandler(Entity var1) {
       this(var1, 3, (Consumer)null);

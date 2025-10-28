@@ -4,17 +4,16 @@ import com.mojang.logging.LogUtils;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfilePublicKey;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SignedMessageChain {
    static final Logger LOGGER = LogUtils.getLogger();
-   @Nullable
-   SignedMessageLink nextLink;
+   @Nullable SignedMessageLink nextLink;
    Instant lastTimeStamp;
 
    public SignedMessageChain(UUID var1, UUID var2) {
@@ -78,8 +77,7 @@ public class SignedMessageChain {
    public interface Encoder {
       Encoder UNSIGNED = (var0) -> null;
 
-      @Nullable
-      MessageSignature pack(SignedMessageBody var1);
+      @Nullable MessageSignature pack(SignedMessageBody var1);
    }
 
    @FunctionalInterface

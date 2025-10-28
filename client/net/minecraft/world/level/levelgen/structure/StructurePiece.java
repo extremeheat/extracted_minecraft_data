@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,12 +33,12 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class StructurePiece {
    protected static final BlockState CAVE_AIR;
    protected BoundingBox boundingBox;
-   @Nullable
-   private Direction orientation;
+   private @Nullable Direction orientation;
    private Mirror mirror;
    private Rotation rotation;
    protected int genDepth;
@@ -404,8 +403,7 @@ public abstract class StructurePiece {
       return (BoundingBox)BoundingBox.encapsulatingBoxes(var10000::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox without pieces"));
    }
 
-   @Nullable
-   public static StructurePiece findCollisionPiece(List<StructurePiece> var0, BoundingBox var1) {
+   public static @Nullable StructurePiece findCollisionPiece(List<StructurePiece> var0, BoundingBox var1) {
       for(StructurePiece var3 : var0) {
          if (var3.getBoundingBox().intersects(var1)) {
             return var3;
@@ -415,8 +413,7 @@ public abstract class StructurePiece {
       return null;
    }
 
-   @Nullable
-   public Direction getOrientation() {
+   public @Nullable Direction getOrientation() {
       return this.orientation;
    }
 

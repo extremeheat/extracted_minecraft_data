@@ -18,7 +18,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportType;
 import net.minecraft.SystemReport;
@@ -54,11 +53,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
@@ -66,6 +65,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GameTestServer extends MinecraftServer {
@@ -80,8 +80,7 @@ public class GameTestServer extends MinecraftServer {
    private List<GameTestBatch> testBatches = new ArrayList();
    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
    private static final WorldOptions WORLD_OPTIONS;
-   @Nullable
-   private MultipleTestTracker testTracker;
+   private @Nullable MultipleTestTracker testTracker;
 
    public static GameTestServer create(Thread var0, LevelStorageSource.LevelStorageAccess var1, PackRepository var2, Optional<String> var3, boolean var4) {
       var2.reload();

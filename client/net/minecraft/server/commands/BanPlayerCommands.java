@@ -7,7 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.Date;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameProfileArgument;
@@ -17,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.players.UserBanListEntry;
+import org.jspecify.annotations.Nullable;
 
 public class BanPlayerCommands {
    private static final SimpleCommandExceptionType ERROR_ALREADY_BANNED = new SimpleCommandExceptionType(Component.translatable("commands.ban.failed"));

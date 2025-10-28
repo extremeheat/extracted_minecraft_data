@@ -3,13 +3,13 @@ package net.minecraft.world.level.storage.loot;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class LootParams {
    private final ServerLevel level;
@@ -74,8 +74,7 @@ public class LootParams {
          return (T)this.params.getParameter(var1);
       }
 
-      @Nullable
-      public <T> T getOptionalParameter(ContextKey<T> var1) {
+      public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
          return (T)this.params.getOptionalParameter(var1);
       }
 

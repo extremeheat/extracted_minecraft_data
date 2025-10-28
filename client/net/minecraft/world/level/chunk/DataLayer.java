@@ -1,17 +1,16 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.Arrays;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.VisibleForDebug;
+import org.jspecify.annotations.Nullable;
 
 public class DataLayer {
    public static final int LAYER_COUNT = 16;
    public static final int LAYER_SIZE = 128;
    public static final int SIZE = 2048;
    private static final int NIBBLE_SIZE = 4;
-   @Nullable
-   protected byte[] data;
+   protected byte @Nullable [] data;
    private int defaultValue;
 
    public DataLayer() {

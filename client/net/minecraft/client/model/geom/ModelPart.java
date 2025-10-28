@@ -19,6 +19,7 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public final class ModelPart {
    public static final float DEFAULT_SCALE = 1.0F;
@@ -213,7 +214,7 @@ public final class ModelPart {
       return List.copyOf(var1);
    }
 
-   public Function<String, ModelPart> createPartLookup() {
+   public Function<String, @Nullable ModelPart> createPartLookup() {
       HashMap var1 = new HashMap();
       var1.put("root", this);
       Objects.requireNonNull(var1);

@@ -12,12 +12,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
 import net.minecraft.locale.Language;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LanguageManager implements ResourceManagerReloadListener {
@@ -83,8 +83,7 @@ public class LanguageManager implements ResourceManagerReloadListener {
       return new TreeMap(this.languages);
    }
 
-   @Nullable
-   public LanguageInfo getLanguage(String var1) {
+   public @Nullable LanguageInfo getLanguage(String var1) {
       return (LanguageInfo)this.languages.get(var1);
    }
 }

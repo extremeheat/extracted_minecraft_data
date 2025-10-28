@@ -1,11 +1,11 @@
 package net.minecraft.world.level.pathfinder;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
+import org.jspecify.annotations.Nullable;
 
 public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
    private final boolean prefersShallowSwimming;

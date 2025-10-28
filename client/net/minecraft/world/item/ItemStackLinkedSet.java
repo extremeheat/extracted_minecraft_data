@@ -3,7 +3,7 @@ package net.minecraft.world.item;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class ItemStackLinkedSet {
    private static final Hash.Strategy<? super ItemStack> TYPE_AND_TAG = new Hash.Strategy<ItemStack>() {
@@ -16,12 +16,12 @@ public class ItemStackLinkedSet {
       }
 
       // $FF: synthetic method
-      public boolean equals(@Nullable final Object var1, @Nullable final Object var2) {
+      public boolean equals(final @Nullable Object var1, final @Nullable Object var2) {
          return this.equals((ItemStack)var1, (ItemStack)var2);
       }
 
       // $FF: synthetic method
-      public int hashCode(@Nullable final Object var1) {
+      public int hashCode(final @Nullable Object var1) {
          return this.hashCode((ItemStack)var1);
       }
    };

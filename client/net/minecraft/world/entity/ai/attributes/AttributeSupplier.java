@@ -3,9 +3,9 @@ package net.minecraft.world.entity.ai.attributes;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class AttributeSupplier {
    private final Map<Holder<Attribute>, AttributeInstance> instances;
@@ -42,8 +42,7 @@ public class AttributeSupplier {
       }
    }
 
-   @Nullable
-   public AttributeInstance createInstance(Consumer<AttributeInstance> var1, Holder<Attribute> var2) {
+   public @Nullable AttributeInstance createInstance(Consumer<AttributeInstance> var1, Holder<Attribute> var2) {
       AttributeInstance var3 = (AttributeInstance)this.instances.get(var2);
       if (var3 == null) {
          return null;

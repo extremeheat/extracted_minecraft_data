@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.control.LookControl;
@@ -11,12 +10,12 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.PathType;
+import org.jspecify.annotations.Nullable;
 
 public class FollowMobGoal extends Goal {
    private final Mob mob;
    private final Predicate<Mob> followPredicate;
-   @Nullable
-   private Mob followingMob;
+   private @Nullable Mob followingMob;
    private final double speedModifier;
    private final PathNavigation navigation;
    private int timeToRecalcPath;
@@ -27,7 +26,7 @@ public class FollowMobGoal extends Goal {
    public FollowMobGoal(Mob var1, double var2, float var4, float var5) {
       super();
       this.mob = var1;
-      this.followPredicate = (var1x) -> var1x != null && var1.getClass() != var1x.getClass();
+      this.followPredicate = (var1x) -> var1.getClass() != var1x.getClass();
       this.speedModifier = var2;
       this.navigation = var1.getNavigation();
       this.stopDistance = var4;

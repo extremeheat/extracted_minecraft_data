@@ -5,19 +5,18 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ResultField;
+import org.jspecify.annotations.Nullable;
 
 public class ProfilerPieChart {
    public static final int RADIUS = 105;
    public static final int PIE_CHART_THICKNESS = 10;
    private static final int MARGIN = 5;
    private final Font font;
-   @Nullable
-   private ProfileResults profilerPieChartResults;
+   private @Nullable ProfileResults profilerPieChartResults;
    private String profilerTreePath = "root";
    private int bottomOffset = 0;
 

@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -43,6 +42,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class TropicalFish extends AbstractSchoolingFish {
    public static final Variant DEFAULT_VARIANT;
@@ -135,8 +135,7 @@ public class TropicalFish extends AbstractSchoolingFish {
       this.setPackedVariant(packVariant(var3, var4, var1));
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.TROPICAL_FISH_PATTERN) {
          return (T)castComponentValue(var1, this.getPattern());
       } else if (var1 == DataComponents.TROPICAL_FISH_BASE_COLOR) {
@@ -195,8 +194,7 @@ public class TropicalFish extends AbstractSchoolingFish {
       return SoundEvents.TROPICAL_FISH_FLOP;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var6 = var1.getRandom();
       Variant var5;

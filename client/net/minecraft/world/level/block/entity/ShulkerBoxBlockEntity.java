@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import java.util.List;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
    public static final int COLUMNS = 9;
@@ -47,8 +47,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    private AnimationStatus animationStatus;
    private float progress;
    private float progressOld;
-   @Nullable
-   private final DyeColor color;
+   private final @Nullable DyeColor color;
 
    public ShulkerBoxBlockEntity(@Nullable DyeColor var1, BlockPos var2, BlockState var3) {
       super(BlockEntityType.SHULKER_BOX, var2, var3);
@@ -245,8 +244,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
       return Mth.lerp(var1, this.progressOld, this.progress);
    }
 
-   @Nullable
-   public DyeColor getColor() {
+   public @Nullable DyeColor getColor() {
       return this.color;
    }
 

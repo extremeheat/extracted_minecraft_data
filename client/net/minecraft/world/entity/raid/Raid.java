@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -63,6 +62,7 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BannerPatterns;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Raid {
    public static final SpawnPlacementType RAVAGER_SPAWN_PLACEMENT_TYPE;
@@ -615,13 +615,11 @@ public class Raid {
       return var1;
    }
 
-   @Nullable
-   public Raider getLeader(int var1) {
+   public @Nullable Raider getLeader(int var1) {
       return (Raider)this.groupToLeaderMap.get(var1);
    }
 
-   @Nullable
-   private BlockPos findRandomSpawnPos(ServerLevel var1, int var2) {
+   private @Nullable BlockPos findRandomSpawnPos(ServerLevel var1, int var2) {
       int var3 = this.raidCooldownTicks / 20;
       float var4 = 0.22F * (float)var3 - 0.24F;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();

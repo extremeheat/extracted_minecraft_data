@@ -30,7 +30,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.ClientRecipeBook;
@@ -331,6 +330,7 @@ import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientPacketListener extends ClientCommonPacketListenerImpl implements ClientGamePacketListener, TickablePacketListener {
@@ -371,21 +371,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private FuelValues fuelValues;
    private final HashedPatchMap.HashGenerator decoratedHashOpsGenerator;
    private OptionalInt removedPlayerVehicleId = OptionalInt.empty();
-   @Nullable
-   private LocalChatSession chatSession;
+   private @Nullable LocalChatSession chatSession;
    private SignedMessageChain.Encoder signedMessageEncoder;
    private int nextChatIndex;
    private LastSeenMessagesTracker lastSeenMessages;
    private MessageSignatureCache messageSignatureCache;
-   @Nullable
-   private CompletableFuture<Optional<ProfileKeyPair>> keyPairFuture;
-   @Nullable
-   private ClientInformation remoteClientInformation;
+   private @Nullable CompletableFuture<Optional<ProfileKeyPair>> keyPairFuture;
+   private @Nullable ClientInformation remoteClientInformation;
    private final ChunkBatchSizeCalculator chunkBatchSizeCalculator;
    private final PingDebugMonitor pingDebugMonitor;
    private final ClientDebugSubscriber debugSubscriber;
-   @Nullable
-   private LevelLoadTracker levelLoadTracker;
+   private @Nullable LevelLoadTracker levelLoadTracker;
    private boolean serverEnforcesSecureChat;
    private volatile boolean closed;
    private final Scoreboard scoreboard;
@@ -547,8 +543,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
-   @Nullable
-   private Entity createEntityFromPacket(ClientboundAddEntityPacket var1) {
+   private @Nullable Entity createEntityFromPacket(ClientboundAddEntityPacket var1) {
       EntityType var2 = var1.getType();
       if (var2 == EntityType.PLAYER) {
          PlayerInfo var3 = this.getPlayerInfo(var1.getUUID());
@@ -2294,13 +2289,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return this.playerInfoMap.keySet();
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfo(UUID var1) {
+   public @Nullable PlayerInfo getPlayerInfo(UUID var1) {
       return (PlayerInfo)this.playerInfoMap.get(var1);
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfo(String var1) {
+   public @Nullable PlayerInfo getPlayerInfo(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
          if (var3.getProfile().name().equals(var1)) {
             return var3;
@@ -2314,8 +2307,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       return this.seenPlayers;
    }
 
-   @Nullable
-   public PlayerInfo getPlayerInfoIgnoreCase(String var1) {
+   public @Nullable PlayerInfo getPlayerInfoIgnoreCase(String var1) {
       for(PlayerInfo var3 : this.playerInfoMap.values()) {
          if (var3.getProfile().name().equalsIgnoreCase(var1)) {
             return var3;
@@ -2535,8 +2527,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       };
    }
 
-   @Nullable
-   public ServerData getServerData() {
+   public @Nullable ServerData getServerData() {
       return this.serverData;
    }
 

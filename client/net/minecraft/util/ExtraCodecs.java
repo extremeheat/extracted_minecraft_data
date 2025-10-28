@@ -77,6 +77,7 @@ import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
+import org.jspecify.annotations.Nullable;
 
 public class ExtraCodecs {
    public static final Codec<JsonElement> JSON;
@@ -174,7 +175,7 @@ public class ExtraCodecs {
             MutableObject var4 = new MutableObject();
             Objects.requireNonNull(var4);
             Optional var5 = var3.resultOrPartial(var4::setValue);
-            return var5.isPresent() ? var3 : DataResult.error(() -> "(" + (String)var4.getValue() + " -> using default)", Pair.of(var0, var2));
+            return var5.isPresent() ? var3 : DataResult.error(() -> "(" + (String)var4.get() + " -> using default)", Pair.of(var0, var2));
          }
 
          public <T> DataResult<T> coApply(DynamicOps<T> var1, A var2, DataResult<T> var3) {
@@ -187,14 +188,14 @@ public class ExtraCodecs {
       };
    }
 
-   public static <E> Codec<E> idResolverCodec(ToIntFunction<E> var0, IntFunction<E> var1, int var2) {
+   public static <E> Codec<E> idResolverCodec(ToIntFunction<E> var0, IntFunction<@Nullable E> var1, int var2) {
       return Codec.INT.flatXmap((var1x) -> (DataResult)Optional.ofNullable(var1.apply(var1x)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown element id: " + var1x)), (var2x) -> {
          int var3 = var0.applyAsInt(var2x);
          return var3 == var2 ? DataResult.error(() -> "Element with unknown id: " + String.valueOf(var2x)) : DataResult.success(var3);
       });
    }
 
-   public static <I, E> Codec<E> idResolverCodec(Codec<I> var0, Function<I, E> var1, Function<E, I> var2) {
+   public static <I, E> Codec<E> idResolverCodec(Codec<I> var0, Function<I, @Nullable E> var1, Function<E, @Nullable I> var2) {
       return var0.flatXmap((var1x) -> {
          Object var2 = var1.apply(var1x);
          return var2 == null ? DataResult.error(() -> "Unknown element id: " + String.valueOf(var1x)) : DataResult.success(var2);

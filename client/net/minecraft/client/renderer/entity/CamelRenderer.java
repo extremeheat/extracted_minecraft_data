@@ -17,7 +17,11 @@ public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, C
 
    public CamelRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CamelModel(var1.bakeLayer(ModelLayers.CAMEL)), new CamelModel(var1.bakeLayer(ModelLayers.CAMEL_BABY)), 0.7F);
-      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_BABY_SADDLE))));
+      this.addLayer(this.createCamelSaddleLayer(var1));
+   }
+
+   protected SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(EntityRendererProvider.Context var1) {
+      return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_BABY_SADDLE)));
    }
 
    public ResourceLocation getTextureLocation(CamelRenderState var1) {

@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
+import org.jspecify.annotations.Nullable;
 
 public class QuadCollection {
    public static final QuadCollection EMPTY = new QuadCollection(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());

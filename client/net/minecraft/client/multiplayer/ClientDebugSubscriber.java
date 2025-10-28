@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.core.BlockPos;
@@ -22,6 +21,7 @@ import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ClientDebugSubscriber {
    private final ClientPacketListener connection;
@@ -96,19 +96,16 @@ public class ClientDebugSubscriber {
       this.connection.send(new ServerboundDebugSubscriptionRequestPacket(var1));
    }
 
-   @Nullable
-   <V> ValueMaps<V> getValueMaps(DebugSubscription<V> var1) {
+   <V> @Nullable ValueMaps<V> getValueMaps(DebugSubscription<V> var1) {
       return (ValueMaps)this.valuesBySubscription.get(var1);
    }
 
-   @Nullable
-   private <K, V> ValueMap<K, V> getValueMap(DebugSubscription<V> var1, ValueMapType<K, V> var2) {
+   private <K, V> @Nullable ValueMap<K, V> getValueMap(DebugSubscription<V> var1, ValueMapType<K, V> var2) {
       ValueMaps var3 = this.getValueMaps(var1);
       return var3 != null ? var2.get(var3) : null;
    }
 
-   @Nullable
-   <K, V> V getValue(DebugSubscription<V> var1, K var2, ValueMapType<K, V> var3) {
+   <K, V> @Nullable V getValue(DebugSubscription<V> var1, K var2, ValueMapType<K, V> var3) {
       ValueMap var4 = this.getValueMap(var1, var3);
       return (V)(var4 != null ? var4.getValue(var2) : null);
    }
@@ -119,8 +116,7 @@ public class ClientDebugSubscriber {
             ClientDebugSubscriber.this.forEachValue(var1x, ClientDebugSubscriber.chunks(), var2);
          }
 
-         @Nullable
-         public <T> T getChunkValue(DebugSubscription<T> var1x, ChunkPos var2) {
+         public <T> @Nullable T getChunkValue(DebugSubscription<T> var1x, ChunkPos var2) {
             return (T)ClientDebugSubscriber.this.getValue(var1x, var2, ClientDebugSubscriber.chunks());
          }
 
@@ -128,8 +124,7 @@ public class ClientDebugSubscriber {
             ClientDebugSubscriber.this.forEachValue(var1x, ClientDebugSubscriber.blocks(), var2);
          }
 
-         @Nullable
-         public <T> T getBlockValue(DebugSubscription<T> var1x, BlockPos var2) {
+         public <T> @Nullable T getBlockValue(DebugSubscription<T> var1x, BlockPos var2) {
             return (T)ClientDebugSubscriber.this.getValue(var1x, var2, ClientDebugSubscriber.blocks());
          }
 
@@ -143,8 +138,7 @@ public class ClientDebugSubscriber {
             });
          }
 
-         @Nullable
-         public <T> T getEntityValue(DebugSubscription<T> var1x, Entity var2) {
+         public <T> @Nullable T getEntityValue(DebugSubscription<T> var1x, Entity var2) {
             return (T)ClientDebugSubscriber.this.getValue(var1x, var2.getUUID(), ClientDebugSubscriber.entities());
          }
 
@@ -253,8 +247,7 @@ public class ClientDebugSubscriber {
          this.values.keySet().removeIf(var1);
       }
 
-      @Nullable
-      public V getValue(K var1) {
+      public @Nullable V getValue(K var1) {
          ValueWrapper var2 = (ValueWrapper)this.values.get(var1);
          return (V)(var2 != null ? var2.value() : null);
       }

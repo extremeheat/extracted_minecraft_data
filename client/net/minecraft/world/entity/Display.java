@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -38,6 +37,7 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class Display extends Entity {
@@ -88,8 +88,7 @@ public abstract class Display extends Entity {
    protected boolean updateRenderState;
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
-   @Nullable
-   private RenderState renderState;
+   private @Nullable RenderState renderState;
    private final InterpolationHandler interpolation = new InterpolationHandler(this, 0);
 
    public Display(EntityType<?> var1, Level var2) {
@@ -246,8 +245,7 @@ public abstract class Display extends Entity {
       return true;
    }
 
-   @Nullable
-   public RenderState renderState() {
+   public @Nullable RenderState renderState() {
       return this.renderState;
    }
 
@@ -287,8 +285,7 @@ public abstract class Display extends Entity {
       this.entityData.set(DATA_BRIGHTNESS_OVERRIDE_ID, var1 != null ? var1.pack() : -1);
    }
 
-   @Nullable
-   private Brightness getBrightnessOverride() {
+   private @Nullable Brightness getBrightnessOverride() {
       int var1 = (Integer)this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
       return var1 != -1 ? Brightness.unpack(var1) : null;
    }
@@ -465,8 +462,7 @@ public abstract class Display extends Entity {
       private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK_ID;
       private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID;
       private final SlotAccess slot = SlotAccess.of(this::getItemStack, this::setItemStack);
-      @Nullable
-      private ItemRenderState itemRenderState;
+      private @Nullable ItemRenderState itemRenderState;
 
       public ItemDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -518,12 +514,11 @@ public abstract class Display extends Entity {
          var1.store("item_display", ItemDisplayContext.CODEC, this.getItemTransform());
       }
 
-      public SlotAccess getSlot(int var1) {
-         return var1 == 0 ? this.slot : SlotAccess.NULL;
+      public @Nullable SlotAccess getSlot(int var1) {
+         return var1 == 0 ? this.slot : null;
       }
 
-      @Nullable
-      public ItemRenderState itemRenderState() {
+      public @Nullable ItemRenderState itemRenderState() {
          return this.itemRenderState;
       }
 
@@ -550,8 +545,7 @@ public abstract class Display extends Entity {
    public static class BlockDisplay extends Display {
       public static final String TAG_BLOCK_STATE = "block_state";
       private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
-      @Nullable
-      private BlockRenderState blockRenderState;
+      private @Nullable BlockRenderState blockRenderState;
 
       public BlockDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -588,8 +582,7 @@ public abstract class Display extends Entity {
          var1.store("block_state", BlockState.CODEC, this.getBlockState());
       }
 
-      @Nullable
-      public BlockRenderState blockRenderState() {
+      public @Nullable BlockRenderState blockRenderState() {
          return this.blockRenderState;
       }
 
@@ -632,10 +625,8 @@ public abstract class Display extends Entity {
       private static final EntityDataAccessor<Byte> DATA_TEXT_OPACITY_ID;
       private static final EntityDataAccessor<Byte> DATA_STYLE_FLAGS_ID;
       private static final IntSet TEXT_RENDER_STATE_IDS;
-      @Nullable
-      private CachedInfo clientDisplayCache;
-      @Nullable
-      private TextRenderState textRenderState;
+      private @Nullable CachedInfo clientDisplayCache;
+      private @Nullable TextRenderState textRenderState;
 
       public TextDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
@@ -770,8 +761,7 @@ public abstract class Display extends Entity {
          this.clientDisplayCache = null;
       }
 
-      @Nullable
-      public TextRenderState textRenderState() {
+      public @Nullable TextRenderState textRenderState() {
          return this.textRenderState;
       }
 

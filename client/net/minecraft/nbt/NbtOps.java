@@ -20,8 +20,8 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
+import org.jspecify.annotations.Nullable;
 
 public class NbtOps implements DynamicOps<Tag> {
    public static final NbtOps INSTANCE = new NbtOps();
@@ -372,8 +372,7 @@ public class NbtOps implements DynamicOps<Tag> {
    public DataResult<MapLike<Tag>> getMap(Tag var1) {
       if (var1 instanceof final CompoundTag var2) {
          return DataResult.success(new MapLike<Tag>() {
-            @Nullable
-            public Tag get(Tag var1) {
+            public @Nullable Tag get(Tag var1) {
                if (var1 instanceof StringTag var2x) {
                   StringTag var10000 = var2x;
 
@@ -390,8 +389,7 @@ public class NbtOps implements DynamicOps<Tag> {
                }
             }
 
-            @Nullable
-            public Tag get(String var1) {
+            public @Nullable Tag get(String var1) {
                return var2.get(var1);
             }
 
@@ -404,14 +402,12 @@ public class NbtOps implements DynamicOps<Tag> {
             }
 
             // $FF: synthetic method
-            @Nullable
-            public Object get(final String var1) {
+            public @Nullable Object get(final String var1) {
                return this.get(var1);
             }
 
             // $FF: synthetic method
-            @Nullable
-            public Object get(final Object var1) {
+            public @Nullable Object get(final Object var1) {
                return this.get((Tag)var1);
             }
          });

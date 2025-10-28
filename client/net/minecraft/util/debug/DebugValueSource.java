@@ -1,7 +1,7 @@
 package net.minecraft.util.debug;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
+import org.jspecify.annotations.Nullable;
 
 public interface DebugValueSource {
    void registerDebugValues(ServerLevel var1, Registration var2);
@@ -11,7 +11,6 @@ public interface DebugValueSource {
    }
 
    public interface ValueGetter<T> {
-      @Nullable
-      T get();
+      @Nullable T get();
    }
 }

@@ -45,12 +45,12 @@ import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -76,7 +76,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -96,6 +95,7 @@ import net.minecraft.world.level.chunk.storage.SerializableChunkData;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.entity.EntityAccess;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -107,6 +107,7 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerProvider, GeneratingChunkMap {
@@ -152,7 +153,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    private final WorldGenContext worldGenContext;
 
    public ChunkMap(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureTemplateManager var4, Executor var5, BlockableEventLoop<Runnable> var6, LightChunkGetter var7, ChunkGenerator var8, ChunkStatusUpdateListener var9, Supplier<DimensionDataStorage> var10, TicketStorage var11, int var12, boolean var13) {
-      super(new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "chunk"), var2.getDimensionPath(var1.dimension()).resolve("region"), var3, var13, DataFixTypes.CHUNK, () -> LegacyStructureDataHandler.getLegacyStructureHandler(var1.dimension(), (DimensionDataStorage)var10.get(), var3));
+      super(new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "chunk"), var2.getDimensionPath(var1.dimension()).resolve("region"), var3, var13, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(var1.dimension(), var10, var3));
       this.visibleChunkMap = this.updatingChunkMap.clone();
       this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
       this.pendingGenerationTasks = new ArrayList();
@@ -230,18 +231,15 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return this.lightEngine;
    }
 
-   @Nullable
-   public ChunkHolder getUpdatingChunkIfPresent(long var1) {
+   public @Nullable ChunkHolder getUpdatingChunkIfPresent(long var1) {
       return (ChunkHolder)this.updatingChunkMap.get(var1);
    }
 
-   @Nullable
-   protected ChunkHolder getVisibleChunkIfPresent(long var1) {
+   protected @Nullable ChunkHolder getVisibleChunkIfPresent(long var1) {
       return (ChunkHolder)this.visibleChunkMap.get(var1);
    }
 
-   @Nullable
-   public ChunkStatus getLatestStatus(long var1) {
+   public @Nullable ChunkStatus getLatestStatus(long var1) {
       ChunkHolder var3 = this.getVisibleChunkIfPresent(var1);
       return var3 != null ? var3.getLatestStatus() : null;
    }
@@ -344,8 +342,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return this.getChunkRangeFuture(var1, 2, (var0) -> ChunkStatus.FULL).thenApply((var0) -> var0.map((var0x) -> (LevelChunk)var0x.get(var0x.size() / 2)));
    }
 
-   @Nullable
-   ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5) {
+   @Nullable ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5) {
       if (!ChunkLevel.isLoaded(var5) && !ChunkLevel.isLoaded(var3)) {
          return var4;
       } else {
@@ -824,8 +821,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       var0.connection.chunkSender.dropChunk(var0, var1);
    }
 
-   @Nullable
-   public LevelChunk getChunkToSend(long var1) {
+   public @Nullable LevelChunk getChunkToSend(long var1) {
       ChunkHolder var3 = this.getVisibleChunkIfPresent(var1);
       return var3 == null ? null : var3.getChunkToSend();
    }
@@ -916,6 +912,18 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       return var2 == TriState.DEFAULT ? this.anyPlayerCloseEnoughForSpawningInternal(var1) : var2.toBoolean(true);
    }
 
+   boolean anyPlayerCloseEnoughTo(BlockPos var1, int var2) {
+      Vec3 var3 = new Vec3(var1);
+
+      for(ServerPlayer var5 : this.playerMap.getAllPlayers()) {
+         if (this.playerIsCloseEnoughTo(var5, var3, var2)) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
    private boolean anyPlayerCloseEnoughForSpawningInternal(ChunkPos var1) {
       for(ServerPlayer var3 : this.playerMap.getAllPlayers()) {
          if (this.playerIsCloseEnoughForSpawning(var3, var1)) {
@@ -952,6 +960,15 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       }
    }
 
+   private boolean playerIsCloseEnoughTo(ServerPlayer var1, Vec3 var2, int var3) {
+      if (var1.isSpectator()) {
+         return false;
+      } else {
+         double var4 = var1.position().distanceTo(var2);
+         return var4 < (double)var3;
+      }
+   }
+
    private static double euclideanDistanceSquared(ChunkPos var0, Vec3 var1) {
       double var2 = (double)SectionPos.sectionToBlockCoord(var0.x, 8);
       double var4 = (double)SectionPos.sectionToBlockCoord(var0.z, 8);
@@ -961,7 +978,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    }
 
    private boolean skipPlayer(ServerPlayer var1) {
-      return var1.isSpectator() && !this.level.getGameRules().getBoolean(GameRules.RULE_SPECTATORSGENERATECHUNKS);
+      return var1.isSpectator() && !(Boolean)this.level.getGameRules().get(GameRules.SPECTATORS_GENERATE_CHUNKS);
    }
 
    void updatePlayerStatus(ServerPlayer var1, boolean var2) {
@@ -1285,13 +1302,11 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          return ChunkMap.this.toDrop.contains(var1);
       }
 
-      @Nullable
-      protected ChunkHolder getChunk(long var1) {
+      protected @Nullable ChunkHolder getChunk(long var1) {
          return ChunkMap.this.getUpdatingChunkIfPresent(var1);
       }
 
-      @Nullable
-      protected ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5) {
+      protected @Nullable ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5) {
          return ChunkMap.this.updateChunkScheduling(var1, var3, var4, var5);
       }
    }

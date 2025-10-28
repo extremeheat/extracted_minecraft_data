@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -15,6 +14,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public class SystemToast implements Toast {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/system");

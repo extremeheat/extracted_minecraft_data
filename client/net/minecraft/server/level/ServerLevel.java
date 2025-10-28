@@ -36,8 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -122,7 +120,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.ServerExplosion;
@@ -157,6 +154,8 @@ import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventDispatcher;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -184,6 +183,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.LevelTicks;
 import net.minecraft.world.waypoints.WaypointTransmitter;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLevel {
@@ -217,8 +217,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private final List<BlockEventData> blockEventsToReschedule = new ArrayList(64);
    private boolean handlingTick;
    private final List<CustomSpawner> customSpawners;
-   @Nullable
-   private EndDragonFight dragonFight;
+   private @Nullable EndDragonFight dragonFight;
    final Int2ObjectMap<EnderDragonPart> dragonParts = new Int2ObjectOpenHashMap();
    private final StructureManager structureManager;
    private final StructureCheck structureCheck;
@@ -303,15 +302,15 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          var2.pop();
       }
 
-      int var5 = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
+      int var5 = (Integer)this.getGameRules().get(GameRules.PLAYERS_SLEEPING_PERCENTAGE);
       if (this.sleepStatus.areEnoughSleeping(var5) && this.sleepStatus.areEnoughDeepSleeping(var5, this.players)) {
-         if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
+         if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_TIME)) {
             long var6 = this.levelData.getDayTime() + 24000L;
             this.setDayTime(var6 - var6 % 24000L);
          }
 
          this.wakeUpAllPlayers();
-         if (this.getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE) && this.isRaining()) {
+         if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_WEATHER) && this.isRaining()) {
             this.resetWeatherCycle();
          }
       }
@@ -415,7 +414,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          Profiler.get().push("scheduledFunctions");
          this.serverLevelData.getScheduledEvents().tick(this.server, var1);
          Profiler.get().pop();
-         if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
+         if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_TIME)) {
             this.setDayTime(this.levelData.getDayTime() + 1L);
          }
 
@@ -498,7 +497,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          BlockPos var7 = this.findLightningTargetAround(this.getBlockRandomPos(var4, 0, var5, 15));
          if (this.isRainingAt(var7)) {
             DifficultyInstance var8 = this.getCurrentDifficultyAt(var7);
-            boolean var9 = this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.random.nextDouble() < (double)var8.getEffectiveDifficulty() * 0.01 && !this.getBlockState(var7.below()).is(BlockTags.LIGHTNING_RODS);
+            boolean var9 = (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && this.random.nextDouble() < (double)var8.getEffectiveDifficulty() * 0.01 && !this.getBlockState(var7.below()).is(BlockTags.LIGHTNING_RODS);
             if (var9) {
                SkeletonHorse var10 = EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
                if (var10 != null) {
@@ -531,7 +530,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
 
       if (this.isRaining()) {
-         int var5 = this.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT);
+         int var5 = (Integer)this.getGameRules().get(GameRules.MAX_SNOW_ACCUMULATION_HEIGHT);
          if (var5 > 0 && var4.shouldSnow(this, var2)) {
             BlockState var6 = this.getBlockState(var2);
             if (var6.is(Blocks.SNOW)) {
@@ -567,7 +566,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          return (BlockPos)var3.get();
       } else {
          AABB var4 = AABB.encapsulatingFullBlocks(var2, var2.atY(this.getMaxY() + 1)).inflate(3.0);
-         List var5 = this.getEntitiesOfClass(LivingEntity.class, var4, (var1x) -> var1x != null && var1x.isAlive() && this.canSeeSky(var1x.blockPosition()));
+         List var5 = this.getEntitiesOfClass(LivingEntity.class, var4, (var1x) -> var1x.isAlive() && this.canSeeSky(var1x.blockPosition()));
          if (!var5.isEmpty()) {
             return ((LivingEntity)var5.get(this.random.nextInt(var5.size()))).blockPosition();
          } else {
@@ -585,13 +584,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public boolean canSleepThroughNights() {
-      return this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE) <= 100;
+      return (Integer)this.getGameRules().get(GameRules.PLAYERS_SLEEPING_PERCENTAGE) <= 100;
    }
 
    private void announceSleepStatus() {
       if (this.canSleepThroughNights()) {
          if (!this.getServer().isSingleplayer() || this.getServer().isPublished()) {
-            int var1 = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
+            int var1 = (Integer)this.getGameRules().get(GameRules.PLAYERS_SLEEPING_PERCENTAGE);
             MutableComponent var2;
             if (this.sleepStatus.areEnoughSleeping(var1)) {
                var2 = Component.translatable("sleep.skipping_night");
@@ -637,7 +636,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private void advanceWeatherCycle() {
       boolean var1 = this.isRaining();
       if (this.dimensionType().hasSkyLight()) {
-         if (this.getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE)) {
+         if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_WEATHER)) {
             int var2 = this.serverLevelData.getClearWeatherTime();
             int var3 = this.serverLevelData.getThunderTime();
             int var4 = this.serverLevelData.getRainTime();
@@ -894,8 +893,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return var3;
    }
 
-   @Nullable
-   public ServerPlayer getRandomPlayer() {
+   public @Nullable ServerPlayer getRandomPlayer() {
       List var1 = this.getPlayers(LivingEntity::isAlive);
       return var1.isEmpty() ? null : (ServerPlayer)var1.get(this.random.nextInt(var1.size()));
    }
@@ -969,7 +967,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
       for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
-         if (var5 != null && var5.level() == this && var5.getId() != var1) {
+         if (var5.level() == this && var5.getId() != var1) {
             double var6 = (double)var2.getX() - var5.getX();
             double var8 = (double)var2.getY() - var5.getY();
             double var10 = (double)var2.getZ() - var5.getZ();
@@ -1006,7 +1004,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
-      if (this.getGameRules().getBoolean(GameRules.RULE_GLOBAL_SOUND_EVENTS)) {
+      if ((Boolean)this.getGameRules().get(GameRules.GLOBAL_SOUND_EVENTS)) {
          this.server.getPlayerList().getPlayers().forEach((var4) -> {
             Vec3 var5;
             if (var4.level() == this) {
@@ -1118,9 +1116,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       Explosion.BlockInteraction var10000;
       switch (var12) {
          case NONE -> var10000 = Explosion.BlockInteraction.KEEP;
-         case BLOCK -> var10000 = this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
-         case MOB -> var10000 = this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY) : Explosion.BlockInteraction.KEEP;
-         case TNT -> var10000 = this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
+         case BLOCK -> var10000 = this.getDestroyType(GameRules.BLOCK_EXPLOSION_DROP_DECAY);
+         case MOB -> var10000 = (Boolean)this.getGameRules().get(GameRules.MOB_GRIEFING) ? this.getDestroyType(GameRules.MOB_EXPLOSION_DROP_DECAY) : Explosion.BlockInteraction.KEEP;
+         case TNT -> var10000 = this.getDestroyType(GameRules.TNT_EXPLOSION_DROP_DECAY);
          case TRIGGER -> var10000 = Explosion.BlockInteraction.TRIGGER_BLOCK;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
@@ -1140,8 +1138,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    }
 
-   private Explosion.BlockInteraction getDestroyType(GameRules.Key<GameRules.BooleanValue> var1) {
-      return this.getGameRules().getBoolean(var1) ? Explosion.BlockInteraction.DESTROY_WITH_DECAY : Explosion.BlockInteraction.DESTROY;
+   private Explosion.BlockInteraction getDestroyType(GameRule<Boolean> var1) {
+      return (Boolean)this.getGameRules().get(var1) ? Explosion.BlockInteraction.DESTROY_WITH_DECAY : Explosion.BlockInteraction.DESTROY;
    }
 
    public void blockEvent(BlockPos var1, Block var2, int var3, int var4) {
@@ -1178,7 +1176,6 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.fluidTicks;
    }
 
-   @Nonnull
    public MinecraftServer getServer() {
       return this.server;
    }
@@ -1228,13 +1225,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
    }
 
-   @Nullable
-   public Entity getEntity(int var1) {
+   public @Nullable Entity getEntity(int var1) {
       return (Entity)this.getEntities().get(var1);
    }
 
-   @Nullable
-   public Entity getEntityInAnyDimension(UUID var1) {
+   public @Nullable Entity getEntityInAnyDimension(UUID var1) {
       Entity var2 = this.getEntity(var1);
       if (var2 != null) {
          return var2;
@@ -1252,15 +1247,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
    }
 
-   @Nullable
-   public Player getPlayerInAnyDimension(UUID var1) {
+   public @Nullable Player getPlayerInAnyDimension(UUID var1) {
       return this.getServer().getPlayerList().getPlayer(var1);
    }
 
    /** @deprecated */
    @Deprecated
-   @Nullable
-   public Entity getEntityOrPart(int var1) {
+   public @Nullable Entity getEntityOrPart(int var1) {
       Entity var2 = (Entity)this.getEntities().get(var1);
       return var2 != null ? var2 : (Entity)this.dragonParts.get(var1);
    }
@@ -1269,8 +1262,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.dragonParts.values();
    }
 
-   @Nullable
-   public BlockPos findNearestMapStructure(TagKey<Structure> var1, BlockPos var2, int var3, boolean var4) {
+   public @Nullable BlockPos findNearestMapStructure(TagKey<Structure> var1, BlockPos var2, int var3, boolean var4) {
       if (!this.server.getWorldData().worldGenOptions().generateStructures()) {
          return null;
       } else {
@@ -1284,8 +1276,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
    }
 
-   @Nullable
-   public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(Predicate<Holder<Biome>> var1, BlockPos var2, int var3, int var4, int var5) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(Predicate<Holder<Biome>> var1, BlockPos var2, int var3, int var4, int var5) {
       return this.getChunkSource().getGenerator().getBiomeSource().findClosestBiome3d(var2, var3, var4, var5, var1, this.getChunkSource().randomState().sampler(), this);
    }
 
@@ -1311,8 +1302,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.getChunkSource().getDataStorage();
    }
 
-   @Nullable
-   public MapItemSavedData getMapData(MapId var1) {
+   public @Nullable MapItemSavedData getMapData(MapId var1) {
       return (MapItemSavedData)this.getServer().overworld().getDataStorage().get(MapItemSavedData.type(var1));
    }
 
@@ -1396,8 +1386,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.raids;
    }
 
-   @Nullable
-   public Raid getRaidAt(BlockPos var1) {
+   public @Nullable Raid getRaidAt(BlockPos var1) {
       return this.raids.getNearbyRaid(var1, 9216);
    }
 
@@ -1601,8 +1590,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.server.getWorldData().worldGenOptions().seed();
    }
 
-   @Nullable
-   public EndDragonFight getDragonFight() {
+   public @Nullable EndDragonFight getDragonFight() {
       return this.dragonFight;
    }
 
@@ -1673,7 +1661,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public boolean isSpawningMonsters() {
-      return this.getLevelData().getDifficulty() != Difficulty.PEACEFUL && this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.getGameRules().getBoolean(GameRules.RULE_SPAWN_MONSTERS);
+      return this.getLevelData().getDifficulty() != Difficulty.PEACEFUL && (Boolean)this.getGameRules().get(GameRules.SPAWN_MOBS) && (Boolean)this.getGameRules().get(GameRules.SPAWN_MONSTERS);
    }
 
    public void close() throws IOException {
@@ -1708,6 +1696,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public boolean anyPlayerCloseEnoughForSpawning(ChunkPos var1) {
       return this.chunkSource.chunkMap.anyPlayerCloseEnoughForSpawning(var1);
+   }
+
+   public boolean canSpreadFireAround(BlockPos var1) {
+      int var2 = (Integer)this.getGameRules().get(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER);
+      return var2 == -1 || this.chunkSource.chunkMap.anyPlayerCloseEnoughTo(var1, var2);
    }
 
    public boolean canSpawnEntitiesInChunk(ChunkPos var1) {
@@ -1758,19 +1751,19 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public boolean isAllowedToEnterPortal(Level var1) {
-      return var1.dimension() == Level.NETHER ? this.getGameRules().getBoolean(GameRules.RULE_ALLOW_NETHER) : true;
+      return var1.dimension() == Level.NETHER ? (Boolean)this.getGameRules().get(GameRules.ALLOW_ENTERING_NETHER_USING_PORTALS) : true;
    }
 
    public boolean isPvpAllowed() {
-      return this.getGameRules().getBoolean(GameRules.RULE_PVP);
+      return (Boolean)this.getGameRules().get(GameRules.PVP);
    }
 
    public boolean isCommandBlockEnabled() {
-      return this.getGameRules().getBoolean(GameRules.RULE_COMMAND_BLOCKS_ENABLED);
+      return (Boolean)this.getGameRules().get(GameRules.COMMAND_BLOCKS_WORK);
    }
 
    public boolean isSpawnerBlockEnabled() {
-      return this.getGameRules().getBoolean(GameRules.RULE_SPAWNER_BLOCKS_ENABLED);
+      return (Boolean)this.getGameRules().get(GameRules.SPAWNER_BLOCKS_WORK);
    }
 
    // $FF: synthetic method

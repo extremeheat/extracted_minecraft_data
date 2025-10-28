@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -10,6 +9,7 @@ import net.minecraft.network.PacketListener;
 import net.minecraft.network.PacketProcessor;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.level.ServerLevel;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PacketUtils {

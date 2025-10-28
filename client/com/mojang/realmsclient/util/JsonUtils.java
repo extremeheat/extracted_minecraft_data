@@ -6,8 +6,8 @@ import com.mojang.util.UndashedUuid;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 
 public class JsonUtils {
    public JsonUtils() {
@@ -27,8 +27,7 @@ public class JsonUtils {
       }
    }
 
-   @Nullable
-   public static <T> T getOptional(String var0, JsonObject var1, Function<JsonObject, T> var2) {
+   public static <T> @Nullable T getOptional(String var0, JsonObject var1, Function<JsonObject, T> var2) {
       JsonElement var3 = var1.get(var0);
       if (var3 != null && !var3.isJsonNull()) {
          if (!var3.isJsonObject()) {
@@ -50,9 +49,8 @@ public class JsonUtils {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static String getStringOr(String var0, JsonObject var1, @Nullable String var2) {
+   public static @Nullable String getStringOr(String var0, JsonObject var1, @Nullable String var2) {
       JsonElement var3 = var1.get(var0);
       if (var3 != null) {
          return var3.isJsonNull() ? var2 : var3.getAsString();
@@ -61,9 +59,8 @@ public class JsonUtils {
       }
    }
 
-   @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static UUID getUuidOr(String var0, JsonObject var1, @Nullable UUID var2) {
+   public static @Nullable UUID getUuidOr(String var0, JsonObject var1, @Nullable UUID var2) {
       String var3 = getStringOr(var0, var1, (String)null);
       return var3 == null ? var2 : UndashedUuid.fromStringLenient(var3);
    }

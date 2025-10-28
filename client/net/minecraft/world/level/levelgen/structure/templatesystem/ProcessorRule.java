@@ -2,13 +2,13 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.Passthrough;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifier;
+import org.jspecify.annotations.Nullable;
 
 public class ProcessorRule {
    public static final Passthrough DEFAULT_BLOCK_ENTITY_MODIFIER;
@@ -44,8 +44,7 @@ public class ProcessorRule {
       return this.outputState;
    }
 
-   @Nullable
-   public CompoundTag getOutputTag(RandomSource var1, @Nullable CompoundTag var2) {
+   public @Nullable CompoundTag getOutputTag(RandomSource var1, @Nullable CompoundTag var2) {
       return this.blockEntityModifier.apply(var1, var2);
    }
 

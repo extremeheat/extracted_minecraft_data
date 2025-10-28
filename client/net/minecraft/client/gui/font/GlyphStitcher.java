@@ -5,10 +5,10 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class GlyphStitcher implements AutoCloseable {
    private final TextureManager textureManager;
@@ -35,8 +35,7 @@ public class GlyphStitcher implements AutoCloseable {
       this.reset();
    }
 
-   @Nullable
-   public BakedSheetGlyph stitch(GlyphInfo var1, GlyphBitmap var2) {
+   public @Nullable BakedSheetGlyph stitch(GlyphInfo var1, GlyphBitmap var2) {
       for(FontTexture var4 : this.textures) {
          BakedSheetGlyph var5 = var4.add(var1, var2);
          if (var5 != null) {

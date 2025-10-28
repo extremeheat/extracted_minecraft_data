@@ -9,12 +9,16 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 public interface EnvironmentAttributes {
-   EnvironmentAttribute<Integer> FOG_COLOR = register("visual/fog_color", EnvironmentAttribute.builder(AttributeTypes.COLOR).defaultValue(0).spatiallyInterpolated().syncable());
-   EnvironmentAttribute<Boolean> EXTRA_FOG = register("visual/extra_fog", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false).syncable());
-   EnvironmentAttribute<Integer> WATER_FOG_COLOR = register("visual/water_fog_color", EnvironmentAttribute.builder(AttributeTypes.COLOR).defaultValue(-16448205).spatiallyInterpolated().syncable());
-   EnvironmentAttribute<Float> WATER_FOG_RADIUS = register("visual/water_fog_radius", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(96.0F).valueRange(AttributeRange.NON_NEGATIVE_FLOAT).spatiallyInterpolated().syncable());
-   EnvironmentAttribute<Integer> SKY_COLOR = register("visual/sky_color", EnvironmentAttribute.builder(AttributeTypes.COLOR).defaultValue(0).spatiallyInterpolated().syncable());
-   EnvironmentAttribute<Float> CLOUD_OPACITY = register("visual/cloud_opacity", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.0F).valueRange(AttributeRange.UNIT_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> FOG_COLOR = register("visual/fog_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(0).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> FOG_START_DISTANCE = register("visual/fog_start_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.0F).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> FOG_END_DISTANCE = register("visual/fog_end_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(1024.0F).valueRange(AttributeRange.NON_NEGATIVE_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> SKY_FOG_END_DISTANCE = register("visual/sky_fog_end_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(512.0F).valueRange(AttributeRange.NON_NEGATIVE_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> CLOUD_FOG_END_DISTANCE = register("visual/cloud_fog_end_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(2048.0F).valueRange(AttributeRange.NON_NEGATIVE_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> WATER_FOG_COLOR = register("visual/water_fog_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(-16448205).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> WATER_FOG_START_DISTANCE = register("visual/water_fog_start_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(-8.0F).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Float> WATER_FOG_END_DISTANCE = register("visual/water_fog_end_distance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(96.0F).valueRange(AttributeRange.NON_NEGATIVE_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> SKY_COLOR = register("visual/sky_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(0).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> CLOUD_COLOR = register("visual/cloud_color", EnvironmentAttribute.builder(AttributeTypes.ARGB_COLOR).defaultValue(0).spatiallyInterpolated().syncable());
    EnvironmentAttribute<Float> CLOUD_HEIGHT = register("visual/cloud_height", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(192.33F).spatiallyInterpolated().syncable());
    EnvironmentAttribute<ParticleOptions> DEFAULT_DRIPSTONE_PARTICLE = register("visual/default_dripstone_particle", EnvironmentAttribute.builder(AttributeTypes.PARTICLE).defaultValue(ParticleTypes.DRIPPING_DRIPSTONE_WATER).syncable());
    EnvironmentAttribute<List<AmbientParticle>> AMBIENT_PARTICLES = register("visual/ambient_particles", EnvironmentAttribute.builder(AttributeTypes.AMBIENT_PARTICLES).defaultValue(List.of()).syncable());
@@ -28,7 +32,7 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Boolean> NETHER_PORTAL_SPAWNS_PIGLINS = register("gameplay/nether_portal_spawns_piglin", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    EnvironmentAttribute<Boolean> FAST_LAVA = register("gameplay/fast_lava", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false).notPositional().syncable());
    EnvironmentAttribute<Boolean> INCREASED_FIRE_BURNOUT = register("gameplay/increased_fire_burnout", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
-   EnvironmentAttribute<Boolean> PIGLINS_ZOMBIFY = register("gameplay/piglins_zombify", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(true));
+   EnvironmentAttribute<Boolean> PIGLINS_ZOMBIFY = register("gameplay/piglins_zombify", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(true).syncable());
    EnvironmentAttribute<Boolean> SNOW_GOLEM_MELTS = register("gameplay/snow_golem_melts", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    Codec<EnvironmentAttribute<?>> CODEC = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec();
 

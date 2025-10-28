@@ -25,11 +25,11 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(LootContextParams.ORIGIN, this.entityTarget.getParam());
+      return Set.of(LootContextParams.ORIGIN, this.entityTarget.contextParam());
    }
 
    public boolean test(LootContext var1) {
-      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.getParam());
+      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.contextParam());
       Vec3 var3 = (Vec3)var1.getOptionalParameter(LootContextParams.ORIGIN);
       return this.predicate.isEmpty() || ((EntityPredicate)this.predicate.get()).matches(var1.getLevel(), var3, var2);
    }

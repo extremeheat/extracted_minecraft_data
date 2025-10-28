@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 
 public class Stopwatches extends SavedData {
    private static final Codec<Stopwatches> CODEC;
@@ -36,8 +36,7 @@ public class Stopwatches extends SavedData {
       return var3;
    }
 
-   @Nullable
-   public Stopwatch get(ResourceLocation var1) {
+   public @Nullable Stopwatch get(ResourceLocation var1) {
       return (Stopwatch)this.stopwatches.get(var1);
    }
 

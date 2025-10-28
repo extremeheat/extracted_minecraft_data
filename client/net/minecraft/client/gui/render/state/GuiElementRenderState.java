@@ -2,9 +2,9 @@ package net.minecraft.client.gui.render.state;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
+import org.jspecify.annotations.Nullable;
 
 public interface GuiElementRenderState extends ScreenArea {
    void buildVertices(VertexConsumer var1);
@@ -13,6 +13,5 @@ public interface GuiElementRenderState extends ScreenArea {
 
    TextureSetup textureSetup();
 
-   @Nullable
-   ScreenRectangle scissorArea();
+   @Nullable ScreenRectangle scissorArea();
 }

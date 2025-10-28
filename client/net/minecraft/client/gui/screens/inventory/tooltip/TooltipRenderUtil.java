@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class TooltipRenderUtil {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/background");

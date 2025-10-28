@@ -10,12 +10,12 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>> {
    private final LightLayer layer;
@@ -45,18 +45,15 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       return this.getDataLayer(var1, true) != null;
    }
 
-   @Nullable
-   protected DataLayer getDataLayer(long var1, boolean var3) {
+   protected @Nullable DataLayer getDataLayer(long var1, boolean var3) {
       return this.getDataLayer(var3 ? this.updatingSectionData : this.visibleSectionData, var1);
    }
 
-   @Nullable
-   protected DataLayer getDataLayer(M var1, long var2) {
+   protected @Nullable DataLayer getDataLayer(M var1, long var2) {
       return var1.getLayer(var2);
    }
 
-   @Nullable
-   protected DataLayer getDataLayerToWrite(long var1) {
+   protected @Nullable DataLayer getDataLayerToWrite(long var1) {
       DataLayer var3 = this.updatingSectionData.getLayer(var1);
       if (var3 == null) {
          return null;
@@ -71,8 +68,7 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       }
    }
 
-   @Nullable
-   public DataLayer getDataLayerData(long var1) {
+   public @Nullable DataLayer getDataLayerData(long var1) {
       DataLayer var3 = (DataLayer)this.queuedSections.get(var1);
       return var3 != null ? var3 : this.getDataLayer(var1, false);
    }

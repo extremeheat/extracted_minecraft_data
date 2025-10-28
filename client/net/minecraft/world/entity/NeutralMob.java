@@ -1,13 +1,13 @@
 package net.minecraft.world.entity;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public interface NeutralMob {
    String TAG_ANGER_END_TIME = "anger_end_time";
@@ -22,8 +22,7 @@ public interface NeutralMob {
 
    void setPersistentAngerEndTime(long var1);
 
-   @Nullable
-   EntityReference<LivingEntity> getPersistentAngerTarget();
+   @Nullable EntityReference<LivingEntity> getPersistentAngerTarget();
 
    void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1);
 
@@ -98,7 +97,7 @@ public interface NeutralMob {
    }
 
    default boolean isAngryAtAllPlayers(ServerLevel var1) {
-      return var1.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
+      return (Boolean)var1.getGameRules().get(GameRules.UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
    }
 
    default boolean isAngry() {
@@ -112,7 +111,7 @@ public interface NeutralMob {
    }
 
    default void playerDied(ServerLevel var1, Player var2) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
          EntityReference var3 = this.getPersistentAngerTarget();
          if (var3 != null && var3.matches(var2)) {
             this.stopBeingAngry();
@@ -132,8 +131,7 @@ public interface NeutralMob {
       this.setPersistentAngerEndTime(-1L);
    }
 
-   @Nullable
-   LivingEntity getLastHurtByMob();
+   @Nullable LivingEntity getLastHurtByMob();
 
    void setLastHurtByMob(@Nullable LivingEntity var1);
 
@@ -141,6 +139,5 @@ public interface NeutralMob {
 
    boolean canAttack(LivingEntity var1);
 
-   @Nullable
-   LivingEntity getTarget();
+   @Nullable LivingEntity getTarget();
 }

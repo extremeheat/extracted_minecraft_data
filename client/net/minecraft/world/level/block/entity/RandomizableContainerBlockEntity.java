@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
@@ -15,18 +14,17 @@ import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RandomizableContainerBlockEntity extends BaseContainerBlockEntity implements RandomizableContainer {
-   @Nullable
-   protected ResourceKey<LootTable> lootTable;
+   protected @Nullable ResourceKey<LootTable> lootTable;
    protected long lootTableSeed = 0L;
 
    protected RandomizableContainerBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
    }
 
-   @Nullable
-   public ResourceKey<LootTable> getLootTable() {
+   public @Nullable ResourceKey<LootTable> getLootTable() {
       return this.lootTable;
    }
 
@@ -71,8 +69,7 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
       return super.canOpen(var1) && (this.lootTable == null || !var1.isSpectator());
    }
 
-   @Nullable
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
+   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       if (this.canOpen(var3)) {
          this.unpackLootTable(var2.player);
          return this.createMenu(var1, var2);

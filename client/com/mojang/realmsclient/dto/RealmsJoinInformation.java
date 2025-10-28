@@ -2,7 +2,7 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record RealmsJoinInformation(@Nullable String address, @Nullable String resourcePackUrl, @Nullable String resourcePackHash, @Nullable RegionData regionData) implements ReflectionBasedSerialization {
@@ -33,26 +33,22 @@ public record RealmsJoinInformation(@Nullable String address, @Nullable String r
    }
 
    @SerializedName("address")
-   @Nullable
-   public String address() {
+   public @Nullable String address() {
       return this.address;
    }
 
    @SerializedName("resourcePackUrl")
-   @Nullable
-   public String resourcePackUrl() {
+   public @Nullable String resourcePackUrl() {
       return this.resourcePackUrl;
    }
 
    @SerializedName("resourcePackHash")
-   @Nullable
-   public String resourcePackHash() {
+   public @Nullable String resourcePackHash() {
       return this.resourcePackHash;
    }
 
    @SerializedName("sessionRegionData")
-   @Nullable
-   public RegionData regionData() {
+   public @Nullable RegionData regionData() {
       return this.regionData;
    }
 
@@ -64,14 +60,12 @@ public record RealmsJoinInformation(@Nullable String address, @Nullable String r
       }
 
       @SerializedName("regionName")
-      @Nullable
-      public RealmsRegion region() {
+      public @Nullable RealmsRegion region() {
          return this.region;
       }
 
       @SerializedName("serviceQuality")
-      @Nullable
-      public ServiceQuality serviceQuality() {
+      public @Nullable ServiceQuality serviceQuality() {
          return this.serviceQuality;
       }
    }

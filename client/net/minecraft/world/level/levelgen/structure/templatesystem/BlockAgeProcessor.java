@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
+import org.jspecify.annotations.Nullable;
 
 public class BlockAgeProcessor extends StructureProcessor {
    public static final MapCodec<BlockAgeProcessor> CODEC;
@@ -28,8 +28,7 @@ public class BlockAgeProcessor extends StructureProcessor {
       this.mossiness = var1;
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       RandomSource var7 = var6.getRandom(var5.pos());
       BlockState var8 = var5.state();
       BlockPos var9 = var5.pos();
@@ -51,8 +50,7 @@ public class BlockAgeProcessor extends StructureProcessor {
       return var10 != null ? new StructureTemplate.StructureBlockInfo(var9, var10, var5.nbt()) : var5;
    }
 
-   @Nullable
-   private BlockState maybeReplaceFullStoneBlock(RandomSource var1) {
+   private @Nullable BlockState maybeReplaceFullStoneBlock(RandomSource var1) {
       if (var1.nextFloat() >= 0.5F) {
          return null;
       } else {
@@ -62,8 +60,7 @@ public class BlockAgeProcessor extends StructureProcessor {
       }
    }
 
-   @Nullable
-   private BlockState maybeReplaceStairs(BlockState var1, RandomSource var2) {
+   private @Nullable BlockState maybeReplaceStairs(BlockState var1, RandomSource var2) {
       if (var2.nextFloat() >= 0.5F) {
          return null;
       } else {
@@ -72,18 +69,15 @@ public class BlockAgeProcessor extends StructureProcessor {
       }
    }
 
-   @Nullable
-   private BlockState maybeReplaceSlab(BlockState var1, RandomSource var2) {
+   private @Nullable BlockState maybeReplaceSlab(BlockState var1, RandomSource var2) {
       return var2.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_SLAB.withPropertiesOf(var1) : null;
    }
 
-   @Nullable
-   private BlockState maybeReplaceWall(BlockState var1, RandomSource var2) {
+   private @Nullable BlockState maybeReplaceWall(BlockState var1, RandomSource var2) {
       return var2.nextFloat() < this.mossiness ? Blocks.MOSSY_STONE_BRICK_WALL.withPropertiesOf(var1) : null;
    }
 
-   @Nullable
-   private BlockState maybeReplaceObsidian(RandomSource var1) {
+   private @Nullable BlockState maybeReplaceObsidian(RandomSource var1) {
       return var1.nextFloat() < 0.15F ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : null;
    }
 

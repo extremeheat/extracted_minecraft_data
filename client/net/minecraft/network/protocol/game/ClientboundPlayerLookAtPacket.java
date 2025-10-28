@@ -1,6 +1,5 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,6 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerLookAtPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPlayerLookAtPacket>codec(ClientboundPlayerLookAtPacket::write, ClientboundPlayerLookAtPacket::new);
@@ -85,8 +85,7 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
       return this.fromAnchor;
    }
 
-   @Nullable
-   public Vec3 getPosition(Level var1) {
+   public @Nullable Vec3 getPosition(Level var1) {
       if (this.atEntity) {
          Entity var2 = var1.getEntity(this.entity);
          return var2 == null ? new Vec3(this.x, this.y, this.z) : this.toAnchor.apply(var2);

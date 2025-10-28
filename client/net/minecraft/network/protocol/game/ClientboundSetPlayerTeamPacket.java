@@ -3,7 +3,6 @@ package net.minecraft.network.protocol.game;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -14,6 +13,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket>codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
@@ -88,8 +88,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       return var0 == 0 || var0 == 2;
    }
 
-   @Nullable
-   public Action getPlayerAction() {
+   public @Nullable Action getPlayerAction() {
       Action var10000;
       switch (this.method) {
          case 0:
@@ -108,8 +107,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       return var10000;
    }
 
-   @Nullable
-   public Action getTeamAction() {
+   public @Nullable Action getTeamAction() {
       Action var10000;
       switch (this.method) {
          case 0 -> var10000 = ClientboundSetPlayerTeamPacket.Action.ADD;

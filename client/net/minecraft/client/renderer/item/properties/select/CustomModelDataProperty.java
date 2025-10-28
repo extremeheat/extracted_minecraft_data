@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.item.properties.select;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ExtraCodecs;
@@ -11,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
+import org.jspecify.annotations.Nullable;
 
 public record CustomModelDataProperty(int index) implements SelectItemModelProperty<String> {
    public static final PrimitiveCodec<String> VALUE_CODEC;
@@ -21,8 +21,7 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
       this.index = var1;
    }
 
-   @Nullable
-   public String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+   public @Nullable String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
       CustomModelData var6 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
       return var6 != null ? var6.getString(this.index) : null;
    }
@@ -36,8 +35,7 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
+   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
       return this.get(var1, var2, var3, var4, var5);
    }
 

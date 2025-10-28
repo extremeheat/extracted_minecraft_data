@@ -8,12 +8,12 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.reporting.SkinReportScreen;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class SkinReport extends Report {
    final Supplier<PlayerSkin> skinGetter;
@@ -57,8 +57,7 @@ public class SkinReport extends Report {
          return StringUtils.isNotEmpty(this.comments()) || this.reason() != null;
       }
 
-      @Nullable
-      public Report.CannotBuildReason checkBuildable() {
+      public Report.@Nullable CannotBuildReason checkBuildable() {
          if ((this.report).reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -23,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SetNameFunction extends LootItemConditionalFunction {
@@ -44,12 +44,12 @@ public class SetNameFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.getParam())).orElse(Set.of());
+      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.contextParam())).orElse(Set.of());
    }
 
-   public static UnaryOperator<Component> createResolver(LootContext var0, @Nullable LootContext.EntityTarget var1) {
+   public static UnaryOperator<Component> createResolver(LootContext var0, LootContext.@Nullable EntityTarget var1) {
       if (var1 != null) {
-         Entity var2 = (Entity)var0.getOptionalParameter(var1.getParam());
+         Entity var2 = (Entity)var0.getOptionalParameter(var1.contextParam());
          if (var2 != null) {
             CommandSourceStack var3 = var2.createCommandSourceStackForNameResolution(var0.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
             return (var2x) -> {

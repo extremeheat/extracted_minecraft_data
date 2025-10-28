@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
@@ -12,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.Nullable;
 
 public class BeaconMenu extends AbstractContainerMenu {
    private static final int PAYMENT_SLOT = 0;
@@ -123,18 +123,15 @@ public class BeaconMenu extends AbstractContainerMenu {
       return var0 == null ? 0 : BuiltInRegistries.MOB_EFFECT.asHolderIdMap().getId(var0) + 1;
    }
 
-   @Nullable
-   public static Holder<MobEffect> decodeEffect(int var0) {
+   public static @Nullable Holder<MobEffect> decodeEffect(int var0) {
       return var0 == 0 ? null : (Holder)BuiltInRegistries.MOB_EFFECT.asHolderIdMap().byId(var0 - 1);
    }
 
-   @Nullable
-   public Holder<MobEffect> getPrimaryEffect() {
+   public @Nullable Holder<MobEffect> getPrimaryEffect() {
       return decodeEffect(this.beaconData.get(1));
    }
 
-   @Nullable
-   public Holder<MobEffect> getSecondaryEffect() {
+   public @Nullable Holder<MobEffect> getSecondaryEffect() {
       return decodeEffect(this.beaconData.get(2));
    }
 

@@ -2,9 +2,9 @@ package net.minecraft.world.level.levelgen.structure.templatesystem.rule.blocken
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public class AppendStatic implements RuleBlockEntityModifier {
    public static final MapCodec<AppendStatic> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CompoundTag.CODEC.fieldOf("data").forGetter((var0x) -> var0x.tag)).apply(var0, AppendStatic::new));

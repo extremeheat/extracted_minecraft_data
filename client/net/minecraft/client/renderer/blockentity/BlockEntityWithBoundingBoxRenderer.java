@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -22,6 +21,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & BoundingBoxRenderable> implements BlockEntityRenderer<T, BlockEntityWithBoundingBoxRenderState> {
    public static final int STRUCTURE_VOIDS_COLOR = ARGB.colorFromFloat(0.2F, 0.75F, 0.75F, 1.0F);
@@ -34,7 +34,7 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
       return new BlockEntityWithBoundingBoxRenderState();
    }
 
-   public void extractRenderState(T var1, BlockEntityWithBoundingBoxRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(T var1, BlockEntityWithBoundingBoxRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       extract(var1, var2);
    }

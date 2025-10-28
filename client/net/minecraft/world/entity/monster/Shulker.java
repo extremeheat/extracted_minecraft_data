@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -59,6 +58,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class Shulker extends AbstractGolem implements Enemy {
    private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
@@ -79,8 +79,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
    private float currentPeekAmount;
-   @Nullable
-   private BlockPos clientOldAttachPosition;
+   private @Nullable BlockPos clientOldAttachPosition;
    private int clientSideTeleportInterpolation;
    private static final float MAX_LID_OPEN = 1.0F;
 
@@ -260,8 +259,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       this.yBodyRot = 0.0F;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
@@ -309,8 +307,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   @Nullable
-   protected Direction findAttachableSurface(BlockPos var1) {
+   protected @Nullable Direction findAttachableSurface(BlockPos var1) {
       for(Direction var5 : Direction.values()) {
          if (this.canStayAt(var1, var5)) {
             return var5;
@@ -482,8 +479,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    public void push(Entity var1) {
    }
 
-   @Nullable
-   public Vec3 getRenderPosition(float var1) {
+   public @Nullable Vec3 getRenderPosition(float var1) {
       if (this.clientOldAttachPosition != null && this.clientSideTeleportInterpolation > 0) {
          double var2 = (double)((float)this.clientSideTeleportInterpolation - var1) / 6.0;
          var2 *= var2;
@@ -510,14 +506,12 @@ public class Shulker extends AbstractGolem implements Enemy {
       return Optional.ofNullable(this.getColor());
    }
 
-   @Nullable
-   public DyeColor getColor() {
+   public @Nullable DyeColor getColor() {
       byte var1 = (Byte)this.entityData.get(DATA_COLOR_ID);
       return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.SHULKER_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
    }
 

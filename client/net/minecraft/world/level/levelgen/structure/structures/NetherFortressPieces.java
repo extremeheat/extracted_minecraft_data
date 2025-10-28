@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.jspecify.annotations.Nullable;
 
 public class NetherFortressPieces {
    private static final int MAX_DEPTH = 30;
@@ -37,7 +38,7 @@ public class NetherFortressPieces {
       super();
    }
 
-   static NetherBridgePiece findAndCreateBridgePieceFactory(PieceWeight var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
+   static @Nullable NetherBridgePiece findAndCreateBridgePieceFactory(PieceWeight var0, StructurePieceAccessor var1, RandomSource var2, int var3, int var4, int var5, Direction var6, int var7) {
       Class var8 = var0.pieceClass;
       Object var9 = null;
       if (var8 == BridgeStraight.class) {
@@ -126,7 +127,7 @@ public class NetherFortressPieces {
          return var2 ? var3 : -1;
       }
 
-      private NetherBridgePiece generatePiece(StartPiece var1, List<PieceWeight> var2, StructurePieceAccessor var3, RandomSource var4, int var5, int var6, int var7, Direction var8, int var9) {
+      private @Nullable NetherBridgePiece generatePiece(StartPiece var1, List<PieceWeight> var2, StructurePieceAccessor var3, RandomSource var4, int var5, int var6, int var7, Direction var8, int var9) {
          int var10 = this.updatePieceWeight(var2);
          boolean var11 = var10 > 0 && var9 <= 30;
          int var12 = 0;
@@ -159,7 +160,7 @@ public class NetherFortressPieces {
          return NetherFortressPieces.BridgeEndFiller.createPiece(var3, var4, var5, var6, var7, var8, var9);
       }
 
-      private StructurePiece generateAndAddPiece(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, int var6, @Nullable Direction var7, int var8, boolean var9) {
+      private @Nullable StructurePiece generateAndAddPiece(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, int var6, Direction var7, int var8, boolean var9) {
          if (Math.abs(var4 - var1.getBoundingBox().minX()) <= 112 && Math.abs(var6 - var1.getBoundingBox().minZ()) <= 112) {
             List var10 = var1.availableBridgePieces;
             if (var9) {
@@ -178,8 +179,7 @@ public class NetherFortressPieces {
          }
       }
 
-      @Nullable
-      protected StructurePiece generateChildForward(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
+      protected @Nullable StructurePiece generateChildForward(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
             switch (var7) {
@@ -201,8 +201,7 @@ public class NetherFortressPieces {
          return null;
       }
 
-      @Nullable
-      protected StructurePiece generateChildLeft(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
+      protected @Nullable StructurePiece generateChildLeft(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
             switch (var7) {
@@ -224,8 +223,7 @@ public class NetherFortressPieces {
          return null;
       }
 
-      @Nullable
-      protected StructurePiece generateChildRight(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
+      protected @Nullable StructurePiece generateChildRight(StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5, boolean var6) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
             switch (var7) {
@@ -248,26 +246,23 @@ public class NetherFortressPieces {
       }
 
       protected static boolean isOkBox(BoundingBox var0) {
-         return var0 != null && var0.minY() > 10;
+         return var0.minY() > 10;
       }
    }
 
    public static class StartPiece extends BridgeCrossing {
-      public PieceWeight previousPiece;
-      public List<PieceWeight> availableBridgePieces;
-      public List<PieceWeight> availableCastlePieces;
+      @Nullable PieceWeight previousPiece;
+      final List<PieceWeight> availableBridgePieces = new ArrayList();
+      final List<PieceWeight> availableCastlePieces = new ArrayList();
       public final List<StructurePiece> pendingChildren = Lists.newArrayList();
 
       public StartPiece(RandomSource var1, int var2, int var3) {
          super(var2, var3, getRandomHorizontalDirection(var1));
-         this.availableBridgePieces = Lists.newArrayList();
 
          for(PieceWeight var7 : NetherFortressPieces.BRIDGE_PIECE_WEIGHTS) {
             var7.placeCount = 0;
             this.availableBridgePieces.add(var7);
          }
-
-         this.availableCastlePieces = Lists.newArrayList();
 
          for(PieceWeight var11 : NetherFortressPieces.CASTLE_PIECE_WEIGHTS) {
             var11.placeCount = 0;
@@ -299,7 +294,7 @@ public class NetherFortressPieces {
          this.generateChildForward((StartPiece)var1, var2, var3, 1, 3, false);
       }
 
-      public static BridgeStraight createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable BridgeStraight createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -3, 0, 5, 10, 19, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new BridgeStraight(var6, var1, var7, var5) : null;
       }
@@ -352,7 +347,7 @@ public class NetherFortressPieces {
          this.selfSeed = var1.getIntOr("Seed", 0);
       }
 
-      public static BridgeEndFiller createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable BridgeEndFiller createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -3, 0, 5, 10, 8, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new BridgeEndFiller(var6, var1, var7, var5) : null;
       }
@@ -421,7 +416,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 3, 8, false);
       }
 
-      public static BridgeCrossing createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable BridgeCrossing createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -8, -3, 0, 19, 10, 19, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new BridgeCrossing(var5, var6, var4) : null;
       }
@@ -486,7 +481,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 0, 2, false);
       }
 
-      public static RoomCrossing createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable RoomCrossing createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -2, 0, 0, 7, 9, 7, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new RoomCrossing(var5, var6, var4) : null;
       }
@@ -540,7 +535,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 6, 2, false);
       }
 
-      public static StairsRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable StairsRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, int var4, Direction var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -2, 0, 0, 7, 11, 7, var5);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new StairsRoom(var4, var6, var5) : null;
       }
@@ -598,7 +593,7 @@ public class NetherFortressPieces {
          var2.putBoolean("Mob", this.hasPlacedSpawner);
       }
 
-      public static MonsterThrone createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, int var4, Direction var5) {
+      public static @Nullable MonsterThrone createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, int var4, Direction var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -2, 0, 0, 7, 8, 9, var5);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new MonsterThrone(var4, var6, var5) : null;
       }
@@ -673,7 +668,7 @@ public class NetherFortressPieces {
          this.generateChildForward((StartPiece)var1, var2, var3, 5, 3, true);
       }
 
-      public static CastleEntrance createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable CastleEntrance createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -5, -3, 0, 13, 14, 13, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new CastleEntrance(var6, var1, var7, var5) : null;
       }
@@ -773,7 +768,7 @@ public class NetherFortressPieces {
          this.generateChildForward((StartPiece)var1, var2, var3, 5, 11, true);
       }
 
-      public static CastleStalkRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable CastleStalkRoom createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -5, -3, 0, 13, 14, 13, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new CastleStalkRoom(var5, var6, var4) : null;
       }
@@ -911,7 +906,7 @@ public class NetherFortressPieces {
          this.generateChildForward((StartPiece)var1, var2, var3, 1, 0, true);
       }
 
-      public static CastleSmallCorridorPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable CastleSmallCorridorPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -1, 0, 0, 5, 7, 5, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new CastleSmallCorridorPiece(var5, var6, var4) : null;
       }
@@ -957,7 +952,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 0, 1, true);
       }
 
-      public static CastleSmallCorridorCrossingPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable CastleSmallCorridorCrossingPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -1, 0, 0, 5, 7, 5, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new CastleSmallCorridorCrossingPiece(var5, var6, var4) : null;
       }
@@ -1006,7 +1001,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 0, 1, true);
       }
 
-      public static CastleSmallCorridorRightTurnPiece createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable CastleSmallCorridorRightTurnPiece createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, 0, 0, 5, 7, 5, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new CastleSmallCorridorRightTurnPiece(var6, var1, var7, var5) : null;
       }
@@ -1065,7 +1060,7 @@ public class NetherFortressPieces {
          this.generateChildLeft((StartPiece)var1, var2, var3, 0, 1, true);
       }
 
-      public static CastleSmallCorridorLeftTurnPiece createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
+      public static @Nullable CastleSmallCorridorLeftTurnPiece createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, 0, 0, 5, 7, 5, var5);
          return isOkBox(var7) && var0.findCollisionPiece(var7) == null ? new CastleSmallCorridorLeftTurnPiece(var6, var1, var7, var5) : null;
       }
@@ -1116,7 +1111,7 @@ public class NetherFortressPieces {
          this.generateChildForward((StartPiece)var1, var2, var3, 1, 0, true);
       }
 
-      public static CastleCorridorStairsPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable CastleCorridorStairsPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -1, -7, 0, 5, 14, 10, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new CastleCorridorStairsPiece(var5, var6, var4) : null;
       }
@@ -1178,7 +1173,7 @@ public class NetherFortressPieces {
          this.generateChildRight((StartPiece)var1, var2, var3, 0, var4, var3.nextInt(8) > 0);
       }
 
-      public static CastleCorridorTBalconyPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
+      public static @Nullable CastleCorridorTBalconyPiece createPiece(StructurePieceAccessor var0, int var1, int var2, int var3, Direction var4, int var5) {
          BoundingBox var6 = BoundingBox.orientBox(var1, var2, var3, -3, 0, 0, 9, 7, 9, var4);
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new CastleCorridorTBalconyPiece(var5, var6, var4) : null;
       }

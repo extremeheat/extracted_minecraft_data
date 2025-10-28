@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
@@ -15,6 +14,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
 public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
    public static final MapCodec<BlockDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new));
@@ -29,8 +29,7 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
       this.compiledPos = var2;
    }
 
-   @Nullable
-   private static Coordinates compilePos(String var0) {
+   private static @Nullable Coordinates compilePos(String var0) {
       try {
          return BlockPosArgument.blockPos().parse(new StringReader(var0));
       } catch (CommandSyntaxException var2) {

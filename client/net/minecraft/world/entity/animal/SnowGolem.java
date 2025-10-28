@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -34,15 +33,16 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
    private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID;
@@ -92,7 +92,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
             this.hurtServer(var1, this.damageSources().onFire(), 1.0F);
          }
 
-         if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (!(Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING)) {
             return;
          }
 
@@ -167,18 +167,15 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return SoundEvents.SNOW_GOLEM_AMBIENT;
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.SNOW_GOLEM_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.SNOW_GOLEM_DEATH;
    }
 

@@ -4,12 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.BitSet;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class FilterMask {
    public static final Codec<FilterMask> CODEC = StringRepresentable.fromEnum(Type::values).dispatch(FilterMask::type, Type::codec);
@@ -72,8 +72,7 @@ public class FilterMask {
       this.mask.set(var1);
    }
 
-   @Nullable
-   public String apply(String var1) {
+   public @Nullable String apply(String var1) {
       String var10000;
       switch (this.type.ordinal()) {
          case 0:
@@ -100,8 +99,7 @@ public class FilterMask {
       return var10000;
    }
 
-   @Nullable
-   public Component applyWithFormatting(String var1) {
+   public @Nullable Component applyWithFormatting(String var1) {
       MutableComponent var10000;
       switch (this.type.ordinal()) {
          case 0:

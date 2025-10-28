@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.selector.SelectorPattern;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
@@ -24,6 +23,7 @@ import net.minecraft.network.chat.contents.objects.ObjectInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public interface Component extends Message, FormattedText {
    Style getStyle();
@@ -50,8 +50,7 @@ public interface Component extends Message, FormattedText {
 
    List<Component> getSiblings();
 
-   @Nullable
-   default String tryCollapseToString() {
+   default @Nullable String tryCollapseToString() {
       ComponentContents var2 = this.getContents();
       if (var2 instanceof PlainTextContents var1) {
          if (this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {

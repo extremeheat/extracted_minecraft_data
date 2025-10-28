@@ -12,9 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.FilterMask;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 
 public class LegacyTextFilter extends ServerTextFilter {
    private static final String ENDPOINT = "v1/chat";
@@ -33,8 +33,7 @@ public class LegacyTextFilter extends ServerTextFilter {
       this.authKey = var7;
    }
 
-   @Nullable
-   public static ServerTextFilter createTextFilterFromConfig(String var0) {
+   public static @Nullable ServerTextFilter createTextFilterFromConfig(String var0) {
       try {
          JsonObject var1 = GsonHelper.parse(var0);
          URI var2 = new URI(GsonHelper.getAsString(var1, "apiServer"));

@@ -1,18 +1,17 @@
 package net.minecraft.world.entity.ai.util;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class DefaultRandomPos {
    public DefaultRandomPos() {
       super();
    }
 
-   @Nullable
-   public static Vec3 getPos(PathfinderMob var0, int var1, int var2) {
+   public static @Nullable Vec3 getPos(PathfinderMob var0, int var1, int var2) {
       boolean var3 = GoalUtils.mobRestricted(var0, (double)var1);
       return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
          BlockPos var4 = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
@@ -20,8 +19,7 @@ public class DefaultRandomPos {
       }));
    }
 
-   @Nullable
-   public static Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, Vec3 var3, double var4) {
+   public static @Nullable Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, Vec3 var3, double var4) {
       Vec3 var6 = var3.subtract(var0.getX(), var0.getY(), var0.getZ());
       boolean var7 = GoalUtils.mobRestricted(var0, (double)var1);
       return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
@@ -30,8 +28,7 @@ public class DefaultRandomPos {
       }));
    }
 
-   @Nullable
-   public static Vec3 getPosAway(PathfinderMob var0, int var1, int var2, Vec3 var3) {
+   public static @Nullable Vec3 getPosAway(PathfinderMob var0, int var1, int var2, Vec3 var3) {
       Vec3 var4 = var0.position().subtract(var3);
       boolean var5 = GoalUtils.mobRestricted(var0, (double)var1);
       return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
@@ -40,8 +37,7 @@ public class DefaultRandomPos {
       }));
    }
 
-   @Nullable
-   private static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, boolean var2, BlockPos var3) {
+   private static @Nullable BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, boolean var2, BlockPos var3) {
       BlockPos var4 = RandomPos.generateRandomPosTowardDirection(var0, (double)var1, var0.getRandom(), var3);
       return !GoalUtils.isOutsideLimits(var4, var0) && !GoalUtils.isRestricted(var2, var0, var4) && !GoalUtils.isNotStable(var0.getNavigation(), var4) && !GoalUtils.hasMalus(var0, var4) ? var4 : null;
    }

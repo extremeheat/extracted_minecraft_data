@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -29,10 +28,12 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ServerExplosion implements Explosion {
    private static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new ExplosionDamageCalculator();
@@ -42,8 +43,7 @@ public class ServerExplosion implements Explosion {
    private final Explosion.BlockInteraction blockInteraction;
    private final ServerLevel level;
    private final Vec3 center;
-   @Nullable
-   private final Entity source;
+   private final @Nullable Entity source;
    private final float radius;
    private final DamageSource damageSource;
    private final ExplosionDamageCalculator damageCalculator;
@@ -270,13 +270,11 @@ public class ServerExplosion implements Explosion {
       return this.level;
    }
 
-   @Nullable
-   public LivingEntity getIndirectSourceEntity() {
+   public @Nullable LivingEntity getIndirectSourceEntity() {
       return Explosion.getIndirectSourceEntity(this.source);
    }
 
-   @Nullable
-   public Entity getDirectSourceEntity() {
+   public @Nullable Entity getDirectSourceEntity() {
       return this.source;
    }
 
@@ -292,12 +290,12 @@ public class ServerExplosion implements Explosion {
       if (this.blockInteraction != Explosion.BlockInteraction.TRIGGER_BLOCK) {
          return false;
       } else {
-         return this.source != null && this.source.getType() == EntityType.BREEZE_WIND_CHARGE ? this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) : true;
+         return this.source != null && this.source.getType() == EntityType.BREEZE_WIND_CHARGE ? (Boolean)this.level.getGameRules().get(GameRules.MOB_GRIEFING) : true;
       }
    }
 
    public boolean shouldAffectBlocklikeEntities() {
-      boolean var1 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+      boolean var1 = (Boolean)this.level.getGameRules().get(GameRules.MOB_GRIEFING);
       boolean var2 = this.source == null || this.source.getType() != EntityType.BREEZE_WIND_CHARGE && this.source.getType() != EntityType.WIND_CHARGE;
       if (var1) {
          return var2;

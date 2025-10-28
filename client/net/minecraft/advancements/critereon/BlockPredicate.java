@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import org.jspecify.annotations.Nullable;
 
 public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt, DataComponentMatchers components) {
    public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(var0, BlockPredicate::new));

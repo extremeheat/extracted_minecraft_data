@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,14 +12,14 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
+import org.jspecify.annotations.Nullable;
 
 public class SmithingTransformRecipe implements SmithingRecipe {
    final Optional<Ingredient> template;
    final Ingredient base;
    final Optional<Ingredient> addition;
    final TransmuteResult result;
-   @Nullable
-   private PlacementInfo placementInfo;
+   private @Nullable PlacementInfo placementInfo;
 
    public SmithingTransformRecipe(Optional<Ingredient> var1, Ingredient var2, Optional<Ingredient> var3, TransmuteResult var4) {
       super();

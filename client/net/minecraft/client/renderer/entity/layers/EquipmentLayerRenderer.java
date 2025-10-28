@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.Sheets;
@@ -26,6 +25,7 @@ import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
+import org.jspecify.annotations.Nullable;
 
 public class EquipmentLayerRenderer {
    private static final int NO_LAYER_COLOR = 0;

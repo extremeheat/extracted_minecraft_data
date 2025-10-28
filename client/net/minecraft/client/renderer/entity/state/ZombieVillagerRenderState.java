@@ -1,18 +1,16 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.npc.VillagerData;
+import org.jspecify.annotations.Nullable;
 
 public class ZombieVillagerRenderState extends ZombieRenderState implements VillagerDataHolderRenderState {
-   @Nullable
-   public VillagerData villagerData;
+   public @Nullable VillagerData villagerData;
 
    public ZombieVillagerRenderState() {
       super();
    }
 
-   @Nullable
-   public VillagerData getVillagerData() {
+   public @Nullable VillagerData getVillagerData() {
       return this.villagerData;
    }
 }

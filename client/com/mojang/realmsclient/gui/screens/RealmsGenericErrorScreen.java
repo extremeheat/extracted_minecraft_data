@@ -55,7 +55,7 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.detail, this.width / 2, 80, -1);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
       ActiveTextCollector var5 = var1.textRenderer();
       MultiLineLabel var10000 = this.splitDetail;
       TextAlignment var10001 = TextAlignment.CENTER;

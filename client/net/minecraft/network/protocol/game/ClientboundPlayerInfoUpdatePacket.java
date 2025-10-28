@@ -8,7 +8,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,6 +21,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerInfoUpdatePacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundPlayerInfoUpdatePacket>codec(ClientboundPlayerInfoUpdatePacket::write, ClientboundPlayerInfoUpdatePacket::new);
@@ -135,17 +135,16 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       }
    }
 
-   public static record Entry(UUID profileId, @Nullable GameProfile profile, boolean listed, int latency, GameType gameMode, @Nullable Component displayName, boolean showHat, int listOrder, @Nullable RemoteChatSession.Data chatSession) {
+   public static record Entry(UUID profileId, @Nullable GameProfile profile, boolean listed, int latency, GameType gameMode, @Nullable Component displayName, boolean showHat, int listOrder, RemoteChatSession.@Nullable Data chatSession) {
       final boolean showHat;
       final int listOrder;
-      @Nullable
-      final RemoteChatSession.Data chatSession;
+      final RemoteChatSession.@Nullable Data chatSession;
 
       Entry(ServerPlayer var1) {
          this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode(), var1.getTabListDisplayName(), var1.isModelPartShown(PlayerModelPart.HAT), var1.getTabListOrder(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
       }
 
-      public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, boolean var7, int var8, @Nullable RemoteChatSession.Data var9) {
+      public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, boolean var7, int var8, RemoteChatSession.@Nullable Data var9) {
          super();
          this.profileId = var1;
          this.profile = var2;
@@ -161,17 +160,14 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
 
    static class EntryBuilder {
       final UUID profileId;
-      @Nullable
-      GameProfile profile;
+      @Nullable GameProfile profile;
       boolean listed;
       int latency;
       GameType gameMode;
-      @Nullable
-      Component displayName;
+      @Nullable Component displayName;
       boolean showHat;
       int listOrder;
-      @Nullable
-      RemoteChatSession.Data chatSession;
+      RemoteChatSession.@Nullable Data chatSession;
 
       EntryBuilder(UUID var1) {
          super();

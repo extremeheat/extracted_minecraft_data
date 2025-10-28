@@ -11,13 +11,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
+import org.jspecify.annotations.Nullable;
 
 public final class DataComponentPatch {
    public static final DataComponentPatch EMPTY = new DataComponentPatch(Reference2ObjectMaps.emptyMap());
@@ -123,8 +123,7 @@ public final class DataComponentPatch {
       return new Builder();
    }
 
-   @Nullable
-   public <T> Optional<? extends T> get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable Optional<? extends T> get(DataComponentType<? extends T> var1) {
       return (Optional)this.map.get(var1);
    }
 

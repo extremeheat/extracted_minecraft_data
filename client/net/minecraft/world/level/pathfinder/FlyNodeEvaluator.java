@@ -3,7 +3,6 @@ package net.minecraft.world.level.pathfinder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -11,6 +10,7 @@ import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public class FlyNodeEvaluator extends WalkNodeEvaluator {
    private final Long2ObjectMap<PathType> pathTypeByPosCache = new Long2ObjectOpenHashMap();
@@ -212,8 +212,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
       return var1 != null && !var1.closed;
    }
 
-   @Nullable
-   protected Node findAcceptedNode(int var1, int var2, int var3) {
+   protected @Nullable Node findAcceptedNode(int var1, int var2, int var3) {
       Node var4 = null;
       PathType var5 = this.getCachedPathType(var1, var2, var3);
       float var6 = this.mob.getPathfindingMalus(var5);

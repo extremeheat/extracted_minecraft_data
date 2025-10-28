@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -52,6 +51,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Pillager extends AbstractIllager implements CrossbowAttackMob, InventoryCarrier {
    private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW;
@@ -136,8 +136,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return 1;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
@@ -199,9 +198,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return this.hasActiveRaid() && var1.is(Items.WHITE_BANNER);
    }
 
-   public SlotAccess getSlot(int var1) {
+   public @Nullable SlotAccess getSlot(int var1) {
       int var2 = var1 - 300;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? SlotAccess.forContainer(this.inventory, var2) : super.getSlot(var1);
+      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
    }
 
    public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {

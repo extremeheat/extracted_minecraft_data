@@ -3,7 +3,7 @@ package net.minecraft.server.level;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface ChunkResult<T> {
    static <T> ChunkResult<T> of(T var0) {
@@ -20,17 +20,14 @@ public interface ChunkResult<T> {
 
    boolean isSuccess();
 
-   @Nullable
-   T orElse(@Nullable T var1);
+   @Nullable T orElse(@Nullable T var1);
 
-   @Nullable
-   static <R> R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
+   static <R> @Nullable R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
       Object var2 = var0.orElse((Object)null);
       return var2 != null ? var2 : var1;
    }
 
-   @Nullable
-   String getError();
+   @Nullable String getError();
 
    ChunkResult<T> ifSuccess(Consumer<T> var1);
 
@@ -52,8 +49,7 @@ public interface ChunkResult<T> {
          return this.value;
       }
 
-      @Nullable
-      public String getError() {
+      public @Nullable String getError() {
          return null;
       }
 
@@ -81,8 +77,7 @@ public interface ChunkResult<T> {
          return false;
       }
 
-      @Nullable
-      public T orElse(@Nullable T var1) {
+      public @Nullable T orElse(@Nullable T var1) {
          return var1;
       }
 

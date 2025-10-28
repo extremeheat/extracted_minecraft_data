@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.HashSet;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.core.BlockPos;
@@ -35,14 +34,14 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class BlockEntity implements DebugValueSource {
    private static final Codec<BlockEntityType<?>> TYPE_CODEC;
    private static final Logger LOGGER;
    private final BlockEntityType<?> type;
-   @Nullable
-   protected Level level;
+   protected @Nullable Level level;
    protected final BlockPos worldPosition;
    protected boolean remove;
    private BlockState blockState;
@@ -83,8 +82,7 @@ public abstract class BlockEntity implements DebugValueSource {
       return new BlockPos(var2, var3, var4);
    }
 
-   @Nullable
-   public Level getLevel() {
+   public @Nullable Level getLevel() {
       return this.level;
    }
 
@@ -169,8 +167,7 @@ public abstract class BlockEntity implements DebugValueSource {
       var1.putInt("z", this.worldPosition.getZ());
    }
 
-   @Nullable
-   public static BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2, HolderLookup.Provider var3) {
+   public static @Nullable BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2, HolderLookup.Provider var3) {
       BlockEntityType var4 = (BlockEntityType)var2.read("id", TYPE_CODEC).orElse((Object)null);
       if (var4 == null) {
          LOGGER.error("Skipping block entity with invalid type: {}", var2.get("id"));
@@ -217,8 +214,7 @@ public abstract class BlockEntity implements DebugValueSource {
       return this.blockState;
    }
 
-   @Nullable
-   public Packet<ClientGamePacketListener> getUpdatePacket() {
+   public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
       return null;
    }
 
@@ -296,8 +292,7 @@ public abstract class BlockEntity implements DebugValueSource {
       var3.add(DataComponents.BLOCK_STATE);
       final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
       this.applyImplicitComponents(new DataComponentGetter() {
-         @Nullable
-         public <T> T get(DataComponentType<? extends T> var1) {
+         public <T> @Nullable T get(DataComponentType<? extends T> var1) {
             var3.add(var1);
             return (T)var4.get(var1);
          }
@@ -335,8 +330,7 @@ public abstract class BlockEntity implements DebugValueSource {
       this.components = var1;
    }
 
-   @Nullable
-   public static Component parseCustomNameSafe(ValueInput var0, String var1) {
+   public static @Nullable Component parseCustomNameSafe(ValueInput var0, String var1) {
       return (Component)var0.read(var1, ComponentSerialization.CODEC).orElse((Object)null);
    }
 

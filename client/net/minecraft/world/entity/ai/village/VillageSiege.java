@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.village;
 
 import com.mojang.logging.LogUtils;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
@@ -15,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class VillageSiege implements CustomSpawner {
@@ -109,8 +109,7 @@ public class VillageSiege implements CustomSpawner {
       }
    }
 
-   @Nullable
-   private Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
+   private @Nullable Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
       for(int var3 = 0; var3 < 10; ++var3) {
          int var4 = var2.getX() + var1.random.nextInt(16) - 8;
          int var5 = var2.getZ() + var1.random.nextInt(16) - 8;

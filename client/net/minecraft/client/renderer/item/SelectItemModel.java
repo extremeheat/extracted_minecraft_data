@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.CacheSlot;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperties;
@@ -18,6 +17,7 @@ import net.minecraft.util.RegistryContextSwapper;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class SelectItemModel<T> implements ItemModel {
    private final SelectItemModelProperty<T> property;
@@ -138,7 +138,6 @@ public class SelectItemModel<T> implements ItemModel {
 
    @FunctionalInterface
    public interface ModelSelector<T> {
-      @Nullable
-      ItemModel get(@Nullable T var1, @Nullable ClientLevel var2);
+      @Nullable ItemModel get(@Nullable T var1, @Nullable ClientLevel var2);
    }
 }

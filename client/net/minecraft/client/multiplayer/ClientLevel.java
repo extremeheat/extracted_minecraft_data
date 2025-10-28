@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -119,6 +118,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel> {
@@ -135,8 +135,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final ClientLevelData clientLevelData;
    private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
-   @Nullable
-   private final EndFlashState endFlashState;
+   private final @Nullable EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    final List<EnderDragonPart> dragonParts = Lists.newArrayList();
@@ -257,8 +256,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.effects;
    }
 
-   @Nullable
-   public EndFlashState endFlashState() {
+   public @Nullable EndFlashState endFlashState() {
       return this.endFlashState;
    }
 
@@ -399,8 +397,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return var3 != null && var3 != var1 && var3.getBoundingBox().intersects(var2) && EntitySelector.pushableBy(var1).test(var3) ? List.of(var3) : List.of();
    }
 
-   @Nullable
-   public Entity getEntity(int var1) {
+   public @Nullable Entity getEntity(int var1) {
       return (Entity)this.getEntities().get(var1);
    }
 
@@ -421,8 +418,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    }
 
-   @Nullable
-   private Block getMarkerParticleTarget() {
+   private @Nullable Block getMarkerParticleTarget() {
       if (this.minecraft.gameMode.getPlayerMode() == GameType.CREATIVE) {
          ItemStack var1 = this.minecraft.player.getMainHandItem();
          Item var2 = var1.getItem();
@@ -589,8 +585,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.chunkSource;
    }
 
-   @Nullable
-   public MapItemSavedData getMapData(MapId var1) {
+   public @Nullable MapItemSavedData getMapData(MapId var1) {
       return (MapItemSavedData)this.mapData.get(var1);
    }
 
@@ -744,25 +739,25 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return var4;
    }
 
-   public int getCloudColor(float var1) {
-      int var2 = -1;
-      float var3 = this.getRainLevel(var1);
-      if (var3 > 0.0F) {
-         int var4 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.6F);
-         var2 = ARGB.srgbLerp(var3 * 0.95F, var2, var4);
+   public int getCloudColor(float var1, Camera var2) {
+      int var3 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.CLOUD_COLOR, var1);
+      float var4 = this.getRainLevel(var1);
+      if (var4 > 0.0F) {
+         int var5 = ARGB.scaleRGB(ARGB.greyscale(var3), 0.6F);
+         var3 = ARGB.srgbLerp(var4 * 0.95F, var3, var5);
       }
 
-      float var9 = this.getTimeOfDay(var1);
-      float var5 = Mth.cos(var9 * 6.2831855F) * 2.0F + 0.5F;
-      var5 = Mth.clamp(var5, 0.0F, 1.0F);
-      var2 = ARGB.multiply(var2, ARGB.colorFromFloat(1.0F, var5 * 0.9F + 0.1F, var5 * 0.9F + 0.1F, var5 * 0.85F + 0.15F));
-      float var6 = this.getThunderLevel(var1);
-      if (var6 > 0.0F) {
-         int var7 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.2F);
-         var2 = ARGB.srgbLerp(var6 * 0.95F, var2, var7);
+      float var10 = this.getTimeOfDay(var1);
+      float var6 = Mth.cos(var10 * 6.2831855F) * 2.0F + 0.5F;
+      var6 = Mth.clamp(var6, 0.0F, 1.0F);
+      var3 = ARGB.multiply(var3, ARGB.colorFromFloat(1.0F, var6 * 0.9F + 0.1F, var6 * 0.9F + 0.1F, var6 * 0.85F + 0.15F));
+      float var7 = this.getThunderLevel(var1);
+      if (var7 > 0.0F) {
+         int var8 = ARGB.scaleRGB(ARGB.greyscale(var3), 0.2F);
+         var3 = ARGB.srgbLerp(var7 * 0.95F, var3, var8);
       }
 
-      return ARGB.color(0.8F, var2);
+      return var3;
    }
 
    public float getStarBrightness(float var1) {

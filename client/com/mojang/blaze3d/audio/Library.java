@@ -9,9 +9,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC;
@@ -30,11 +30,9 @@ public class Library {
    private long currentDevice;
    private long context;
    private boolean supportsDisconnections;
-   @Nullable
-   private String defaultDeviceName;
+   private @Nullable String defaultDeviceName;
    private static final ChannelPool EMPTY = new ChannelPool() {
-      @Nullable
-      public Channel acquire() {
+      public @Nullable Channel acquire() {
          return null;
       }
 
@@ -192,8 +190,7 @@ public class Library {
       return var7;
    }
 
-   @Nullable
-   public static String getDefaultDeviceName() {
+   public static @Nullable String getDefaultDeviceName() {
       if (!ALC10.alcIsExtensionPresent(0L, "ALC_ENUMERATE_ALL_EXT")) {
          return null;
       } else {
@@ -265,8 +262,7 @@ public class Library {
       return this.listener;
    }
 
-   @Nullable
-   public Channel acquireChannel(Pool var1) {
+   public @Nullable Channel acquireChannel(Pool var1) {
       return (var1 == Library.Pool.STREAMING ? this.streamingChannels : this.staticChannels).acquire();
    }
 
@@ -311,8 +307,7 @@ public class Library {
          this.limit = var1;
       }
 
-      @Nullable
-      public Channel acquire() {
+      public @Nullable Channel acquire() {
          if (this.activeChannels.size() >= this.limit) {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
                Library.LOGGER.warn("Maximum sound pool size {} reached", this.limit);
@@ -353,8 +348,7 @@ public class Library {
    }
 
    interface ChannelPool {
-      @Nullable
-      Channel acquire();
+      @Nullable Channel acquire();
 
       boolean release(Channel var1);
 

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -34,6 +33,7 @@ import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import org.jspecify.annotations.Nullable;
 
 public class MobEffect implements FeatureElement {
    public static final Codec<Holder<MobEffect>> CODEC;
@@ -43,8 +43,7 @@ public class MobEffect implements FeatureElement {
    private final MobEffectCategory category;
    private final int color;
    private final Function<MobEffectInstance, ParticleOptions> particleFactory;
-   @Nullable
-   private String descriptionId;
+   private @Nullable String descriptionId;
    private int blendInDurationTicks;
    private int blendOutDurationTicks;
    private int blendOutAdvanceTicks;

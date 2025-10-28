@@ -11,18 +11,18 @@ import com.google.gson.JsonParseException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.Nullable;
 
-public record BlockModel(@Nullable UnbakedGeometry geometry, @Nullable UnbakedModel.GuiLight guiLight, @Nullable Boolean ambientOcclusion, @Nullable ItemTransforms transforms, TextureSlots.Data textureSlots, @Nullable ResourceLocation parent) implements UnbakedModel {
+public record BlockModel(@Nullable UnbakedGeometry geometry, UnbakedModel.@Nullable GuiLight guiLight, @Nullable Boolean ambientOcclusion, @Nullable ItemTransforms transforms, TextureSlots.Data textureSlots, @Nullable ResourceLocation parent) implements UnbakedModel {
    @VisibleForTesting
    static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(ItemTransform.class, new ItemTransform.Deserializer()).registerTypeAdapter(ItemTransforms.class, new ItemTransforms.Deserializer()).create();
 
-   public BlockModel(@Nullable UnbakedGeometry var1, @Nullable UnbakedModel.GuiLight var2, @Nullable Boolean var3, @Nullable ItemTransforms var4, TextureSlots.Data var5, @Nullable ResourceLocation var6) {
+   public BlockModel(@Nullable UnbakedGeometry var1, UnbakedModel.@Nullable GuiLight var2, @Nullable Boolean var3, @Nullable ItemTransforms var4, TextureSlots.Data var5, @Nullable ResourceLocation var6) {
       super();
       this.geometry = var1;
       this.guiLight = var2;
@@ -75,13 +75,11 @@ public record BlockModel(@Nullable UnbakedGeometry geometry, @Nullable UnbakedMo
          return GsonHelper.getAsString(var1, "parent", "");
       }
 
-      @Nullable
-      protected Boolean getAmbientOcclusion(JsonObject var1) {
+      protected @Nullable Boolean getAmbientOcclusion(JsonObject var1) {
          return var1.has("ambientocclusion") ? GsonHelper.getAsBoolean(var1, "ambientocclusion") : null;
       }
 
-      @Nullable
-      protected UnbakedGeometry getElements(JsonDeserializationContext var1, JsonObject var2) {
+      protected @Nullable UnbakedGeometry getElements(JsonDeserializationContext var1, JsonObject var2) {
          if (!var2.has("elements")) {
             return null;
          } else {

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -48,6 +47,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
@@ -77,10 +77,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private final ScreenNarrationCollector narrationState;
    private long narrationSuppressTime;
    private long nextNarrationTime;
-   @Nullable
-   protected CycleButton<NarratorStatus> narratorButton;
-   @Nullable
-   private NarratableEntry lastNarratable;
+   protected @Nullable CycleButton<NarratorStatus> narratorButton;
+   private @Nullable NarratableEntry lastNarratable;
    protected final Executor screenExecutor;
 
    protected Screen(Component var1) {
@@ -648,8 +646,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return Component.translatable("narration.component_list.usage");
    }
 
-   @Nullable
-   public static NarratableSearchResult findNarratableWidget(List<? extends NarratableEntry> var0, @Nullable NarratableEntry var1) {
+   public static @Nullable NarratableSearchResult findNarratableWidget(List<? extends NarratableEntry> var0, @Nullable NarratableEntry var1) {
       NarratableSearchResult var2 = null;
       NarratableSearchResult var3 = null;
       int var4 = 0;
@@ -698,8 +695,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return new ScreenRectangle(0, 0, this.width, this.height);
    }
 
-   @Nullable
-   public Music getBackgroundMusic() {
+   public @Nullable Music getBackgroundMusic() {
       return null;
    }
 

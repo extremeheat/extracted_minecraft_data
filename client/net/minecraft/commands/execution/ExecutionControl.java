@@ -1,15 +1,14 @@
 package net.minecraft.commands.execution;
 
-import javax.annotation.Nullable;
 import net.minecraft.commands.ExecutionCommandSource;
+import org.jspecify.annotations.Nullable;
 
 public interface ExecutionControl<T> {
    void queueNext(EntryAction<T> var1);
 
    void tracer(@Nullable TraceCallbacks var1);
 
-   @Nullable
-   TraceCallbacks tracer();
+   @Nullable TraceCallbacks tracer();
 
    Frame currentFrame();
 
@@ -23,8 +22,7 @@ public interface ExecutionControl<T> {
             var0.tracer(var1x);
          }
 
-         @Nullable
-         public TraceCallbacks tracer() {
+         public @Nullable TraceCallbacks tracer() {
             return var0.tracer();
          }
 

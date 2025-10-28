@@ -2,9 +2,11 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 
 public class MipmapGenerator {
+   private static final String ITEM_PREFIX = "item/";
    private static final float ALPHA_CUTOFF = 0.2F;
    private static final float STRICT_ALPHA_CUTOFF = 0.6F;
    private static final int ALPHA_CUTOUT_CUTOFF = 96;
@@ -13,56 +15,60 @@ public class MipmapGenerator {
       super();
    }
 
-   public static NativeImage[] generateMipLevels(NativeImage[] var0, int var1, MipmapStrategy var2) {
-      if (var1 + 1 <= var0.length) {
-         return var0;
+   public static NativeImage[] generateMipLevels(ResourceLocation var0, NativeImage[] var1, int var2, MipmapStrategy var3) {
+      if (var2 + 1 <= var1.length) {
+         return var1;
       } else {
-         NativeImage[] var3 = new NativeImage[var1 + 1];
-         if (var2 == MipmapStrategy.AUTO) {
-            var2 = hasTransparentPixel(var0[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
-         }
-
-         if (var0.length == 1 && (var2 == MipmapStrategy.CUTOUT || var2 == MipmapStrategy.STRICT_CUTOUT)) {
-            TextureUtil.solidify(var0[0]);
-         }
-
-         var3[0] = var0[0];
-
-         for(int var4 = 1; var4 <= var1; ++var4) {
-            if (var4 < var0.length) {
-               var3[var4] = var0[var4];
+         NativeImage[] var4 = new NativeImage[var2 + 1];
+         if (var3 == MipmapStrategy.AUTO) {
+            if (var0.getPath().startsWith("item/")) {
+               var3 = MipmapStrategy.STRICT_CUTOUT;
             } else {
-               NativeImage var5 = var3[var4 - 1];
-               NativeImage var6 = new NativeImage(var5.getWidth() >> 1, var5.getHeight() >> 1, false);
-               int var7 = var6.getWidth();
-               int var8 = var6.getHeight();
-
-               for(int var9 = 0; var9 < var7; ++var9) {
-                  for(int var10 = 0; var10 < var8; ++var10) {
-                     int var11;
-                     if (var2 != MipmapStrategy.MEAN && var2 != MipmapStrategy.DARK_CUTOUT) {
-                        var11 = alphaBlend(var9, var10, var3[0], var4, var2);
-                     } else {
-                        int var12 = var5.getPixel(var9 * 2 + 0, var10 * 2 + 0);
-                        int var13 = var5.getPixel(var9 * 2 + 1, var10 * 2 + 0);
-                        int var14 = var5.getPixel(var9 * 2 + 0, var10 * 2 + 1);
-                        int var15 = var5.getPixel(var9 * 2 + 1, var10 * 2 + 1);
-                        if (var2 == MipmapStrategy.DARK_CUTOUT) {
-                           var11 = darkenedAlphaBlend(var12, var13, var14, var15);
-                        } else {
-                           var11 = ARGB.meanLinear(var12, var13, var14, var15);
-                        }
-                     }
-
-                     var6.setPixel(var9, var10, var11);
-                  }
-               }
-
-               var3[var4] = var6;
+               var3 = hasTransparentPixel(var1[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
             }
          }
 
-         return var3;
+         if (var1.length == 1 && (var3 == MipmapStrategy.CUTOUT || var3 == MipmapStrategy.STRICT_CUTOUT)) {
+            TextureUtil.solidify(var1[0]);
+         }
+
+         var4[0] = var1[0];
+
+         for(int var5 = 1; var5 <= var2; ++var5) {
+            if (var5 < var1.length) {
+               var4[var5] = var1[var5];
+            } else {
+               NativeImage var6 = var4[var5 - 1];
+               NativeImage var7 = new NativeImage(var6.getWidth() >> 1, var6.getHeight() >> 1, false);
+               int var8 = var7.getWidth();
+               int var9 = var7.getHeight();
+
+               for(int var10 = 0; var10 < var8; ++var10) {
+                  for(int var11 = 0; var11 < var9; ++var11) {
+                     int var12;
+                     if (var3 != MipmapStrategy.MEAN && var3 != MipmapStrategy.DARK_CUTOUT) {
+                        var12 = alphaBlend(var10, var11, var4[0], var5, var3);
+                     } else {
+                        int var13 = var6.getPixel(var10 * 2 + 0, var11 * 2 + 0);
+                        int var14 = var6.getPixel(var10 * 2 + 1, var11 * 2 + 0);
+                        int var15 = var6.getPixel(var10 * 2 + 0, var11 * 2 + 1);
+                        int var16 = var6.getPixel(var10 * 2 + 1, var11 * 2 + 1);
+                        if (var3 == MipmapStrategy.DARK_CUTOUT) {
+                           var12 = darkenedAlphaBlend(var13, var14, var15, var16);
+                        } else {
+                           var12 = ARGB.meanLinear(var13, var14, var15, var16);
+                        }
+                     }
+
+                     var7.setPixel(var10, var11, var12);
+                  }
+               }
+
+               var4[var5] = var7;
+            }
+         }
+
+         return var4;
       }
    }
 

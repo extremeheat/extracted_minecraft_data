@@ -10,8 +10,8 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class LanServerDetection {
@@ -30,8 +30,7 @@ public class LanServerDetection {
          super();
       }
 
-      @Nullable
-      public synchronized List<LanServer> takeDirtyServers() {
+      public synchronized @Nullable List<LanServer> takeDirtyServers() {
          if (this.isDirty) {
             List var1 = List.copyOf(this.servers);
             this.isDirty = false;

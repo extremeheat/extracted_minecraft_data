@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
@@ -36,6 +35,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.server.MinecraftServer;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerConnectionListener {

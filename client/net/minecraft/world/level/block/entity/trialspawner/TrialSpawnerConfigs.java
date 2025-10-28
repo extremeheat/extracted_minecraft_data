@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity.trialspawner;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.EquipmentTable;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public class TrialSpawnerConfigs {
    private static final Keys TRIAL_CHAMBER_BREEZE = TrialSpawnerConfigs.Keys.of("trial_chamber/breeze");

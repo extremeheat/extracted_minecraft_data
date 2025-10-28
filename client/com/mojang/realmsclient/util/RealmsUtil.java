@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,6 +16,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.component.ResolvableProfile;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsUtil {

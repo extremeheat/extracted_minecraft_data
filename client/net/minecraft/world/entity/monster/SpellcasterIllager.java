@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class SpellcasterIllager extends AbstractIllager {
    private static final EntityDataAccessor<Byte> DATA_SPELL_CASTING_ID;
@@ -191,8 +191,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
 
       protected abstract int getCastingInterval();
 
-      @Nullable
-      protected abstract SoundEvent getSpellPrepareSound();
+      protected abstract @Nullable SoundEvent getSpellPrepareSound();
 
       protected abstract IllagerSpell getSpell();
    }

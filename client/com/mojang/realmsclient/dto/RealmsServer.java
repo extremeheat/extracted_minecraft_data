@@ -15,12 +15,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsServer extends ValueObject implements ReflectionBasedSerialization {
@@ -29,19 +29,16 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    public static final Component WORLD_CLOSED_COMPONENT = Component.translatable("mco.play.button.realm.closed");
    @SerializedName("id")
    public long id = -1L;
-   @Nullable
    @SerializedName("remoteSubscriptionId")
-   public String remoteSubscriptionId;
-   @Nullable
+   public @Nullable String remoteSubscriptionId;
    @SerializedName("name")
-   public String name;
+   public @Nullable String name;
    @SerializedName("motd")
    public String motd = "";
    @SerializedName("state")
    public State state;
-   @Nullable
    @SerializedName("owner")
-   public String owner;
+   public @Nullable String owner;
    @SerializedName("ownerUUID")
    @JsonAdapter(UUIDTypeAdapter.class)
    public UUID ownerUUID;
@@ -65,26 +62,22 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    public int gameMode;
    @SerializedName("activeSlot")
    public int activeSlot;
-   @Nullable
    @SerializedName("minigameName")
-   public String minigameName;
+   public @Nullable String minigameName;
    @SerializedName("minigameId")
    public int minigameId;
-   @Nullable
    @SerializedName("minigameImage")
-   public String minigameImage;
+   public @Nullable String minigameImage;
    @SerializedName("parentWorldId")
    public long parentRealmId;
-   @Nullable
    @SerializedName("parentWorldName")
-   public String parentWorldName;
+   public @Nullable String parentWorldName;
    @SerializedName("activeVersion")
    public String activeVersion;
    @SerializedName("compatibility")
    public Compatibility compatibility;
-   @Nullable
    @SerializedName("regionSelectionPreference")
-   public RegionSelectionPreferenceDto regionSelectionPreference;
+   public @Nullable RegionSelectionPreferenceDto regionSelectionPreference;
 
    public RealmsServer() {
       super();
@@ -108,13 +101,11 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       return this.motd;
    }
 
-   @Nullable
-   public String getName() {
+   public @Nullable String getName() {
       return this.name;
    }
 
-   @Nullable
-   public String getMinigameName() {
+   public @Nullable String getMinigameName() {
       return this.minigameName;
    }
 

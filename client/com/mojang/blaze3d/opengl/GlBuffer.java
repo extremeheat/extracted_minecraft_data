@@ -5,17 +5,15 @@ import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class GlBuffer extends GpuBuffer {
    protected static final MemoryPool MEMORY_POOl = TracyClient.createMemoryPool("GPU Buffers");
    protected boolean closed;
-   @Nullable
-   protected final Supplier<String> label;
+   protected final @Nullable Supplier<String> label;
    private final DirectStateAccess dsa;
    protected final int handle;
-   @Nullable
-   protected ByteBuffer persistentBuffer;
+   protected @Nullable ByteBuffer persistentBuffer;
 
    protected GlBuffer(@Nullable Supplier<String> var1, DirectStateAccess var2, @GpuBuffer.Usage int var3, int var4, int var5, @Nullable ByteBuffer var6) {
       super(var3, var4);

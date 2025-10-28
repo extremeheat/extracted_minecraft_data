@@ -7,7 +7,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import org.jetbrains.annotations.NotNull;
 
 public enum CopperGolemState implements StringRepresentable {
    IDLE("idle", 0),
@@ -27,7 +26,7 @@ public enum CopperGolemState implements StringRepresentable {
       this.id = var4;
    }
 
-   public @NotNull String getSerializedName() {
+   public String getSerializedName() {
       return this.name;
    }
 

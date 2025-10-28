@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -35,6 +34,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DimensionDataStorage implements AutoCloseable {
@@ -67,8 +67,7 @@ public class DimensionDataStorage implements AutoCloseable {
       }
    }
 
-   @Nullable
-   public <T extends SavedData> T get(SavedDataType<T> var1) {
+   public <T extends SavedData> @Nullable T get(SavedDataType<T> var1) {
       Optional var2 = (Optional)this.cache.get(var1);
       if (var2 == null) {
          var2 = Optional.ofNullable(this.readSavedData(var1));
@@ -78,8 +77,7 @@ public class DimensionDataStorage implements AutoCloseable {
       return (T)(var2.orElse((Object)null));
    }
 
-   @Nullable
-   private <T extends SavedData> T readSavedData(SavedDataType<T> var1) {
+   private <T extends SavedData> @Nullable T readSavedData(SavedDataType<T> var1) {
       try {
          Path var2 = this.getDataFile(var1.id());
          if (Files.exists(var2, new LinkOption[0])) {

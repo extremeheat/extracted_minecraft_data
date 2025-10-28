@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile.windcharge;
 
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SimpleExplosionDamageCalculator;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class WindCharge extends AbstractWindCharge {
    private static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;

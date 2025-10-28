@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -8,12 +7,12 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jspecify.annotations.Nullable;
 
 public interface CrossbowAttackMob extends RangedAttackMob {
    void setChargingCrossbow(boolean var1);
 
-   @Nullable
-   LivingEntity getTarget();
+   @Nullable LivingEntity getTarget();
 
    void onCrossbowAttackPerformed();
 

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
    private static final int DEFAULT_LAST_VIBRATION_FREQUENCY = 0;
@@ -99,7 +99,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
          return true;
       }
 
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable GameEvent.Context var4) {
+      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.@Nullable Context var4) {
          if (!var2.equals(this.blockPos) || !var3.is((Holder)GameEvent.BLOCK_DESTROY) && !var3.is((Holder)GameEvent.BLOCK_PLACE)) {
             return VibrationSystem.getGameEventFrequency(var3) == 0 ? false : SculkSensorBlock.canActivate(SculkSensorBlockEntity.this.getBlockState());
          } else {

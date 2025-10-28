@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +12,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
@@ -24,9 +22,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class FarmBlock extends Block {
    public static final MapCodec<FarmBlock> CODEC = simpleCodec(FarmBlock::new);
@@ -91,7 +91,7 @@ public class FarmBlock extends Block {
 
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       if (var1 instanceof ServerLevel var7) {
-         if ((double)var1.random.nextFloat() < var5 - 0.5 && var4 instanceof LivingEntity && (var4 instanceof Player || var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
+         if ((double)var1.random.nextFloat() < var5 - 0.5 && var4 instanceof LivingEntity && (var4 instanceof Player || (Boolean)var7.getGameRules().get(GameRules.MOB_GRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
             turnToDirt(var4, var2, var1, var3);
          }
       }

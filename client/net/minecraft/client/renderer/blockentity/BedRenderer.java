@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRenderState> {
    private final MaterialSet materials;
@@ -78,7 +78,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
       return new BedRenderState();
    }
 
-   public void extractRenderState(BedBlockEntity var1, BedRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(BedBlockEntity var1, BedRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.color = var1.getColor();
       var2.facing = (Direction)var1.getBlockState().getValue(BedBlock.FACING);
@@ -100,7 +100,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
       this.submitPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
-   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, @Nullable ModelFeatureRenderer.CrumblingOverlay var9, int var10) {
+   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9, int var10) {
       var1.pushPose();
       preparePose(var1, var8, var4);
       var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderTypes::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);

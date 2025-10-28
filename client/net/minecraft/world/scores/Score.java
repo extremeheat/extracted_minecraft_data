@@ -4,19 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
+import org.jspecify.annotations.Nullable;
 
 public class Score implements ReadOnlyScoreInfo {
    private int value;
    private boolean locked = true;
-   @Nullable
-   private Component display;
-   @Nullable
-   private NumberFormat numberFormat;
+   private @Nullable Component display;
+   private @Nullable NumberFormat numberFormat;
 
    public Score() {
       super();
@@ -50,8 +48,7 @@ public class Score implements ReadOnlyScoreInfo {
       this.locked = var1;
    }
 
-   @Nullable
-   public Component display() {
+   public @Nullable Component display() {
       return this.display;
    }
 
@@ -59,8 +56,7 @@ public class Score implements ReadOnlyScoreInfo {
       this.display = var1;
    }
 
-   @Nullable
-   public NumberFormat numberFormat() {
+   public @Nullable NumberFormat numberFormat() {
       return this.numberFormat;
    }
 

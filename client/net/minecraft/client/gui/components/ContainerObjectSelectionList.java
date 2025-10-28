@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -16,14 +15,14 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 
 public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
       super(var1, var2, var3, var4, var5);
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.getItemCount() == 0) {
          return null;
       } else if (!(var1 instanceof FocusNavigationEvent.ArrowNavigation)) {
@@ -106,10 +105,8 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
    }
 
    public abstract static class Entry<E extends Entry<E>> extends AbstractSelectionList.Entry<E> implements ContainerEventHandler {
-      @Nullable
-      private GuiEventListener focused;
-      @Nullable
-      private NarratableEntry lastNarratable;
+      private @Nullable GuiEventListener focused;
+      private @Nullable NarratableEntry lastNarratable;
       private boolean dragging;
 
       public Entry() {
@@ -140,13 +137,11 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          this.focused = var1;
       }
 
-      @Nullable
-      public GuiEventListener getFocused() {
+      public @Nullable GuiEventListener getFocused() {
          return this.focused;
       }
 
-      @Nullable
-      public ComponentPath focusPathAtIndex(FocusNavigationEvent var1, int var2) {
+      public @Nullable ComponentPath focusPathAtIndex(FocusNavigationEvent var1, int var2) {
          if (this.children().isEmpty()) {
             return null;
          } else {
@@ -155,8 +150,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
          }
       }
 
-      @Nullable
-      public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
          if (var1 instanceof FocusNavigationEvent.ArrowNavigation) {
             FocusNavigationEvent.ArrowNavigation var2 = (FocusNavigationEvent.ArrowNavigation)var1;
             byte var10000;

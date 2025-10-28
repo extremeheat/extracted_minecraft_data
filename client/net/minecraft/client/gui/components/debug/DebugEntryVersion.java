@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.components.debug;
 
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 class DebugEntryVersion implements DebugScreenEntry {
    DebugEntryVersion() {

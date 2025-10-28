@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.time.MonthDay;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.gui.components.SplashRenderer;
@@ -17,6 +16,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SpecialDates;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 
 public class SplashManager extends SimplePreparableReloadListener<List<Component>> {
    private static final Style DEFAULT_STYLE;
@@ -70,8 +70,7 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
       this.splashes = List.copyOf(var1);
    }
 
-   @Nullable
-   public SplashRenderer getSplash() {
+   public @Nullable SplashRenderer getSplash() {
       MonthDay var1 = SpecialDates.dayNow();
       if (var1.equals(SpecialDates.CHRISTMAS)) {
          return SplashRenderer.CHRISTMAS;

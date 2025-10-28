@@ -12,7 +12,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -88,6 +87,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
@@ -149,8 +149,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.isClientSide;
    }
 
-   @Nullable
-   public MinecraftServer getServer() {
+   public @Nullable MinecraftServer getServer() {
       return null;
    }
 
@@ -178,8 +177,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return (LevelChunk)this.getChunk(var1, var2, ChunkStatus.FULL);
    }
 
-   @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       ChunkAccess var5 = this.getChunkSource().getChunk(var1, var2, var3, var4);
       if (var5 == null && var4) {
          throw new IllegalStateException("Should always be able to create a chunk!");
@@ -477,8 +475,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract String gatherChunkSourceStats();
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       if (this.isOutsideBuildHeight(var1)) {
          return null;
       } else {
@@ -555,8 +552,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.getChunkSource().close();
    }
 
-   @Nullable
-   public BlockGetter getChunkForCollisions(int var1, int var2) {
+   public @Nullable BlockGetter getChunkForCollisions(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.FULL, false);
    }
 
@@ -645,21 +641,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
    }
 
-   @Nullable
-   public abstract Entity getEntity(int var1);
+   public abstract @Nullable Entity getEntity(int var1);
 
-   @Nullable
-   public Entity getEntity(UUID var1) {
+   public @Nullable Entity getEntity(UUID var1) {
       return (Entity)this.getEntities().get(var1);
    }
 
-   @Nullable
-   public Entity getEntityInAnyDimension(UUID var1) {
+   public @Nullable Entity getEntityInAnyDimension(UUID var1) {
       return this.getEntity(var1);
    }
 
-   @Nullable
-   public Player getPlayerInAnyDimension(UUID var1) {
+   public @Nullable Player getPlayerInAnyDimension(UUID var1) {
       return this.getPlayerByUUID(var1);
    }
 
@@ -748,8 +740,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   @Nullable
-   public abstract MapItemSavedData getMapData(MapId var1);
+   public abstract @Nullable MapItemSavedData getMapData(MapId var1);
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
    }

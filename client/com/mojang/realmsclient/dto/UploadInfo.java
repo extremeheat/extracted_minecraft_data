@@ -8,8 +8,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record UploadInfo(boolean worldClosed, @Nullable String token, URI uploadEndpoint) {
@@ -25,8 +25,7 @@ public record UploadInfo(boolean worldClosed, @Nullable String token, URI upload
       this.uploadEndpoint = var3;
    }
 
-   @Nullable
-   public static UploadInfo parse(String var0) {
+   public static @Nullable UploadInfo parse(String var0) {
       try {
          JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
          String var2 = JsonUtils.getStringOr("uploadEndpoint", var1, (String)null);
@@ -46,9 +45,8 @@ public record UploadInfo(boolean worldClosed, @Nullable String token, URI upload
       return null;
    }
 
-   @Nullable
    @VisibleForTesting
-   public static URI assembleUri(String var0, int var1) {
+   public static @Nullable URI assembleUri(String var0, int var1) {
       Matcher var2 = URI_SCHEMA_PATTERN.matcher(var0);
       String var3 = ensureEndpointSchema(var0, var2);
 

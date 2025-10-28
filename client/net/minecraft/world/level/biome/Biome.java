@@ -6,8 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -32,6 +30,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public final class Biome {
    public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((var0x) -> var0x.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
@@ -51,14 +50,14 @@ public final class Biome {
    private final MobSpawnSettings mobSettings;
    private final EnvironmentAttributeMap attributes;
    private final BiomeSpecialEffects specialEffects;
-   private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> (Long2FloatLinkedOpenHashMap)Util.make(() -> {
-         Long2FloatLinkedOpenHashMap var1 = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
-            protected void rehash(int var1) {
-            }
-         };
-         var1.defaultReturnValue(0.0F / 0.0F);
-         return var1;
-      }));
+   private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> {
+      Long2FloatLinkedOpenHashMap var1 = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
+         protected void rehash(int var1) {
+         }
+      };
+      var1.defaultReturnValue(0.0F / 0.0F);
+      return var1;
+   });
 
    Biome(ClimateSettings var1, EnvironmentAttributeMap var2, BiomeSpecialEffects var3, BiomeGenerationSettings var4, MobSpawnSettings var5) {
       super();
@@ -175,11 +174,11 @@ public final class Biome {
 
    public int getGrassColor(double var1, double var3) {
       int var5 = this.getBaseGrassColor();
-      return this.specialEffects.getGrassColorModifier().modifyColor(var1, var3, var5);
+      return this.specialEffects.grassColorModifier().modifyColor(var1, var3, var5);
    }
 
    private int getBaseGrassColor() {
-      Optional var1 = this.specialEffects.getGrassColorOverride();
+      Optional var1 = this.specialEffects.grassColorOverride();
       return var1.isPresent() ? (Integer)var1.get() : this.getGrassColorFromTexture();
    }
 
@@ -190,7 +189,7 @@ public final class Biome {
    }
 
    public int getFoliageColor() {
-      return (Integer)this.specialEffects.getFoliageColorOverride().orElseGet(this::getFoliageColorFromTexture);
+      return (Integer)this.specialEffects.foliageColorOverride().orElseGet(this::getFoliageColorFromTexture);
    }
 
    private int getFoliageColorFromTexture() {
@@ -200,7 +199,7 @@ public final class Biome {
    }
 
    public int getDryFoliageColor() {
-      return (Integer)this.specialEffects.getDryFoliageColorOverride().orElseGet(this::getDryFoliageColorFromTexture);
+      return (Integer)this.specialEffects.dryFoliageColorOverride().orElseGet(this::getDryFoliageColorFromTexture);
    }
 
    private int getDryFoliageColorFromTexture() {
@@ -222,7 +221,7 @@ public final class Biome {
    }
 
    public int getWaterColor() {
-      return this.specialEffects.getWaterColor();
+      return this.specialEffects.waterColor();
    }
 
    static {
@@ -302,18 +301,13 @@ public final class Biome {
 
    public static class BiomeBuilder {
       private boolean hasPrecipitation = true;
-      @Nullable
-      private Float temperature;
+      private @Nullable Float temperature;
       private TemperatureModifier temperatureModifier;
-      @Nullable
-      private Float downfall;
+      private @Nullable Float downfall;
       private final EnvironmentAttributeMap.Builder attributes;
-      @Nullable
-      private BiomeSpecialEffects specialEffects;
-      @Nullable
-      private MobSpawnSettings mobSpawnSettings;
-      @Nullable
-      private BiomeGenerationSettings generationSettings;
+      private @Nullable BiomeSpecialEffects specialEffects;
+      private @Nullable MobSpawnSettings mobSpawnSettings;
+      private @Nullable BiomeGenerationSettings generationSettings;
 
       public BiomeBuilder() {
          super();

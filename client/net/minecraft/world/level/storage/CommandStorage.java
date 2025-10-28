@@ -5,13 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import org.jspecify.annotations.Nullable;
 
 public class CommandStorage {
    private static final String ID_PREFIX = "command_storage_";
@@ -28,8 +28,7 @@ public class CommandStorage {
       return var2 != null ? var2.get(var1.getPath()) : new CompoundTag();
    }
 
-   @Nullable
-   private Container getContainer(String var1) {
+   private @Nullable Container getContainer(String var1) {
       Container var2 = (Container)this.namespaces.get(var1);
       if (var2 != null) {
          return var2;

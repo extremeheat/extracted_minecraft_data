@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class PatchedDataComponentMap implements DataComponentMap {
    private final DataComponentMap prototype;
@@ -60,8 +60,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return true;
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       Optional var2 = (Optional)this.patch.get(var1);
       return (T)(var2 != null ? var2.orElse((Object)null) : this.prototype.get(var1));
    }
@@ -70,8 +69,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return this.patch.containsKey(var1);
    }
 
-   @Nullable
-   public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
+   public <T> @Nullable T set(DataComponentType<T> var1, @Nullable T var2) {
       this.ensureMapOwnership();
       Object var3 = this.prototype.get(var1);
       Optional var4;
@@ -84,13 +82,11 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return (T)(var4 != null ? var4.orElse(var3) : var3);
    }
 
-   @Nullable
-   public <T> T set(TypedDataComponent<T> var1) {
+   public <T> @Nullable T set(TypedDataComponent<T> var1) {
       return (T)this.set(var1.type(), var1.value());
    }
 
-   @Nullable
-   public <T> T remove(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T remove(DataComponentType<? extends T> var1) {
       this.ensureMapOwnership();
       Object var2 = this.prototype.get(var1);
       Optional var3;

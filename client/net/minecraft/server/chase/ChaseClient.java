@@ -1,18 +1,17 @@
 package net.minecraft.server.chase;
 
-import com.google.common.base.Charsets;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.CommonComponents;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.io.IOUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChaseClient {
@@ -35,10 +35,8 @@ public class ChaseClient {
    private final int serverPort;
    private final MinecraftServer server;
    private volatile boolean wantsToRun;
-   @Nullable
-   private Socket socket;
-   @Nullable
-   private Thread thread;
+   private @Nullable Socket socket;
+   private @Nullable Thread thread;
 
    public ChaseClient(String var1, int var2, MinecraftServer var3) {
       super();
@@ -75,7 +73,7 @@ public class ChaseClient {
             LOGGER.info("Connected to remote control server! Will continuously execute the command broadcasted by that server.");
 
             try {
-               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), Charsets.US_ASCII));
+               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.US_ASCII));
 
                try {
                   while(this.wantsToRun) {

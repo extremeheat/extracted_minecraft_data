@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -28,8 +28,7 @@ public class GlDebug {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int CIRCULAR_LOG_SIZE = 10;
    private final Queue<LogEntry> MESSAGE_BUFFER = EvictingQueue.create(10);
-   @Nullable
-   private volatile LogEntry lastEntry;
+   private volatile @Nullable LogEntry lastEntry;
    private static final List<Integer> DEBUG_LEVELS = ImmutableList.of(37190, 37191, 37192, 33387);
    private static final List<Integer> DEBUG_LEVELS_ARB = ImmutableList.of(37190, 37191, 37192);
 
@@ -146,8 +145,7 @@ public class GlDebug {
       }
    }
 
-   @Nullable
-   public static GlDebug enableDebugCallback(int var0, boolean var1, Set<String> var2) {
+   public static @Nullable GlDebug enableDebugCallback(int var0, boolean var1, Set<String> var2) {
       if (var0 <= 0) {
          return null;
       } else {

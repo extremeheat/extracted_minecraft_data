@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -13,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
 import org.apache.commons.lang3.math.Fraction;
+import org.jspecify.annotations.Nullable;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation PROGRESSBAR_BORDER_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_border");
@@ -192,8 +192,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return this.contents.weight().compareTo(Fraction.ONE) >= 0 ? PROGRESSBAR_FULL_SPRITE : PROGRESSBAR_FILL_SPRITE;
    }
 
-   @Nullable
-   private Component getProgressBarFillText() {
+   private @Nullable Component getProgressBarFillText() {
       if (this.contents.isEmpty()) {
          return BUNDLE_EMPTY_TEXT;
       } else {

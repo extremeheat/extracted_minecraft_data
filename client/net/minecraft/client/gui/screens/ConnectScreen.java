@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
@@ -31,6 +30,7 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.server.network.EventLoopGroupHolder;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ConnectScreen extends Screen {
@@ -39,10 +39,8 @@ public class ConnectScreen extends Screen {
    private static final long NARRATION_DELAY_MS = 2000L;
    public static final Component ABORT_CONNECTION = Component.translatable("connect.aborted");
    public static final Component UNKNOWN_HOST_MESSAGE = Component.translatable("disconnect.genericReason", Component.translatable("disconnect.unknownHost"));
-   @Nullable
-   volatile Connection connection;
-   @Nullable
-   ChannelFuture channelFuture;
+   volatile @Nullable Connection connection;
+   @Nullable ChannelFuture channelFuture;
    volatile boolean aborted;
    final Screen parent;
    private Component status = Component.translatable("connect.connecting");
@@ -82,7 +80,7 @@ public class ConnectScreen extends Screen {
       }
    }
 
-   private void connect(final Minecraft var1, final ServerAddress var2, final ServerData var3, @Nullable final TransferState var4) {
+   private void connect(final Minecraft var1, final ServerAddress var2, final ServerData var3, final @Nullable TransferState var4) {
       LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
       Thread var5 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
          public void run() {

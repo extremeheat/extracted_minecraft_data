@@ -5,11 +5,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.security.SignatureException;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
+import org.jspecify.annotations.Nullable;
 
 public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
    public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(var0, SignedMessageLink::new));
@@ -39,8 +39,7 @@ public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
       return this.index > var1.index() && this.sender.equals(var1.sender()) && this.sessionId.equals(var1.sessionId());
    }
 
-   @Nullable
-   public SignedMessageLink advance() {
+   public @Nullable SignedMessageLink advance() {
       return this.index == 2147483647 ? null : new SignedMessageLink(this.index + 1, this.sender, this.sessionId);
    }
 }

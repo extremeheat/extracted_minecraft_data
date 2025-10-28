@@ -1186,6 +1186,7 @@ public class Items {
    public static final Item BREEZE_SPAWN_EGG;
    public static final Item CAT_SPAWN_EGG;
    public static final Item CAMEL_SPAWN_EGG;
+   public static final Item CAMEL_HUSK_SPAWN_EGG;
    public static final Item CAVE_SPIDER_SPAWN_EGG;
    public static final Item CHICKEN_SPAWN_EGG;
    public static final Item COD_SPAWN_EGG;
@@ -1218,6 +1219,7 @@ public class Items {
    public static final Item NAUTILUS_SPAWN_EGG;
    public static final Item OCELOT_SPAWN_EGG;
    public static final Item PANDA_SPAWN_EGG;
+   public static final Item PARCHED_SPAWN_EGG;
    public static final Item PARROT_SPAWN_EGG;
    public static final Item PHANTOM_SPAWN_EGG;
    public static final Item PIG_SPAWN_EGG;
@@ -2744,6 +2746,7 @@ public class Items {
       BREEZE_SPAWN_EGG = registerItem("breeze_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.BREEZE));
       CAT_SPAWN_EGG = registerItem("cat_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.CAT));
       CAMEL_SPAWN_EGG = registerItem("camel_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.CAMEL));
+      CAMEL_HUSK_SPAWN_EGG = registerItem("camel_husk_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.CAMEL_HUSK));
       CAVE_SPIDER_SPAWN_EGG = registerItem("cave_spider_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.CAVE_SPIDER));
       CHICKEN_SPAWN_EGG = registerItem("chicken_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.CHICKEN));
       COD_SPAWN_EGG = registerItem("cod_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.COD));
@@ -2776,6 +2779,7 @@ public class Items {
       NAUTILUS_SPAWN_EGG = registerItem("nautilus_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.NAUTILUS));
       OCELOT_SPAWN_EGG = registerItem("ocelot_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.OCELOT));
       PANDA_SPAWN_EGG = registerItem("panda_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PANDA));
+      PARCHED_SPAWN_EGG = registerItem("parched_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PARCHED));
       PARROT_SPAWN_EGG = registerItem("parrot_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PARROT));
       PHANTOM_SPAWN_EGG = registerItem("phantom_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PHANTOM));
       PIG_SPAWN_EGG = registerItem("pig_spawn_egg", SpawnEggItem::new, (new Item.Properties()).spawnEgg(EntityType.PIG));

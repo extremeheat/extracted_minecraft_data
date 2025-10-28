@@ -1,5 +1,6 @@
 package net.minecraft.server.jsonrpc.api;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -27,12 +28,14 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRuleType;
 
 public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Schema<?>> items, Map<String, Schema<?>> properties, List<String> enumValues, Codec<T> codec) {
    public static final Codec<? extends Schema<?>> CODEC = Codec.recursive("Schema", (var0) -> RecordCodecBuilder.create((var1) -> var1.group(ReferenceUtil.REFERENCE_CODEC.optionalFieldOf("$ref").forGetter(Schema::reference), ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("type", List.of()).forGetter(Schema::type), var0.optionalFieldOf("items").forGetter(Schema::items), Codec.unboundedMap(Codec.STRING, var0).optionalFieldOf("properties", Map.of()).forGetter(Schema::properties), Codec.STRING.listOf().optionalFieldOf("enum", List.of()).forGetter(Schema::enumValues)).apply(var1, (var0x, var1x, var2, var3, var4) -> null))).validate((var0) -> var0 == null ? DataResult.error(() -> "Should not deserialize schema") : DataResult.success(var0));
    private static final List<SchemaComponent<?>> SCHEMA_REGISTRY = new ArrayList();
    public static final Schema<Boolean> BOOL_SCHEMA;
    public static final Schema<Integer> INT_SCHEMA;
+   public static final Schema<Either<Boolean, Integer>> BOOL_OR_INT_SCHEMA;
    public static final Schema<Float> NUMBER_SCHEMA;
    public static final Schema<String> STRING_SCHEMA;
    public static final Schema<UUID> UUID_SCHEMA;
@@ -43,9 +46,9 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
    public static final SchemaComponent<PlayerDto> PLAYER_SCHEMA;
    public static final SchemaComponent<DiscoveryService.DiscoverInfo> VERSION_SCHEMA;
    public static final SchemaComponent<ServerStateService.ServerState> SERVER_STATE_SCHEMA;
-   public static final Schema<GameRulesService.RuleType> RULE_TYPE_SCHEMA;
-   public static final SchemaComponent<GameRulesService.TypedRule> TYPED_GAME_RULE_SCHEMA;
-   public static final SchemaComponent<GameRulesService.UntypedRule> UNTYPED_GAME_RULE_SCHEMA;
+   public static final Schema<GameRuleType> RULE_TYPE_SCHEMA;
+   public static final SchemaComponent<GameRulesService.GameRuleUpdate<?>> TYPED_GAME_RULE_SCHEMA;
+   public static final SchemaComponent<GameRulesService.GameRuleUpdate<?>> UNTYPED_GAME_RULE_SCHEMA;
    public static final SchemaComponent<Message> MESSAGE_SCHEMA;
    public static final SchemaComponent<ServerStateService.SystemMessage> SYSTEM_MESSAGE_SCHEMA;
    public static final SchemaComponent<PlayerService.KickDto> KICK_PLAYER_SCHEMA;
@@ -87,7 +90,11 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
    }
 
    public static <T> Schema<T> ofType(String var0, Codec<T> var1) {
-      return new Schema<T>(Optional.empty(), List.of(var0), Optional.empty(), Map.of(), List.of(), var1);
+      return ofTypes(List.of(var0), var1);
+   }
+
+   public static <T> Schema<T> ofTypes(List<String> var0, Codec<T> var1) {
+      return new Schema<T>(Optional.empty(), var0, Optional.empty(), Map.of(), List.of(), var1);
    }
 
    public static <E extends Enum<E> & StringRepresentable> Schema<E> ofEnum(Supplier<E[]> var0) {
@@ -128,6 +135,7 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
    static {
       BOOL_SCHEMA = ofType("boolean", Codec.BOOL);
       INT_SCHEMA = ofType("integer", Codec.INT);
+      BOOL_OR_INT_SCHEMA = ofTypes(List.of("boolean", "integer"), Codec.either(Codec.BOOL, Codec.INT));
       NUMBER_SCHEMA = ofType("number", Codec.FLOAT);
       STRING_SCHEMA = ofType("string", Codec.STRING);
       UUID_SCHEMA = ofType("string", UUIDUtil.CODEC);
@@ -138,9 +146,9 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
       PLAYER_SCHEMA = registerSchema("player", record(PlayerDto.CODEC.codec()).withField("id", UUID_SCHEMA).withField("name", STRING_SCHEMA));
       VERSION_SCHEMA = registerSchema("version", record(DiscoveryService.DiscoverInfo.CODEC.codec()).withField("name", STRING_SCHEMA).withField("protocol", INT_SCHEMA));
       SERVER_STATE_SCHEMA = registerSchema("server_state", record(ServerStateService.ServerState.CODEC).withField("started", BOOL_SCHEMA).withField("players", PLAYER_SCHEMA.asRef().asArray()).withField("version", VERSION_SCHEMA.asRef()));
-      RULE_TYPE_SCHEMA = ofEnum(GameRulesService.RuleType::values);
-      TYPED_GAME_RULE_SCHEMA = registerSchema("typed_game_rule", record(GameRulesService.TypedRule.CODEC.codec()).withField("key", STRING_SCHEMA).withField("value", STRING_SCHEMA).withField("type", RULE_TYPE_SCHEMA));
-      UNTYPED_GAME_RULE_SCHEMA = registerSchema("untyped_game_rule", record(GameRulesService.UntypedRule.CODEC.codec()).withField("key", STRING_SCHEMA).withField("value", STRING_SCHEMA));
+      RULE_TYPE_SCHEMA = ofEnum(GameRuleType::values);
+      TYPED_GAME_RULE_SCHEMA = registerSchema("typed_game_rule", record(GameRulesService.GameRuleUpdate.TYPED_CODEC).withField("key", STRING_SCHEMA).withField("value", BOOL_OR_INT_SCHEMA).withField("type", RULE_TYPE_SCHEMA));
+      UNTYPED_GAME_RULE_SCHEMA = registerSchema("untyped_game_rule", record(GameRulesService.GameRuleUpdate.CODEC).withField("key", STRING_SCHEMA).withField("value", BOOL_OR_INT_SCHEMA));
       MESSAGE_SCHEMA = registerSchema("message", record(Message.CODEC).withField("literal", STRING_SCHEMA).withField("translatable", STRING_SCHEMA).withField("translatableParams", STRING_SCHEMA.asArray()));
       SYSTEM_MESSAGE_SCHEMA = registerSchema("system_message", record(ServerStateService.SystemMessage.CODEC).withField("message", MESSAGE_SCHEMA.asRef()).withField("overlay", BOOL_SCHEMA).withField("receivingPlayers", PLAYER_SCHEMA.asRef().asArray()));
       KICK_PLAYER_SCHEMA = registerSchema("kick_player", record(PlayerService.KickDto.CODEC.codec()).withField("message", MESSAGE_SCHEMA.asRef()).withField("player", PLAYER_SCHEMA.asRef()));

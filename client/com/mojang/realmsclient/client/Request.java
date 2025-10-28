@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Request<T extends Request<T>> {
    protected HttpURLConnection connection;

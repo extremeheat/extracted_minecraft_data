@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.Nullable;
 
 public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final MapCodec<TestBlock> CODEC = simpleCodec(TestBlock::new);
@@ -34,8 +34,7 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
       super(var1);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new TestBlockEntity(var1, var2);
    }
 
@@ -97,8 +96,7 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   @Nullable
-   private static TestBlockEntity getServerTestBlockEntity(Level var0, BlockPos var1) {
+   private static @Nullable TestBlockEntity getServerTestBlockEntity(Level var0, BlockPos var1) {
       if (var0 instanceof ServerLevel var2) {
          BlockEntity var4 = var2.getBlockEntity(var1);
          if (var4 instanceof TestBlockEntity var3) {

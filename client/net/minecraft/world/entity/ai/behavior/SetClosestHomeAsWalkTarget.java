@@ -31,7 +31,7 @@ public class SetClosestHomeAsWalkTarget {
       Long2LongOpenHashMap var1 = new Long2LongOpenHashMap();
       MutableLong var2 = new MutableLong(0L);
       return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.absent(MemoryModuleType.HOME)).apply(var3, (var3x, var4) -> (var4x, var5, var6) -> {
-               if (var4x.getGameTime() - var2.getValue() < 20L) {
+               if (var4x.getGameTime() - var2.longValue() < 20L) {
                   return false;
                } else {
                   PoiManager var8 = var4x.getPoiManager();
@@ -46,7 +46,7 @@ public class SetClosestHomeAsWalkTarget {
                         } else if (var10.incrementAndGet() >= 5) {
                            return false;
                         } else {
-                           var1.put(var4, var2.getValue() + 40L);
+                           var1.put(var4, var2.longValue() + 40L);
                            return true;
                         }
                      };
@@ -59,8 +59,8 @@ public class SetClosestHomeAsWalkTarget {
                            var3x.set(new WalkTarget(var14, var0, 1));
                            var4x.debugSynchronizers().updatePoi(var14);
                         }
-                     } else if (var10.getValue() < 5) {
-                        var1.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < var2.getValue());
+                     } else if (var10.intValue() < 5) {
+                        var1.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < var2.longValue());
                      }
 
                      return true;

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.nautilus;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -53,6 +52,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractNautilus extends TamableAnimal implements PlayerRideableJumping {
    public static final int SMALL_RESTRICTION_RADIUS = 16;
@@ -136,8 +136,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       return !this.isVehicle();
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
       if (this.isSaddled() && var1 instanceof Player var2) {
          return var2;
@@ -188,16 +187,11 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
 
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isInWater()) {
-         float var2 = this.getSpeed();
-         this.moveRelative(var2, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-      } else {
-         super.travel(var1);
-      }
-
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      float var7 = this.getSpeed();
+      this.moveRelative(var7, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
    protected float getRiddenSpeed(Player var1) {
@@ -337,13 +331,11 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    protected void playStepSound(BlockPos var1, BlockState var2) {
    }
 
-   @Nullable
-   protected SoundEvent getDashSound() {
+   protected @Nullable SoundEvent getDashSound() {
       return null;
    }
 
-   @Nullable
-   protected SoundEvent getDashReadySound() {
+   protected @Nullable SoundEvent getDashReadySound() {
       return null;
    }
 
@@ -363,6 +355,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
                this.usePlayerItem(var1, var2, var3);
                FoodProperties var5 = (FoodProperties)var3.get(DataComponents.FOOD);
                this.heal(var5 != null ? (float)(2 * var5.nutrition()) : 1.0F);
+               this.playEatingSound();
                return InteractionResult.SUCCESS;
             }
 
@@ -390,6 +383,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
          this.level().broadcastEntityEvent(this, (byte)6);
       }
 
+      this.playEatingSound();
    }
 
    public boolean requiresCustomPersistence() {
@@ -424,7 +418,11 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    }
 
    protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
-      return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE && this.isUnderWater() ? SoundEvents.UNDERWATER_SADDLE_EQUIP : super.getEquipSound(var1, var2, var3));
+      if (var1 == EquipmentSlot.SADDLE && this.isUnderWater()) {
+         return SoundEvents.NAUTILUS_SADDLE_UNDERWATER_EQUIP;
+      } else {
+         return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.NAUTILUS_SADDLE_EQUIP : super.getEquipSound(var1, var2, var3));
+      }
    }
 
    static {

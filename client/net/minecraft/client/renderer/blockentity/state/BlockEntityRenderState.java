@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity.state;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -10,14 +9,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class BlockEntityRenderState {
    public BlockPos blockPos;
    public BlockState blockState;
    public BlockEntityType<?> blockEntityType;
    public int lightCoords;
-   @Nullable
-   public ModelFeatureRenderer.CrumblingOverlay breakProgress;
+   public ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress;
 
    public BlockEntityRenderState() {
       super();
@@ -26,7 +25,7 @@ public class BlockEntityRenderState {
       this.blockEntityType = BlockEntityType.TEST_BLOCK;
    }
 
-   public static void extractBase(BlockEntity var0, BlockEntityRenderState var1, @Nullable ModelFeatureRenderer.CrumblingOverlay var2) {
+   public static void extractBase(BlockEntity var0, BlockEntityRenderState var1, ModelFeatureRenderer.@Nullable CrumblingOverlay var2) {
       var1.blockPos = var0.getBlockPos();
       var1.blockState = var0.getBlockState();
       var1.blockEntityType = var0.getType();

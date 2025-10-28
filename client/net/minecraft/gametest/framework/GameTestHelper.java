@@ -14,8 +14,6 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -69,6 +67,7 @@ import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class GameTestHelper {
    private final GameTestInfo testInfo;
@@ -321,7 +320,6 @@ public class GameTestHelper {
 
    public Player makeMockPlayer(final GameType var1) {
       return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
-         @Nonnull
          public GameType gameMode() {
             return var1;
          }

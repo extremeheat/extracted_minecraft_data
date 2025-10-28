@@ -18,9 +18,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.level.GameRules;
 
 public class ZombieNautilusAi {
    private static final float SPEED_MULTIPLIER_WHEN_IDLING_IN_WATER = 1.0F;
@@ -30,7 +28,6 @@ public class ZombieNautilusAi {
    private static final int TIME_BETWEEN_ATTACKS = 80;
    private static final double MAX_CHARGE_DISTANCE = 12.0;
    private static final double MAX_TARGET_DETECTION_DISTANCE = 11.0;
-   private static final TargetingConditions ATTACK_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox()));
    protected static final ImmutableList<SensorType<? extends Sensor<? super ZombieNautilus>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -61,7 +58,7 @@ public class ZombieNautilusAi {
    }
 
    private static void initFightActivity(Brain<ZombieNautilus> var0) {
-      var0.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, new ChargeAttack(80, ATTACK_TARGET_CONDITIONS, 0.5F, 2.0F, 12.0, 11.0))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT)));
+      var0.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, new ChargeAttack(80, NautilusAi.ATTACK_TARGET_CONDITIONS, 0.5F, 2.0F, 12.0, 11.0))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT)));
    }
 
    public static void updateActivity(ZombieNautilus var0) {

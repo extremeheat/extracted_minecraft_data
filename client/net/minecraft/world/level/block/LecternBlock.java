@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -39,6 +38,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class LecternBlock extends BaseEntityBlock {
    public static final MapCodec<LecternBlock> CODEC = simpleCodec(LecternBlock::new);
@@ -210,8 +210,7 @@ public class LecternBlock extends BaseEntityBlock {
       }
    }
 
-   @Nullable
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return !(Boolean)var1.getValue(HAS_BOOK) ? null : super.getMenuProvider(var1, var2, var3);
    }
 

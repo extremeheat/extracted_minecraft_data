@@ -14,9 +14,10 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
+import org.jspecify.annotations.Nullable;
 
 public class ItemSpawnEggFix extends DataFix {
-   private static final String[] ID_TO_ENTITY = (String[])DataFixUtils.make(new String[256], (var0) -> {
+   private static final @Nullable String[] ID_TO_ENTITY = (String[])DataFixUtils.make(new String[256], (var0) -> {
       var0[1] = "Item";
       var0[2] = "XPOrb";
       var0[7] = "ThrownEgg";

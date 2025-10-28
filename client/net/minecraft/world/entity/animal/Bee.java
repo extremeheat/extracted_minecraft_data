@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -93,6 +92,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public static final float FLAP_DEGREES_PER_TICK = 120.32113F;
@@ -128,8 +128,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    private static final int DEFAULT_CANNOT_ENTER_HIVE_TICKS = 0;
    private static final int DEFAULT_CROPS_GROWN_SINCE_POLLINATION = 0;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
    private float rollAmount;
    private float rollAmountO;
    private int timeSinceSting;
@@ -142,10 +141,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    private static final int MIN_FIND_FLOWER_RETRY_COOLDOWN = 20;
    private static final int MAX_FIND_FLOWER_RETRY_COOLDOWN = 60;
    int remainingCooldownBeforeLocatingNewFlower;
-   @Nullable
-   BlockPos savedFlowerPos;
-   @Nullable
-   BlockPos hivePos;
+   @Nullable BlockPos savedFlowerPos;
+   @Nullable BlockPos hivePos;
    BeePollinateGoal beePollinateGoal;
    BeeGoToHiveGoal goToHiveGoal;
    private BeeGoToKnownFlowerGoal goToKnownFlowerGoal;
@@ -289,8 +286,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
    }
 
-   @Nullable
-   public BlockPos getSavedFlowerPos() {
+   public @Nullable BlockPos getSavedFlowerPos() {
       return this.savedFlowerPos;
    }
 
@@ -400,8 +396,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       this.entityData.set(DATA_ANGER_END_TIME, var1);
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -427,9 +422,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       return this.hivePos != null;
    }
 
-   @Nullable
    @VisibleForDebug
-   public BlockPos getHivePos() {
+   public @Nullable BlockPos getHivePos() {
       return this.hivePos;
    }
 
@@ -474,8 +468,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    }
 
-   @Nullable
-   BeehiveBlockEntity getBeehiveBlockEntity() {
+   @Nullable BeehiveBlockEntity getBeehiveBlockEntity() {
       if (this.hivePos == null) {
          return null;
       } else {
@@ -602,8 +595,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       return 0.4F;
    }
 
-   @Nullable
-   public Bee getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Bee getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.BEE.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -668,8 +660,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -762,8 +753,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
       }
 
-      @Nullable
-      private Vec3 findPos() {
+      private @Nullable Vec3 findPos() {
          Vec3 var1;
          if (Bee.this.isHiveValid() && !Bee.this.closerThan(Bee.this.hivePos, this.getWanderThreshold())) {
             Vec3 var2 = Vec3.atCenterOf(Bee.this.hivePos);
@@ -789,8 +779,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       int travellingTicks;
       private static final int MAX_BLACKLISTED_TARGETS = 3;
       final List<BlockPos> blacklistedTargets = Lists.newArrayList();
-      @Nullable
-      private Path lastPath;
+      private @Nullable Path lastPath;
       private static final int TICKS_BEFORE_HIVE_DROP = 60;
       private int ticksStuck;
 
@@ -968,8 +957,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       private int successfulPollinatingTicks;
       private int lastSoundPlayedTick;
       private boolean pollinating;
-      @Nullable
-      private Vec3 hoverPos;
+      private @Nullable Vec3 hoverPos;
       private int pollinatingTicks;
       private static final int MAX_POLLINATING_TICKS = 600;
       private Long2LongOpenHashMap unreachableFlowerCache = new Long2LongOpenHashMap();

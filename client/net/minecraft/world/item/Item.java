@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -92,6 +91,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Item implements FeatureElement, ItemLike {
@@ -107,8 +107,7 @@ public class Item implements FeatureElement, ItemLike {
    protected static final int APPROXIMATELY_INFINITE_USE_DURATION = 72000;
    private final Holder.Reference<Item> builtInRegistryHolder;
    private final DataComponentMap components;
-   @Nullable
-   private final Item craftingRemainingItem;
+   private final @Nullable Item craftingRemainingItem;
    protected final String descriptionId;
    private final FeatureFlagSet requiredFeatures;
 
@@ -252,8 +251,7 @@ public class Item implements FeatureElement, ItemLike {
 
    /** @deprecated */
    @Deprecated
-   @Nullable
-   public DamageSource getItemDamageSource(LivingEntity var1) {
+   public @Nullable DamageSource getItemDamageSource(LivingEntity var1) {
       return null;
    }
 
@@ -392,11 +390,9 @@ public class Item implements FeatureElement, ItemLike {
       private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.location());
       private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.location());
       private final DataComponentMap.Builder components;
-      @Nullable
-      Item craftingRemainingItem;
+      @Nullable Item craftingRemainingItem;
       FeatureFlagSet requiredFeatures;
-      @Nullable
-      private ResourceKey<Item> id;
+      private @Nullable ResourceKey<Item> id;
       private DependantName<Item, String> descriptionId;
       private final DependantName<Item, ResourceLocation> model;
 
@@ -581,8 +577,7 @@ public class Item implements FeatureElement, ItemLike {
 
    public interface TooltipContext {
       TooltipContext EMPTY = new TooltipContext() {
-         @Nullable
-         public HolderLookup.Provider registries() {
+         public HolderLookup.@Nullable Provider registries() {
             return null;
          }
 
@@ -590,8 +585,7 @@ public class Item implements FeatureElement, ItemLike {
             return 20.0F;
          }
 
-         @Nullable
-         public MapItemSavedData mapData(MapId var1) {
+         public @Nullable MapItemSavedData mapData(MapId var1) {
             return null;
          }
 
@@ -600,17 +594,15 @@ public class Item implements FeatureElement, ItemLike {
          }
       };
 
-      @Nullable
-      HolderLookup.Provider registries();
+      HolderLookup.@Nullable Provider registries();
 
       float tickRate();
 
-      @Nullable
-      MapItemSavedData mapData(MapId var1);
+      @Nullable MapItemSavedData mapData(MapId var1);
 
       boolean isPeaceful();
 
-      static TooltipContext of(@Nullable final Level var0) {
+      static TooltipContext of(final @Nullable Level var0) {
          return var0 == null ? EMPTY : new TooltipContext() {
             public HolderLookup.Provider registries() {
                return var0.registryAccess();
@@ -640,8 +632,7 @@ public class Item implements FeatureElement, ItemLike {
                return 20.0F;
             }
 
-            @Nullable
-            public MapItemSavedData mapData(MapId var1) {
+            public @Nullable MapItemSavedData mapData(MapId var1) {
                return null;
             }
 

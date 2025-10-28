@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.nautilus;
 
 import com.mojang.serialization.Dynamic;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -15,6 +14,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ZombieNautilus extends AbstractNautilus {
    public ZombieNautilus(EntityType<? extends ZombieNautilus> var1, Level var2) {
@@ -25,8 +25,7 @@ public class ZombieNautilus extends AbstractNautilus {
       return AbstractNautilus.createAttributes().add(Attributes.MOVEMENT_SPEED, 1.100000023841858);
    }
 
-   @Nullable
-   public ZombieNautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable ZombieNautilus getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
 
@@ -86,8 +85,7 @@ public class ZombieNautilus extends AbstractNautilus {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 }

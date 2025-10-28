@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.storage.TagValueOutput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record NbtPredicate(CompoundTag tag) {

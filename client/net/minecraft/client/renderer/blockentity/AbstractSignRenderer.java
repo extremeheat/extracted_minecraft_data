@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
@@ -32,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBlockEntity, SignRenderState> {
    private static final int BLACK_TEXT_OUTLINE_COLOR = -988212;
@@ -64,7 +64,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       this.submitSignWithText(var1, var2, var5, var6, var6.type(), var7, var1.breakProgress, var3);
    }
 
-   private void submitSignWithText(SignRenderState var1, PoseStack var2, BlockState var3, SignBlock var4, WoodType var5, Model.Simple var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, SubmitNodeCollector var8) {
+   private void submitSignWithText(SignRenderState var1, PoseStack var2, BlockState var3, SignBlock var4, WoodType var5, Model.Simple var6, ModelFeatureRenderer.@Nullable CrumblingOverlay var7, SubmitNodeCollector var8) {
       var2.pushPose();
       this.translateSign(var2, -var4.getYRotationDegrees(var3), var3);
       this.submitSign(var2, var1.lightCoords, var5, var6, var7, var8);
@@ -73,7 +73,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       var2.popPose();
    }
 
-   protected void submitSign(PoseStack var1, int var2, WoodType var3, Model.Simple var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5, SubmitNodeCollector var6) {
+   protected void submitSign(PoseStack var1, int var2, WoodType var3, Model.Simple var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5, SubmitNodeCollector var6) {
       var1.pushPose();
       float var7 = this.getSignModelRenderScale();
       var1.scale(var7, -var7, -var7);
@@ -148,7 +148,7 @@ public abstract class AbstractSignRenderer implements BlockEntityRenderer<SignBl
       return new SignRenderState();
    }
 
-   public void extractRenderState(SignBlockEntity var1, SignRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(SignBlockEntity var1, SignRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.maxTextLineWidth = var1.getMaxTextLineWidth();
       var2.textLineHeight = var1.getTextLineHeight();

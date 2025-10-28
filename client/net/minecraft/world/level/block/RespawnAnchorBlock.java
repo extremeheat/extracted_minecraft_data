@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -43,6 +42,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RespawnAnchorBlock extends Block {
    public static final MapCodec<RespawnAnchorBlock> CODEC = simpleCodec(RespawnAnchorBlock::new);

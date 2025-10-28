@@ -1,5 +1,6 @@
 package net.minecraft.core;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.datafixers.util.Either;
 import java.util.Collection;
 import java.util.Iterator;
@@ -9,11 +10,10 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.Nullable;
 
 public interface HolderSet<T> extends Iterable<Holder<T>> {
    Stream<Holder<T>> stream();
@@ -106,8 +106,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    public static final class Direct<T> extends ListBacked<T> {
       static final Direct<?> EMPTY = new Direct(List.of());
       private final List<Holder<T>> contents;
-      @Nullable
-      private Set<Holder<T>> contentsSet;
+      private @Nullable Set<Holder<T>> contentsSet;
 
       Direct(List<Holder<T>> var1) {
          super();
@@ -168,8 +167,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    public static class Named<T> extends ListBacked<T> {
       private final HolderOwner<T> owner;
       private final TagKey<T> key;
-      @Nullable
-      private List<Holder<T>> contents;
+      private @Nullable List<Holder<T>> contents;
 
       Named(HolderOwner<T> var1, TagKey<T> var2) {
          super();

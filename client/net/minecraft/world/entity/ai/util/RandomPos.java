@@ -5,13 +5,13 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class RandomPos {
    private static final int RANDOM_POS_ATTEMPTS = 10;
@@ -27,8 +27,7 @@ public class RandomPos {
       return new BlockPos(var3, var4, var5);
    }
 
-   @Nullable
-   public static BlockPos generateRandomDirectionWithinRadians(RandomSource var0, double var1, double var3, int var5, int var6, double var7, double var9, double var11) {
+   public static @Nullable BlockPos generateRandomDirectionWithinRadians(RandomSource var0, double var1, double var3, int var5, int var6, double var7, double var9, double var11) {
       double var13 = Mth.atan2(var9, var7) - 1.5707963705062866;
       double var15 = var13 + (double)(2.0F * var0.nextFloat() - 1.0F) * var11;
       double var17 = Mth.lerp(Math.sqrt(var0.nextDouble()), var1, var3) * (double)Mth.SQRT_OF_TWO;
@@ -84,14 +83,12 @@ public class RandomPos {
       }
    }
 
-   @Nullable
-   public static Vec3 generateRandomPos(PathfinderMob var0, Supplier<BlockPos> var1) {
+   public static @Nullable Vec3 generateRandomPos(PathfinderMob var0, Supplier<@Nullable BlockPos> var1) {
       Objects.requireNonNull(var0);
       return generateRandomPos(var1, var0::getWalkTargetValue);
    }
 
-   @Nullable
-   public static Vec3 generateRandomPos(Supplier<BlockPos> var0, ToDoubleFunction<BlockPos> var1) {
+   public static @Nullable Vec3 generateRandomPos(Supplier<@Nullable BlockPos> var0, ToDoubleFunction<BlockPos> var1) {
       double var2 = -1.0 / 0.0;
       BlockPos var4 = null;
 

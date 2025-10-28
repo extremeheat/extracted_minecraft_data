@@ -3,7 +3,6 @@ package com.mojang.math;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
 import org.apache.commons.lang3.tuple.Triple;
@@ -14,20 +13,17 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public final class Transformation {
    private final Matrix4fc matrix;
    public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> var0x.translation), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> var0x.leftRotation), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> var0x.scale), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> var0x.rightRotation)).apply(var0, Transformation::new));
    public static final Codec<Transformation> EXTENDED_CODEC;
    private boolean decomposed;
-   @Nullable
-   private Vector3fc translation;
-   @Nullable
-   private Quaternionfc leftRotation;
-   @Nullable
-   private Vector3fc scale;
-   @Nullable
-   private Quaternionfc rightRotation;
+   private @Nullable Vector3fc translation;
+   private @Nullable Quaternionfc leftRotation;
+   private @Nullable Vector3fc scale;
+   private @Nullable Quaternionfc rightRotation;
    private static final Transformation IDENTITY;
 
    public Transformation(@Nullable Matrix4fc var1) {
@@ -60,8 +56,7 @@ public final class Transformation {
       return new Transformation(var2);
    }
 
-   @Nullable
-   public Transformation inverse() {
+   public @Nullable Transformation inverse() {
       if (this == IDENTITY) {
          return this;
       } else {

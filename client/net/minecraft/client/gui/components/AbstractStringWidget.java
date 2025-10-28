@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,10 +8,10 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractStringWidget extends AbstractWidget {
-   @Nullable
-   private Consumer<Style> componentClickHandler = null;
+   private @Nullable Consumer<Style> componentClickHandler = null;
    private final Font font;
 
    public AbstractStringWidget(int var1, int var2, int var3, int var4, Component var5, Font var6) {

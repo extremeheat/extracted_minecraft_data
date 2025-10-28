@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SpawnerRenderState;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity, SpawnerRenderState> {
    private final EntityRenderDispatcher entityRenderer;
@@ -28,7 +28,7 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity, 
       return new SpawnerRenderState();
    }
 
-   public void extractRenderState(SpawnerBlockEntity var1, SpawnerRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(SpawnerBlockEntity var1, SpawnerRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       if (var1.getLevel() != null) {
          BaseSpawner var6 = var1.getSpawner();

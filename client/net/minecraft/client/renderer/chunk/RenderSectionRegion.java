@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.chunk;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -11,6 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class RenderSectionRegion implements BlockAndTintGetter {
    public static final int RADIUS = 1;
@@ -46,8 +46,7 @@ public class RenderSectionRegion implements BlockAndTintGetter {
       return this.level.getLightEngine();
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
       return this.getSection(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getY()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockEntity(var1);
    }
 

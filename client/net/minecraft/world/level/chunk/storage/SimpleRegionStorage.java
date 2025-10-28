@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -19,6 +18,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
+import org.jspecify.annotations.Nullable;
 
 public class SimpleRegionStorage implements AutoCloseable {
    private final IOWorker worker;

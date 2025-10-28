@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.wolf;
 
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -87,6 +86,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Boolean> DATA_INTERESTED_ID;
@@ -107,8 +107,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private float shakeAnim;
    private float shakeAnimO;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   @Nullable
-   private EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public Wolf(EntityType<? extends Wolf> var1, Level var2) {
       super(var1, var2);
@@ -165,8 +164,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_SOUND_VARIANT_ID, var1);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       if (var1 == DataComponents.WOLF_VARIANT) {
          return (T)castComponentValue(var1, this.getVariant());
       } else if (var1 == DataComponents.WOLF_SOUND_VARIANT) {
@@ -235,8 +233,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       var1.read("sound_variant", ResourceKey.codec(Registries.WOLF_SOUND_VARIANT)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT).get(var1x)).ifPresent(this::setSoundVariant);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 instanceof WolfPackData var5) {
          this.setVariant(var5.type);
       } else {
@@ -528,8 +525,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   @Nullable
-   public EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -545,8 +541,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_COLLAR_COLOR, var1.getId());
    }
 
-   @Nullable
-   public Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Wolf var3 = EntityType.WOLF.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Wolf var4) {
          if (this.random.nextBoolean()) {
@@ -649,8 +644,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

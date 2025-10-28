@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContainer {
    default boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {

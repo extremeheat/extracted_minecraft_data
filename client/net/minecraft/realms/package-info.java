@@ -1,8 +1,4 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@NullMarked
 package net.minecraft.realms;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import net.minecraft.FieldsAreNonnullByDefault;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

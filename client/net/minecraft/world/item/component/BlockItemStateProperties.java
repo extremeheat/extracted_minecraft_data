@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentGetter;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public record BlockItemStateProperties(Map<String, String> properties) implements TooltipProvider {
    public static final BlockItemStateProperties EMPTY = new BlockItemStateProperties(Map.of());
@@ -38,8 +38,7 @@ public record BlockItemStateProperties(Map<String, String> properties) implement
       return this.with(var1, var2.getValue(var1));
    }
 
-   @Nullable
-   public <T extends Comparable<T>> T get(Property<T> var1) {
+   public <T extends Comparable<T>> @Nullable T get(Property<T> var1) {
       String var2 = (String)this.properties.get(var1.getName());
       return (T)(var2 == null ? null : (Comparable)var1.getValue(var2).orElse((Object)null));
    }

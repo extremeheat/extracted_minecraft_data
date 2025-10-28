@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.scores.ScoreHolder;
+import org.jspecify.annotations.Nullable;
 
 public record ContextScoreboardNameProvider(LootContext.EntityTarget target) implements ScoreboardNameProvider {
    public static final MapCodec<ContextScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootContext.EntityTarget.CODEC.fieldOf("target").forGetter(ContextScoreboardNameProvider::target)).apply(var0, ContextScoreboardNameProvider::new));
@@ -26,13 +26,12 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget target) imp
       return ScoreboardNameProviders.CONTEXT;
    }
 
-   @Nullable
-   public ScoreHolder getScoreHolder(LootContext var1) {
-      return (ScoreHolder)var1.getOptionalParameter(this.target.getParam());
+   public @Nullable ScoreHolder getScoreHolder(LootContext var1) {
+      return (ScoreHolder)var1.getOptionalParameter(this.target.contextParam());
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(this.target.getParam());
+      return Set.of(this.target.contextParam());
    }
 
    static {

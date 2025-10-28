@@ -8,7 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -20,6 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MobEffectInstance implements Comparable<MobEffectInstance> {
@@ -35,8 +35,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private boolean ambient;
    private boolean visible;
    private boolean showIcon;
-   @Nullable
-   private MobEffectInstance hiddenEffect;
+   private @Nullable MobEffectInstance hiddenEffect;
    private final BlendState blendState;
 
    public MobEffectInstance(Holder<MobEffect> var1) {

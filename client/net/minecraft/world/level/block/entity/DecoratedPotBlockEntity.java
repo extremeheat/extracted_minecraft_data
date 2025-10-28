@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -23,18 +22,17 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.ticks.ContainerSingleItem;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotBlockEntity extends BlockEntity implements RandomizableContainer, ContainerSingleItem.BlockContainerSingleItem {
    public static final String TAG_SHERDS = "sherds";
    public static final String TAG_ITEM = "item";
    public static final int EVENT_POT_WOBBLES = 1;
    public long wobbleStartedAtTick;
-   @Nullable
-   public WobbleStyle lastWobbleStyle;
+   public @Nullable WobbleStyle lastWobbleStyle;
    private PotDecorations decorations;
    private ItemStack item;
-   @Nullable
-   protected ResourceKey<LootTable> lootTable;
+   protected @Nullable ResourceKey<LootTable> lootTable;
    protected long lootTableSeed;
 
    public DecoratedPotBlockEntity(BlockPos var1, BlockState var2) {
@@ -88,8 +86,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       return var1;
    }
 
-   @Nullable
-   public ResourceKey<LootTable> getLootTable() {
+   public @Nullable ResourceKey<LootTable> getLootTable() {
       return this.lootTable;
    }
 

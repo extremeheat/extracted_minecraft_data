@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.core.component.DataComponents;
@@ -12,6 +11,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDecorations> {
    private final DecoratedPotRenderer decoratedPotRenderer;
@@ -21,8 +21,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
       this.decoratedPotRenderer = var1;
    }
 
-   @Nullable
-   public PotDecorations extractArgument(ItemStack var1) {
+   public @Nullable PotDecorations extractArgument(ItemStack var1) {
       return (PotDecorations)var1.get(DataComponents.POT_DECORATIONS);
    }
 
@@ -35,8 +34,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object extractArgument(final ItemStack var1) {
+   public @Nullable Object extractArgument(final ItemStack var1) {
       return this.extractArgument(var1);
    }
 

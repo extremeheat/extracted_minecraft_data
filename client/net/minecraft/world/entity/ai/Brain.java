@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.VisibleForDebug;
@@ -39,6 +38,7 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Brain<E extends LivingEntity> {
@@ -72,17 +72,13 @@ public class Brain<E extends LivingEntity> {
             var2x.entries().forEach((var3x) -> {
                DataResult var4 = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
                DataResult var5 = var4.flatMap((var3xx) -> this.captureRead(var3xx, var1x, var3x.getSecond()));
-               var3.setValue(((DataResult)var3.getValue()).apply2(ImmutableList.Builder::add, var5));
+               var3.setValue(((DataResult)var3.get()).apply2(ImmutableList.Builder::add, var5));
             });
-            DataResult var10000 = (DataResult)var3.getValue();
+            DataResult var10000 = (DataResult)var3.get();
             Logger var10001 = Brain.LOGGER;
             Objects.requireNonNull(var10001);
             ImmutableList var4 = (ImmutableList)var10000.resultOrPartial(var10001::error).map(ImmutableList.Builder::build).orElseGet(ImmutableList::of);
-            Collection var10002 = var0;
-            Collection var10003 = var1;
-            MutableObject var10005 = var2;
-            Objects.requireNonNull(var10005);
-            return DataResult.success(new Brain(var10002, var10003, var4, var10005::getValue));
+            return DataResult.success(new Brain(var0, var1, var4, var2));
          }
 
          private <T, U> DataResult<MemoryValue<U>> captureRead(MemoryModuleType<U> var1x, DynamicOps<T> var2x, T var3) {
@@ -99,7 +95,7 @@ public class Brain<E extends LivingEntity> {
             return this.encode((Brain)var1x, var2x, var3);
          }
       }).fieldOf("memories").codec());
-      return (Codec)var2.getValue();
+      return (Codec)var2.get();
    }
 
    public Brain(Collection<? extends MemoryModuleType<?>> var1, Collection<? extends SensorType<? extends Sensor<? super E>>> var2, ImmutableList<MemoryValue<?>> var3, Supplier<Codec<Brain<E>>> var4) {
@@ -188,8 +184,7 @@ public class Brain<E extends LivingEntity> {
       }
    }
 
-   @Nullable
-   public <U> Optional<U> getMemoryInternal(MemoryModuleType<U> var1) {
+   public <U> @Nullable Optional<U> getMemoryInternal(MemoryModuleType<U> var1) {
       Optional var2 = (Optional)this.memories.get(var1);
       return var2 == null ? null : var2.map(ExpirableValue::getValue);
    }

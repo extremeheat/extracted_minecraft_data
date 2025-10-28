@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.time.Duration;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,10 +9,10 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
+import org.jspecify.annotations.Nullable;
 
 public class WidgetTooltipHolder {
-   @Nullable
-   private Tooltip tooltip;
+   private @Nullable Tooltip tooltip;
    private Duration delay;
    private long displayStartTime;
    private boolean wasDisplayed;
@@ -31,8 +30,7 @@ public class WidgetTooltipHolder {
       this.tooltip = var1;
    }
 
-   @Nullable
-   public Tooltip get() {
+   public @Nullable Tooltip get() {
       return this.tooltip;
    }
 

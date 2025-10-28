@@ -1,18 +1,16 @@
 package net.minecraft.world.phys.shapes;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import org.jspecify.annotations.Nullable;
 
 public class MinecartCollisionContext extends EntityCollisionContext {
-   @Nullable
-   private BlockPos ingoreBelow;
-   @Nullable
-   private BlockPos slopeIgnore;
+   private @Nullable BlockPos ingoreBelow;
+   private @Nullable BlockPos slopeIgnore;
 
    protected MinecartCollisionContext(AbstractMinecart var1, boolean var2) {
       super(var1, var2, false);

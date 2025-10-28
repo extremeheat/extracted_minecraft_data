@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID;
@@ -60,12 +60,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final int NOT_CONVERTING = -1;
    private static final int DEFAULT_XP = 0;
    private int villagerConversionTime;
-   @Nullable
-   private UUID conversionStarter;
-   @Nullable
-   private GossipContainer gossips;
-   @Nullable
-   private MerchantOffers tradeOffers;
+   private @Nullable UUID conversionStarter;
+   private @Nullable GossipContainer gossips;
+   private @Nullable MerchantOffers tradeOffers;
    private int villagerXp = 0;
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
@@ -182,7 +179,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.convertTo(EntityType.VILLAGER, ConversionParams.single(this, false, false), (var2) -> {
          for(EquipmentSlot var4 : this.dropPreservedEquipment(var1, (var0) -> !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
             SlotAccess var5 = var2.getSlot(var4.getIndex() + 300);
-            var5.set(this.getItemBySlot(var4));
+            if (var5 != null) {
+               var5.set(this.getItemBySlot(var4));
+            }
          }
 
          var2.setVillagerData(this.getVillagerData());
@@ -292,8 +291,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.villagerXp = var1;
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.VILLAGER_VARIANT ? castComponentValue(var1, this.getVillagerData().type()) : super.get(var1));
    }
 

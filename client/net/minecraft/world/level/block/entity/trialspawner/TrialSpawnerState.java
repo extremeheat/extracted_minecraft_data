@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 
 public enum TrialSpawnerState implements StringRepresentable {
    INACTIVE("inactive", 0, TrialSpawnerState.ParticleEmission.NONE, -1.0, false),
@@ -193,8 +193,7 @@ public enum TrialSpawnerState implements StringRepresentable {
       return !var1.getBlockState(var6).getCollisionShape(var1, var6).isEmpty() ? Optional.empty() : Optional.of(var5);
    }
 
-   @Nullable
-   private static Entity selectEntityToSpawnItemAbove(List<Player> var0, Set<UUID> var1, TrialSpawner var2, BlockPos var3, ServerLevel var4) {
+   private static @Nullable Entity selectEntityToSpawnItemAbove(List<Player> var0, Set<UUID> var1, TrialSpawner var2, BlockPos var3, ServerLevel var4) {
       Stream var10000 = var1.stream();
       Objects.requireNonNull(var4);
       Stream var5 = var10000.map(var4::getEntity).filter(Objects::nonNull).filter((var2x) -> var2x.isAlive() && var2x.distanceToSqr(var3.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange()));

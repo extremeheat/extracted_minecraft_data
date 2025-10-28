@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -13,6 +12,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.util.HttpUtil;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class ShareToLanScreen extends Screen {
    private static final int PORT_LOWER_BOUND = 1024;
@@ -27,8 +27,7 @@ public class ShareToLanScreen extends Screen {
    private GameType gameMode;
    private boolean commands;
    private int port;
-   @Nullable
-   private EditBox portEdit;
+   private @Nullable EditBox portEdit;
 
    public ShareToLanScreen(Screen var1) {
       super(Component.translatable("lanServer.title"));
@@ -81,8 +80,7 @@ public class ShareToLanScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Nullable
-   private Component tryParsePort(String var1) {
+   private @Nullable Component tryParsePort(String var1) {
       if (var1.isBlank()) {
          this.port = HttpUtil.getAvailablePort();
          return null;

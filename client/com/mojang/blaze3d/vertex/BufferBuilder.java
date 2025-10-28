@@ -4,9 +4,9 @@ import java.nio.ByteOrder;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 public class BufferBuilder implements VertexConsumer {
@@ -45,8 +45,7 @@ public class BufferBuilder implements VertexConsumer {
       }
    }
 
-   @Nullable
-   public MeshData build() {
+   public @Nullable MeshData build() {
       this.ensureBuilding();
       this.endLastVertex();
       MeshData var1 = this.storeMesh();
@@ -70,8 +69,7 @@ public class BufferBuilder implements VertexConsumer {
       }
    }
 
-   @Nullable
-   private MeshData storeMesh() {
+   private @Nullable MeshData storeMesh() {
       if (this.vertices == 0) {
          return null;
       } else {

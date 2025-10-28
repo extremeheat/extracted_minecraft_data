@@ -233,6 +233,8 @@ public class LayerDefinitions {
       var0.put(ModelLayers.CAMEL_BABY, var38.apply(CamelModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.CAMEL_SADDLE, var39);
       var0.put(ModelLayers.CAMEL_BABY_SADDLE, var39.apply(CamelModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.CAMEL_HUSK_SADDLE, var39);
+      var0.put(ModelLayers.CAMEL_HUSK_BABY_SADDLE, var39.apply(CamelModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.CAVE_SPIDER, var36.apply(MeshTransformer.scaling(0.7F)));
       var0.put(ModelLayers.CHEST, ChestModel.createSingleBodyLayer());
       var0.put(ModelLayers.CHEST_MINECART, var7);
@@ -347,6 +349,9 @@ public class LayerDefinitions {
       var0.put(ModelLayers.OCELOT_BABY, var23);
       var0.put(ModelLayers.PANDA, var42);
       var0.put(ModelLayers.PANDA_BABY, var42.apply(PandaModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.PARCHED, SkeletonModel.createSingleModelDualBodyLayer());
+      ModelLayers.PARCHED_ARMOR.putFrom(var2, var0);
+      var0.put(ModelLayers.PARCHED_OUTER_LAYER, LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32));
       var0.put(ModelLayers.PARROT, ParrotModel.createBodyLayer());
       var0.put(ModelLayers.PHANTOM, PhantomModel.createBodyLayer());
       var0.put(ModelLayers.PIG, var43);

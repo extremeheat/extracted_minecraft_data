@@ -4,7 +4,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.SelectorPattern;
 import net.minecraft.network.chat.Component;
@@ -15,6 +14,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.entity.Entity;
+import org.jspecify.annotations.Nullable;
 
 public record SelectorContents(SelectorPattern selector, Optional<Component> separator) implements ComponentContents {
    public static final MapCodec<SelectorContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new));

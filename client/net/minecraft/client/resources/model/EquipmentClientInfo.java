@@ -117,6 +117,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
       PIG_SADDLE("pig_saddle"),
       STRIDER_SADDLE("strider_saddle"),
       CAMEL_SADDLE("camel_saddle"),
+      CAMEL_HUSK_SADDLE("camel_husk_saddle"),
       HORSE_SADDLE("horse_saddle"),
       DONKEY_SADDLE("donkey_saddle"),
       MULE_SADDLE("mule_saddle"),
@@ -143,7 +144,7 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
 
       // $FF: synthetic method
       private static LayerType[] $values() {
-         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY, NAUTILUS_SADDLE, NAUTILUS_BODY};
+         return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, CAMEL_HUSK_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE, HAPPY_GHAST_BODY, NAUTILUS_SADDLE, NAUTILUS_BODY};
       }
    }
 }

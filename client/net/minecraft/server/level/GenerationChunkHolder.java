@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.server.MinecraftServer;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.status.ChunkStep;
+import org.jspecify.annotations.Nullable;
 
 public abstract class GenerationChunkHolder {
    private static final List<ChunkStatus> CHUNK_STATUSES = ChunkStatus.getStatusList();
@@ -27,11 +27,10 @@ public abstract class GenerationChunkHolder {
    public static final ChunkResult<ChunkAccess> UNLOADED_CHUNK = ChunkResult.error("Unloaded chunk");
    public static final CompletableFuture<ChunkResult<ChunkAccess>> UNLOADED_CHUNK_FUTURE;
    protected final ChunkPos pos;
-   @Nullable
-   private volatile ChunkStatus highestAllowedStatus;
-   private final AtomicReference<ChunkStatus> startedWork = new AtomicReference();
-   private final AtomicReferenceArray<CompletableFuture<ChunkResult<ChunkAccess>>> futures;
-   private final AtomicReference<ChunkGenerationTask> task;
+   private volatile @Nullable ChunkStatus highestAllowedStatus;
+   private final AtomicReference<@Nullable ChunkStatus> startedWork = new AtomicReference();
+   private final AtomicReferenceArray<@Nullable CompletableFuture<ChunkResult<ChunkAccess>>> futures;
+   private final AtomicReference<@Nullable ChunkGenerationTask> task;
    private final AtomicInteger generationRefCount;
    private volatile CompletableFuture<Void> generationSaveSyncFuture;
 
@@ -200,8 +199,7 @@ public abstract class GenerationChunkHolder {
       }
    }
 
-   @Nullable
-   private ChunkStatus findHighestStatusWithPendingFuture(@Nullable ChunkStatus var1) {
+   private @Nullable ChunkStatus findHighestStatusWithPendingFuture(@Nullable ChunkStatus var1) {
       if (var1 == null) {
          return null;
       } else {
@@ -261,19 +259,16 @@ public abstract class GenerationChunkHolder {
       }
    }
 
-   @Nullable
-   public ChunkAccess getChunkIfPresentUnchecked(ChunkStatus var1) {
+   public @Nullable ChunkAccess getChunkIfPresentUnchecked(ChunkStatus var1) {
       CompletableFuture var2 = (CompletableFuture)this.futures.get(var1.getIndex());
       return var2 == null ? null : (ChunkAccess)((ChunkResult)var2.getNow(NOT_DONE_YET)).orElse((Object)null);
    }
 
-   @Nullable
-   public ChunkAccess getChunkIfPresent(ChunkStatus var1) {
+   public @Nullable ChunkAccess getChunkIfPresent(ChunkStatus var1) {
       return this.isStatusDisallowed(var1) ? null : this.getChunkIfPresentUnchecked(var1);
    }
 
-   @Nullable
-   public ChunkAccess getLatestChunk() {
+   public @Nullable ChunkAccess getLatestChunk() {
       ChunkStatus var1 = (ChunkStatus)this.startedWork.get();
       if (var1 == null) {
          return null;
@@ -283,8 +278,7 @@ public abstract class GenerationChunkHolder {
       }
    }
 
-   @Nullable
-   public ChunkStatus getPersistedStatus() {
+   public @Nullable ChunkStatus getPersistedStatus() {
       CompletableFuture var1 = (CompletableFuture)this.futures.get(ChunkStatus.EMPTY.getIndex());
       ChunkAccess var2 = var1 == null ? null : (ChunkAccess)((ChunkResult)var1.getNow(NOT_DONE_YET)).orElse((Object)null);
       return var2 == null ? null : var2.getPersistedStatus();
@@ -303,7 +297,7 @@ public abstract class GenerationChunkHolder {
    public abstract int getQueueLevel();
 
    @VisibleForDebug
-   public List<Pair<ChunkStatus, CompletableFuture<ChunkResult<ChunkAccess>>>> getAllFutures() {
+   public List<Pair<ChunkStatus, @Nullable CompletableFuture<ChunkResult<ChunkAccess>>>> getAllFutures() {
       ArrayList var1 = new ArrayList();
 
       for(int var2 = 0; var2 < CHUNK_STATUSES.size(); ++var2) {
@@ -313,9 +307,8 @@ public abstract class GenerationChunkHolder {
       return var1;
    }
 
-   @Nullable
    @VisibleForDebug
-   public ChunkStatus getLatestStatus() {
+   public @Nullable ChunkStatus getLatestStatus() {
       ChunkStatus var1 = (ChunkStatus)this.startedWork.get();
       if (var1 == null) {
          return null;

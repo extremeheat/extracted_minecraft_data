@@ -20,7 +20,6 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.TriState;
@@ -28,6 +27,7 @@ import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.TicketStorage;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class DistanceManager {
@@ -57,11 +57,9 @@ public abstract class DistanceManager {
 
    protected abstract boolean isChunkToRemove(long var1);
 
-   @Nullable
-   protected abstract ChunkHolder getChunk(long var1);
+   protected abstract @Nullable ChunkHolder getChunk(long var1);
 
-   @Nullable
-   protected abstract ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5);
+   protected abstract @Nullable ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5);
 
    public boolean runAllUpdates(ChunkMap var1) {
       this.naturalSpawnChunkCounter.runAllUpdates();

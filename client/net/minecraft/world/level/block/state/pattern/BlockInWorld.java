@@ -1,20 +1,18 @@
 package net.minecraft.world.level.block.state.pattern;
 
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class BlockInWorld {
    private final LevelReader level;
    private final BlockPos pos;
    private final boolean loadChunks;
-   @Nullable
-   private BlockState state;
-   @Nullable
-   private BlockEntity entity;
+   private @Nullable BlockState state;
+   private @Nullable BlockEntity entity;
    private boolean cachedEntity;
 
    public BlockInWorld(LevelReader var1, BlockPos var2, boolean var3) {
@@ -32,8 +30,7 @@ public class BlockInWorld {
       return this.state;
    }
 
-   @Nullable
-   public BlockEntity getEntity() {
+   public @Nullable BlockEntity getEntity() {
       if (this.entity == null && !this.cachedEntity) {
          this.entity = this.level.getBlockEntity(this.pos);
          this.cachedEntity = true;
@@ -50,7 +47,7 @@ public class BlockInWorld {
       return this.pos;
    }
 
-   public static Predicate<BlockInWorld> hasState(Predicate<BlockState> var0) {
+   public static Predicate<@Nullable BlockInWorld> hasState(Predicate<BlockState> var0) {
       return (var1) -> var1 != null && var0.test(var1.getState());
    }
 }

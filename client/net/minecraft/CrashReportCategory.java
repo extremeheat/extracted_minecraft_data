@@ -4,11 +4,11 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class CrashReportCategory {
    private final String title;

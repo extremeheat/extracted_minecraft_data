@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.LinkedHashSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -70,6 +69,7 @@ import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 
 public class Strider extends Animal implements ItemSteerable {
    private static final ResourceLocation SUFFOCATING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("suffocating");
@@ -79,8 +79,7 @@ public class Strider extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
    private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING;
    private final ItemBasedSteering steering;
-   @Nullable
-   private TemptGoal temptGoal;
+   private @Nullable TemptGoal temptGoal;
 
    public Strider(EntityType<? extends Strider> var1, Level var2) {
       super(var1, var2);
@@ -181,8 +180,7 @@ public class Strider extends Animal implements ItemSteerable {
       return var1.isUnobstructed(this);
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
@@ -327,8 +325,7 @@ public class Strider extends Animal implements ItemSteerable {
       return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.17499999701976776);
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       return !this.isPanicking() && !this.isBeingTempted() ? SoundEvents.STRIDER_AMBIENT : null;
    }
 
@@ -364,8 +361,7 @@ public class Strider extends Animal implements ItemSteerable {
       }
    }
 
-   @Nullable
-   public Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.STRIDER.create(var1, EntitySpawnReason.BREEDING);
    }
 
@@ -400,8 +396,7 @@ public class Strider extends Animal implements ItemSteerable {
       return new Vec3(0.0, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (this.isBaby()) {
          return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       } else {
@@ -436,8 +431,7 @@ public class Strider extends Animal implements ItemSteerable {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

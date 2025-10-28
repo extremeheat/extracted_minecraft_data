@@ -1,6 +1,4 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@NullMarked
 package com.mojang.math;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

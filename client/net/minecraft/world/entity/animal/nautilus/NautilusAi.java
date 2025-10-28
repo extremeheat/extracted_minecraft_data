@@ -32,10 +32,9 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class NautilusAi {
    private static final float SPEED_MULTIPLIER_WHEN_IDLING_IN_WATER = 1.0F;
@@ -49,7 +48,7 @@ public class NautilusAi {
    private static final int TIME_BETWEEN_ATTACKS = 80;
    private static final double MAX_CHARGE_DISTANCE = 12.0;
    private static final double MAX_TARGET_DETECTION_DISTANCE = 11.0;
-   private static final TargetingConditions ATTACK_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox()));
+   protected static final TargetingConditions ATTACK_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> ((Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND)) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox()));
    protected static final ImmutableList<SensorType<? extends Sensor<? super Nautilus>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -109,7 +108,7 @@ public class NautilusAi {
    }
 
    protected static void setAngerTarget(ServerLevel var0, AbstractNautilus var1, LivingEntity var2) {
-      if (var2 instanceof Player && Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, var2)) {
+      if (Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, var2)) {
          var1.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
          var1.getBrain().setMemoryWithExpiry(MemoryModuleType.ANGRY_AT, var2.getUUID(), 400L);
       }

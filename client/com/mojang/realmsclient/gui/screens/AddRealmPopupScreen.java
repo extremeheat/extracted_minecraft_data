@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
@@ -18,6 +17,7 @@ import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class AddRealmPopupScreen extends RealmsScreen {
    private static final Component POPUP_TEXT = Component.translatable("mco.selectServer.popup");
@@ -38,8 +38,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
    private static List<ResourceLocation> carouselImages = List.of();
    private final Screen backgroundScreen;
    private final boolean trialAvailable;
-   @Nullable
-   private Button createTrialButton;
+   private @Nullable Button createTrialButton;
    private int carouselIndex;
    private int carouselTick;
 

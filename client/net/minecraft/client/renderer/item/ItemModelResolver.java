@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.item;
 
 import java.util.Objects;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.component.DataComponents;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class ItemModelResolver {
    private final Function<ResourceLocation, ItemModel> modelGetter;

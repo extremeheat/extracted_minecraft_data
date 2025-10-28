@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.item.properties.select;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.core.component.DataComponentType;
@@ -11,6 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public record ComponentContents<T>(DataComponentType<T> componentType) implements SelectItemModelProperty<T> {
    private static final SelectItemModelProperty.Type<? extends ComponentContents<?>, ?> TYPE = createType();
@@ -30,8 +30,7 @@ public record ComponentContents<T>(DataComponentType<T> componentType) implement
       return TYPE;
    }
 
-   @Nullable
-   public T get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+   public @Nullable T get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
       return (T)var1.get(this.componentType);
    }
 

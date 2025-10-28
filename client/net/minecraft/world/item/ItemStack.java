@@ -19,7 +19,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -96,6 +95,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
@@ -120,11 +120,9 @@ public final class ItemStack implements DataComponentHolder {
    private int popTime;
    /** @deprecated */
    @Deprecated
-   @Nullable
-   private final Item item;
+   private final @Nullable Item item;
    final PatchedDataComponentMap components;
-   @Nullable
-   private Entity entityRepresentation;
+   private @Nullable Entity entityRepresentation;
 
    public static DataResult<ItemStack> validateStrict(ItemStack var0) {
       DataResult var1 = validateComponents(var0.getComponents());
@@ -743,13 +741,11 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().useOnRelease(this);
    }
 
-   @Nullable
-   public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
+   public <T> @Nullable T set(DataComponentType<T> var1, @Nullable T var2) {
       return (T)this.components.set(var1, var2);
    }
 
-   @Nullable
-   public <T> T set(TypedDataComponent<T> var1) {
+   public <T> @Nullable T set(TypedDataComponent<T> var1) {
       return (T)this.components.set(var1);
    }
 
@@ -757,19 +753,16 @@ public final class ItemStack implements DataComponentHolder {
       this.set(var1, var2.get(var1));
    }
 
-   @Nullable
-   public <T, U> T update(DataComponentType<T> var1, T var2, U var3, BiFunction<T, U, T> var4) {
+   public <T, U> @Nullable T update(DataComponentType<T> var1, T var2, U var3, BiFunction<T, U, T> var4) {
       return (T)this.set(var1, var4.apply(this.getOrDefault(var1, var2), var3));
    }
 
-   @Nullable
-   public <T> T update(DataComponentType<T> var1, T var2, UnaryOperator<T> var3) {
+   public <T> @Nullable T update(DataComponentType<T> var1, T var2, UnaryOperator<T> var3) {
       Object var4 = this.getOrDefault(var1, var2);
       return (T)this.set(var1, var3.apply(var4));
    }
 
-   @Nullable
-   public <T> T remove(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T remove(DataComponentType<? extends T> var1) {
       return (T)this.components.remove(var1);
    }
 
@@ -797,8 +790,7 @@ public final class ItemStack implements DataComponentHolder {
       return var1 != null ? var1 : this.getItemName();
    }
 
-   @Nullable
-   public Component getCustomName() {
+   public @Nullable Component getCustomName() {
       Component var1 = (Component)this.get(DataComponents.CUSTOM_NAME);
       if (var1 != null) {
          return var1;
@@ -1007,13 +999,11 @@ public final class ItemStack implements DataComponentHolder {
 
    }
 
-   @Nullable
-   public ItemFrame getFrame() {
+   public @Nullable ItemFrame getFrame() {
       return this.entityRepresentation instanceof ItemFrame ? (ItemFrame)this.getEntityRepresentation() : null;
    }
 
-   @Nullable
-   public Entity getEntityRepresentation() {
+   public @Nullable Entity getEntityRepresentation() {
       return !this.isEmpty() ? this.entityRepresentation : null;
    }
 

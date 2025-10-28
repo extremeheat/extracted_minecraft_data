@@ -2,7 +2,6 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.Nullable;
 
 public class CraftingMenu extends AbstractCraftingMenu {
    private static final int CRAFTING_GRID_WIDTH = 3;

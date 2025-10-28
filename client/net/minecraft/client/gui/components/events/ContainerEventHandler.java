@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenAxis;
@@ -21,6 +20,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.joml.Vector2i;
+import org.jspecify.annotations.Nullable;
 
 public interface ContainerEventHandler extends GuiEventListener {
    List<? extends GuiEventListener> children();
@@ -87,8 +87,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       return this.getFocused() != null && this.getFocused().charTyped(var1);
    }
 
-   @Nullable
-   GuiEventListener getFocused();
+   @Nullable GuiEventListener getFocused();
 
    void setFocused(@Nullable GuiEventListener var1);
 
@@ -99,14 +98,12 @@ public interface ContainerEventHandler extends GuiEventListener {
       return this.getFocused() != null;
    }
 
-   @Nullable
-   default ComponentPath getCurrentFocusPath() {
+   default @Nullable ComponentPath getCurrentFocusPath() {
       GuiEventListener var1 = this.getFocused();
       return var1 != null ? ComponentPath.path(this, var1.getCurrentFocusPath()) : null;
    }
 
-   @Nullable
-   default ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   default @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       GuiEventListener var2 = this.getFocused();
       if (var2 != null) {
          ComponentPath var3 = var2.nextFocusPath(var1);
@@ -124,8 +121,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       }
    }
 
-   @Nullable
-   private ComponentPath handleTabNavigation(FocusNavigationEvent.TabNavigation var1) {
+   private @Nullable ComponentPath handleTabNavigation(FocusNavigationEvent.TabNavigation var1) {
       boolean var2 = var1.forward();
       GuiEventListener var3 = this.getFocused();
       ArrayList var4 = new ArrayList(this.children());
@@ -173,8 +169,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       return null;
    }
 
-   @Nullable
-   private ComponentPath handleArrowNavigation(FocusNavigationEvent.ArrowNavigation var1) {
+   private @Nullable ComponentPath handleArrowNavigation(FocusNavigationEvent.ArrowNavigation var1) {
       GuiEventListener var2 = this.getFocused();
       if (var2 == null) {
          ScreenDirection var5 = var1.direction();
@@ -186,8 +181,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       }
    }
 
-   @Nullable
-   private ComponentPath nextFocusPathInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
+   private @Nullable ComponentPath nextFocusPathInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
       ScreenAxis var5 = var2.getAxis();
       ScreenAxis var6 = var5.orthogonal();
       ScreenDirection var7 = var6.getPositive();
@@ -222,8 +216,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       return this.nextFocusPathVaguelyInDirection(var1, var2, var3, var4);
    }
 
-   @Nullable
-   private ComponentPath nextFocusPathVaguelyInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
+   private @Nullable ComponentPath nextFocusPathVaguelyInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
       ScreenAxis var5 = var2.getAxis();
       ScreenAxis var6 = var5.orthogonal();
       ArrayList var7 = new ArrayList();

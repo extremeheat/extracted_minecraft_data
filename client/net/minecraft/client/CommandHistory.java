@@ -1,10 +1,10 @@
 package net.minecraft.client;
 
-import com.google.common.base.Charsets;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -24,7 +24,7 @@ public class CommandHistory {
       this.commandsPath = var1.resolve("command_history.txt");
       if (Files.exists(this.commandsPath, new LinkOption[0])) {
          try {
-            BufferedReader var2 = Files.newBufferedReader(this.commandsPath, Charsets.UTF_8);
+            BufferedReader var2 = Files.newBufferedReader(this.commandsPath, StandardCharsets.UTF_8);
 
             try {
                this.lastCommands.addAll(var2.lines().toList());
@@ -64,7 +64,7 @@ public class CommandHistory {
 
    private void save() {
       try {
-         BufferedWriter var1 = Files.newBufferedWriter(this.commandsPath, Charsets.UTF_8);
+         BufferedWriter var1 = Files.newBufferedWriter(this.commandsPath, StandardCharsets.UTF_8);
 
          try {
             for(String var3 : this.lastCommands) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class EvokerFangs extends Entity implements TraceableEntity {
    public static final int ATTACK_DURATION = 20;
@@ -25,8 +25,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    private boolean sentSpikeEvent;
    private int lifeTicks;
    private boolean clientSideAttackStarted;
-   @Nullable
-   private EntityReference<LivingEntity> owner;
+   private @Nullable EntityReference<LivingEntity> owner;
 
    public EvokerFangs(EntityType<? extends EvokerFangs> var1, Level var2) {
       super(var1, var2);
@@ -49,8 +48,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
       this.owner = EntityReference.of(var1);
    }
 
-   @Nullable
-   public LivingEntity getOwner() {
+   public @Nullable LivingEntity getOwner() {
       return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
@@ -148,8 +146,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return this.getOwner();
    }
 }

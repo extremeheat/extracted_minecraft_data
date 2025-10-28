@@ -24,7 +24,7 @@ public class StrollToPoiList {
                } else {
                   GlobalPos var14 = (GlobalPos)var12.get(var8.getRandom().nextInt(var12.size()));
                   if (var14 != null && var8.dimension() == var14.dimension() && var13.pos().closerToCenterThan(var9.position(), (double)var3)) {
-                     if (var10 > var5.getValue()) {
+                     if (var10 > var5.longValue()) {
                         var5x.set(new WalkTarget(var14.pos(), var1, var2));
                         var5.setValue(var10 + 100L);
                      }

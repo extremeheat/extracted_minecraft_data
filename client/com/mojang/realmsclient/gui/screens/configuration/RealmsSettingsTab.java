@@ -9,7 +9,6 @@ import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -24,6 +23,7 @@ import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurationTab {
    private static final int COMPONENT_WIDTH = 212;

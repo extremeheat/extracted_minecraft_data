@@ -4,9 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import org.jspecify.annotations.Nullable;
 
 public record TextureSetup(@Nullable GpuTextureView texure0, @Nullable GpuTextureView texure1, @Nullable GpuTextureView texure2, @Nullable GpuSampler sampler0, @Nullable GpuSampler sampler1, @Nullable GpuSampler sampler2) {
    private static final TextureSetup NO_TEXTURE_SETUP = new TextureSetup((GpuTextureView)null, (GpuTextureView)null, (GpuTextureView)null, (GpuSampler)null, (GpuSampler)null, (GpuSampler)null);

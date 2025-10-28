@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -33,6 +32,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SignBlockEntity extends BlockEntity {
@@ -40,8 +40,7 @@ public class SignBlockEntity extends BlockEntity {
    private static final int MAX_TEXT_LINE_WIDTH = 90;
    private static final int TEXT_LINE_HEIGHT = 10;
    private static final boolean DEFAULT_IS_WAXED = false;
-   @Nullable
-   private UUID playerWhoMayEdit;
+   private @Nullable UUID playerWhoMayEdit;
    private SignText frontText;
    private SignText backText;
    private boolean isWaxed;
@@ -241,8 +240,7 @@ public class SignBlockEntity extends BlockEntity {
       this.playerWhoMayEdit = var1;
    }
 
-   @Nullable
-   public UUID getPlayerWhoMayEdit() {
+   public @Nullable UUID getPlayerWhoMayEdit() {
       return this.playerWhoMayEdit;
    }
 

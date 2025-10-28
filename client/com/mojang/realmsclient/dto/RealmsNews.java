@@ -3,8 +3,8 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
-import javax.annotation.Nullable;
 import net.minecraft.util.LenientJsonParser;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record RealmsNews(@Nullable String newsLink) {

@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -10,17 +9,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.jspecify.annotations.Nullable;
 
 public class StructurePlaceSettings {
    private Mirror mirror;
    private Rotation rotation;
    private BlockPos rotationPivot;
    private boolean ignoreEntities;
-   @Nullable
-   private BoundingBox boundingBox;
+   private @Nullable BoundingBox boundingBox;
    private LiquidSettings liquidSettings;
-   @Nullable
-   private RandomSource random;
+   private @Nullable RandomSource random;
    private int palette;
    private final List<StructureProcessor> processors;
    private boolean knownShape;
@@ -130,8 +128,7 @@ public class StructurePlaceSettings {
       return this.ignoreEntities;
    }
 
-   @Nullable
-   public BoundingBox getBoundingBox() {
+   public @Nullable BoundingBox getBoundingBox() {
       return this.boundingBox;
    }
 

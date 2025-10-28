@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -58,6 +57,7 @@ import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
 public class VillagerTrades {
    private static final int DEFAULT_SUPPLY = 12;
@@ -161,8 +161,7 @@ public class VillagerTrades {
          return new TypeSpecificTrade((Map)Arrays.stream(var1).collect(Collectors.toMap((var0x) -> var0x, (var1x) -> var0)));
       }
 
-      @Nullable
-      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+      public @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          if (var2 instanceof VillagerDataHolder var4) {
             ResourceKey var5 = (ResourceKey)var4.getVillagerData().type().unwrapKey().orElse((Object)null);
             if (var5 == null) {
@@ -194,8 +193,7 @@ public class VillagerTrades {
          this.villagerXp = var3;
       }
 
-      @Nullable
-      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+      public @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          if (var2 instanceof VillagerDataHolder var4) {
             ResourceKey var5 = (ResourceKey)var4.getVillagerData().type().unwrapKey().orElse((Object)null);
             if (var5 == null) {
@@ -280,8 +278,7 @@ public class VillagerTrades {
          this.priceMultiplier = var3;
       }
 
-      @Nullable
-      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+      public @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          ItemStack var4 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
          var4.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.effects);
          return new MerchantOffer(new ItemCost(Items.EMERALD), var4, 12, this.xp, this.priceMultiplier);
@@ -468,8 +465,7 @@ public class VillagerTrades {
          this.villagerXp = var6;
       }
 
-      @Nullable
-      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+      public @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          BlockPos var4 = var1.findNearestMapStructure(this.destination, var2.blockPosition(), 100, true);
          if (var4 != null) {
             ItemStack var5 = MapItem.create(var1, var4.getX(), var4.getZ(), (byte)2, true, true);
@@ -515,8 +511,7 @@ public class VillagerTrades {
          this.enchantmentProvider = var7;
       }
 
-      @Nullable
-      public MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
+      public @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3) {
          ItemStack var4 = this.toItem.copy();
          this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), var4x, var1.getCurrentDifficultyAt(var2.blockPosition()), var3));
          return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var4, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
@@ -524,7 +519,6 @@ public class VillagerTrades {
    }
 
    public interface ItemListing {
-      @Nullable
-      MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3);
+      @Nullable MerchantOffer getOffer(ServerLevel var1, Entity var2, RandomSource var3);
    }
 }

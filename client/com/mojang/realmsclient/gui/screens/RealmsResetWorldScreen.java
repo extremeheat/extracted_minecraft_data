@@ -15,7 +15,6 @@ import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -33,6 +32,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsResetWorldScreen extends RealmsScreen {
@@ -65,8 +65,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    WorldTemplatePaginatedList experiences;
    WorldTemplatePaginatedList inspirations;
    public final int slot;
-   @Nullable
-   private final RealmCreationTask realmCreationTask;
+   private final @Nullable RealmCreationTask realmCreationTask;
    private final Runnable resetWorldRunnable;
    private final HeaderAndFooterLayout layout;
 

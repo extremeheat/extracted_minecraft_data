@@ -4,7 +4,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.system.MemoryUtil;
 
@@ -77,8 +77,7 @@ public abstract class BufferStorage {
          return new GlBuffer(var2, var1, var3, var6, var5, var7);
       }
 
-      @Nullable
-      private ByteBuffer tryMapBufferPersistent(DirectStateAccess var1, @GpuBuffer.Usage int var2, int var3, int var4) {
+      private @Nullable ByteBuffer tryMapBufferPersistent(DirectStateAccess var1, @GpuBuffer.Usage int var2, int var3, int var4) {
          int var6 = 0;
          if ((var2 & 1) != 0) {
             var6 |= 1;

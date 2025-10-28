@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperties;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
@@ -16,6 +15,7 @@ import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class RangeSelectItemModel implements ItemModel {
    private static final int LINEAR_SEARCH_THRESHOLD = 16;

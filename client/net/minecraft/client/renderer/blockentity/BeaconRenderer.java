@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T, BeaconRenderState> {
    public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
@@ -36,7 +36,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       return new BeaconRenderState();
    }
 
-   public void extractRenderState(T var1, BeaconRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(T var1, BeaconRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       extract(var1, var2, var3, var4);
    }

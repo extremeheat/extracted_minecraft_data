@@ -116,7 +116,24 @@ public class ARGB {
 
    public static int greyscale(int var0) {
       int var1 = (int)((float)red(var0) * 0.3F + (float)green(var0) * 0.59F + (float)blue(var0) * 0.11F);
-      return color(var1, var1, var1);
+      return color(alpha(var0), var1, var1, var1);
+   }
+
+   public static int alphaBlend(int var0, int var1) {
+      int var2 = alpha(var0);
+      int var3 = alpha(var1);
+      if (var3 == 255) {
+         return var1;
+      } else if (var3 == 0) {
+         return var0;
+      } else {
+         int var4 = var3 + var2 * (255 - var3) / 255;
+         return color(var4, alphaBlendChannel(var4, var3, red(var0), red(var1)), alphaBlendChannel(var4, var3, green(var0), green(var1)), alphaBlendChannel(var4, var3, blue(var0), blue(var1)));
+      }
+   }
+
+   private static int alphaBlendChannel(int var0, int var1, int var2, int var3) {
+      return (var3 * var1 + var2 * (var0 - var1)) / var0;
    }
 
    public static int srgbLerp(float var0, int var1, int var2) {

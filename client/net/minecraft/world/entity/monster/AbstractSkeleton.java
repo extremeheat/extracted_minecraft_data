@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -46,10 +45,13 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSkeleton extends Monster implements RangedAttackMob {
    private static final int HARD_ATTACK_INTERVAL = 20;
    private static final int NORMAL_ATTACK_INTERVAL = 40;
+   protected static final int INCREASED_HARD_ATTACK_INTERVAL = 50;
+   protected static final int INCREASED_NORMAL_ATTACK_INTERVAL = 70;
    private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal<AbstractSkeleton>(this, 1.0, 20, 15.0F);
    private final MeleeAttackGoal meleeGoal = new MeleeAttackGoal(this, 1.2, false) {
       public void stop() {
@@ -105,8 +107,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);

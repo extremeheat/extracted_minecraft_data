@@ -8,9 +8,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -52,7 +52,7 @@ public class SmallFireball extends Fireball {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel var2) {
          Entity var5 = this.getOwner();
-         if (!(var5 instanceof Mob) || var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (!(var5 instanceof Mob) || (Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING)) {
             BlockPos var4 = var1.getBlockPos().relative(var1.getDirection());
             if (this.level().isEmptyBlock(var4)) {
                this.level().setBlockAndUpdate(var4, BaseFireBlock.getState(this.level(), var4));

@@ -4,19 +4,17 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EnvironmentAttributeProbe {
    private final Map<EnvironmentAttribute<?>, ValueProbe<?>> valueProbes = new Reference2ObjectOpenHashMap();
    private final Function<EnvironmentAttribute<?>, ValueProbe<?>> valueProbeFactory = (var1) -> new ValueProbe(var1);
-   @Nullable
-   Level level;
-   @Nullable
-   Vec3 position;
+   @Nullable Level level;
+   @Nullable Vec3 position;
    final SpatialAttributeInterpolator biomeInterpolator = new SpatialAttributeInterpolator();
 
    public EnvironmentAttributeProbe() {
@@ -48,8 +46,7 @@ public class EnvironmentAttributeProbe {
 
    class ValueProbe<Value> {
       private Value lastValue;
-      @Nullable
-      private Value newValue;
+      private @Nullable Value newValue;
 
       public ValueProbe(final EnvironmentAttribute<Value> var2) {
          super();

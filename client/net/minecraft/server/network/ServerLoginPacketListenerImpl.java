@@ -12,7 +12,6 @@ import java.net.SocketAddress;
 import java.security.PrivateKey;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.CrashReport;
@@ -45,6 +44,7 @@ import net.minecraft.util.CryptException;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.Validate;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener, TickablePacketListener {
@@ -57,10 +57,8 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    final ServerActivityMonitor serverActivityMonitor;
    private volatile State state;
    private int tick;
-   @Nullable
-   String requestedUsername;
-   @Nullable
-   private GameProfile authenticatedProfile;
+   @Nullable String requestedUsername;
+   private @Nullable GameProfile authenticatedProfile;
    private final String serverId;
    private final boolean transferred;
 
@@ -216,8 +214,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
          }
 
-         @Nullable
-         private InetAddress getAddress() {
+         private @Nullable InetAddress getAddress() {
             SocketAddress var1 = ServerLoginPacketListenerImpl.this.connection.getRemoteAddress();
             return ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && var1 instanceof InetSocketAddress ? ((InetSocketAddress)var1).getAddress() : null;
          }

@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.jspecify.annotations.Nullable;
 
 public class BoneMealItem extends Item {
    public static final int GRASS_SPREAD_WIDTH = 3;

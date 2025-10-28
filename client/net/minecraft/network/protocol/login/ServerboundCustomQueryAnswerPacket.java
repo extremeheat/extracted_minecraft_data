@@ -1,12 +1,12 @@
 package net.minecraft.network.protocol.login;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
 import net.minecraft.network.protocol.login.custom.DiscardedQueryAnswerPayload;
+import org.jspecify.annotations.Nullable;
 
 public record ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable CustomQueryAnswerPayload payload) implements Packet<ServerLoginPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket>codec(ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read);

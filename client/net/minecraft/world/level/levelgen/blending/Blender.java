@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.FluidState;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class Blender {
    private static final Blender EMPTY = new Blender(new Long2ObjectOpenHashMap(), new Long2ObjectOpenHashMap()) {
@@ -216,7 +216,6 @@ public class Blender {
       };
    }
 
-   @Nullable
    private Holder<Biome> blendBiome(int var1, int var2, int var3) {
       MutableDouble var4 = new MutableDouble(1.0 / 0.0);
       MutableObject var5 = new MutableObject();
@@ -235,7 +234,7 @@ public class Blender {
       } else {
          double var6 = SHIFT_NOISE.getValue((double)var1, 0.0, (double)var3) * 12.0;
          double var8 = Mth.clamp((var4.doubleValue() + var6) / (double)(HEIGHT_BLENDING_RANGE_CELLS + 1), 0.0, 1.0);
-         return var8 > 0.5 ? null : (Holder)var5.getValue();
+         return var8 > 0.5 ? null : (Holder)var5.get();
       }
    }
 

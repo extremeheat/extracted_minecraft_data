@@ -1,7 +1,7 @@
 package net.minecraft.world;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public interface Nameable {
    Component getName();
@@ -18,8 +18,7 @@ public interface Nameable {
       return this.getName();
    }
 
-   @Nullable
-   default Component getCustomName() {
+   default @Nullable Component getCustomName() {
       return null;
    }
 }

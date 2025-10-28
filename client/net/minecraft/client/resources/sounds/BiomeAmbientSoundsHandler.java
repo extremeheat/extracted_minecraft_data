@@ -2,7 +2,6 @@ package net.minecraft.client.resources.sounds;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
@@ -17,6 +16,7 @@ import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import org.jspecify.annotations.Nullable;
 
 public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
    private static final int LOOP_SOUND_CROSS_FADE_TIME = 40;
@@ -26,8 +26,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
    private final RandomSource random;
    private final Object2ObjectArrayMap<Holder<SoundEvent>, LoopSoundInstance> loopSounds = new Object2ObjectArrayMap();
    private float moodiness;
-   @Nullable
-   private Holder<SoundEvent> previousLoopSound;
+   private @Nullable Holder<SoundEvent> previousLoopSound;
 
    public BiomeAmbientSoundsHandler(LocalPlayer var1, SoundManager var2) {
       super();

@@ -21,6 +21,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class EndPortalFrameBlock extends Block {
    public static final MapCodec<EndPortalFrameBlock> CODEC = simpleCodec(EndPortalFrameBlock::new);
@@ -28,7 +29,7 @@ public class EndPortalFrameBlock extends Block {
    public static final BooleanProperty HAS_EYE;
    private static final VoxelShape SHAPE_EMPTY;
    private static final VoxelShape SHAPE_FULL;
-   private static BlockPattern portalShape;
+   private static @Nullable BlockPattern portalShape;
 
    public MapCodec<EndPortalFrameBlock> codec() {
       return CODEC;

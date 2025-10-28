@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.dialog;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.Tag;
@@ -9,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
+import org.jspecify.annotations.Nullable;
 
 public interface DialogConnectionAccess {
    void disconnect(Component var1);

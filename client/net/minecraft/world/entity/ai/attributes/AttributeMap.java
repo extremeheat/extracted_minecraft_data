@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class AttributeMap {
    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
@@ -44,8 +44,7 @@ public class AttributeMap {
       return (Collection)this.attributes.values().stream().filter((var0) -> ((Attribute)var0.getAttribute().value()).isClientSyncable()).collect(Collectors.toList());
    }
 
-   @Nullable
-   public AttributeInstance getInstance(Holder<Attribute> var1) {
+   public @Nullable AttributeInstance getInstance(Holder<Attribute> var1) {
       return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> this.supplier.createInstance(this::onAttributeModified, var1x));
    }
 

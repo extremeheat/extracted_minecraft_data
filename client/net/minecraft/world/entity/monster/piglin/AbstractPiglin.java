@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
@@ -105,8 +105,7 @@ public abstract class AbstractPiglin extends Monster {
 
    public abstract PiglinArmPose getArmPose();
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

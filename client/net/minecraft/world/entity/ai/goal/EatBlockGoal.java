@@ -5,11 +5,11 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class EatBlockGoal extends Goal {
    private static final int EAT_ANIMATION_TICKS = 40;
@@ -61,7 +61,7 @@ public class EatBlockGoal extends Goal {
       if (this.eatAnimationTick == this.adjustedTickDelay(4)) {
          BlockPos var1 = this.mob.blockPosition();
          if (IS_EDIBLE.test(this.level.getBlockState(var1))) {
-            if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
                this.level.destroyBlock(var1, false);
             }
 
@@ -69,7 +69,7 @@ public class EatBlockGoal extends Goal {
          } else {
             BlockPos var2 = var1.below();
             if (this.level.getBlockState(var2).is(Blocks.GRASS_BLOCK)) {
-               if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+               if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
                   this.level.levelEvent(2001, var2, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
                   this.level.setBlock(var2, Blocks.DIRT.defaultBlockState(), 2);
                }

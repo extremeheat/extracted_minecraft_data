@@ -2,18 +2,17 @@ package net.minecraft.util.debug;
 
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jspecify.annotations.Nullable;
 
 public class DebugSubscription<T> {
    public static final int DOES_NOT_EXPIRE = 0;
-   @Nullable
-   final StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec;
+   final @Nullable StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec;
    private final int expireAfterTicks;
 
    public DebugSubscription(@Nullable StreamCodec<? super RegistryFriendlyByteBuf, T> var1, int var2) {
@@ -42,8 +41,7 @@ public class DebugSubscription<T> {
       return Util.getRegisteredName(BuiltInRegistries.DEBUG_SUBSCRIPTION, this);
    }
 
-   @Nullable
-   public StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec() {
+   public @Nullable StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec() {
       return this.valueStreamCodec;
    }
 

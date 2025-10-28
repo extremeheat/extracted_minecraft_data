@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -18,10 +17,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
+import org.jspecify.annotations.Nullable;
 
 public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
-   @Nullable
-   private Raid currentRaid;
+   private @Nullable Raid currentRaid;
 
    public CelebrateVillagersSurvivedRaid(int var1, int var2) {
       super(ImmutableMap.of(), var1, var2);

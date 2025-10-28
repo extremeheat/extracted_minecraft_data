@@ -13,13 +13,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class EntityAnchorArgument implements ArgumentType<Anchor> {
    private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
@@ -80,8 +80,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
          this.transform = var4;
       }
 
-      @Nullable
-      public static Anchor getByName(String var0) {
+      public static @Nullable Anchor getByName(String var0) {
          return (Anchor)BY_NAME.get(var0);
       }
 

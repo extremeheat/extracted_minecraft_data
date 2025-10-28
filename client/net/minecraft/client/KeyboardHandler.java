@@ -10,7 +10,6 @@ import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -58,6 +57,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class KeyboardHandler {
@@ -442,13 +442,13 @@ public class KeyboardHandler {
          if (var3 == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)var10).lastKeySelection <= Util.getMillis() - 20L)) {
             if (var6.keyFullscreen.matches(var4)) {
                var5.toggleFullScreen();
-               boolean var19 = var5.isFullscreen();
-               var6.fullscreen().set(var19);
+               boolean var20 = var5.isFullscreen();
+               var6.fullscreen().set(var20);
                var6.save();
-               Screen var25 = this.minecraft.screen;
-               if (var25 instanceof VideoSettingsScreen) {
-                  VideoSettingsScreen var23 = (VideoSettingsScreen)var25;
-                  var23.updateFullscreenButton(var19);
+               Screen var26 = this.minecraft.screen;
+               if (var26 instanceof VideoSettingsScreen) {
+                  VideoSettingsScreen var24 = (VideoSettingsScreen)var26;
+                  var24.updateFullscreenButton(var20);
                }
 
                return;
@@ -477,7 +477,7 @@ public class KeyboardHandler {
                   }
                }
 
-               LocalPlayer var20 = this.minecraft.player;
+               LocalPlayer var21 = this.minecraft.player;
             }
          }
 
@@ -495,43 +495,43 @@ public class KeyboardHandler {
                   var10.afterKeyboardAction();
                   if (var10.keyPressed(var4)) {
                      if (this.minecraft.screen == null) {
-                        InputConstants.Key var17 = InputConstants.getKey(var4);
-                        KeyMapping.set(var17, false);
+                        InputConstants.Key var18 = InputConstants.getKey(var4);
+                        KeyMapping.set(var18, false);
                      }
 
                      return;
                   }
                }
-            } catch (Throwable var16) {
-               CrashReport var21 = CrashReport.forThrowable(var16, "keyPressed event handler");
-               var10.fillCrashDetails(var21);
-               CrashReportCategory var13 = var21.addCategory("Key");
+            } catch (Throwable var17) {
+               CrashReport var22 = CrashReport.forThrowable(var17, "keyPressed event handler");
+               var10.fillCrashDetails(var22);
+               CrashReportCategory var13 = var22.addCategory("Key");
                var13.setDetail("Key", var4.key());
                var13.setDetail("Scancode", var4.scancode());
                var13.setDetail("Mods", var4.modifiers());
-               throw new ReportedException(var21);
+               throw new ReportedException(var22);
             }
          }
 
-         InputConstants.Key var18;
-         boolean var22;
+         InputConstants.Key var19;
+         boolean var23;
          boolean var10000;
-         label197: {
-            var18 = InputConstants.getKey(var4);
-            var22 = this.minecraft.screen == null;
-            if (!var22) {
-               label195: {
+         label204: {
+            var19 = InputConstants.getKey(var4);
+            var23 = this.minecraft.screen == null;
+            if (!var23) {
+               label202: {
                   Screen var15 = this.minecraft.screen;
                   if (var15 instanceof PauseScreen) {
                      PauseScreen var14 = (PauseScreen)var15;
                      if (!var14.showsPauseMenu()) {
-                        break label195;
+                        break label202;
                      }
                   }
 
                   if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label197;
+                     break label204;
                   }
                }
             }
@@ -539,7 +539,7 @@ public class KeyboardHandler {
             var10000 = true;
          }
 
-         boolean var24 = var10000;
+         boolean var25 = var10000;
          if (var7 && var6.keyDebugModifier.matches(var4) && var3 == 0) {
             if (this.usedDebugKeyAsModifier) {
                this.usedDebugKeyAsModifier = false;
@@ -551,37 +551,44 @@ public class KeyboardHandler {
          }
 
          if (var3 == 0) {
-            KeyMapping.set(var18, false);
+            KeyMapping.set(var19, false);
          } else {
-            boolean var26 = false;
-            if (var24 && var4.isEscape()) {
+            boolean var27 = false;
+            if (var25 && var4.isEscape()) {
                this.minecraft.pauseGame(var8);
-               var26 = var8;
+               var27 = var8;
             } else if (var8) {
-               var26 = this.handleDebugKeys(var4);
-            } else if (var24 && var6.keyToggleGui.matches(var4)) {
+               var27 = this.handleDebugKeys(var4);
+               if (var27 && var10 instanceof DebugOptionsScreen) {
+                  DebugOptionsScreen var28 = (DebugOptionsScreen)var10;
+                  DebugOptionsScreen.OptionList var16 = var28.getOptionList();
+                  if (var16 != null) {
+                     var16.children().forEach(DebugOptionsScreen.AbstractOptionEntry::refreshEntry);
+                  }
+               }
+            } else if (var25 && var6.keyToggleGui.matches(var4)) {
                var6.hideGui = !var6.hideGui;
-            } else if (var24 && var6.keyToggleSpectatorShaderEffects.matches(var4)) {
+            } else if (var25 && var6.keyToggleSpectatorShaderEffects.matches(var4)) {
                this.minecraft.gameRenderer.togglePostEffect();
             }
 
             if (var7) {
-               this.usedDebugKeyAsModifier |= var26;
+               this.usedDebugKeyAsModifier |= var27;
             }
 
             if (this.minecraft.getDebugOverlay().showProfilerChart() && !var8) {
-               int var27 = var4.getDigit();
-               if (var27 != -1) {
-                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(var27);
+               int var29 = var4.getDigit();
+               if (var29 != -1) {
+                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(var29);
                }
             }
 
-            if (var22 || var18 == var6.keyDebugModifier.key) {
-               if (var26) {
-                  KeyMapping.set(var18, false);
+            if (var23 || var19 == var6.keyDebugModifier.key) {
+               if (var27) {
+                  KeyMapping.set(var19, false);
                } else {
-                  KeyMapping.set(var18, true);
-                  KeyMapping.click(var18);
+                  KeyMapping.set(var19, true);
+                  KeyMapping.click(var19);
                }
             }
 

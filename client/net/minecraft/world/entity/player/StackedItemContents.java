@@ -1,12 +1,12 @@
 package net.minecraft.world.entity.player;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
+import org.jspecify.annotations.Nullable;
 
 public class StackedItemContents {
    private final StackedContents<Holder<Item>> raw = new StackedContents<Holder<Item>>();
@@ -34,28 +34,28 @@ public class StackedItemContents {
 
    }
 
-   public boolean canCraft(Recipe<?> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {
+   public boolean canCraft(Recipe<?> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
       return this.canCraft(var1, 1, var2);
    }
 
-   public boolean canCraft(Recipe<?> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
+   public boolean canCraft(Recipe<?> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
       PlacementInfo var4 = var1.placementInfo();
       return var4.isImpossibleToPlace() ? false : this.canCraft(var4.ingredients(), var2, var3);
    }
 
-   public boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {
+   public boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
       return this.canCraft(var1, 1, var2);
    }
 
-   private boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
+   private boolean canCraft(List<? extends StackedContents.IngredientInfo<Holder<Item>>> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
       return this.raw.tryPick(var1, var2, var3);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {
+   public int getBiggestCraftableStack(Recipe<?> var1, StackedContents.@Nullable Output<Holder<Item>> var2) {
       return this.getBiggestCraftableStack(var1, 2147483647, var2);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
+   public int getBiggestCraftableStack(Recipe<?> var1, int var2, StackedContents.@Nullable Output<Holder<Item>> var3) {
       return this.raw.tryPickAll(var1.placementInfo().ingredients(), var2, var3);
    }
 

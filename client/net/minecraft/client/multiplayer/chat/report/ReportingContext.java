@@ -3,20 +3,19 @@ package net.minecraft.client.multiplayer.chat.report;
 import com.mojang.authlib.minecraft.UserApiService;
 import java.util.Objects;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatLog;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public final class ReportingContext {
    private static final int LOG_CAPACITY = 1024;
    private final AbuseReportSender sender;
    private final ReportEnvironment environment;
    private final ChatLog chatLog;
-   @Nullable
-   private Report draftReport;
+   private @Nullable Report draftReport;
 
    public ReportingContext(AbuseReportSender var1, ReportEnvironment var2, ChatLog var3) {
       super();

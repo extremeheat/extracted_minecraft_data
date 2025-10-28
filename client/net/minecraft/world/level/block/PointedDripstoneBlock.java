@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -43,6 +42,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class PointedDripstoneBlock extends Block implements Fallable, SimpleWaterloggedBlock {
    public static final MapCodec<PointedDripstoneBlock> CODEC = simpleCodec(PointedDripstoneBlock::new);
@@ -212,8 +212,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       }
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       Direction var4 = var1.getNearestLookingVerticalDirection().getOpposite();
@@ -223,7 +222,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       } else {
          boolean var6 = !var1.isSecondaryUseActive();
          DripstoneThickness var7 = calculateDripstoneThickness(var2, var3, var5, var6);
-         return var7 == null ? null : (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, var5)).setValue(THICKNESS, var7)).setValue(WATERLOGGED, var2.getFluidState(var3).getType() == Fluids.WATER);
+         return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, var5)).setValue(THICKNESS, var7)).setValue(WATERLOGGED, var2.getFluidState(var3).getType() == Fluids.WATER);
       }
    }
 
@@ -374,8 +373,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       var0.addParticle(var14, var8, var10, var12, 0.0, 0.0, 0.0);
    }
 
-   @Nullable
-   private static BlockPos findTip(BlockState var0, LevelAccessor var1, BlockPos var2, int var3, boolean var4) {
+   private static @Nullable BlockPos findTip(BlockState var0, LevelAccessor var1, BlockPos var2, int var3, boolean var4) {
       if (isTip(var0, var4)) {
          return var2;
       } else {
@@ -385,8 +383,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       }
    }
 
-   @Nullable
-   private static Direction calculateTipDirection(LevelReader var0, BlockPos var1, Direction var2) {
+   private static @Nullable Direction calculateTipDirection(LevelReader var0, BlockPos var1, Direction var2) {
       Direction var3;
       if (isValidPointedDripstonePlacement(var0, var1, var2)) {
          var3 = var2;
@@ -479,15 +476,13 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       return var0.is(Blocks.POINTED_DRIPSTONE) && var0.getValue(TIP_DIRECTION) == var1;
    }
 
-   @Nullable
-   private static BlockPos findFillableCauldronBelowStalactiteTip(Level var0, BlockPos var1, Fluid var2) {
+   private static @Nullable BlockPos findFillableCauldronBelowStalactiteTip(Level var0, BlockPos var1, Fluid var2) {
       Predicate var3 = (var1x) -> var1x.getBlock() instanceof AbstractCauldronBlock && ((AbstractCauldronBlock)var1x.getBlock()).canReceiveStalactiteDrip(var2);
       BiPredicate var4 = (var1x, var2x) -> canDripThrough(var0, var1x, var2x);
       return (BlockPos)findBlockVertical(var0, var1, Direction.DOWN.getAxisDirection(), var4, var3, 11).orElse((Object)null);
    }
 
-   @Nullable
-   public static BlockPos findStalactiteTipAboveCauldron(Level var0, BlockPos var1) {
+   public static @Nullable BlockPos findStalactiteTipAboveCauldron(Level var0, BlockPos var1) {
       BiPredicate var2 = (var1x, var2x) -> canDripThrough(var0, var1x, var2x);
       return (BlockPos)findBlockVertical(var0, var1, Direction.UP.getAxisDirection(), var2, PointedDripstoneBlock::canDrip, 11).orElse((Object)null);
    }

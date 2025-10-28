@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.Nullable;
 
 public class BlockStateParser {
    public static final SimpleCommandExceptionType ERROR_NO_TAGS_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.block.tag.disallowed"));
@@ -55,14 +55,10 @@ public class BlockStateParser {
    private final Map<Property<?>, Comparable<?>> properties = Maps.newHashMap();
    private final Map<String, String> vagueProperties = Maps.newHashMap();
    private ResourceLocation id = ResourceLocation.withDefaultNamespace("");
-   @Nullable
-   private StateDefinition<Block, BlockState> definition;
-   @Nullable
-   private BlockState state;
-   @Nullable
-   private CompoundTag nbt;
-   @Nullable
-   private HolderSet<Block> tag;
+   private @Nullable StateDefinition<Block, BlockState> definition;
+   private @Nullable BlockState state;
+   private @Nullable CompoundTag nbt;
+   private @Nullable HolderSet<Block> tag;
    private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions;
 
    private BlockStateParser(HolderLookup<Block> var1, StringReader var2, boolean var3, boolean var4) {

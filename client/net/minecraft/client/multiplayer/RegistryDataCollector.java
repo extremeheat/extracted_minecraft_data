@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -23,12 +22,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.tags.TagNetworkSerialization;
+import org.jspecify.annotations.Nullable;
 
 public class RegistryDataCollector {
-   @Nullable
-   private ContentsCollector contentsCollector;
-   @Nullable
-   private TagCollector tagCollector;
+   private @Nullable ContentsCollector contentsCollector;
+   private @Nullable TagCollector tagCollector;
 
    public RegistryDataCollector() {
       super();

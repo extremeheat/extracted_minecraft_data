@@ -3,13 +3,12 @@ package com.mojang.blaze3d.vertex;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 public class MeshData implements AutoCloseable {
    private final ByteBufferBuilder.Result vertexBuffer;
-   @Nullable
    private ByteBufferBuilder.Result indexBuffer;
    private final DrawState drawState;
 
@@ -53,8 +52,7 @@ public class MeshData implements AutoCloseable {
       return this.vertexBuffer.byteBuffer();
    }
 
-   @Nullable
-   public ByteBuffer indexBuffer() {
+   public @Nullable ByteBuffer indexBuffer() {
       return this.indexBuffer != null ? this.indexBuffer.byteBuffer() : null;
    }
 
@@ -62,8 +60,7 @@ public class MeshData implements AutoCloseable {
       return this.drawState;
    }
 
-   @Nullable
-   public SortState sortQuads(ByteBufferBuilder var1, VertexSorting var2) {
+   public @Nullable SortState sortQuads(ByteBufferBuilder var1, VertexSorting var2) {
       if (this.drawState.mode() != VertexFormat.Mode.QUADS) {
          return null;
       } else {
@@ -100,7 +97,6 @@ public class MeshData implements AutoCloseable {
          this.indexType = var2;
       }
 
-      @Nullable
       public ByteBufferBuilder.Result buildSortedIndexBuffer(ByteBufferBuilder var1, VertexSorting var2) {
          int[] var3 = var2.sort(this.centroids);
          long var4 = var1.reserve(var3.length * 6 * this.indexType.bytes);

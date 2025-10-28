@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage;
 
 import java.nio.file.Path;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
@@ -13,6 +12,7 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class LevelSummary implements Comparable<LevelSummary> {
    public static final Component PLAY_WORLD = Component.translatable("selectWorld.select");
@@ -23,8 +23,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    private final boolean locked;
    private final boolean experimental;
    private final Path icon;
-   @Nullable
-   private Component info;
+   private @Nullable Component info;
 
    public LevelSummary(LevelSettings var1, LevelVersion var2, String var3, boolean var4, boolean var5, boolean var6, Path var7) {
       super();

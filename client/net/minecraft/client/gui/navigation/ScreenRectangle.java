@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.navigation;
 
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 
 public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
@@ -78,8 +78,7 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return (this.getBoundInDirection(var1.getPositive()) + this.getBoundInDirection(var1.getNegative())) / 2;
    }
 
-   @Nullable
-   public ScreenRectangle intersection(ScreenRectangle var1) {
+   public @Nullable ScreenRectangle intersection(ScreenRectangle var1) {
       int var2 = Math.max(this.left(), var1.left());
       int var3 = Math.max(this.top(), var1.top());
       int var4 = Math.min(this.right(), var1.right());

@@ -2,7 +2,6 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class BowItem extends ProjectileWeaponItem {
    public static final int MAX_DRAW_DURATION = 20;

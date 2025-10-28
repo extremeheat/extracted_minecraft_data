@@ -1,8 +1,4 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@NullMarked
 package com.mojang.realmsclient.gui.screens;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import net.minecraft.FieldsAreNonnullByDefault;
-import net.minecraft.MethodsReturnNonnullByDefault;
+import org.jspecify.annotations.NullMarked;

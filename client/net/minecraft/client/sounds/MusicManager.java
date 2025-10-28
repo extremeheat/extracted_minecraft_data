@@ -2,7 +2,6 @@ package net.minecraft.client.sounds;
 
 import com.mojang.serialization.Codec;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
@@ -13,13 +12,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.Nullable;
 
 public class MusicManager {
    private static final int STARTING_DELAY = 100;
    private final RandomSource random = RandomSource.create();
    private final Minecraft minecraft;
-   @Nullable
-   private SoundInstance currentMusic;
+   private @Nullable SoundInstance currentMusic;
    private MusicFrequency gameMusicFrequency;
    private float currentGain = 1.0F;
    private int nextSongDelay = 100;
@@ -141,8 +140,7 @@ public class MusicManager {
       return this.currentMusic == null ? false : ((SoundEvent)var1.sound().value()).location().equals(this.currentMusic.getLocation());
    }
 
-   @Nullable
-   public String getCurrentMusicTranslationKey() {
+   public @Nullable String getCurrentMusicTranslationKey() {
       if (this.currentMusic != null) {
          Sound var1 = this.currentMusic.getSound();
          if (var1 != null) {

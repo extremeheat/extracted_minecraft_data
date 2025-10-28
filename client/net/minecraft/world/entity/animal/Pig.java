@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.UnmodifiableIterator;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -58,6 +57,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Pig extends Animal implements ItemSteerable {
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME;
@@ -85,8 +85,7 @@ public class Pig extends Animal implements ItemSteerable {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.25);
    }
 
-   @Nullable
-   public LivingEntity getControllingPassenger() {
+   public @Nullable LivingEntity getControllingPassenger() {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
@@ -243,8 +242,7 @@ public class Pig extends Animal implements ItemSteerable {
       return this.steering.boost(this.getRandom());
    }
 
-   @Nullable
-   public Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Pig var3 = EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Pig var4) {
          var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
@@ -269,8 +267,7 @@ public class Pig extends Animal implements ItemSteerable {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.PIG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -294,8 +291,7 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

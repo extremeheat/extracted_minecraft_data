@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class IntegratedServer extends MinecraftServer {
@@ -58,12 +58,9 @@ public class IntegratedServer extends MinecraftServer {
    private final Minecraft minecraft;
    private boolean paused = true;
    private int publishedPort = -1;
-   @Nullable
-   private GameType publishedGameType;
-   @Nullable
-   private LanServerPinger lanPinger;
-   @Nullable
-   private UUID uuid;
+   private @Nullable GameType publishedGameType;
+   private @Nullable LanServerPinger lanPinger;
+   private @Nullable UUID uuid;
    private int previousSimulationDistance = 0;
    private volatile List<SimpleGizmoCollector.GizmoInstance> latestTicksGizmos = new ArrayList();
    private final SimpleGizmoCollector gizmoCollector = new SimpleGizmoCollector();
@@ -168,7 +165,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    public boolean useNativeTransport() {
-      return false;
+      return this.minecraft.options.useNativeTransport();
    }
 
    public void onServerCrash(CrashReport var1) {
@@ -275,8 +272,7 @@ public class IntegratedServer extends MinecraftServer {
       return this.minecraft.options.syncWrites;
    }
 
-   @Nullable
-   public GameType getForcedGameType() {
+   public @Nullable GameType getForcedGameType() {
       return this.isPublished() && !this.isHardcore() ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, this.worldData.getGameType()) : null;
    }
 

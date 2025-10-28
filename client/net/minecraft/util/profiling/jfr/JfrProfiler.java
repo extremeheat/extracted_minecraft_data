@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nullable;
 import jdk.jfr.Configuration;
 import jdk.jfr.Event;
 import jdk.jfr.FlightRecorder;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class JfrProfiler implements JvmProfiler {
@@ -63,8 +63,7 @@ public class JfrProfiler implements JvmProfiler {
    private static final String FLIGHT_RECORDER_CONFIG = "/flightrecorder-config.jfc";
    private static final DateTimeFormatter DATE_TIME_FORMATTER;
    private static final JfrProfiler INSTANCE;
-   @Nullable
-   Recording recording;
+   @Nullable Recording recording;
    private int currentFPS;
    private float currentAverageTickTimeServer;
    private final Map<String, NetworkSummaryEvent.SumAggregation> networkTrafficByAddress = new ConcurrentHashMap();
@@ -270,8 +269,7 @@ public class JfrProfiler implements JvmProfiler {
 
    }
 
-   @Nullable
-   public ProfiledDuration onWorldLoadedStarted() {
+   public @Nullable ProfiledDuration onWorldLoadedStarted() {
       if (!WorldLoadFinishedEvent.TYPE.isEnabled()) {
          return null;
       } else {
@@ -281,8 +279,7 @@ public class JfrProfiler implements JvmProfiler {
       }
    }
 
-   @Nullable
-   public ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
+   public @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
       if (!ChunkGenerationEvent.TYPE.isEnabled()) {
          return null;
       } else {
@@ -292,8 +289,7 @@ public class JfrProfiler implements JvmProfiler {
       }
    }
 
-   @Nullable
-   public ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
+   public @Nullable ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
       if (!StructureGenerationEvent.TYPE.isEnabled()) {
          return null;
       } else {

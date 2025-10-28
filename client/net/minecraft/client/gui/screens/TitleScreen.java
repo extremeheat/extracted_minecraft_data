@@ -6,7 +6,6 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.gui.screens.RealmsNotificationsScreen;
 import java.io.IOException;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -39,6 +38,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TitleScreen extends Screen {
@@ -46,10 +46,8 @@ public class TitleScreen extends Screen {
    private static final Component TITLE = Component.translatable("narrator.screen.title");
    private static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
    private static final String DEMO_LEVEL_ID = "Demo_World";
-   @Nullable
-   private SplashRenderer splash;
-   @Nullable
-   private RealmsNotificationsScreen realmsNotificationsScreen;
+   private @Nullable SplashRenderer splash;
+   private @Nullable RealmsNotificationsScreen realmsNotificationsScreen;
    private boolean fading;
    private long fadeInStart;
    private final LogoRenderer logoRenderer;
@@ -150,8 +148,7 @@ public class TitleScreen extends Screen {
       return var1;
    }
 
-   @Nullable
-   private Component getMultiplayerDisabledReason() {
+   private @Nullable Component getMultiplayerDisabledReason() {
       if (this.minecraft.allowsMultiplayer()) {
          return null;
       } else if (this.minecraft.isNameBanned()) {

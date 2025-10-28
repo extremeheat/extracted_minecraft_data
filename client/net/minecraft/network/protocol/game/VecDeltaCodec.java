@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.game;
 
+import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.VisibleForTesting;
 
 public class VecDeltaCodec {
    private static final double TRUNCATION_STEPS = 4096.0;

@@ -1,6 +1,5 @@
 package net.minecraft.world.level;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
+import org.jspecify.annotations.Nullable;
 
 public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, ScheduledTickAccess {
    default long dayTime() {
@@ -44,8 +44,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
       return this.getLevelData().getGameTime();
    }
 
-   @Nullable
-   MinecraftServer getServer();
+   @Nullable MinecraftServer getServer();
 
    default Difficulty getDifficulty() {
       return this.getLevelData().getDifficulty();

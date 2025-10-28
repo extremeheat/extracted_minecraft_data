@@ -2,10 +2,10 @@ package net.minecraft.util.parsing.packrat.commands;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
 import net.minecraft.util.parsing.packrat.DelayedException;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
+import org.jspecify.annotations.Nullable;
 
 public abstract class GreedyPredicateParseRule implements Rule<StringReader, String> {
    private final int minSize;
@@ -23,8 +23,7 @@ public abstract class GreedyPredicateParseRule implements Rule<StringReader, Str
       this.error = var3;
    }
 
-   @Nullable
-   public String parse(ParseState<StringReader> var1) {
+   public @Nullable String parse(ParseState<StringReader> var1) {
       StringReader var2 = (StringReader)var1.input();
       String var3 = var2.getString();
       int var4 = var2.getCursor();
@@ -46,8 +45,7 @@ public abstract class GreedyPredicateParseRule implements Rule<StringReader, Str
    protected abstract boolean isAccepted(char var1);
 
    // $FF: synthetic method
-   @Nullable
-   public Object parse(final ParseState var1) {
+   public @Nullable Object parse(final ParseState var1) {
       return this.parse(var1);
    }
 }

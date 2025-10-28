@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.CrashReport;
@@ -54,22 +53,19 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.util.Crypt;
 import net.minecraft.world.flag.FeatureFlags;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Minecraft minecraft;
-   @Nullable
-   private final ServerData serverData;
-   @Nullable
-   private final Screen parent;
+   private final @Nullable ServerData serverData;
+   private final @Nullable Screen parent;
    private final Consumer<Component> updateStatus;
    private final Connection connection;
    private final boolean newWorld;
-   @Nullable
-   private final Duration worldLoadDuration;
-   @Nullable
-   private String minigameName;
+   private final @Nullable Duration worldLoadDuration;
+   private @Nullable String minigameName;
    private final LevelLoadTracker levelLoadTracker;
    private final Map<ResourceLocation, byte[]> cookies;
    private final boolean wasTransferredTo;
@@ -150,8 +146,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.connection.send(var1, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(var2, var3)));
    }
 
-   @Nullable
-   private Component authenticateServer(String var1) {
+   private @Nullable Component authenticateServer(String var1) {
       try {
          this.minecraft.services().sessionService().joinServer(this.minecraft.getUser().getProfileId(), this.minecraft.getUser().getAccessToken(), var1);
          return null;

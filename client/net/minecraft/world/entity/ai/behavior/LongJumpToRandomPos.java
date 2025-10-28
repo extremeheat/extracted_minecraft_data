@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    protected static final int FIND_JUMP_TRIES = 20;
@@ -43,8 +43,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    protected final float maxJumpVelocityMultiplier;
    protected List<PossibleJump> jumpCandidates;
    protected Optional<Vec3> initialPosition;
-   @Nullable
-   protected Vec3 chosenJump;
+   protected @Nullable Vec3 chosenJump;
    protected int findJumpTries;
    protected long prepareJumpStart;
    private final Function<E, SoundEvent> getJumpSound;
@@ -171,8 +170,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       return var5 == var3.getX() && var6 == var3.getZ() ? false : this.acceptableLandingSpot.test(var2, var3);
    }
 
-   @Nullable
-   protected Vec3 calculateOptimalJumpVector(Mob var1, Vec3 var2) {
+   protected @Nullable Vec3 calculateOptimalJumpVector(Mob var1, Vec3 var2) {
       ArrayList var3 = Lists.newArrayList(ALLOWED_ANGLES);
       Collections.shuffle(var3);
       float var4 = (float)(var1.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.maxJumpVelocityMultiplier);

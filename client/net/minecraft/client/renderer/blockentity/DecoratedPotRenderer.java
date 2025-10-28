@@ -5,7 +5,6 @@ import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
    private final MaterialSet materials;
@@ -116,7 +116,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return new DecoratedPotRenderState();
    }
 
-   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(DecoratedPotBlockEntity var1, DecoratedPotRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.decorations = var1.getDecorations();
       var2.direction = var1.getDirection();

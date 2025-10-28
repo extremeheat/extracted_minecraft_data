@@ -14,7 +14,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.util.profiling.ActiveProfiler;
 import net.minecraft.util.profiling.ContinuousProfiler;
 import net.minecraft.util.profiling.EmptyProfileResults;
@@ -26,11 +25,11 @@ import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsSamplerProvider;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
 import net.minecraft.util.profiling.metrics.storage.RecordedDeviation;
+import org.jspecify.annotations.Nullable;
 
 public class ActiveMetricsRecorder implements MetricsRecorder {
    public static final int PROFILING_MAX_DURATION_SECONDS = 10;
-   @Nullable
-   private static Consumer<Path> globalOnReportFinished = null;
+   private static @Nullable Consumer<Path> globalOnReportFinished = null;
    private final Map<MetricSampler, List<RecordedDeviation>> deviationsBySampler = new Object2ObjectOpenHashMap();
    private final ContinuousProfiler taskProfiler;
    private final Executor ioExecutor;

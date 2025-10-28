@@ -8,9 +8,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.eventlog.EventLogDirectory;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TelemetryLogManager implements AutoCloseable {
@@ -18,8 +18,7 @@ public class TelemetryLogManager implements AutoCloseable {
    private static final String RAW_EXTENSION = ".json";
    private static final int EXPIRY_DAYS = 7;
    private final EventLogDirectory directory;
-   @Nullable
-   private CompletableFuture<Optional<TelemetryEventLog>> sessionLog;
+   private @Nullable CompletableFuture<Optional<TelemetryEventLog>> sessionLog;
 
    private TelemetryLogManager(EventLogDirectory var1) {
       super();

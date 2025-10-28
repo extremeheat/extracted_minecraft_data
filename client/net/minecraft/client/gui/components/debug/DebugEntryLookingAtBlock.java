@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLookingAtBlock implements DebugScreenEntry {
    private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("looking_at_block");

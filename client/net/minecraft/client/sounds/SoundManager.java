@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Options;
@@ -37,6 +36,7 @@ import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.MultipliedFloats;
 import net.minecraft.util.valueproviders.SampledFloat;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SoundManager extends SimplePreparableReloadListener<Preparations> {
@@ -151,8 +151,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       }
    }
 
-   @Nullable
-   public WeighedSoundEvents getSoundEvent(ResourceLocation var1) {
+   public @Nullable WeighedSoundEvents getSoundEvent(ResourceLocation var1) {
       return (WeighedSoundEvents)this.registry.get(var1);
    }
 

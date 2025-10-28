@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Zoglin extends Monster implements HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
@@ -122,8 +122,7 @@ public class Zoglin extends Monster implements HoglinBase {
 
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var1.getRandom().nextFloat() < 0.2F) {
          this.setBaby(true);
       }
@@ -264,8 +263,7 @@ public class Zoglin extends Monster implements HoglinBase {
       this.makeSound(SoundEvents.ZOGLIN_ANGRY);
    }
 
-   @Nullable
-   public LivingEntity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

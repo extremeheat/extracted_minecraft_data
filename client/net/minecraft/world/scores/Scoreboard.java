@@ -19,13 +19,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Scoreboard {
@@ -42,8 +42,7 @@ public class Scoreboard {
       super();
    }
 
-   @Nullable
-   public Objective getObjective(@Nullable String var1) {
+   public @Nullable Objective getObjective(@Nullable String var1) {
       return (Objective)this.objectivesByName.get(var1);
    }
 
@@ -106,8 +105,7 @@ public class Scoreboard {
             }
          }
 
-         @Nullable
-         public Component display() {
+         public @Nullable Component display() {
             return var7.display();
          }
 
@@ -152,8 +150,7 @@ public class Scoreboard {
       };
    }
 
-   @Nullable
-   public ReadOnlyScoreInfo getPlayerScoreInfo(ScoreHolder var1, Objective var2) {
+   public @Nullable ReadOnlyScoreInfo getPlayerScoreInfo(ScoreHolder var1, Objective var2) {
       PlayerScores var3 = (PlayerScores)this.playerScores.get(var1.getScoreboardName());
       return var3 != null ? var3.get(var2) : null;
    }
@@ -236,13 +233,11 @@ public class Scoreboard {
       this.displayObjectives.put(var1, var2);
    }
 
-   @Nullable
-   public Objective getDisplayObjective(DisplaySlot var1) {
+   public @Nullable Objective getDisplayObjective(DisplaySlot var1) {
       return (Objective)this.displayObjectives.get(var1);
    }
 
-   @Nullable
-   public PlayerTeam getPlayerTeam(String var1) {
+   public @Nullable PlayerTeam getPlayerTeam(String var1) {
       return (PlayerTeam)this.teamsByName.get(var1);
    }
 
@@ -305,8 +300,7 @@ public class Scoreboard {
       return this.teamsByName.values();
    }
 
-   @Nullable
-   public PlayerTeam getPlayersTeam(String var1) {
+   public @Nullable PlayerTeam getPlayersTeam(String var1) {
       return (PlayerTeam)this.teamsByPlayer.get(var1);
    }
 

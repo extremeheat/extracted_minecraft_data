@@ -8,8 +8,8 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.SignedArgument;
+import org.jspecify.annotations.Nullable;
 
 public record SignableCommand<S>(List<Argument<S>> arguments) {
    public SignableCommand(List<Argument<S>> var1) {
@@ -54,8 +54,7 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
       return var2;
    }
 
-   @Nullable
-   public Argument<S> getArgument(String var1) {
+   public @Nullable Argument<S> getArgument(String var1) {
       for(Argument var3 : this.arguments) {
          if (var1.equals(var3.name())) {
             return var3;

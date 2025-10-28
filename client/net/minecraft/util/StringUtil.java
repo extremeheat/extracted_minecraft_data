@@ -3,8 +3,8 @@ package net.minecraft.util;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class StringUtil {
    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");

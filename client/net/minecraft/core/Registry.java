@@ -13,13 +13,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, IdMap<T> {
    ResourceKey<? extends Registry<T>> key();
@@ -58,18 +58,15 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
       return this.keySet().stream().map((var1x) -> var1.createString(var1x.toString()));
    }
 
-   @Nullable
-   ResourceLocation getKey(T var1);
+   @Nullable ResourceLocation getKey(T var1);
 
    Optional<ResourceKey<T>> getResourceKey(T var1);
 
    int getId(@Nullable T var1);
 
-   @Nullable
-   T getValue(@Nullable ResourceKey<T> var1);
+   @Nullable T getValue(@Nullable ResourceKey<T> var1);
 
-   @Nullable
-   T getValue(@Nullable ResourceLocation var1);
+   @Nullable T getValue(@Nullable ResourceLocation var1);
 
    Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1);
 
@@ -152,8 +149,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
             return Registry.this.getId(var1.value());
          }
 
-         @Nullable
-         public Holder<T> byId(int var1) {
+         public @Nullable Holder<T> byId(int var1) {
             return (Holder)Registry.this.get(var1).orElse((Object)null);
          }
 
@@ -166,8 +162,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
          }
 
          // $FF: synthetic method
-         @Nullable
-         public Object byId(final int var1) {
+         public @Nullable Object byId(final int var1) {
             return this.byId(var1);
          }
       };

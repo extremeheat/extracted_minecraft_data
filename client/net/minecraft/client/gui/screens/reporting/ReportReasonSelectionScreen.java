@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.reporting;
 import java.net.URI;
 import java.util.Objects;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,6 +20,7 @@ import net.minecraft.client.multiplayer.chat.report.ReportType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import org.jspecify.annotations.Nullable;
 
 public class ReportReasonSelectionScreen extends Screen {
    private static final Component REASON_TITLE = Component.translatable("gui.abuseReport.reason.title");
@@ -29,12 +29,9 @@ public class ReportReasonSelectionScreen extends Screen {
    private static final int DESCRIPTION_BOX_WIDTH = 320;
    private static final int DESCRIPTION_BOX_HEIGHT = 62;
    private static final int PADDING = 4;
-   @Nullable
-   private final Screen lastScreen;
-   @Nullable
-   private ReasonSelectionList reasonSelectionList;
-   @Nullable
-   ReportReason currentlySelectedReason;
+   private final @Nullable Screen lastScreen;
+   private @Nullable ReasonSelectionList reasonSelectionList;
+   @Nullable ReportReason currentlySelectedReason;
    private final Consumer<ReportReason> onSelectedReason;
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    final ReportType reportType;
@@ -146,7 +143,6 @@ public class ReportReasonSelectionScreen extends Screen {
 
       }
 
-      @Nullable
       public Entry findEntry(ReportReason var1) {
          return (Entry)this.children().stream().filter((var1x) -> var1x.reason == var1).findFirst().orElse((Object)null);
       }
@@ -155,7 +151,7 @@ public class ReportReasonSelectionScreen extends Screen {
          return 320;
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          ReportReasonSelectionScreen.this.currentlySelectedReason = var1 != null ? var1.getReason() : null;
       }

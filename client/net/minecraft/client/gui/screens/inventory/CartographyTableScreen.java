@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
@@ -14,6 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import org.jspecify.annotations.Nullable;
 
 public class CartographyTableScreen extends AbstractContainerScreen<CartographyTableMenu> {
    private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/cartography_table/error");

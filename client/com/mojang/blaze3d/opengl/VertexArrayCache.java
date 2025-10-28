@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.ARBVertexAttribBinding;
 import org.lwjgl.opengl.GLCapabilities;
 
@@ -160,8 +160,7 @@ public abstract class VertexArrayCache {
    public static class VertexArray {
       final int id;
       final VertexFormat format;
-      @Nullable
-      GlBuffer lastVertexBuffer;
+      @Nullable GlBuffer lastVertexBuffer;
 
       VertexArray(int var1, VertexFormat var2, @Nullable GlBuffer var3) {
          super();

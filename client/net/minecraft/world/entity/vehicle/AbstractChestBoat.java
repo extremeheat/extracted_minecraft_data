@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -26,12 +25,12 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractChestBoat extends AbstractBoat implements HasCustomInventoryScreen, ContainerEntity {
    private static final int CONTAINER_SIZE = 27;
    private NonNullList<ItemStack> itemStacks;
-   @Nullable
-   private ResourceKey<LootTable> lootTable;
+   private @Nullable ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    public AbstractChestBoat(EntityType<? extends AbstractChestBoat> var1, Level var2, Supplier<Item> var3) {
@@ -136,8 +135,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       return this.isChestVehicleStillValid(var1);
    }
 
-   @Nullable
-   public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
+   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       if (this.lootTable != null && var3.isSpectator()) {
          return null;
       } else {
@@ -150,8 +148,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       this.unpackChestVehicleLootTable(var1);
    }
 
-   @Nullable
-   public ResourceKey<LootTable> getContainerLootTable() {
+   public @Nullable ResourceKey<LootTable> getContainerLootTable() {
       return this.lootTable;
    }
 

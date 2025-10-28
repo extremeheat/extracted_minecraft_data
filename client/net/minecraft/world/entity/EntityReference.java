@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.players.OldUsersConverter;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.entity.UUIDLookup;
 import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public final class EntityReference<StoredEntityType extends UniquelyIdentifyable> {
    private static final Codec<? extends EntityReference<?>> CODEC;
@@ -40,8 +40,7 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       this.entity = Either.left(var1);
    }
 
-   @Nullable
-   public static <T extends UniquelyIdentifyable> EntityReference<T> of(@Nullable T var0) {
+   public static <T extends UniquelyIdentifyable> @Nullable EntityReference<T> of(@Nullable T var0) {
       return var0 != null ? new EntityReference(var0) : null;
    }
 
@@ -53,8 +52,7 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       return (UUID)this.entity.map((var0) -> var0, UniquelyIdentifyable::getUUID);
    }
 
-   @Nullable
-   public StoredEntityType getEntity(UUIDLookup<? extends UniquelyIdentifyable> var1, Class<StoredEntityType> var2) {
+   public @Nullable StoredEntityType getEntity(UUIDLookup<? extends UniquelyIdentifyable> var1, Class<StoredEntityType> var2) {
       Optional var3 = this.entity.right();
       if (var3.isPresent()) {
          UniquelyIdentifyable var4 = (UniquelyIdentifyable)var3.get();
@@ -77,8 +75,7 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       return null;
    }
 
-   @Nullable
-   public StoredEntityType getEntity(Level var1, Class<StoredEntityType> var2) {
+   public @Nullable StoredEntityType getEntity(Level var1, Class<StoredEntityType> var2) {
       if (Player.class.isAssignableFrom(var2)) {
          Objects.requireNonNull(var1);
          return (StoredEntityType)this.getEntity(var1::getPlayerInAnyDimension, var2);
@@ -88,8 +85,7 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
       }
    }
 
-   @Nullable
-   private StoredEntityType resolve(@Nullable UniquelyIdentifyable var1, Class<StoredEntityType> var2) {
+   private @Nullable StoredEntityType resolve(@Nullable UniquelyIdentifyable var1, Class<StoredEntityType> var2) {
       return (StoredEntityType)(var1 != null && var2.isAssignableFrom(var1.getClass()) ? (UniquelyIdentifyable)var2.cast(var1) : null);
    }
 
@@ -108,33 +104,27 @@ public final class EntityReference<StoredEntityType extends UniquelyIdentifyable
 
    }
 
-   @Nullable
-   public static <StoredEntityType extends UniquelyIdentifyable> StoredEntityType get(@Nullable EntityReference<StoredEntityType> var0, Level var1, Class<StoredEntityType> var2) {
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable StoredEntityType get(@Nullable EntityReference<StoredEntityType> var0, Level var1, Class<StoredEntityType> var2) {
       return (StoredEntityType)(var0 != null ? var0.getEntity(var1, var2) : null);
    }
 
-   @Nullable
-   public static Entity getEntity(@Nullable EntityReference<Entity> var0, Level var1) {
+   public static @Nullable Entity getEntity(@Nullable EntityReference<Entity> var0, Level var1) {
       return (Entity)get(var0, var1, Entity.class);
    }
 
-   @Nullable
-   public static LivingEntity getLivingEntity(@Nullable EntityReference<LivingEntity> var0, Level var1) {
+   public static @Nullable LivingEntity getLivingEntity(@Nullable EntityReference<LivingEntity> var0, Level var1) {
       return (LivingEntity)get(var0, var1, LivingEntity.class);
    }
 
-   @Nullable
-   public static Player getPlayer(@Nullable EntityReference<Player> var0, Level var1) {
+   public static @Nullable Player getPlayer(@Nullable EntityReference<Player> var0, Level var1) {
       return (Player)get(var0, var1, Player.class);
    }
 
-   @Nullable
-   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> read(ValueInput var0, String var1) {
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> read(ValueInput var0, String var1) {
       return (EntityReference)var0.read(var1, codec()).orElse((Object)null);
    }
 
-   @Nullable
-   public static <StoredEntityType extends UniquelyIdentifyable> EntityReference<StoredEntityType> readWithOldOwnerConversion(ValueInput var0, String var1, Level var2) {
+   public static <StoredEntityType extends UniquelyIdentifyable> @Nullable EntityReference<StoredEntityType> readWithOldOwnerConversion(ValueInput var0, String var1, Level var2) {
       Optional var3 = var0.read(var1, UUIDUtil.CODEC);
       return var3.isPresent() ? of((UUID)var3.get()) : (EntityReference)var0.getString(var1).map((var1x) -> OldUsersConverter.convertMobOwnerIfNecessary(var2.getServer(), var1x)).map(EntityReference::new).orElse((Object)null);
    }

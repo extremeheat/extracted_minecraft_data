@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -43,6 +42,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PresetFlatWorldScreen extends Screen {
@@ -69,8 +69,7 @@ public class PresetFlatWorldScreen extends Screen {
       this.parent = var1;
    }
 
-   @Nullable
-   private static FlatLayerInfo getLayerInfoFromString(HolderGetter<Block> var0, String var1, int var2) {
+   private static @Nullable FlatLayerInfo getLayerInfoFromString(HolderGetter<Block> var0, String var1, int var2) {
       List var3 = Splitter.on('*').limit(2).splitToList(var1);
       int var4;
       String var5;
@@ -241,7 +240,7 @@ public class PresetFlatWorldScreen extends Screen {
 
       }
 
-      public void setSelected(@Nullable Entry var1) {
+      public void setSelected(Entry var1) {
          super.setSelected(var1);
          PresetFlatWorldScreen.this.updateButtonValidity(var1 != null);
       }

@@ -4,10 +4,10 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
 import javax.sound.sampled.AudioFormat;
 import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 import org.slf4j.Logger;
 
@@ -18,11 +18,9 @@ public class Channel {
    private final int source;
    private final AtomicBoolean initialized = new AtomicBoolean(true);
    private int streamingBufferSize = 16384;
-   @Nullable
-   private AudioStream stream;
+   private @Nullable AudioStream stream;
 
-   @Nullable
-   static Channel create() {
+   static @Nullable Channel create() {
       int[] var0 = new int[1];
       AL10.alGenSources(var0);
       return OpenAlUtil.checkALError("Allocate new source") ? null : new Channel(var0[0]);

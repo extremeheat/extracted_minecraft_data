@@ -1,16 +1,15 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket>codec(ClientboundSelectAdvancementsTabPacket::write, ClientboundSelectAdvancementsTabPacket::new);
-   @Nullable
-   private final ResourceLocation tab;
+   private final @Nullable ResourceLocation tab;
 
    public ClientboundSelectAdvancementsTabPacket(@Nullable ResourceLocation var1) {
       super();
@@ -34,8 +33,7 @@ public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGame
       var1.handleSelectAdvancementsTab(this);
    }
 
-   @Nullable
-   public ResourceLocation getTab() {
+   public @Nullable ResourceLocation getTab() {
       return this.tab;
    }
 }

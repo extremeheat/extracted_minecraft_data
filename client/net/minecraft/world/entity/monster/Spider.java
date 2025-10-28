@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Spider extends Monster {
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
@@ -130,8 +130,7 @@ public class Spider extends Monster {
       this.entityData.set(DATA_FLAGS_ID, var2);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
       if (var5.nextInt(100) == 0) {
@@ -169,8 +168,7 @@ public class Spider extends Monster {
    }
 
    public static class SpiderEffectsGroupData implements SpawnGroupData {
-      @Nullable
-      public Holder<MobEffect> effect;
+      public @Nullable Holder<MobEffect> effect;
 
       public SpiderEffectsGroupData() {
          super();

@@ -9,11 +9,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.EmptyGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.gui.font.providers.GlyphProviderType;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.Nullable;
 
 public class SpaceProvider implements GlyphProvider {
    private final Int2ObjectMap<EmptyGlyph> glyphs;
@@ -24,8 +24,7 @@ public class SpaceProvider implements GlyphProvider {
       var1.forEach((var1x, var2) -> this.glyphs.put(var1x, new EmptyGlyph(var2)));
    }
 
-   @Nullable
-   public UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(int var1) {
       return (UnbakedGlyph)this.glyphs.get(var1);
    }
 

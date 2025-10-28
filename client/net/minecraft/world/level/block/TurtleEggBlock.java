@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,8 +26,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class TurtleEggBlock extends Block {
    public static final MapCodec<TurtleEggBlock> CODEC = simpleCodec(TurtleEggBlock::new);
@@ -148,8 +148,7 @@ public class TurtleEggBlock extends Block {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       return var2.is(this) ? (BlockState)var2.setValue(EGGS, Math.min(4, (Integer)var2.getValue(EGGS) + 1)) : super.getStateForPlacement(var1);
    }
@@ -167,7 +166,7 @@ public class TurtleEggBlock extends Block {
          if (!(var2 instanceof LivingEntity)) {
             return false;
          } else {
-            return var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+            return var2 instanceof Player || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING);
          }
       } else {
          return false;

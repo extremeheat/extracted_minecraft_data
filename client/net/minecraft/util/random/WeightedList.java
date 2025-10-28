@@ -10,18 +10,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
+import org.jspecify.annotations.Nullable;
 
 public final class WeightedList<E> {
    private static final int FLAT_THRESHOLD = 64;
    private final int totalWeight;
    private final List<Weighted<E>> items;
-   @Nullable
-   private final Selector<E> selector;
+   private final @Nullable Selector<E> selector;
 
    WeightedList(List<? extends Weighted<E>> var1) {
       super();

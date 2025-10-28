@@ -1,7 +1,6 @@
 package net.minecraft.world.entity;
 
 import com.google.common.annotations.VisibleForTesting;
-import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -13,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AgeableMob extends PathfinderMob {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
@@ -28,8 +28,7 @@ public abstract class AgeableMob extends PathfinderMob {
       super(var1, var2);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMobGroupData(true);
       }
@@ -43,8 +42,7 @@ public abstract class AgeableMob extends PathfinderMob {
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
-   @Nullable
-   public abstract AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2);
+   public abstract @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2);
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);

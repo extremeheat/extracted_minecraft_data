@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.client.gui.screens.inventory.BeaconScreen;
@@ -31,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class MenuScreens {
@@ -50,8 +50,7 @@ public class MenuScreens {
       }
    }
 
-   @Nullable
-   private static <T extends AbstractContainerMenu> ScreenConstructor<T, ?> getConstructor(MenuType<T> var0) {
+   private static <T extends AbstractContainerMenu> @Nullable ScreenConstructor<T, ?> getConstructor(MenuType<T> var0) {
       return (ScreenConstructor)SCREENS.get(var0);
    }
 

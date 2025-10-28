@@ -1,15 +1,14 @@
 package net.minecraft.client.model.geom.builders;
 
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.jspecify.annotations.Nullable;
 
 public final class CubeDefinition {
-   @Nullable
-   private final String comment;
+   private final @Nullable String comment;
    private final Vector3fc origin;
    private final Vector3fc dimensions;
    private final CubeDeformation grow;

@@ -99,6 +99,7 @@ public final class ItemTags {
    public static final TagKey<Item> HAPPY_GHAST_FOOD = bind("happy_ghast_food");
    public static final TagKey<Item> HAPPY_GHAST_TEMPT_ITEMS = bind("happy_ghast_tempt_items");
    public static final TagKey<Item> CAMEL_FOOD = bind("camel_food");
+   public static final TagKey<Item> CAMEL_HUSK_FOOD = bind("camel_husk_food");
    public static final TagKey<Item> ARMADILLO_FOOD = bind("armadillo_food");
    public static final TagKey<Item> CHICKEN_FOOD = bind("chicken_food");
    public static final TagKey<Item> FROG_FOOD = bind("frog_food");

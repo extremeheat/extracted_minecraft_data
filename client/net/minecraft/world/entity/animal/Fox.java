@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -78,7 +77,6 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -90,10 +88,12 @@ import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Fox extends Animal {
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
@@ -260,8 +260,7 @@ public class Fox extends Animal {
       return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.MAX_HEALTH, 10.0).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.SAFE_FALL_DISTANCE, 5.0).add(Attributes.FOLLOW_RANGE, 32.0);
    }
 
-   @Nullable
-   public Fox getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Fox getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Fox var3 = EntityType.FOX.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setVariant(this.random.nextBoolean() ? this.getVariant() : ((Fox)var2).getVariant());
@@ -274,8 +273,7 @@ public class Fox extends Animal {
       return var1.getBlockState(var3.below()).is(BlockTags.FOXES_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Holder var5 = var1.getBiome(this.blockPosition());
       Variant var6 = Fox.Variant.byBiome(var5);
       boolean var7 = false;
@@ -330,8 +328,7 @@ public class Fox extends Animal {
       this.entityData.set(DATA_TYPE_ID, var1.getId());
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.FOX_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -599,8 +596,7 @@ public class Fox extends Animal {
 
    }
 
-   @Nullable
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       if (this.isSleeping()) {
          return SoundEvents.FOX_SLEEP;
       } else {
@@ -615,13 +611,11 @@ public class Fox extends Animal {
       }
    }
 
-   @Nullable
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected @Nullable SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.FOX_HURT;
    }
 
-   @Nullable
-   protected SoundEvent getDeathSound() {
+   protected @Nullable SoundEvent getDeathSound() {
       return SoundEvents.FOX_DEATH;
    }
 
@@ -664,8 +658,7 @@ public class Fox extends Animal {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -894,7 +887,7 @@ public class Fox extends Animal {
             var1.snapTo(this.animal.getX(), this.animal.getY(), this.animal.getZ(), 0.0F, 0.0F);
             this.level.addFreshEntityWithPassengers(var1);
             this.level.broadcastEntityEvent(this.animal, (byte)18);
-            if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if ((Boolean)this.level.getGameRules().get(GameRules.MOB_DROPS)) {
                this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), this.animal.getRandom().nextInt(7) + 1));
             }
 
@@ -903,13 +896,11 @@ public class Fox extends Animal {
    }
 
    class DefendTrustedTargetGoal extends NearestAttackableTargetGoal<LivingEntity> {
-      @Nullable
-      private LivingEntity trustedLastHurtBy;
-      @Nullable
-      private LivingEntity trustedLastHurt;
+      private @Nullable LivingEntity trustedLastHurtBy;
+      private @Nullable LivingEntity trustedLastHurt;
       private int timestamp;
 
-      public DefendTrustedTargetGoal(final Class<LivingEntity> var2, final boolean var3, final boolean var4, @Nullable final TargetingConditions.Selector var5) {
+      public DefendTrustedTargetGoal(final Class<LivingEntity> var2, final boolean var3, final @Nullable boolean var4, final TargetingConditions.Selector var5) {
          super(Fox.this, var2, 10, var3, var4, var5);
       }
 
@@ -1156,7 +1147,7 @@ public class Fox extends Animal {
       }
 
       protected void onReachedTarget() {
-         if (getServerLevel(Fox.this.level()).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if ((Boolean)getServerLevel(Fox.this.level()).getGameRules().get(GameRules.MOB_GRIEFING)) {
             BlockState var1 = Fox.this.level().getBlockState(this.blockPos);
             if (var1.is(Blocks.SWEET_BERRY_BUSH)) {
                this.pickSweetBerries(var1);

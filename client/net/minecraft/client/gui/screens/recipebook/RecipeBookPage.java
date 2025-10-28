@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,14 +20,14 @@ import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
    private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
    private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
-   @Nullable
-   private RecipeButton hoveredButton;
+   private @Nullable RecipeButton hoveredButton;
    private final OverlayRecipeComponent overlay;
    private Minecraft minecraft;
    private final RecipeBookComponent<?> parent;
@@ -38,10 +37,8 @@ public class RecipeBookPage {
    private int totalPages;
    private int currentPage;
    private ClientRecipeBook recipeBook;
-   @Nullable
-   private RecipeDisplayId lastClickedRecipe;
-   @Nullable
-   private RecipeCollection lastClickedRecipeCollection;
+   private @Nullable RecipeDisplayId lastClickedRecipe;
+   private @Nullable RecipeCollection lastClickedRecipeCollection;
    private boolean isFiltering;
 
    public RecipeBookPage(RecipeBookComponent<?> var1, SlotSelectTime var2, boolean var3) {
@@ -134,13 +131,11 @@ public class RecipeBookPage {
 
    }
 
-   @Nullable
-   public RecipeDisplayId getLastClickedRecipe() {
+   public @Nullable RecipeDisplayId getLastClickedRecipe() {
       return this.lastClickedRecipe;
    }
 
-   @Nullable
-   public RecipeCollection getLastClickedRecipeCollection() {
+   public @Nullable RecipeCollection getLastClickedRecipeCollection() {
       return this.lastClickedRecipeCollection;
    }
 

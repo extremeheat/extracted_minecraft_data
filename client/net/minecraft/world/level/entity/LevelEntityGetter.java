@@ -2,16 +2,14 @@ package net.minecraft.world.level.entity;
 
 import java.util.UUID;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.Nullable;
 
 public interface LevelEntityGetter<T extends EntityAccess> {
-   @Nullable
-   T get(int var1);
+   @Nullable T get(int var1);
 
-   @Nullable
-   T get(UUID var1);
+   @Nullable T get(UUID var1);
 
    Iterable<T> getAll();
 

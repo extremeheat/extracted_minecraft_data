@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -83,6 +82,7 @@ import org.joml.Matrix3x2fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector2ic;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class GuiGraphics {
    private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
@@ -95,12 +95,9 @@ public class GuiGraphics {
    private CursorType pendingCursor;
    final int mouseX;
    final int mouseY;
-   @Nullable
-   private Runnable deferredTooltip;
-   @Nullable
-   Style hoveredTextStyle;
-   @Nullable
-   Style clickableTextStyle;
+   private @Nullable Runnable deferredTooltip;
+   @Nullable Style hoveredTextStyle;
+   @Nullable Style clickableTextStyle;
 
    private GuiGraphics(Minecraft var1, Matrix3x2fStack var2, GuiRenderState var3, int var4, int var5) {
       super();
@@ -809,8 +806,7 @@ public class GuiGraphics {
          }
       }
 
-      @Nullable
-      public ScreenRectangle pop() {
+      public @Nullable ScreenRectangle pop() {
          if (this.stack.isEmpty()) {
             throw new IllegalStateException("Scissor stack underflow");
          } else {
@@ -819,8 +815,7 @@ public class GuiGraphics {
          }
       }
 
-      @Nullable
-      public ScreenRectangle peek() {
+      public @Nullable ScreenRectangle peek() {
          return (ScreenRectangle)this.stack.peekLast();
       }
 
@@ -855,10 +850,9 @@ public class GuiGraphics {
    class RenderingTextCollector implements ActiveTextCollector, Consumer<Style> {
       private ActiveTextCollector.Parameters defaultParameters;
       private final HoveredTextEffects hoveredTextEffects;
-      @Nullable
-      private final Consumer<Style> additionalConsumer;
+      private final @Nullable Consumer<Style> additionalConsumer;
 
-      RenderingTextCollector(final ActiveTextCollector.Parameters var2, final HoveredTextEffects var3, @Nullable final Consumer<Style> var4) {
+      RenderingTextCollector(final ActiveTextCollector.Parameters var2, final @Nullable HoveredTextEffects var3, final Consumer<Style> var4) {
          super();
          this.defaultParameters = var2;
          this.hoveredTextEffects = var3;

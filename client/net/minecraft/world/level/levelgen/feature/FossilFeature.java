@@ -76,6 +76,6 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
          }
 
       });
-      return var2.getValue();
+      return var2.intValue();
    }
 }

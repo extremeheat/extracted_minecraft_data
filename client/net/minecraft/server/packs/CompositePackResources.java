@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
+import org.jspecify.annotations.Nullable;
 
 public class CompositePackResources implements PackResources {
    private final PackResources primaryPackResources;
@@ -27,13 +27,11 @@ public class CompositePackResources implements PackResources {
       this.packResourcesStack = List.copyOf(var3);
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getRootResource(String... var1) {
+   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
       return this.primaryPackResources.getRootResource(var1);
    }
 
-   @Nullable
-   public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public @Nullable IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
       for(PackResources var4 : this.packResourcesStack) {
          IoSupplier var5 = var4.getResource(var1, var2);
          if (var5 != null) {
@@ -65,8 +63,7 @@ public class CompositePackResources implements PackResources {
       return var2;
    }
 
-   @Nullable
-   public <T> T getMetadataSection(MetadataSectionType<T> var1) throws IOException {
+   public <T> @Nullable T getMetadataSection(MetadataSectionType<T> var1) throws IOException {
       return (T)this.primaryPackResources.getMetadataSection(var1);
    }
 

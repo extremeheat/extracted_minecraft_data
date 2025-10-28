@@ -3,7 +3,7 @@ package com.mojang.realmsclient.dto;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record WorldTemplate(String id, String name, String version, String author, String link, @Nullable String image, String trailer, String recommendedPlayers, WorldTemplateType type) {
@@ -22,8 +22,7 @@ public record WorldTemplate(String id, String name, String version, String autho
       this.type = var9;
    }
 
-   @Nullable
-   public static WorldTemplate parse(JsonObject var0) {
+   public static @Nullable WorldTemplate parse(JsonObject var0) {
       try {
          String var1 = JsonUtils.getStringOr("type", var0, (String)null);
          return new WorldTemplate(JsonUtils.getStringOr("id", var0, ""), JsonUtils.getStringOr("name", var0, ""), JsonUtils.getStringOr("version", var0, ""), JsonUtils.getStringOr("author", var0, ""), JsonUtils.getStringOr("link", var0, ""), JsonUtils.getStringOr("image", var0, (String)null), JsonUtils.getStringOr("trailer", var0, ""), JsonUtils.getStringOr("recommendedPlayers", var0, ""), var1 == null ? WorldTemplate.WorldTemplateType.WORLD_TEMPLATE : WorldTemplate.WorldTemplateType.valueOf(var1));

@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.datafix.schemas.V1451_6;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class StatsCounterFix extends DataFix {
    private static final Set<String> SPECIAL_OBJECTIVE_CRITERIA = Set.of("dummy", "trigger", "deathCount", "playerKillCount", "totalKillCount", "health", "food", "air", "armor", "xp", "level", "killedByTeam.aqua", "killedByTeam.black", "killedByTeam.blue", "killedByTeam.dark_aqua", "killedByTeam.dark_blue", "killedByTeam.dark_gray", "killedByTeam.dark_green", "killedByTeam.dark_purple", "killedByTeam.dark_red", "killedByTeam.gold", "killedByTeam.gray", "killedByTeam.green", "killedByTeam.light_purple", "killedByTeam.red", "killedByTeam.white", "killedByTeam.yellow", "teamkill.aqua", "teamkill.black", "teamkill.blue", "teamkill.dark_aqua", "teamkill.dark_blue", "teamkill.dark_gray", "teamkill.dark_green", "teamkill.dark_purple", "teamkill.dark_red", "teamkill.gold", "teamkill.gray", "teamkill.green", "teamkill.light_purple", "teamkill.red", "teamkill.white", "teamkill.yellow");
@@ -35,8 +35,7 @@ public class StatsCounterFix extends DataFix {
       super(var1, var2);
    }
 
-   @Nullable
-   private static StatType unpackLegacyKey(String var0) {
+   private static @Nullable StatType unpackLegacyKey(String var0) {
       if (SKIP.contains(var0)) {
          return null;
       } else {
@@ -130,8 +129,7 @@ public class StatsCounterFix extends DataFix {
       });
    }
 
-   @Nullable
-   private static String upgradeItem(String var0) {
+   private static @Nullable String upgradeItem(String var0) {
       return ItemStackTheFlatteningFix.updateItem(var0, 0);
    }
 

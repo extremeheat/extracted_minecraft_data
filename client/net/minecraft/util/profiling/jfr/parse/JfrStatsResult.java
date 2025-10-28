@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.serialize.JfrResultJsonSerializer;
 import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;
 import net.minecraft.util.profiling.jfr.stats.ChunkIdentification;
@@ -23,6 +22,7 @@ import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
 import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
 import net.minecraft.util.profiling.jfr.stats.TimedStatSummary;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.jspecify.annotations.Nullable;
 
 public record JfrStatsResult(Instant recordingStarted, Instant recordingEnded, Duration recordingDuration, @Nullable Duration worldCreationDuration, List<FpsStat> fps, List<TickTimeStat> serverTickTimes, List<CpuLoadStat> cpuLoadStats, GcHeapStat.Summary heapSummary, ThreadAllocationStat.Summary threadAllocationSummary, IoSummary<PacketIdentification> receivedPacketsSummary, IoSummary<PacketIdentification> sentPacketsSummary, IoSummary<ChunkIdentification> writtenChunks, IoSummary<ChunkIdentification> readChunks, FileIOStat.Summary fileWrites, FileIOStat.Summary fileReads, List<ChunkGenStat> chunkGenStats, List<StructureGenStat> structureGenStats) {
    public JfrStatsResult(Instant var1, Instant var2, Duration var3, @Nullable Duration var4, List<FpsStat> var5, List<TickTimeStat> var6, List<CpuLoadStat> var7, GcHeapStat.Summary var8, ThreadAllocationStat.Summary var9, IoSummary<PacketIdentification> var10, IoSummary<PacketIdentification> var11, IoSummary<ChunkIdentification> var12, IoSummary<ChunkIdentification> var13, FileIOStat.Summary var14, FileIOStat.Summary var15, List<ChunkGenStat> var16, List<StructureGenStat> var17) {

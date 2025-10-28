@@ -5,7 +5,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.SequencedCollection;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface ListAndDeque<T> extends Serializable, Cloneable, Deque<T>, List<T>, RandomAccess {
    ListAndDeque<T> reversed();
@@ -30,8 +30,7 @@ public interface ListAndDeque<T> extends Serializable, Cloneable, Deque<T>, List
       return (T)this.removeFirst();
    }
 
-   @Nullable
-   default T poll() {
+   default @Nullable T poll() {
       return (T)this.pollFirst();
    }
 
@@ -39,8 +38,7 @@ public interface ListAndDeque<T> extends Serializable, Cloneable, Deque<T>, List
       return (T)this.getFirst();
    }
 
-   @Nullable
-   default T peek() {
+   default @Nullable T peek() {
       return (T)this.peekFirst();
    }
 

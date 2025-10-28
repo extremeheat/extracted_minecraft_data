@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class Arrow extends AbstractArrow {
    private static final int EXPOSED_POTION_DECAY_TIME = 600;

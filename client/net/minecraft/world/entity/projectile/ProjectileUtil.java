@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class ProjectileUtil {
    public static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
@@ -41,8 +41,9 @@ public final class ProjectileUtil {
       Vec3 var5 = var0.getHeadLookAngle();
       Vec3 var6 = var0.getEyePosition();
       Vec3 var7 = var6.add(var5.scale((double)var1));
-      Vec3 var8 = var6.add(var5.scale((double)var2));
-      return (Collection)getHitEntitiesAlong(var0, var6, var7, var4, var8, var3, ClipContext.Block.COLLIDER).map((var0x) -> List.of(), (var0x) -> var0x);
+      double var8 = var0.getKnownMovement().dot(var5);
+      Vec3 var10 = var6.add(var5.scale((double)var2 + Math.max(0.0, var8)));
+      return (Collection)getHitEntitiesAlong(var0, var6, var7, var4, var10, var3, ClipContext.Block.COLLIDER).map((var0x) -> List.of(), (var0x) -> var0x);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {
@@ -85,12 +86,11 @@ public final class ProjectileUtil {
       }
 
       AABB var9 = AABB.ofSize(var2, (double)var5, (double)var5, (double)var5).expandTowards(var4.subtract(var2)).inflate(1.0);
-      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5);
+      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5, true);
       return !var10.isEmpty() ? Either.right(var10) : Either.left(var8);
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Entity var0, Vec3 var1, Vec3 var2, AABB var3, Predicate<Entity> var4, double var5) {
+   public static @Nullable EntityHitResult getEntityHitResult(Entity var0, Vec3 var1, Vec3 var2, AABB var3, Predicate<Entity> var4, double var5) {
       Level var7 = var0.level();
       double var8 = var5;
       Entity var10 = null;
@@ -130,8 +130,7 @@ public final class ProjectileUtil {
       }
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Level var0, Projectile var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
+   public static @Nullable EntityHitResult getEntityHitResult(Level var0, Projectile var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
       return getEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1));
    }
 
@@ -139,8 +138,7 @@ public final class ProjectileUtil {
       return Math.max(0.0F, Math.min(0.3F, (float)(var0.tickCount - 2) / 20.0F));
    }
 
-   @Nullable
-   public static EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
+   public static @Nullable EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
       double var7 = 1.7976931348623157E308;
       Optional var9 = Optional.empty();
       Entity var10 = null;
@@ -165,24 +163,24 @@ public final class ProjectileUtil {
       }
    }
 
-   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5) {
-      return getManyEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1));
+   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, boolean var6) {
+      return getManyEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1), var6);
    }
 
-   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
-      ArrayList var7 = new ArrayList();
+   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6, boolean var7) {
+      ArrayList var8 = new ArrayList();
 
-      for(Entity var9 : var0.getEntities(var1, var4, var5)) {
-         AABB var10 = var9.getBoundingBox().inflate((double)var6);
-         if (var10.contains(var2)) {
-            var7.add(new EntityHitResult(var9, var2));
+      for(Entity var10 : var0.getEntities(var1, var4, var5)) {
+         AABB var11 = var10.getBoundingBox().inflate((double)var6);
+         if (var7 && var11.contains(var2)) {
+            var8.add(new EntityHitResult(var10, var2));
          } else {
-            Optional var11 = var10.clip(var2, var3);
-            var11.ifPresent((var2x) -> var7.add(new EntityHitResult(var9, var2x)));
+            Optional var12 = var11.clip(var2, var3);
+            var12.ifPresent((var2x) -> var8.add(new EntityHitResult(var10, var2x)));
          }
       }
 
-      return var7;
+      return var8;
    }
 
    public static void rotateTowardsMovement(Entity var0, float var1) {

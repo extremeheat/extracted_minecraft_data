@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EndPortalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntity, S extends EndPortalRenderState> implements BlockEntityRenderer<T, S> {
    public static final ResourceLocation END_SKY_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/end_sky.png");
@@ -25,7 +25,7 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
       super();
    }
 
-   public void extractRenderState(T var1, S var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(T var1, S var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.facesToShow.clear();
 

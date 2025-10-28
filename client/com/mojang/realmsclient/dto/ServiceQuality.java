@@ -5,8 +5,8 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public enum ServiceQuality {
@@ -24,8 +24,7 @@ public enum ServiceQuality {
       this.icon = ResourceLocation.withDefaultNamespace(var4);
    }
 
-   @Nullable
-   public static ServiceQuality byValue(int var0) {
+   public static @Nullable ServiceQuality byValue(int var0) {
       for(ServiceQuality var4 : values()) {
          if (var4.getValue() == var0) {
             return var4;

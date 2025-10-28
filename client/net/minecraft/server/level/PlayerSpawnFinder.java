@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
@@ -20,13 +19,14 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.CollisionGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerSpawnFinder {
    private static final EntityDimensions PLAYER_DIMENSIONS;
@@ -53,7 +53,7 @@ public class PlayerSpawnFinder {
 
    public static CompletableFuture<Vec3> findSpawn(ServerLevel var0, BlockPos var1) {
       if (var0.dimensionType().hasSkyLight() && var0.getServer().getWorldData().getGameType() != GameType.ADVENTURE) {
-         int var2 = Math.max(0, var0.getGameRules().getInt(GameRules.RULE_SPAWN_RADIUS));
+         int var2 = Math.max(0, (Integer)var0.getGameRules().get(GameRules.RESPAWN_RADIUS));
          int var3 = Mth.floor(var0.getWorldBorder().getDistanceToBorder((double)var1.getX(), (double)var1.getZ()));
          if (var3 < var2) {
             var2 = var3;
@@ -148,8 +148,7 @@ public class PlayerSpawnFinder {
       }
    }
 
-   @Nullable
-   protected static BlockPos getOverworldRespawnPos(ServerLevel var0, int var1, int var2) {
+   protected static @Nullable BlockPos getOverworldRespawnPos(ServerLevel var0, int var1, int var2) {
       boolean var3 = var0.dimensionType().hasCeiling();
       LevelChunk var4 = var0.getChunk(SectionPos.blockToSectionCoord(var1), SectionPos.blockToSectionCoord(var2));
       int var5 = var3 ? var0.getChunkSource().getGenerator().getSpawnHeight(var0) : var4.getHeight(Heightmap.Types.MOTION_BLOCKING, var1 & 15, var2 & 15);
@@ -179,8 +178,7 @@ public class PlayerSpawnFinder {
       }
    }
 
-   @Nullable
-   public static BlockPos getSpawnPosInChunk(ServerLevel var0, ChunkPos var1) {
+   public static @Nullable BlockPos getSpawnPosInChunk(ServerLevel var0, ChunkPos var1) {
       if (SharedConstants.debugVoidTerrain(var1)) {
          return null;
       } else {

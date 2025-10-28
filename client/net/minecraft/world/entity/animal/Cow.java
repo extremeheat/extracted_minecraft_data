@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 public class Cow extends AbstractCow {
    private static final EntityDataAccessor<Holder<CowVariant>> DATA_VARIANT_ID;
@@ -44,8 +44,7 @@ public class Cow extends AbstractCow {
       VariantUtils.readVariant(var1, Registries.COW_VARIANT).ifPresent(this::setVariant);
    }
 
-   @Nullable
-   public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cow var3 = EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Cow var4) {
          var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
@@ -67,8 +66,7 @@ public class Cow extends AbstractCow {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.COW_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -87,8 +85,7 @@ public class Cow extends AbstractCow {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

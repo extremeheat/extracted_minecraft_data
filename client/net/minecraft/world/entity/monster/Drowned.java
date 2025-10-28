@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -54,9 +53,11 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
@@ -203,15 +204,14 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   public void travel(Vec3 var1) {
-      if (this.isUnderWater() && this.wantsToSwim()) {
-         this.moveRelative(0.01F, var1);
-         this.move(MoverType.SELF, this.getDeltaMovement());
-         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
-      } else {
-         super.travel(var1);
-      }
+   protected boolean shouldTravelInFluid(FluidState var1) {
+      return this.isUnderWater() && this.wantsToSwim();
+   }
 
+   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
+      this.moveRelative(0.01F, var1);
+      this.move(MoverType.SELF, this.getDeltaMovement());
+      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
    public void updateSwimming() {
@@ -415,8 +415,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
          this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
       }
 
-      @Nullable
-      private Vec3 getWaterPos() {
+      private @Nullable Vec3 getWaterPos() {
          RandomSource var1 = this.mob.getRandom();
          BlockPos var2 = this.mob.blockPosition();
 

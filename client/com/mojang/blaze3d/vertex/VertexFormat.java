@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
 public class VertexFormat {
@@ -24,10 +24,8 @@ public class VertexFormat {
    private final int vertexSize;
    private final int elementsMask;
    private final int[] offsetsByElement = new int[32];
-   @Nullable
-   private GpuBuffer immediateDrawVertexBuffer;
-   @Nullable
-   private GpuBuffer immediateDrawIndexBuffer;
+   private @Nullable GpuBuffer immediateDrawVertexBuffer;
+   private @Nullable GpuBuffer immediateDrawIndexBuffer;
 
    VertexFormat(List<VertexFormatElement> var1, List<String> var2, IntList var3, int var4) {
       super();

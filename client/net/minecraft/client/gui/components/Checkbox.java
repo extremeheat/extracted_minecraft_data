@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.Font;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public class Checkbox extends AbstractButton {
    private static final ResourceLocation CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected_highlighted");
@@ -28,11 +28,18 @@ public class Checkbox extends AbstractButton {
 
    Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, OnValueChange var7) {
       super(var1, var2, 0, 0, var4);
-      this.width = this.getAdjustedWidth(var3, var4, var5);
-      this.textWidget = (new MultiLineTextWidget(var4, var5)).setMaxWidth(this.width);
+      this.textWidget = new MultiLineTextWidget(var4, var5);
+      this.textWidget.setMaxRows(2);
+      this.width = this.adjustWidth(var3, var5);
       this.height = this.getAdjustedHeight(var5);
       this.selected = var6;
       this.onValueChange = var7;
+   }
+
+   public int adjustWidth(int var1, Font var2) {
+      this.width = this.getAdjustedWidth(var1, this.getMessage(), var2);
+      this.textWidget.setMaxWidth(this.width);
+      return this.width;
    }
 
    private int getAdjustedWidth(int var1, Component var2, Font var3) {
@@ -110,10 +117,8 @@ public class Checkbox extends AbstractButton {
       private int y = 0;
       private OnValueChange onValueChange;
       private boolean selected;
-      @Nullable
-      private OptionInstance<Boolean> option;
-      @Nullable
-      private Tooltip tooltip;
+      private @Nullable OptionInstance<Boolean> option;
+      private @Nullable Tooltip tooltip;
 
       Builder(Component var1, Font var2) {
          super();

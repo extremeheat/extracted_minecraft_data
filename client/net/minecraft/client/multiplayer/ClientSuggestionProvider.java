@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
@@ -31,13 +30,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ClientSuggestionProvider implements SharedSuggestionProvider {
    private final ClientPacketListener connection;
    private final Minecraft minecraft;
    private int pendingSuggestionsId = -1;
-   @Nullable
-   private CompletableFuture<Suggestions> pendingSuggestionsFuture;
+   private @Nullable CompletableFuture<Suggestions> pendingSuggestionsFuture;
    private final Set<String> customCompletionSuggestions = new HashSet();
    private final PermissionSet permissions;
 

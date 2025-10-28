@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMonitorCallback;
@@ -43,13 +43,11 @@ public class ScreenManager {
 
    }
 
-   @Nullable
-   public Monitor getMonitor(long var1) {
+   public @Nullable Monitor getMonitor(long var1) {
       return (Monitor)this.monitors.get(var1);
    }
 
-   @Nullable
-   public Monitor findBestMonitor(Window var1) {
+   public @Nullable Monitor findBestMonitor(Window var1) {
       long var2 = GLFW.glfwGetWindowMonitor(var1.handle());
       if (var2 != 0L) {
          return this.getMonitor(var2);

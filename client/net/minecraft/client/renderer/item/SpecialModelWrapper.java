@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.item;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
-import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class SpecialModelWrapper<T> implements ItemModel {
    private final SpecialModelRenderer<T> specialRenderer;

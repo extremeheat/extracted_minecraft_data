@@ -1,13 +1,13 @@
 package net.minecraft.network;
 
 import io.netty.buffer.ByteBuf;
-import javax.annotation.Nullable;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.BundlerInfo;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.VisibleForDebug;
+import org.jspecify.annotations.Nullable;
 
 public interface ProtocolInfo<T extends PacketListener> {
    ConnectionProtocol id();
@@ -16,8 +16,7 @@ public interface ProtocolInfo<T extends PacketListener> {
 
    StreamCodec<ByteBuf, Packet<? super T>> codec();
 
-   @Nullable
-   BundlerInfo bundlerInfo();
+   @Nullable BundlerInfo bundlerInfo();
 
    public interface Details {
       ConnectionProtocol id();

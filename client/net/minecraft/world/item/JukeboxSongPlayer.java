@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -11,12 +10,12 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class JukeboxSongPlayer {
    public static final int PLAY_EVENT_INTERVAL_TICKS = 20;
    private long ticksSinceSongStarted;
-   @Nullable
-   private Holder<JukeboxSong> song;
+   private @Nullable Holder<JukeboxSong> song;
    private final BlockPos blockPos;
    private final OnSongChanged onSongChanged;
 
@@ -30,8 +29,7 @@ public class JukeboxSongPlayer {
       return this.song != null;
    }
 
-   @Nullable
-   public JukeboxSong getSong() {
+   public @Nullable JukeboxSong getSong() {
       return this.song == null ? null : (JukeboxSong)this.song.value();
    }
 

@@ -1,13 +1,11 @@
 package net.minecraft.client.renderer.entity.state;
 
-import javax.annotation.Nullable;
 import net.minecraft.world.entity.Display;
+import org.jspecify.annotations.Nullable;
 
 public class TextDisplayEntityRenderState extends DisplayEntityRenderState {
-   @Nullable
-   public Display.TextDisplay.TextRenderState textRenderState;
-   @Nullable
-   public Display.TextDisplay.CachedInfo cachedInfo;
+   public Display.TextDisplay.@Nullable TextRenderState textRenderState;
+   public Display.TextDisplay.@Nullable CachedInfo cachedInfo;
 
    public TextDisplayEntityRenderState() {
       super();

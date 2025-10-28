@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class KeyMapping implements Comparable<KeyMapping> {
    private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
@@ -208,8 +208,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       ((List)MAP.computeIfAbsent(var1, (var0) -> new ArrayList())).add(this);
    }
 
-   @Nullable
-   public static KeyMapping get(String var0) {
+   public static @Nullable KeyMapping get(String var0) {
       return (KeyMapping)ALL.get(var0);
    }
 

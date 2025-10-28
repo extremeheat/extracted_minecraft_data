@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
@@ -42,6 +41,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.joml.Quaternionfc;
+import org.jspecify.annotations.Nullable;
 
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
@@ -122,8 +122,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
 
    public abstract ResourceLocation getTextureLocation(S var1);
 
-   @Nullable
-   protected RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
+   protected @Nullable RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
       ResourceLocation var5 = this.getTextureLocation(var1);
       if (var3) {
          return RenderTypes.itemEntityTranslucentCull(var5);

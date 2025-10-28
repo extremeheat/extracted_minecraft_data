@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.component.DataComponents;
@@ -14,6 +13,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPatternLayers> {
    private final BannerRenderer bannerRenderer;
@@ -25,8 +25,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
       this.baseColor = var1;
    }
 
-   @Nullable
-   public BannerPatternLayers extractArgument(ItemStack var1) {
+   public @Nullable BannerPatternLayers extractArgument(ItemStack var1) {
       return (BannerPatternLayers)var1.get(DataComponents.BANNER_PATTERNS);
    }
 
@@ -39,8 +38,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Object extractArgument(final ItemStack var1) {
+   public @Nullable Object extractArgument(final ItemStack var1) {
       return this.extractArgument(var1);
    }
 

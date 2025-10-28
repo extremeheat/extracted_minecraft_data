@@ -3,7 +3,6 @@ package net.minecraft.world.entity.decoration;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,12 +27,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Painting extends HangingEntity {
    private static final EntityDataAccessor<Holder<PaintingVariant>> DATA_PAINTING_VARIANT_ID;
@@ -64,8 +64,7 @@ public class Painting extends HangingEntity {
       return (Holder)this.entityData.get(DATA_PAINTING_VARIANT_ID);
    }
 
-   @Nullable
-   public <T> T get(DataComponentType<? extends T> var1) {
+   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
       return (T)(var1 == DataComponents.PAINTING_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
    }
 
@@ -161,7 +160,7 @@ public class Painting extends HangingEntity {
    }
 
    public void dropItem(ServerLevel var1, @Nullable Entity var2) {
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+      if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
          this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
          if (var2 instanceof Player) {
             Player var3 = (Player)var2;

@@ -22,7 +22,9 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet GLOBALS_SNIPPET;
    private static final RenderPipeline.Snippet MATRICES_FOG_SNIPPET;
    private static final RenderPipeline.Snippet MATRICES_FOG_LIGHT_DIR_SNIPPET;
+   private static final RenderPipeline.Snippet GENERIC_BLOCKS_SNIPPET;
    private static final RenderPipeline.Snippet TERRAIN_SNIPPET;
+   private static final RenderPipeline.Snippet BLOCK_SNIPPET;
    private static final RenderPipeline.Snippet ENTITY_SNIPPET;
    private static final RenderPipeline.Snippet ENTITY_EMISSIVE_SNIPPET;
    private static final RenderPipeline.Snippet BEACON_BEAM_SNIPPET;
@@ -38,11 +40,14 @@ public class RenderPipelines {
    private static final RenderPipeline.Snippet GUI_TEXT_SNIPPET;
    private static final RenderPipeline.Snippet OUTLINE_SNIPPET;
    public static final RenderPipeline.Snippet POST_PROCESSING_SNIPPET;
-   public static final RenderPipeline SOLID;
+   public static final RenderPipeline SOLID_BLOCK;
+   public static final RenderPipeline SOLID_TERRAIN;
    public static final RenderPipeline WIREFRAME;
-   public static final RenderPipeline CUTOUT;
-   public static final RenderPipeline TRANSLUCENT;
-   public static final RenderPipeline TRIPWIRE;
+   public static final RenderPipeline CUTOUT_BLOCK;
+   public static final RenderPipeline CUTOUT_TERRAIN;
+   public static final RenderPipeline TRANSLUCENT_TERRAIN;
+   public static final RenderPipeline TRIPWIRE_BLOCK;
+   public static final RenderPipeline TRIPWIRE_TERRAIN;
    public static final RenderPipeline TRANSLUCENT_MOVING_BLOCK;
    public static final RenderPipeline ARMOR_CUTOUT_NO_CULL;
    public static final RenderPipeline ARMOR_DECAL_CUTOUT_NO_CULL;
@@ -119,6 +124,9 @@ public class RenderPipelines {
    public static final RenderPipeline OUTLINE_CULL;
    public static final RenderPipeline OUTLINE_NO_CULL;
    public static final RenderPipeline LIGHTMAP;
+   public static final RenderPipeline.Snippet ANIMATE_SPRITE_SNIPPET;
+   public static final RenderPipeline ANIMATE_SPRITE_BLIT;
+   public static final RenderPipeline ANIMATE_SPRITE_INTERPOLATE;
 
    public RenderPipelines() {
       super();
@@ -139,7 +147,9 @@ public class RenderPipelines {
       GLOBALS_SNIPPET = RenderPipeline.builder().withUniform("Globals", UniformType.UNIFORM_BUFFER).buildSnippet();
       MATRICES_FOG_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET).buildSnippet();
       MATRICES_FOG_LIGHT_DIR_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET, FOG_SNIPPET).withUniform("Lighting", UniformType.UNIFORM_BUFFER).buildSnippet();
-      TERRAIN_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/terrain").withFragmentShader("core/terrain").withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).buildSnippet();
+      GENERIC_BLOCKS_SNIPPET = RenderPipeline.builder(FOG_SNIPPET).withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).buildSnippet();
+      TERRAIN_SNIPPET = RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET).withUniform("Projection", UniformType.UNIFORM_BUFFER).withUniform("ChunkSection", UniformType.UNIFORM_BUFFER).withVertexShader("core/terrain").withFragmentShader("core/terrain").buildSnippet();
+      BLOCK_SNIPPET = RenderPipeline.builder(GENERIC_BLOCKS_SNIPPET, MATRICES_PROJECTION_SNIPPET).withVertexShader("core/block").withFragmentShader("core/block").buildSnippet();
       ENTITY_SNIPPET = RenderPipeline.builder(MATRICES_FOG_LIGHT_DIR_SNIPPET).withVertexShader("core/entity").withFragmentShader("core/entity").withSampler("Sampler0").withSampler("Sampler2").withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS).buildSnippet();
       ENTITY_EMISSIVE_SNIPPET = RenderPipeline.builder(MATRICES_FOG_LIGHT_DIR_SNIPPET).withVertexShader("core/entity").withFragmentShader("core/entity").withSampler("Sampler0").withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS).withShaderDefine("EMISSIVE").buildSnippet();
       BEACON_BEAM_SNIPPET = RenderPipeline.builder(MATRICES_FOG_SNIPPET).withVertexShader("core/rendertype_beacon_beam").withFragmentShader("core/rendertype_beacon_beam").withSampler("Sampler0").withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).buildSnippet();
@@ -155,11 +165,14 @@ public class RenderPipelines {
       GUI_TEXT_SNIPPET = RenderPipeline.builder(TEXT_SNIPPET).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).buildSnippet();
       OUTLINE_SNIPPET = RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withVertexShader("core/rendertype_outline").withFragmentShader("core/rendertype_outline").withSampler("Sampler0").withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).buildSnippet();
       POST_PROCESSING_SNIPPET = RenderPipeline.builder().withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).withDepthWrite(false).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).buildSnippet();
-      SOLID = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/solid").build());
+      SOLID_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/solid_block").build());
+      SOLID_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/solid_terrain").build());
       WIREFRAME = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/wireframe").withPolygonMode(PolygonMode.WIREFRAME).build());
-      CUTOUT = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/cutout").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
-      TRANSLUCENT = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/translucent").withBlend(BlendFunction.TRANSLUCENT).withShaderDefine("ALPHA_CUTOUT", 0.01F).build());
-      TRIPWIRE = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/tripwire").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBlend(BlendFunction.TRANSLUCENT).build());
+      CUTOUT_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/cutout_block").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
+      CUTOUT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/cutout_terrain").withShaderDefine("ALPHA_CUTOUT", 0.5F).build());
+      TRANSLUCENT_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/translucent_terrain").withBlend(BlendFunction.TRANSLUCENT).withShaderDefine("ALPHA_CUTOUT", 0.01F).build());
+      TRIPWIRE_BLOCK = register(RenderPipeline.builder(BLOCK_SNIPPET).withLocation("pipeline/tripwire_block").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBlend(BlendFunction.TRANSLUCENT).build());
+      TRIPWIRE_TERRAIN = register(RenderPipeline.builder(TERRAIN_SNIPPET).withLocation("pipeline/tripwire_terrain").withShaderDefine("ALPHA_CUTOUT", 0.1F).withBlend(BlendFunction.TRANSLUCENT).build());
       TRANSLUCENT_MOVING_BLOCK = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/translucent_moving_block").withVertexShader("core/rendertype_translucent_moving_block").withFragmentShader("core/rendertype_translucent_moving_block").withSampler("Sampler0").withSampler("Sampler2").withBlend(BlendFunction.TRANSLUCENT).withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS).build());
       ARMOR_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).build());
       ARMOR_DECAL_CUTOUT_NO_CULL = register(RenderPipeline.builder(ENTITY_SNIPPET).withLocation("pipeline/armor_decal_cutout_no_cull").withShaderDefine("ALPHA_CUTOUT", 0.1F).withShaderDefine("NO_OVERLAY").withShaderDefine("PER_FACE_LIGHTING").withCull(false).withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).build());
@@ -236,5 +249,8 @@ public class RenderPipelines {
       OUTLINE_CULL = register(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_cull").build());
       OUTLINE_NO_CULL = register(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_no_cull").withCull(false).build());
       LIGHTMAP = register(RenderPipeline.builder().withLocation("pipeline/lightmap").withVertexShader("core/screenquad").withFragmentShader("core/lightmap").withUniform("LightmapInfo", UniformType.UNIFORM_BUFFER).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build());
+      ANIMATE_SPRITE_SNIPPET = RenderPipeline.builder().withVertexShader("core/animate_sprite").withUniform("SpriteAnimationInfo", UniformType.UNIFORM_BUFFER).withVertexFormat(DefaultVertexFormat.EMPTY, VertexFormat.Mode.TRIANGLES).withDepthWrite(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).buildSnippet();
+      ANIMATE_SPRITE_BLIT = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withSampler("Sprite").build());
+      ANIMATE_SPRITE_INTERPOLATE = register(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withSampler("CurrentSprite").withSampler("NextSprite").build());
    }
 }

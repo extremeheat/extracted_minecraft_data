@@ -1,9 +1,9 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.HashedPatchMap;
 import net.minecraft.network.HashedStack;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public interface RemoteSlot {
    RemoteSlot PLACEHOLDER = new RemoteSlot() {
@@ -26,10 +26,8 @@ public interface RemoteSlot {
 
    public static class Synchronized implements RemoteSlot {
       private final HashedPatchMap.HashGenerator hasher;
-      @Nullable
-      private ItemStack remoteStack = null;
-      @Nullable
-      private HashedStack remoteHash = null;
+      private @Nullable ItemStack remoteStack = null;
+      private @Nullable HashedStack remoteHash = null;
 
       public Synchronized(HashedPatchMap.HashGenerator var1) {
          super();

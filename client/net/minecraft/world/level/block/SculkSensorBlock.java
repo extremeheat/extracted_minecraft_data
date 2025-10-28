@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<SculkSensorBlock> CODEC = simpleCodec(SculkSensorBlock::new);
@@ -61,8 +61,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PHASE, SculkSensorPhase.INACTIVE)).setValue(POWER, 0)).setValue(WATERLOGGED, false));
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       FluidState var3 = var1.getLevel().getFluidState(var2);
       return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var3.getType() == Fluids.WATER);
@@ -133,13 +132,11 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       var0.updateNeighborsAt(var1.below(), var3);
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SculkSensorBlockEntity(var1, var2);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return !var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 

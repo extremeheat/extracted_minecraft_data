@@ -1,8 +1,8 @@
 package net.minecraft.world.scores;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.numbers.NumberFormat;
+import org.jspecify.annotations.Nullable;
 
 public interface ScoreAccess {
    int get();
@@ -29,8 +29,7 @@ public interface ScoreAccess {
 
    void lock();
 
-   @Nullable
-   Component display();
+   @Nullable Component display();
 
    void display(@Nullable Component var1);
 

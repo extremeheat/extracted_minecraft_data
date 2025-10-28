@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
@@ -28,6 +27,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class MacroFunction<T extends ExecutionCommandSource<T>> implements CommandFunction<T> {
    private static final DecimalFormat DECIMAL_FORMAT;

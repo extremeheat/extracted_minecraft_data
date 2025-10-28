@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class Dictionary<S> {
    private final Map<Atom<?>, Entry<S, ?>> terms = new IdentityHashMap();
@@ -33,7 +33,7 @@ public class Dictionary<S> {
    }
 
    public void checkAllBound() {
-      List var1 = this.terms.entrySet().stream().filter((var0) -> var0.getValue() == null).map(Map.Entry::getKey).toList();
+      List var1 = this.terms.entrySet().stream().filter((var0) -> ((Entry)var0.getValue()).value == null).map(Map.Entry::getKey).toList();
       if (!var1.isEmpty()) {
          throw new IllegalStateException("Unbound names: " + String.valueOf(var1));
       }
@@ -79,8 +79,7 @@ public class Dictionary<S> {
 
    static class Entry<S, T> implements NamedRule<S, T>, Supplier<String> {
       private final Atom<T> name;
-      @Nullable
-      Rule<S, T> value;
+      @Nullable Rule<S, T> value;
 
       private Entry(Atom<T> var1) {
          super();

@@ -18,11 +18,11 @@ import it.unimi.dsi.fastutil.ints.IntSets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class BitmapProvider implements GlyphProvider {
@@ -40,8 +40,7 @@ public class BitmapProvider implements GlyphProvider {
       this.image.close();
    }
 
-   @Nullable
-   public UnbakedGlyph getGlyph(int var1) {
+   public @Nullable UnbakedGlyph getGlyph(int var1) {
       return this.glyphs.get(var1);
    }
 

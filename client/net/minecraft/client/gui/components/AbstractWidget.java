@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.time.Duration;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.ComponentPath;
@@ -24,6 +24,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractWidget implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
    protected int width;
@@ -58,6 +59,13 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
          this.renderWidget(var1, var2, var3, var4);
          this.tooltip.refreshTooltipForNextRenderPass(var1, var2, var3, this.isHovered(), this.isFocused(), this.getRectangle());
       }
+   }
+
+   protected void handleCursor(GuiGraphics var1) {
+      if (this.isHovered()) {
+         var1.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
+      }
+
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
@@ -134,8 +142,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   @Nullable
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (!this.isActive()) {
          return null;
       } else {

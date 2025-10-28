@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderGetter;
@@ -20,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootContext;
+import org.jspecify.annotations.Nullable;
 
 public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public KilledByArrowTrigger() {

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderState> {
    private final MaterialSet materials;
@@ -49,7 +49,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       return new ShulkerBoxRenderState();
    }
 
-   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, @Nullable ModelFeatureRenderer.CrumblingOverlay var5) {
+   public void extractRenderState(ShulkerBoxBlockEntity var1, ShulkerBoxRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
       BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
       var2.direction = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
       var2.color = var1.getColor();
@@ -68,7 +68,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.submit(var2, var3, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.direction, var1.progress, var1.breakProgress, var6, 0);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, @Nullable ModelFeatureRenderer.CrumblingOverlay var7, Material var8, int var9) {
+   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Direction var5, float var6, ModelFeatureRenderer.@Nullable CrumblingOverlay var7, Material var8, int var9) {
       var1.pushPose();
       this.prepareModel(var1, var5, var6);
       ShulkerBoxModel var10001 = this.model;

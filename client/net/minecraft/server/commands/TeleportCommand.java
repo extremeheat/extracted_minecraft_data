@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -30,6 +29,7 @@ import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class TeleportCommand {
    private static final SimpleCommandExceptionType INVALID_POSITION = new SimpleCommandExceptionType(Component.translatable("commands.teleport.invalidPosition"));

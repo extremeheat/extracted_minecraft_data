@@ -5,8 +5,8 @@ import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.BlockPos;
@@ -16,11 +16,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public abstract class VoxelShape {
    protected final DiscreteVoxelShape shape;
-   @Nullable
-   private VoxelShape[] faces;
+   private @Nullable VoxelShape @Nullable [] faces;
 
    protected VoxelShape(DiscreteVoxelShape var1) {
       super();
@@ -116,8 +117,7 @@ public abstract class VoxelShape {
       return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> var2 < this.get(var1, var4)) - 1;
    }
 
-   @Nullable
-   public BlockHitResult clip(Vec3 var1, Vec3 var2, BlockPos var3) {
+   public @Nullable BlockHitResult clip(Vec3 var1, Vec3 var2, BlockPos var3) {
       if (this.isEmpty()) {
          return null;
       } else {
@@ -135,17 +135,18 @@ public abstract class VoxelShape {
       if (this.isEmpty()) {
          return Optional.empty();
       } else {
-         Vec3[] var2 = new Vec3[1];
+         MutableObject var2 = new MutableObject();
          this.forAllBoxes((var2x, var4, var6, var8, var10, var12) -> {
             double var14 = Mth.clamp(var1.x(), var2x, var8);
             double var16 = Mth.clamp(var1.y(), var4, var10);
             double var18 = Mth.clamp(var1.z(), var6, var12);
-            if (var2[0] == null || var1.distanceToSqr(var14, var16, var18) < var1.distanceToSqr(var2[0])) {
-               var2[0] = new Vec3(var14, var16, var18);
+            Vec3 var20 = (Vec3)var2.get();
+            if (var20 == null || var1.distanceToSqr(var14, var16, var18) < var1.distanceToSqr(var20)) {
+               var2.setValue(new Vec3(var14, var16, var18));
             }
 
          });
-         return Optional.of(var2[0]);
+         return Optional.of((Vec3)Objects.requireNonNull((Vec3)var2.get()));
       }
    }
 

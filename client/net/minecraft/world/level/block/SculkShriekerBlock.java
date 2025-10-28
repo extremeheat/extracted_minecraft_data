@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<SculkShriekerBlock> CODEC = simpleCodec(SculkShriekerBlock::new);
@@ -85,8 +85,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       return true;
    }
 
-   @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SculkShriekerBlockEntity(var1, var2);
    }
 
@@ -98,8 +97,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var1.getLevel().getFluidState(var1.getClickedPos()).getType() == Fluids.WATER);
    }
 
@@ -115,8 +113,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
 
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return !var1.isClientSide() ? BaseEntityBlock.createTickerHelper(var3, BlockEntityType.SCULK_SHRIEKER, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 

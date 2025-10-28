@@ -1,19 +1,18 @@
 package net.minecraft.world.item.trading;
 
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public interface Merchant {
    void setTradingPlayer(@Nullable Player var1);
 
-   @Nullable
-   Player getTradingPlayer();
+   @Nullable Player getTradingPlayer();
 
    MerchantOffers getOffers();
 

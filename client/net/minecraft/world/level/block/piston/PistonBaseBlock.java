@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -43,6 +42,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class PistonBaseBlock extends DirectionalBlock {
    public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("sticky").forGetter((var0x) -> var0x.isSticky), propertiesCodec()).apply(var0, PistonBaseBlock::new));
@@ -68,7 +68,7 @@ public class PistonBaseBlock extends DirectionalBlock {
       return (Boolean)var1.getValue(EXTENDED) ? (VoxelShape)SHAPES.get(var1.getValue(FACING)) : Shapes.block();
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       if (!var1.isClientSide()) {
          this.checkIfExtend(var1, var2, var3);
       }

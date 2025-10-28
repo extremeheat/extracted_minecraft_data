@@ -21,7 +21,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
 public interface TestEnvironmentDefinition {
@@ -115,61 +117,30 @@ public interface TestEnvironmentDefinition {
       }
    }
 
-   public static record SetGameRules(List<Entry<Boolean, GameRules.BooleanValue>> boolRules, List<Entry<Integer, GameRules.IntegerValue>> intRules) implements TestEnvironmentDefinition {
-      public static final MapCodec<SetGameRules> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TestEnvironmentDefinition.SetGameRules.Entry.codec(GameRules.BooleanValue.class, Codec.BOOL).listOf().fieldOf("bool_rules").forGetter(SetGameRules::boolRules), TestEnvironmentDefinition.SetGameRules.Entry.codec(GameRules.IntegerValue.class, Codec.INT).listOf().fieldOf("int_rules").forGetter(SetGameRules::intRules)).apply(var0, SetGameRules::new));
+   public static record SetGameRules(GameRuleMap gameRulesMap) implements TestEnvironmentDefinition {
+      public static final MapCodec<SetGameRules> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(GameRuleMap.CODEC.fieldOf("rules").forGetter(SetGameRules::gameRulesMap)).apply(var0, SetGameRules::new));
 
-      public SetGameRules(List<Entry<Boolean, GameRules.BooleanValue>> var1, List<Entry<Integer, GameRules.IntegerValue>> var2) {
+      public SetGameRules(GameRuleMap var1) {
          super();
-         this.boolRules = var1;
-         this.intRules = var2;
+         this.gameRulesMap = var1;
       }
 
       public void setup(ServerLevel var1) {
          GameRules var2 = var1.getGameRules();
          MinecraftServer var3 = var1.getServer();
-
-         for(Entry var5 : this.boolRules) {
-            ((GameRules.BooleanValue)var2.getRule(var5.key())).set((Boolean)var5.value(), var3);
-         }
-
-         for(Entry var7 : this.intRules) {
-            ((GameRules.IntegerValue)var2.getRule(var7.key())).set((Integer)var7.value(), var3);
-         }
-
+         var2.setAll(this.gameRulesMap, var3);
       }
 
       public void teardown(ServerLevel var1) {
-         GameRules var2 = var1.getGameRules();
-         MinecraftServer var3 = var1.getServer();
+         this.gameRulesMap.keySet().forEach((var2) -> this.resetRule(var1, var2));
+      }
 
-         for(Entry var5 : this.boolRules) {
-            ((GameRules.BooleanValue)var2.getRule(var5.key())).setFrom((GameRules.BooleanValue)GameRules.getType(var5.key()).createRule(), var3);
-         }
-
-         for(Entry var7 : this.intRules) {
-            ((GameRules.IntegerValue)var2.getRule(var7.key())).setFrom((GameRules.IntegerValue)GameRules.getType(var7.key()).createRule(), var3);
-         }
-
+      private <T> void resetRule(ServerLevel var1, GameRule<T> var2) {
+         var1.getGameRules().set(var2, var2.defaultValue(), var1.getServer());
       }
 
       public MapCodec<SetGameRules> codec() {
          return CODEC;
-      }
-
-      public static <S, T extends GameRules.Value<T>> Entry<S, T> entry(GameRules.Key<T> var0, S var1) {
-         return new Entry<S, T>(var0, var1);
-      }
-
-      public static record Entry<S, T extends GameRules.Value<T>>(GameRules.Key<T> key, S value) {
-         public Entry(GameRules.Key<T> var1, S var2) {
-            super();
-            this.key = var1;
-            this.value = var2;
-         }
-
-         public static <S, T extends GameRules.Value<T>> Codec<Entry<S, T>> codec(Class<T> var0, Codec<S> var1) {
-            return RecordCodecBuilder.create((var2) -> var2.group(GameRules.keyCodec(var0).fieldOf("rule").forGetter(Entry::key), var1.fieldOf("value").forGetter(Entry::value)).apply(var2, Entry::new));
-         }
       }
    }
 

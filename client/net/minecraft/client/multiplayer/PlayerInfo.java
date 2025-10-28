@@ -2,7 +2,6 @@ package net.minecraft.client.multiplayer;
 
 import com.mojang.authlib.GameProfile;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.RemoteChatSession;
@@ -11,18 +10,16 @@ import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerInfo {
    private final GameProfile profile;
-   @Nullable
-   private Supplier<PlayerSkin> skinLookup;
+   private @Nullable Supplier<PlayerSkin> skinLookup;
    private GameType gameMode;
    private int latency;
-   @Nullable
-   private Component tabListDisplayName;
+   private @Nullable Component tabListDisplayName;
    private boolean showHat;
-   @Nullable
-   private RemoteChatSession chatSession;
+   private @Nullable RemoteChatSession chatSession;
    private SignedMessageValidator messageValidator;
    private int tabListOrder;
 
@@ -44,8 +41,7 @@ public class PlayerInfo {
       return this.profile;
    }
 
-   @Nullable
-   public RemoteChatSession getChatSession() {
+   public @Nullable RemoteChatSession getChatSession() {
       return this.chatSession;
    }
 
@@ -95,8 +91,7 @@ public class PlayerInfo {
       return (PlayerSkin)this.skinLookup.get();
    }
 
-   @Nullable
-   public PlayerTeam getTeam() {
+   public @Nullable PlayerTeam getTeam() {
       return Minecraft.getInstance().level.getScoreboard().getPlayersTeam(this.getProfile().name());
    }
 
@@ -104,8 +99,7 @@ public class PlayerInfo {
       this.tabListDisplayName = var1;
    }
 
-   @Nullable
-   public Component getTabListDisplayName() {
+   public @Nullable Component getTabListDisplayName() {
       return this.tabListDisplayName;
    }
 

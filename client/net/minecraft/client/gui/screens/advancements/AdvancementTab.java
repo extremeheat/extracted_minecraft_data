@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.advancements;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
@@ -16,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class AdvancementTab {
    private final Minecraft minecraft;
@@ -135,8 +135,7 @@ public class AdvancementTab {
       return this.type.isMouseOver(var1, var2, this.index, var3, var5);
    }
 
-   @Nullable
-   public static AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
+   public static @Nullable AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
       Optional var4 = var3.advancement().display();
       if (var4.isEmpty()) {
          return null;
@@ -154,14 +153,22 @@ public class AdvancementTab {
    }
 
    public void scroll(double var1, double var3) {
-      if (this.maxX - this.minX > 234) {
+      if (this.canScrollHorizontally()) {
          this.scrollX = Mth.clamp(this.scrollX + var1, (double)(-(this.maxX - 234)), 0.0);
       }
 
-      if (this.maxY - this.minY > 113) {
+      if (this.canScrollVertically()) {
          this.scrollY = Mth.clamp(this.scrollY + var3, (double)(-(this.maxY - 113)), 0.0);
       }
 
+   }
+
+   public boolean canScrollHorizontally() {
+      return this.maxX - this.minX > 234;
+   }
+
+   public boolean canScrollVertically() {
+      return this.maxY - this.minY > 113;
    }
 
    public void addAdvancement(AdvancementNode var1) {
@@ -189,8 +196,7 @@ public class AdvancementTab {
 
    }
 
-   @Nullable
-   public AdvancementWidget getWidget(AdvancementHolder var1) {
+   public @Nullable AdvancementWidget getWidget(AdvancementHolder var1) {
       return (AdvancementWidget)this.widgets.get(var1);
    }
 

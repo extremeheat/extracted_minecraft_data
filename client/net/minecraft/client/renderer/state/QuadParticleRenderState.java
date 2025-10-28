@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
@@ -22,6 +21,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
 public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGroupRenderer, ParticleGroupRenderState {
    private static final int INITIAL_PARTICLE_CAPACITY = 1024;
@@ -44,8 +44,7 @@ public class QuadParticleRenderState implements SubmitNodeCollector.ParticleGrou
       this.particleCount = 0;
    }
 
-   @Nullable
-   public PreparedBuffers prepare(ParticleFeatureRenderer.ParticleBufferCache var1) {
+   public @Nullable PreparedBuffers prepare(ParticleFeatureRenderer.ParticleBufferCache var1) {
       int var2 = this.particleCount * 4;
 
       try (ByteBufferBuilder var3 = ByteBufferBuilder.exactlySized(var2 * DefaultVertexFormat.PARTICLE.getVertexSize())) {

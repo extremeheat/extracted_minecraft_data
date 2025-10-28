@@ -27,11 +27,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 public class StructureTemplatePool {
    private static final int SIZE_UNSET = -2147483648;
    private static final MutableObject<Codec<Holder<StructureTemplatePool>>> CODEC_REFERENCE = new MutableObject();
-   public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      MutableObject var10001 = CODEC_REFERENCE;
-      Objects.requireNonNull(var10001);
-      return var0.group(Codec.lazyInitialized(var10001::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((var0x) -> var0x.rawTemplates)).apply(var0, StructureTemplatePool::new);
-   });
+   public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.lazyInitialized(CODEC_REFERENCE).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((var0x) -> var0x.rawTemplates)).apply(var0, StructureTemplatePool::new));
    public static final Codec<Holder<StructureTemplatePool>> CODEC;
    private final List<Pair<StructurePoolElement, Integer>> rawTemplates;
    private final ObjectArrayList<StructurePoolElement> templates;

@@ -8,12 +8,12 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -51,8 +51,7 @@ public class RealmsTextureManager {
       }
    }
 
-   @Nullable
-   private static NativeImage loadImage(String var0) {
+   private static @Nullable NativeImage loadImage(String var0) {
       byte[] var1 = Base64.getDecoder().decode(var0);
       ByteBuffer var2 = MemoryUtil.memAlloc(var1.length);
 

@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import org.jspecify.annotations.Nullable;
 
 public class Sheets {
    public static final ResourceLocation SHULKER_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/shulker_boxes.png");
@@ -199,8 +199,7 @@ public class Sheets {
       return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   @Nullable
-   public static Material getDecoratedPotMaterial(@Nullable ResourceKey<DecoratedPotPattern> var0) {
+   public static @Nullable Material getDecoratedPotMaterial(@Nullable ResourceKey<DecoratedPotPattern> var0) {
       return var0 == null ? null : (Material)DECORATED_POT_MATERIALS.get(var0);
    }
 

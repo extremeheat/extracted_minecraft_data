@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 public class CopperGolemAi {
    private static final float SPEED_MULTIPLIER_WHEN_PANICKING = 1.5F;

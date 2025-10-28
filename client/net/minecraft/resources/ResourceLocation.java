@@ -7,11 +7,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import java.util.function.UnaryOperator;
-import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jspecify.annotations.Nullable;
 
 public final class ResourceLocation implements Comparable<ResourceLocation> {
    public static final Codec<ResourceLocation> CODEC;
@@ -50,13 +50,11 @@ public final class ResourceLocation implements Comparable<ResourceLocation> {
       return new ResourceLocation("minecraft", assertValidPath("minecraft", var0));
    }
 
-   @Nullable
-   public static ResourceLocation tryParse(String var0) {
+   public static @Nullable ResourceLocation tryParse(String var0) {
       return tryBySeparator(var0, ':');
    }
 
-   @Nullable
-   public static ResourceLocation tryBuild(String var0, String var1) {
+   public static @Nullable ResourceLocation tryBuild(String var0, String var1) {
       return isValidNamespace(var0) && isValidPath(var1) ? new ResourceLocation(var0, var1) : null;
    }
 
@@ -75,8 +73,7 @@ public final class ResourceLocation implements Comparable<ResourceLocation> {
       }
    }
 
-   @Nullable
-   public static ResourceLocation tryBySeparator(String var0, char var1) {
+   public static @Nullable ResourceLocation tryBySeparator(String var0, char var1) {
       int var2 = var0.indexOf(var1);
       if (var2 >= 0) {
          String var3 = var0.substring(var2 + 1);
@@ -163,6 +160,10 @@ public final class ResourceLocation implements Comparable<ResourceLocation> {
 
    public String toShortLanguageKey() {
       return this.namespace.equals("minecraft") ? this.path : this.toLanguageKey();
+   }
+
+   public String toShortString() {
+      return this.namespace.equals("minecraft") ? this.path : this.toString();
    }
 
    public String toLanguageKey(String var1) {

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.material;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Fluid {
    public static final IdMapper<FluidState> FLUID_STATE_REGISTRY = new IdMapper<FluidState>();
@@ -68,8 +68,7 @@ public abstract class Fluid {
    protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
    }
 
-   @Nullable
-   protected ParticleOptions getDripParticle() {
+   protected @Nullable ParticleOptions getDripParticle() {
       return null;
    }
 
@@ -111,8 +110,7 @@ public abstract class Fluid {
 
    public abstract VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3);
 
-   @Nullable
-   public AABB getAABB(FluidState var1, BlockGetter var2, BlockPos var3) {
+   public @Nullable AABB getAABB(FluidState var1, BlockGetter var2, BlockPos var3) {
       if (this.isEmpty()) {
          return null;
       } else {

@@ -1,18 +1,16 @@
 package com.mojang.realmsclient.client;
 
 import java.net.Proxy;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsClientConfig {
-   @Nullable
-   private static Proxy proxy;
+   private static @Nullable Proxy proxy;
 
    public RealmsClientConfig() {
       super();
    }
 
-   @Nullable
-   public static Proxy getProxy() {
+   public static @Nullable Proxy getProxy() {
       return proxy;
    }
 

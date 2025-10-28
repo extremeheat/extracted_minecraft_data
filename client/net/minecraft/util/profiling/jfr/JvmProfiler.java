@@ -3,7 +3,6 @@ package net.minecraft.util.profiling.jfr;
 import com.mojang.logging.LogUtils;
 import java.net.SocketAddress;
 import java.nio.file.Path;
-import javax.annotation.Nullable;
 import jdk.jfr.FlightRecorder;
 import net.minecraft.core.Holder;
 import net.minecraft.network.ConnectionProtocol;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public interface JvmProfiler {
@@ -40,14 +40,11 @@ public interface JvmProfiler {
 
    void onRegionFileWrite(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4);
 
-   @Nullable
-   ProfiledDuration onWorldLoadedStarted();
+   @Nullable ProfiledDuration onWorldLoadedStarted();
 
-   @Nullable
-   ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3);
+   @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3);
 
-   @Nullable
-   ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3);
+   @Nullable ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3);
 
    public static class NoOpProfiler implements JvmProfiler {
       private static final Logger LOGGER = LogUtils.getLogger();
@@ -97,8 +94,7 @@ public interface JvmProfiler {
          return noOpCommit;
       }
 
-      @Nullable
-      public ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
+      public @Nullable ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
          return null;
       }
 

@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -27,6 +26,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ClientChunkCache extends ChunkSource {
@@ -68,8 +68,7 @@ public class ClientChunkCache extends ChunkSource {
       }
    }
 
-   @Nullable
-   public LevelChunk getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public @Nullable LevelChunk getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       if (this.storage.inRange(var1, var2)) {
          LevelChunk var5 = this.storage.getChunk(this.storage.getIndex(var1, var2));
          if (isValidChunk(var5, var1, var2)) {
@@ -99,8 +98,7 @@ public class ClientChunkCache extends ChunkSource {
       }
    }
 
-   @Nullable
-   public LevelChunk replaceWithPacketData(int var1, int var2, FriendlyByteBuf var3, Map<Heightmap.Types, long[]> var4, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var5) {
+   public @Nullable LevelChunk replaceWithPacketData(int var1, int var2, FriendlyByteBuf var3, Map<Heightmap.Types, long[]> var4, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var5) {
       if (!this.storage.inRange(var1, var2)) {
          LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", var1, var2);
          return null;
@@ -179,13 +177,12 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public ChunkAccess getChunk(final int var1, final int var2, final ChunkStatus var3, final boolean var4) {
+   public @Nullable ChunkAccess getChunk(final int var1, final int var2, final ChunkStatus var3, final boolean var4) {
       return this.getChunk(var1, var2, var3, var4);
    }
 
    final class Storage {
-      final AtomicReferenceArray<LevelChunk> chunks;
+      final AtomicReferenceArray<@Nullable LevelChunk> chunks;
       final LongOpenHashSet loadedEmptySections = new LongOpenHashSet();
       final int chunkRadius;
       private final int viewRange;
@@ -283,8 +280,7 @@ public class ClientChunkCache extends ChunkSource {
          return Math.abs(var1 - this.viewCenterX) <= this.chunkRadius && Math.abs(var2 - this.viewCenterZ) <= this.chunkRadius;
       }
 
-      @Nullable
-      protected LevelChunk getChunk(int var1) {
+      protected @Nullable LevelChunk getChunk(int var1) {
          return (LevelChunk)this.chunks.get(var1);
       }
 

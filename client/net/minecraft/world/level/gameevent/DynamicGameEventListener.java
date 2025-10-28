@@ -1,17 +1,16 @@
 package net.minecraft.world.level.gameevent;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import org.jspecify.annotations.Nullable;
 
 public class DynamicGameEventListener<T extends GameEventListener> {
    private final T listener;
-   @Nullable
-   private SectionPos lastSection;
+   private @Nullable SectionPos lastSection;
 
    public DynamicGameEventListener(T var1) {
       super();

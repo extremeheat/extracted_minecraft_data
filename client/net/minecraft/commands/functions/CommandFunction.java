@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
@@ -15,6 +14,7 @@ import net.minecraft.commands.execution.UnboundEntryAction;
 import net.minecraft.commands.execution.tasks.BuildContexts;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public interface CommandFunction<T> {
    ResourceLocation id();

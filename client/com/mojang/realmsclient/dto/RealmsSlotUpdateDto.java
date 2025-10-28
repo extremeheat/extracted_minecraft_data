@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record RealmsSlotUpdateDto(int slotId, int spawnProtection, boolean forceGameMode, int difficulty, int gameMode, String slotName, String version, RealmsServer.Compatibility compatibility, long templateId, @Nullable String templateImage, boolean hardcore) implements ReflectionBasedSerialization {
    public RealmsSlotUpdateDto(int var1, RealmsWorldOptions var2, boolean var3) {
@@ -68,9 +68,8 @@ public record RealmsSlotUpdateDto(int slotId, int spawnProtection, boolean force
       return this.templateId;
    }
 
-   @Nullable
    @SerializedName("worldTemplateImage")
-   public String templateImage() {
+   public @Nullable String templateImage() {
       return this.templateImage;
    }
 

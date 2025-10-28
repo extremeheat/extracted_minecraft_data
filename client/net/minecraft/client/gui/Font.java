@@ -7,7 +7,6 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -28,6 +27,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringDecomposer;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 
 public class Font {
    private static final float EFFECT_DEPTH = 0.01F;
@@ -205,10 +205,8 @@ public class Font {
       private float backgroundRight;
       private float backgroundBottom;
       final List<TextRenderable.Styled> glyphs;
-      @Nullable
-      private List<TextRenderable> effects;
-      @Nullable
-      private List<EmptyArea> emptyAreas;
+      private @Nullable List<TextRenderable> effects;
+      private @Nullable List<EmptyArea> emptyAreas;
 
       public PreparedTextBuilder(final float var2, final float var3, final int var4, final boolean var5, final boolean var6) {
          this(var2, var3, var4, 0, var5, var6);
@@ -352,8 +350,7 @@ public class Font {
          }
       }
 
-      @Nullable
-      public ScreenRectangle bounds() {
+      public @Nullable ScreenRectangle bounds() {
          if (!(this.left >= this.right) && !(this.top >= this.bottom)) {
             int var1 = Mth.floor(this.left);
             int var2 = Mth.floor(this.top);
@@ -397,8 +394,7 @@ public class Font {
    public interface PreparedText {
       void visit(GlyphVisitor var1);
 
-      @Nullable
-      ScreenRectangle bounds();
+      @Nullable ScreenRectangle bounds();
    }
 
    public interface Provider {

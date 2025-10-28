@@ -104,6 +104,8 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffe
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
 import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.item.enchantment.providers.EnchantmentProviderTypes;
+import net.minecraft.world.item.slot.SlotSource;
+import net.minecraft.world.item.slot.SlotSources;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.BiomeSources;
 import net.minecraft.world.level.block.Block;
@@ -117,6 +119,8 @@ import net.minecraft.world.level.chunk.ChunkGenerators;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.PositionSourceType;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.SurfaceRules;
@@ -229,6 +233,7 @@ public class BuiltInRegistries {
    public static final Registry<CriterionTrigger<?>> TRIGGER_TYPES;
    public static final Registry<NumberFormatType<?>> NUMBER_FORMAT_TYPE;
    public static final Registry<DataComponentType<?>> DATA_COMPONENT_TYPE;
+   public static final Registry<GameRule<?>> GAME_RULE;
    public static final Registry<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATE_TYPE;
    public static final Registry<DataComponentPredicate.Type<?>> DATA_COMPONENT_PREDICATE_TYPE;
    public static final Registry<MapDecorationType> MAP_DECORATION_TYPE;
@@ -256,6 +261,7 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends PermissionCheck>> PERMISSION_CHECK_TYPE;
    public static final Registry<EnvironmentAttribute<?>> ENVIRONMENT_ATTRIBUTE;
    public static final Registry<AttributeType<?>> ATTRIBUTE_TYPE;
+   public static final Registry<MapCodec<? extends SlotSource>> SLOT_SOURCE_TYPE;
    public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
@@ -403,6 +409,7 @@ public class BuiltInRegistries {
       TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
       NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
       DATA_COMPONENT_TYPE = registerSimple(Registries.DATA_COMPONENT_TYPE, DataComponents::bootstrap);
+      GAME_RULE = registerSimple(Registries.GAME_RULE, GameRules::bootstrap);
       ENTITY_SUB_PREDICATE_TYPE = registerSimple(Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap);
       DATA_COMPONENT_PREDICATE_TYPE = registerSimple(Registries.DATA_COMPONENT_PREDICATE_TYPE, DataComponentPredicates::bootstrap);
       MAP_DECORATION_TYPE = registerSimple(Registries.MAP_DECORATION_TYPE, MapDecorationTypes::bootstrap);
@@ -430,6 +437,7 @@ public class BuiltInRegistries {
       PERMISSION_CHECK_TYPE = registerSimple(Registries.PERMISSION_CHECK_TYPE, PermissionCheckTypes::bootstrap);
       ENVIRONMENT_ATTRIBUTE = registerSimple(Registries.ENVIRONMENT_ATTRIBUTE, EnvironmentAttributes::bootstrap);
       ATTRIBUTE_TYPE = registerSimple(Registries.ATTRIBUTE_TYPE, AttributeTypes::bootstrap);
+      SLOT_SOURCE_TYPE = registerSimple(Registries.SLOT_SOURCE_TYPE, SlotSources::bootstrap);
       TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }

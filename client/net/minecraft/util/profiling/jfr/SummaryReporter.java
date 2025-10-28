@@ -6,11 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.profiling.jfr.parse.JfrStatsParser;
 import net.minecraft.util.profiling.jfr.parse.JfrStatsResult;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SummaryReporter {

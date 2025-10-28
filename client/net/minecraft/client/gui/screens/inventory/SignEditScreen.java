@@ -1,19 +1,18 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 
 public class SignEditScreen extends AbstractSignEditScreen {
    public static final float MAGIC_SCALE_NUMBER = 62.500004F;
    public static final float MAGIC_TEXT_SCALE = 0.9765628F;
    private static final Vector3f TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
-   @Nullable
-   private Model.Simple signModel;
+   private Model.@Nullable Simple signModel;
 
    public SignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
       super(var1, var2, var3);

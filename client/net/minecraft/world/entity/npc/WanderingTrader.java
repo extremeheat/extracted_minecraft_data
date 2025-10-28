@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.npc;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -45,11 +44,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jspecify.annotations.Nullable;
 
 public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
    private static final int DEFAULT_DESPAWN_DELAY = 0;
-   @Nullable
-   private BlockPos wanderTarget;
+   private @Nullable BlockPos wanderTarget;
    private int despawnDelay = 0;
 
    public WanderingTrader(EntityType<? extends WanderingTrader> var1, Level var2) {
@@ -77,8 +76,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
 
@@ -194,8 +192,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       this.wanderTarget = var1;
    }
 
-   @Nullable
-   BlockPos getWanderTarget() {
+   @Nullable BlockPos getWanderTarget() {
       return this.wanderTarget;
    }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -41,16 +40,15 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class Vex extends Monster implements TraceableEntity {
    public static final float FLAP_DEGREES_PER_TICK = 45.836624F;
    public static final int TICKS_PER_FLAP = Mth.ceil(3.9269907F);
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int FLAG_IS_CHARGING = 1;
-   @Nullable
-   private EntityReference<Mob> owner;
-   @Nullable
-   private BlockPos boundOrigin;
+   private @Nullable EntityReference<Mob> owner;
+   private @Nullable BlockPos boundOrigin;
    private boolean hasLimitedLife;
    private int limitedLifeTicks;
 
@@ -126,13 +124,11 @@ public class Vex extends Monster implements TraceableEntity {
       EntityReference.store(this.owner, var1, "owner");
    }
 
-   @Nullable
-   public Mob getOwner() {
+   public @Nullable Mob getOwner() {
       return (Mob)EntityReference.get(this.owner, this.level(), Mob.class);
    }
 
-   @Nullable
-   public BlockPos getBoundOrigin() {
+   public @Nullable BlockPos getBoundOrigin() {
       return this.boundOrigin;
    }
 
@@ -189,8 +185,7 @@ public class Vex extends Monster implements TraceableEntity {
       return 1.0F;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
@@ -203,8 +198,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    // $FF: synthetic method
-   @Nullable
-   public Entity getOwner() {
+   public @Nullable Entity getOwner() {
       return this.getOwner();
    }
 

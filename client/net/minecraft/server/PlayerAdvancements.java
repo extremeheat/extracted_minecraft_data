@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -45,7 +44,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class PlayerAdvancements {
@@ -59,8 +59,7 @@ public class PlayerAdvancements {
    private final Set<AdvancementHolder> progressChanged = new HashSet();
    private final Set<AdvancementNode> rootsToUpdate = new HashSet();
    private ServerPlayer player;
-   @Nullable
-   private AdvancementHolder lastSelectedTab;
+   private @Nullable AdvancementHolder lastSelectedTab;
    private boolean isFirstPacket = true;
    private final Codec<Data> codec;
 
@@ -216,7 +215,7 @@ public class PlayerAdvancements {
          if (!var5 && var4.isDone()) {
             var1.value().rewards().grant(this.player);
             var1.value().display().ifPresent((var2x) -> {
-               if (var2x.shouldAnnounceChat() && this.player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
+               if (var2x.shouldAnnounceChat() && (Boolean)this.player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
                   this.playerList.broadcastSystemMessage(var2x.getType().createAnnouncement(var1, this.player), false);
                }
 

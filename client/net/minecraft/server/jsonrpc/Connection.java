@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,6 +36,7 @@ import net.minecraft.server.jsonrpc.methods.MethodNotFoundJsonRpcException;
 import net.minecraft.server.jsonrpc.methods.RemoteRpcErrorException;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Connection extends SimpleChannelInboundHandler<JsonElement> {
@@ -130,9 +130,8 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
       return this.sendRequest(var1, var2, true);
    }
 
-   @Nullable
    @Contract("_,_,false->null;_,_,true->!null")
-   private <Params, Result> CompletableFuture<Result> sendRequest(Holder.Reference<? extends OutgoingRpcMethod<Params, ? extends Result>> var1, @Nullable Params var2, boolean var3) {
+   private <Params, Result> @Nullable CompletableFuture<Result> sendRequest(Holder.Reference<? extends OutgoingRpcMethod<Params, ? extends Result>> var1, @Nullable Params var2, boolean var3) {
       List var4 = var2 != null ? List.of((JsonElement)Objects.requireNonNull(((OutgoingRpcMethod)var1.value()).encodeParams(var2))) : List.of();
       if (var3) {
          CompletableFuture var5 = new CompletableFuture();
@@ -147,9 +146,8 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
       }
    }
 
-   @Nullable
    @VisibleForTesting
-   JsonObject handleJsonObject(JsonObject var1) {
+   @Nullable JsonObject handleJsonObject(JsonObject var1) {
       try {
          JsonElement var2 = JsonRPCUtils.getRequestId(var1);
          String var3 = JsonRPCUtils.getMethodName(var1);
@@ -183,8 +181,7 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
       return GsonHelper.isNumberValue(var0);
    }
 
-   @Nullable
-   private JsonObject handleIncomingRequest(@Nullable JsonElement var1, String var2, @Nullable JsonElement var3) {
+   private @Nullable JsonObject handleIncomingRequest(@Nullable JsonElement var1, String var2, @Nullable JsonElement var3) {
       boolean var4 = var1 != null;
 
       try {
@@ -206,8 +203,7 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
       }
    }
 
-   @Nullable
-   public JsonElement dispatchIncomingRequest(String var1, @Nullable JsonElement var2) {
+   public @Nullable JsonElement dispatchIncomingRequest(String var1, @Nullable JsonElement var2) {
       ResourceLocation var3 = ResourceLocation.tryParse(var1);
       if (var3 == null) {
          throw new InvalidRequestJsonRpcException("Failed to parse method value: " + var1);
@@ -243,8 +239,7 @@ public class Connection extends SimpleChannelInboundHandler<JsonElement> {
 
    }
 
-   @Nullable
-   private JsonObject handleError(@Nullable JsonElement var1, JsonObject var2) {
+   private @Nullable JsonObject handleError(@Nullable JsonElement var1, JsonObject var2) {
       if (var1 != null && isValidResponseId(var1)) {
          PendingRpcRequest var3 = (PendingRpcRequest)this.pendingRequests.remove(var1.getAsInt());
          if (var3 != null) {

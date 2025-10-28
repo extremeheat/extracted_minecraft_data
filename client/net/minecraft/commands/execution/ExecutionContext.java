@@ -7,13 +7,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.execution.tasks.BuildContexts;
 import net.minecraft.commands.execution.tasks.CallFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ExecutionContext<T> implements AutoCloseable {
@@ -22,8 +22,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    private final int commandLimit;
    private final int forkLimit;
    private final ProfilerFiller profiler;
-   @Nullable
-   private TraceCallbacks tracer;
+   private @Nullable TraceCallbacks tracer;
    private int commandQuota;
    private boolean queueOverflow;
    private final Deque<CommandQueueEntry<T>> commandQueue = Queues.newArrayDeque();
@@ -124,8 +123,7 @@ public class ExecutionContext<T> implements AutoCloseable {
       this.tracer = var1;
    }
 
-   @Nullable
-   public TraceCallbacks tracer() {
+   public @Nullable TraceCallbacks tracer() {
       return this.tracer;
    }
 

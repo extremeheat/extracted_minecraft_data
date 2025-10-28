@@ -10,6 +10,10 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollIoHandler;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueIoHandler;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalIoHandler;
 import io.netty.channel.local.LocalServerChannel;
@@ -17,7 +21,7 @@ import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.util.concurrent.ThreadFactory;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public abstract class EventLoopGroupHolder {
    private static final EventLoopGroupHolder NIO = new EventLoopGroupHolder("NIO", NioSocketChannel.class, NioServerSocketChannel.class) {
@@ -30,6 +34,11 @@ public abstract class EventLoopGroupHolder {
          return EpollIoHandler.newFactory();
       }
    };
+   private static final EventLoopGroupHolder KQUEUE = new EventLoopGroupHolder("Kqueue", KQueueSocketChannel.class, KQueueServerSocketChannel.class) {
+      protected IoHandlerFactory ioHandlerFactory() {
+         return KQueueIoHandler.newFactory();
+      }
+   };
    private static final EventLoopGroupHolder LOCAL = new EventLoopGroupHolder("Local", LocalChannel.class, LocalServerChannel.class) {
       protected IoHandlerFactory ioHandlerFactory() {
          return LocalIoHandler.newFactory();
@@ -38,11 +47,20 @@ public abstract class EventLoopGroupHolder {
    private final String type;
    private final Class<? extends Channel> channelCls;
    private final Class<? extends ServerChannel> serverChannelCls;
-   @Nullable
-   private volatile EventLoopGroup group;
+   private volatile @Nullable EventLoopGroup group;
 
    public static EventLoopGroupHolder remote(boolean var0) {
-      return var0 && Epoll.isAvailable() ? EPOLL : NIO;
+      if (var0) {
+         if (KQueue.isAvailable()) {
+            return KQUEUE;
+         }
+
+         if (Epoll.isAvailable()) {
+            return EPOLL;
+         }
+      }
+
+      return NIO;
    }
 
    public static EventLoopGroupHolder local() {

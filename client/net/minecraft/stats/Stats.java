@@ -41,6 +41,7 @@ public class Stats {
    public static final ResourceLocation AVIATE_ONE_CM;
    public static final ResourceLocation SWIM_ONE_CM;
    public static final ResourceLocation STRIDER_ONE_CM;
+   public static final ResourceLocation NAUTILUS_ONE_CM;
    public static final ResourceLocation JUMP;
    public static final ResourceLocation DROP;
    public static final ResourceLocation DAMAGE_DEALT;
@@ -144,6 +145,7 @@ public class Stats {
       AVIATE_ONE_CM = makeCustomStat("aviate_one_cm", StatFormatter.DISTANCE);
       SWIM_ONE_CM = makeCustomStat("swim_one_cm", StatFormatter.DISTANCE);
       STRIDER_ONE_CM = makeCustomStat("strider_one_cm", StatFormatter.DISTANCE);
+      NAUTILUS_ONE_CM = makeCustomStat("nautilus_one_cm", StatFormatter.DISTANCE);
       JUMP = makeCustomStat("jump", StatFormatter.DEFAULT);
       DROP = makeCustomStat("drop", StatFormatter.DEFAULT);
       DAMAGE_DEALT = makeCustomStat("damage_dealt", StatFormatter.DIVIDE_BY_TEN);

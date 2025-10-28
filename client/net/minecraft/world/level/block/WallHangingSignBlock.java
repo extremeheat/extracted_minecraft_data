@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -35,6 +34,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class WallHangingSignBlock extends SignBlock {
    public static final MapCodec<WallHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallHangingSignBlock::new));
@@ -93,8 +93,7 @@ public class WallHangingSignBlock extends SignBlock {
       return var5.is(BlockTags.WALL_HANGING_SIGNS) ? ((Direction)var5.getValue(FACING)).getAxis().test((Direction)var2.getValue(FACING)) : var5.isFaceSturdy(var1, var3, var4, SupportType.FULL);
    }
 
-   @Nullable
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = this.defaultBlockState();
       FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos());
       Level var4 = var1.getLevel();
@@ -141,8 +140,7 @@ public class WallHangingSignBlock extends SignBlock {
       return false;
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
    }
 

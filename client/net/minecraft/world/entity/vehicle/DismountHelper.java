@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -17,6 +16,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 public class DismountHelper {
    public DismountHelper() {
@@ -74,8 +74,7 @@ public class DismountHelper {
       return 1.0 / 0.0;
    }
 
-   @Nullable
-   public static Vec3 findSafeDismountLocation(EntityType<?> var0, CollisionGetter var1, BlockPos var2, boolean var3) {
+   public static @Nullable Vec3 findSafeDismountLocation(EntityType<?> var0, CollisionGetter var1, BlockPos var2, boolean var3) {
       if (var3 && var0.isBlockDangerous(var1.getBlockState(var2))) {
          return null;
       } else {

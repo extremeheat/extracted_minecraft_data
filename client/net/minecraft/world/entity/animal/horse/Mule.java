@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.horse;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -9,6 +8,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 public class Mule extends AbstractChestedHorse {
    public Mule(EntityType<? extends Mule> var1, Level var2) {
@@ -27,7 +27,6 @@ public class Mule extends AbstractChestedHorse {
       return SoundEvents.MULE_DEATH;
    }
 
-   @Nullable
    protected SoundEvent getEatingSound() {
       return SoundEvents.MULE_EAT;
    }
@@ -44,8 +43,7 @@ public class Mule extends AbstractChestedHorse {
       this.playSound(SoundEvents.MULE_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
    }
 
-   @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
    }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
@@ -24,6 +23,7 @@ import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardSaveData;
+import org.jspecify.annotations.Nullable;
 
 public class ServerScoreboard extends Scoreboard {
    private final MinecraftServer server;

@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.ClassTreeIdRegistry;
 import org.apache.commons.lang3.ObjectUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SynchedEntityData {
@@ -73,8 +73,7 @@ public class SynchedEntityData {
       return this.isDirty;
    }
 
-   @Nullable
-   public List<DataValue<?>> packDirty() {
+   public @Nullable List<DataValue<?>> packDirty() {
       if (!this.isDirty) {
          return null;
       } else {
@@ -92,8 +91,7 @@ public class SynchedEntityData {
       }
    }
 
-   @Nullable
-   public List<DataValue<?>> getNonDefaultValues() {
+   public @Nullable List<DataValue<?>> getNonDefaultValues() {
       ArrayList var1 = null;
 
       for(DataItem var5 : this.itemsById) {
@@ -213,7 +211,7 @@ public class SynchedEntityData {
 
    public static class Builder {
       private final SyncedDataHolder entity;
-      private final DataItem<?>[] itemsById;
+      private final @Nullable SynchedEntityData.DataItem<?>[] itemsById;
 
       public Builder(SyncedDataHolder var1) {
          super();

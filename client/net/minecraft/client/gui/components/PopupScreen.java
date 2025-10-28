@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -13,6 +12,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class PopupScreen extends Screen {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
@@ -23,12 +23,10 @@ public class PopupScreen extends Screen {
    private static final int IMAGE_SIZE_Y = 64;
    private static final int POPUP_DEFAULT_WIDTH = 250;
    private final Screen backgroundScreen;
-   @Nullable
-   private final ResourceLocation image;
+   private final @Nullable ResourceLocation image;
    private final Component message;
    private final List<ButtonOption> buttons;
-   @Nullable
-   private final Runnable onClose;
+   private final @Nullable Runnable onClose;
    private final int contentWidth;
    private final LinearLayout layout = LinearLayout.vertical();
 
@@ -108,11 +106,9 @@ public class PopupScreen extends Screen {
       private final Component title;
       private Component message;
       private int width;
-      @Nullable
-      private ResourceLocation image;
+      private @Nullable ResourceLocation image;
       private final List<ButtonOption> buttons;
-      @Nullable
-      private Runnable onClose;
+      private @Nullable Runnable onClose;
 
       public Builder(Screen var1, Component var2) {
          super();

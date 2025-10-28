@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,19 +18,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class DeathScreen extends Screen {
    private static final int TITLE_SCALE = 2;
    private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
    private int delayTicker;
-   @Nullable
-   private final Component causeOfDeath;
+   private final @Nullable Component causeOfDeath;
    private final boolean hardcore;
    private final LocalPlayer player;
    private final Component deathScore;
    private final List<Button> exitButtons = Lists.newArrayList();
-   @Nullable
-   private Button exitToTitleButton;
+   private @Nullable Button exitToTitleButton;
 
    public DeathScreen(@Nullable Component var1, boolean var2, LocalPlayer var3) {
       super(Component.translatable(var2 ? "deathScreen.title.hardcore" : "deathScreen.title"));

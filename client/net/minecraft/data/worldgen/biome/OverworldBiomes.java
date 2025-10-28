@@ -485,7 +485,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       BiomeDefaultFeatures.addSwampExtraVegetation(var3);
       var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -14474473).modifyAttribute(EnvironmentAttributes.WATER_FOG_RADIUS, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).foliageColorOverride(6975545).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
+      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -14474473).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).foliageColorOverride(6975545).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
    }
 
    public static Biome mangroveSwamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
@@ -499,7 +499,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addMangroveSwampDisks(var3);
       BiomeDefaultFeatures.addMangroveSwampVegetation(var3);
       BiomeDefaultFeatures.addMangroveSwampExtraVegetation(var3);
-      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.FOG_COLOR, -4138753).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -11699616).modifyAttribute(EnvironmentAttributes.WATER_FOG_RADIUS, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
+      return baseBiome(0.8F, 0.9F).setAttribute(EnvironmentAttributes.FOG_COLOR, -4138753).setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, -11699616).modifyAttribute(EnvironmentAttributes.WATER_FOG_END_DISTANCE, FloatModifier.MULTIPLY, 0.85F).setAttribute(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(SoundEvents.MUSIC_BIOME_SWAMP)).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).foliageColorOverride(9285927).dryFoliageColorOverride(8082228).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
    }
 
    public static Biome river(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {

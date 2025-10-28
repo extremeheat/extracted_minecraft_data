@@ -11,13 +11,13 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.PathNavigationRegion;
+import org.jspecify.annotations.Nullable;
 
 public class PathFinder {
    private static final float FUDGING = 1.5F;
@@ -41,8 +41,7 @@ public class PathFinder {
       this.maxVisitedNodes = var1;
    }
 
-   @Nullable
-   public Path findPath(PathNavigationRegion var1, Mob var2, Set<BlockPos> var3, float var4, int var5, float var6) {
+   public @Nullable Path findPath(PathNavigationRegion var1, Mob var2, Set<BlockPos> var3, float var4, int var5, float var6) {
       this.openSet.clear();
       this.nodeEvaluator.prepare(var1, var2);
       Node var7 = this.nodeEvaluator.getStart();
@@ -56,8 +55,7 @@ public class PathFinder {
       }
    }
 
-   @Nullable
-   private Path findPath(Node var1, Map<Target, BlockPos> var2, float var3, int var4, float var5) {
+   private @Nullable Path findPath(Node var1, Map<Target, BlockPos> var2, float var3, int var4, float var5) {
       ProfilerFiller var6 = Profiler.get();
       var6.push("find_path");
       var6.markForCharting(MetricCategory.PATH_FINDING);

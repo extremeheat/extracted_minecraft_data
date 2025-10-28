@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import org.jspecify.annotations.Nullable;
 
 public final class TreeGrower {
    private static final Map<String, TreeGrower> GROWERS = new Object2ObjectArrayMap();
@@ -62,8 +62,7 @@ public final class TreeGrower {
       GROWERS.put(var1, this);
    }
 
-   @Nullable
-   private ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(RandomSource var1, boolean var2) {
+   private @Nullable ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(RandomSource var1, boolean var2) {
       if (var1.nextFloat() < this.secondaryChance) {
          if (var2 && this.secondaryFlowers.isPresent()) {
             return (ResourceKey)this.secondaryFlowers.get();
@@ -77,8 +76,7 @@ public final class TreeGrower {
       return var2 && this.flowers.isPresent() ? (ResourceKey)this.flowers.get() : (ResourceKey)this.tree.orElse((Object)null);
    }
 
-   @Nullable
-   private ResourceKey<ConfiguredFeature<?, ?>> getConfiguredMegaFeature(RandomSource var1) {
+   private @Nullable ResourceKey<ConfiguredFeature<?, ?>> getConfiguredMegaFeature(RandomSource var1) {
       return this.secondaryMegaTree.isPresent() && var1.nextFloat() < this.secondaryChance ? (ResourceKey)this.secondaryMegaTree.get() : (ResourceKey)this.megaTree.orElse((Object)null);
    }
 

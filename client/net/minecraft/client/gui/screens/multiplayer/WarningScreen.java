@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
@@ -11,17 +10,15 @@ import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public abstract class WarningScreen extends Screen {
    private static final int MESSAGE_PADDING = 100;
    private final Component message;
-   @Nullable
-   private final Component check;
+   private final @Nullable Component check;
    private final Component narration;
-   @Nullable
-   protected Checkbox stopShowing;
-   @Nullable
-   private FittingMultiLineTextWidget messageWidget;
+   protected @Nullable Checkbox stopShowing;
+   private @Nullable FittingMultiLineTextWidget messageWidget;
    private final FrameLayout layout;
 
    protected WarningScreen(Component var1, Component var2, Component var3) {

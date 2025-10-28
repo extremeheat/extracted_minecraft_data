@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
@@ -37,6 +36,7 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jspecify.annotations.Nullable;
 
 public class PlayerTabOverlay {
    private static final ResourceLocation PING_UNKNOWN_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_unknown");
@@ -57,10 +57,8 @@ public class PlayerTabOverlay {
    public static final int MAX_ROWS_PER_COL = 20;
    private final Minecraft minecraft;
    private final Gui gui;
-   @Nullable
-   private Component footer;
-   @Nullable
-   private Component header;
+   private @Nullable Component footer;
+   private @Nullable Component header;
    private boolean visible;
    private final Map<UUID, HealthState> healthStates = new Object2ObjectOpenHashMap();
 
@@ -339,8 +337,7 @@ public class PlayerTabOverlay {
    static record ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
       final Component name;
       final int score;
-      @Nullable
-      final Component formattedScore;
+      final @Nullable Component formattedScore;
       final int scoreWidth;
 
       ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {

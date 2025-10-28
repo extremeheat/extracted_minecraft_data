@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class CaveSpider extends Spider {
    public CaveSpider(EntityType<? extends CaveSpider> var1, Level var2) {
@@ -47,8 +47,7 @@ public class CaveSpider extends Spider {
       }
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       return var4;
    }
 

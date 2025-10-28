@@ -6,8 +6,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.GlyphStitcher;
+import org.jspecify.annotations.Nullable;
 
 public enum SpecialGlyphs implements GlyphInfo {
    WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
@@ -43,8 +43,7 @@ public enum SpecialGlyphs implements GlyphInfo {
       return (float)(this.image.getWidth() + 1);
    }
 
-   @Nullable
-   public BakedSheetGlyph bake(GlyphStitcher var1) {
+   public @Nullable BakedSheetGlyph bake(GlyphStitcher var1) {
       return var1.stitch(this, new GlyphBitmap() {
          public int getPixelWidth() {
             return SpecialGlyphs.this.image.getWidth();

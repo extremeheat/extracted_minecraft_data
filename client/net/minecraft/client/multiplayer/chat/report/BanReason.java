@@ -1,7 +1,7 @@
 package net.minecraft.client.multiplayer.chat.report;
 
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public enum BanReason {
    GENERIC_VIOLATION("generic_violation"),
@@ -28,8 +28,7 @@ public enum BanReason {
       return this.title;
    }
 
-   @Nullable
-   public static BanReason byId(int var0) {
+   public static @Nullable BanReason byId(int var0) {
       BanReason var10000;
       switch (var0) {
          case 2:

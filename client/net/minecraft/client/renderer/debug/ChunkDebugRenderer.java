@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
@@ -20,13 +19,13 @@ import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    final Minecraft minecraft;
    private double lastUpdateTime = 4.9E-324;
    private final int radius = 12;
-   @Nullable
-   private ChunkData data;
+   private @Nullable ChunkData data;
 
    public ChunkDebugRenderer(Minecraft var1) {
       super();

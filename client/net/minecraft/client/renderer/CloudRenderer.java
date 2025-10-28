@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import javax.annotation.Nullable;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
@@ -32,12 +31,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CloudRenderer extends SimplePreparableReloadListener<Optional<TextureData>> implements AutoCloseable {
    private static final int FLAG_INSIDE_FACE = 16;
    private static final int FLAG_USE_TOP_COLOR = 32;
-   private static final int MAX_RADIUS_CHUNKS = 128;
    private static final float CELL_SIZE_IN_BLOCKS = 12.0F;
    private static final int UBO_SIZE = (new Std140SizeCalculator()).putVec4().putVec3().putVec3().get();
    private static final Logger LOGGER = LogUtils.getLogger();
@@ -53,15 +52,12 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private int prevCellX = -2147483648;
    private int prevCellZ = -2147483648;
    private RelativeCameraPos prevRelativeCameraPos;
-   @Nullable
-   private CloudStatus prevType;
-   @Nullable
-   private TextureData texture;
+   private @Nullable CloudStatus prevType;
+   private @Nullable TextureData texture;
    private int quadCount;
    private final RenderSystem.AutoStorageIndexBuffer indices;
    private final MappableRingBuffer ubo;
-   @Nullable
-   private MappableRingBuffer utb;
+   private @Nullable MappableRingBuffer utb;
 
    public CloudRenderer() {
       super();
@@ -158,7 +154,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
    public void render(int var1, CloudStatus var2, float var3, Vec3 var4, float var5) {
       if (this.texture != null) {
-         int var6 = Math.min((Integer)Minecraft.getInstance().options.cloudRange().get(), 128) * 16;
+         int var6 = (Integer)Minecraft.getInstance().options.cloudRange().get() * 16;
          int var7 = Mth.ceil((float)var6 / 12.0F);
          int var8 = getSizeForCloudDistance(var7);
          if (this.utb == null || this.utb.currentBuffer().size() != var8) {

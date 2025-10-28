@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.horse;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
+import org.jspecify.annotations.Nullable;
 
 public class SkeletonTrapGoal extends Goal {
    private final SkeletonHorse horse;
@@ -61,8 +61,7 @@ public class SkeletonTrapGoal extends Goal {
       }
    }
 
-   @Nullable
-   private AbstractHorse createHorse(DifficultyInstance var1) {
+   private @Nullable AbstractHorse createHorse(DifficultyInstance var1) {
       SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
       if (var2 != null) {
          var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
@@ -76,8 +75,7 @@ public class SkeletonTrapGoal extends Goal {
       return var2;
    }
 
-   @Nullable
-   private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
+   private @Nullable Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
       Skeleton var3 = EntityType.SKELETON.create(var2.level(), EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
          var3.finalizeSpawn((ServerLevel)var2.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -38,6 +37,7 @@ import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class StructureCheck {
@@ -101,8 +101,7 @@ public class StructureCheck {
       return var2.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var1, var10010, var10011::contains)).isPresent();
    }
 
-   @Nullable
-   private StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
+   private @Nullable StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
       CollectFields var6 = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
 
       try {
@@ -141,8 +140,7 @@ public class StructureCheck {
       }
    }
 
-   @Nullable
-   private Object2IntMap<Structure> loadStructures(CompoundTag var1) {
+   private @Nullable Object2IntMap<Structure> loadStructures(CompoundTag var1) {
       Optional var2 = var1.getCompound("structures").flatMap((var0) -> var0.getCompound("starts"));
       if (var2.isEmpty()) {
          return null;

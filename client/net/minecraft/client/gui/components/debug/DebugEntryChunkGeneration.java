@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
 import java.util.ArrayList;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.RandomState;
+import org.jspecify.annotations.Nullable;
 
 public class DebugEntryChunkGeneration implements DebugScreenEntry {
    private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("chunk_generation");

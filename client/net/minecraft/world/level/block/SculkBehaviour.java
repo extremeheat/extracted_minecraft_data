@@ -1,13 +1,13 @@
 package net.minecraft.world.level.block;
 
 import java.util.Collection;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import org.jspecify.annotations.Nullable;
 
 public interface SculkBehaviour {
    SculkBehaviour DEFAULT = new SculkBehaviour() {

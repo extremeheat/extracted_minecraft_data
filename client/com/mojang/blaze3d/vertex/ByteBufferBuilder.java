@@ -4,8 +4,8 @@ import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
-import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -76,8 +76,7 @@ public class ByteBufferBuilder implements AutoCloseable {
       }
    }
 
-   @Nullable
-   public Result build() {
+   public @Nullable Result build() {
       this.checkOpen();
       long var1 = this.nextResultOffset;
       long var3 = this.writeOffset - var1;

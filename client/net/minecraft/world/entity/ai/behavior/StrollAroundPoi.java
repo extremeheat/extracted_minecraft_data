@@ -24,7 +24,7 @@ public class StrollAroundPoi {
       return BehaviorBuilder.create((Function)((var4) -> var4.group(var4.registered(MemoryModuleType.WALK_TARGET), var4.present(var0)).apply(var4, (var4x, var5) -> (var6, var7, var8) -> {
                GlobalPos var10 = (GlobalPos)var4.get(var5);
                if (var6.dimension() == var10.dimension() && var10.pos().closerToCenterThan(var7.position(), (double)var2)) {
-                  if (var8 <= var3.getValue()) {
+                  if (var8 <= var3.longValue()) {
                      return true;
                   } else {
                      Optional var11 = Optional.ofNullable(LandRandomPos.getPos(var7, 8, 6));

@@ -1,22 +1,23 @@
 package net.minecraft.world.level.block.state.pattern;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
+import it.unimi.dsi.fastutil.chars.CharSet;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 public class BlockPatternBuilder {
-   private static final Joiner COMMA_JOINED = Joiner.on(",");
    private final List<String[]> pattern = Lists.newArrayList();
-   private final Map<Character, Predicate<BlockInWorld>> lookup = Maps.newHashMap();
+   private final Map<Character, Predicate<@Nullable BlockInWorld>> lookup = Maps.newHashMap();
    private int height;
    private int width;
+   private final CharSet unknownCharacters = new CharOpenHashSet();
 
    private BlockPatternBuilder() {
       super();
@@ -41,7 +42,7 @@ public class BlockPatternBuilder {
 
                for(char var9 : var5.toCharArray()) {
                   if (!this.lookup.containsKey(var9)) {
-                     this.lookup.put(var9, (Object)null);
+                     this.unknownCharacters.add(var9);
                   }
                }
             }
@@ -58,8 +59,9 @@ public class BlockPatternBuilder {
       return new BlockPatternBuilder();
    }
 
-   public BlockPatternBuilder where(char var1, Predicate<BlockInWorld> var2) {
+   public BlockPatternBuilder where(char var1, Predicate<@Nullable BlockInWorld> var2) {
       this.lookup.put(var1, var2);
+      this.unknownCharacters.remove(var1);
       return this;
    }
 
@@ -68,31 +70,20 @@ public class BlockPatternBuilder {
    }
 
    private Predicate<BlockInWorld>[][][] createPattern() {
-      this.ensureAllCharactersMatched();
-      Predicate[][][] var1 = (Predicate[][][])Array.newInstance(Predicate.class, new int[]{this.pattern.size(), this.height, this.width});
+      if (!this.unknownCharacters.isEmpty()) {
+         throw new IllegalStateException("Predicates for character(s) " + String.valueOf(this.unknownCharacters) + " are missing");
+      } else {
+         Predicate[][][] var1 = (Predicate[][][])Array.newInstance(Predicate.class, new int[]{this.pattern.size(), this.height, this.width});
 
-      for(int var2 = 0; var2 < this.pattern.size(); ++var2) {
-         for(int var3 = 0; var3 < this.height; ++var3) {
-            for(int var4 = 0; var4 < this.width; ++var4) {
-               var1[var2][var3][var4] = (Predicate)this.lookup.get(((String[])this.pattern.get(var2))[var3].charAt(var4));
+         for(int var2 = 0; var2 < this.pattern.size(); ++var2) {
+            for(int var3 = 0; var3 < this.height; ++var3) {
+               for(int var4 = 0; var4 < this.width; ++var4) {
+                  var1[var2][var3][var4] = (Predicate)this.lookup.get(((String[])this.pattern.get(var2))[var3].charAt(var4));
+               }
             }
          }
-      }
 
-      return var1;
-   }
-
-   private void ensureAllCharactersMatched() {
-      ArrayList var1 = Lists.newArrayList();
-
-      for(Map.Entry var3 : this.lookup.entrySet()) {
-         if (var3.getValue() == null) {
-            var1.add((Character)var3.getKey());
-         }
-      }
-
-      if (!var1.isEmpty()) {
-         throw new IllegalStateException("Predicates for character(s) " + COMMA_JOINED.join(var1) + " are missing");
+         return var1;
       }
    }
 }

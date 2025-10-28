@@ -12,7 +12,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -46,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jspecify.annotations.Nullable;
 
 public class EnchantmentHelper {
    public EnchantmentHelper() {
@@ -421,11 +421,10 @@ public class EnchantmentHelper {
       }
    }
 
-   @Nullable
    public static <T> Pair<T, Integer> getHighestLevel(ItemStack var0, DataComponentType<T> var1) {
       MutableObject var2 = new MutableObject();
       runIterationOnItem(var0, (var2x, var3) -> {
-         if (var2.getValue() == null || (Integer)((Pair)var2.getValue()).getSecond() < var3) {
+         if (var2.get() == null || (Integer)((Pair)var2.get()).getSecond() < var3) {
             Object var4 = ((Enchantment)var2x.value()).effects().get(var1);
             if (var4 != null) {
                var2.setValue(Pair.of(var4, var3));
@@ -433,7 +432,7 @@ public class EnchantmentHelper {
          }
 
       });
-      return (Pair)var2.getValue();
+      return (Pair)var2.get();
    }
 
    public static Optional<EnchantedItemInUse> getRandomItemWith(DataComponentType<?> var0, LivingEntity var1, Predicate<ItemStack> var2) {
@@ -508,7 +507,7 @@ public class EnchantmentHelper {
 
             while(var0.nextInt(50) <= var2) {
                if (!var4.isEmpty()) {
-                  filterCompatibleEnchantments(var7, (EnchantmentInstance)Util.lastOf(var4));
+                  filterCompatibleEnchantments(var7, (EnchantmentInstance)var4.getLast());
                }
 
                if (var7.isEmpty()) {

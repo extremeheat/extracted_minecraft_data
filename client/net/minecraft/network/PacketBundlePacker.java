@@ -4,14 +4,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.network.protocol.BundlerInfo;
 import net.minecraft.network.protocol.Packet;
+import org.jspecify.annotations.Nullable;
 
 public class PacketBundlePacker extends MessageToMessageDecoder<Packet<?>> {
    private final BundlerInfo bundlerInfo;
-   @Nullable
-   private BundlerInfo.Bundler currentBundler;
+   private BundlerInfo.@Nullable Bundler currentBundler;
 
    public PacketBundlePacker(BundlerInfo var1) {
       super();

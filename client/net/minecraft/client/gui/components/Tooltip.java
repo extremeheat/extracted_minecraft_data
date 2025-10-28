@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -9,16 +8,14 @@ import net.minecraft.client.gui.narration.NarrationSupplier;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import org.jspecify.annotations.Nullable;
 
 public class Tooltip implements NarrationSupplier {
    private static final int MAX_WIDTH = 170;
    private final Component message;
-   @Nullable
-   private List<FormattedCharSequence> cachedTooltip;
-   @Nullable
-   private Language splitWithLanguage;
-   @Nullable
-   private final Component narration;
+   private @Nullable List<FormattedCharSequence> cachedTooltip;
+   private @Nullable Language splitWithLanguage;
+   private final @Nullable Component narration;
 
    private Tooltip(Component var1, @Nullable Component var2) {
       super();

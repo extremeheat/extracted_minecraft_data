@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class IdMapper<T> implements IdMap<T> {
    private int nextId;
@@ -47,8 +47,7 @@ public class IdMapper<T> implements IdMap<T> {
       return this.tToId.getInt(var1);
    }
 
-   @Nullable
-   public final T byId(int var1) {
+   public final @Nullable T byId(int var1) {
       return (T)(var1 >= 0 && var1 < this.idToT.size() ? this.idToT.get(var1) : null);
    }
 

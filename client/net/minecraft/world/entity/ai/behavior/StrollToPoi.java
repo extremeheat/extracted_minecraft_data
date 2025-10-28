@@ -18,7 +18,7 @@ public class StrollToPoi {
       return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
                GlobalPos var11 = (GlobalPos)var5.get(var6);
                if (var7.dimension() == var11.dimension() && var11.pos().closerToCenterThan(var8.position(), (double)var3)) {
-                  if (var9 <= var4.getValue()) {
+                  if (var9 <= var4.longValue()) {
                      return true;
                   } else {
                      var5x.set(new WalkTarget(var11.pos(), var1, var2));

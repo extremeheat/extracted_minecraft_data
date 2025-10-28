@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
@@ -29,6 +28,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
+import org.jspecify.annotations.Nullable;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCommandsPacket>codec(ClientboundCommandsPacket::write, ClientboundCommandsPacket::new);
@@ -120,8 +120,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       return new Entry(var4, var1, var3, var2);
    }
 
-   @Nullable
-   private static NodeStub read(FriendlyByteBuf var0, byte var1) {
+   private static @Nullable NodeStub read(FriendlyByteBuf var0, byte var1) {
       int var2 = var1 & 3;
       if (var2 == 2) {
          String var8 = var0.readUtf();
@@ -257,8 +256,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
    }
 
    static record Entry(@Nullable NodeStub stub, int flags, int redirect, int[] children) {
-      @Nullable
-      final NodeStub stub;
+      final @Nullable NodeStub stub;
       final int flags;
       final int redirect;
       final int[] children;
@@ -362,8 +360,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
    }
 
    public interface NodeInspector<S> {
-      @Nullable
-      ResourceLocation suggestionId(ArgumentCommandNode<S, ?> var1);
+      @Nullable ResourceLocation suggestionId(ArgumentCommandNode<S, ?> var1);
 
       boolean isExecutable(CommandNode<S> var1);
 
