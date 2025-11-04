@@ -16,9 +16,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
@@ -51,7 +51,7 @@ public class BiomeParametersDumpReport implements DataProvider {
       return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture((Object)null);
    }
 
-   private Path createPath(ResourceLocation var1) {
+   private Path createPath(Identifier var1) {
       return this.topPath.resolve(var1.getNamespace()).resolve(var1.getPath() + ".json");
    }
 

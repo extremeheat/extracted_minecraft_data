@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -48,7 +48,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       this(var1, RenderTypes::entityCutoutNoCull);
    }
 
-   public HumanoidModel(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
+   public HumanoidModel(ModelPart var1, Function<Identifier, RenderType> var2) {
       super(var1, var2);
       this.head = var1.getChild("head");
       this.hat = this.head.getChild("hat");
@@ -112,10 +112,10 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
       float var6 = var1.walkAnimationPos;
       float var7 = var1.walkAnimationSpeed;
-      this.rightArm.xRot = Mth.cos(var6 * 0.6662F + 3.1415927F) * 2.0F * var7 * 0.5F / var1.speedValue;
-      this.leftArm.xRot = Mth.cos(var6 * 0.6662F) * 2.0F * var7 * 0.5F / var1.speedValue;
-      this.rightLeg.xRot = Mth.cos(var6 * 0.6662F) * 1.4F * var7 / var1.speedValue;
-      this.leftLeg.xRot = Mth.cos(var6 * 0.6662F + 3.1415927F) * 1.4F * var7 / var1.speedValue;
+      this.rightArm.xRot = Mth.cos((double)(var6 * 0.6662F + 3.1415927F)) * 2.0F * var7 * 0.5F / var1.speedValue;
+      this.leftArm.xRot = Mth.cos((double)(var6 * 0.6662F)) * 2.0F * var7 * 0.5F / var1.speedValue;
+      this.rightLeg.xRot = Mth.cos((double)(var6 * 0.6662F)) * 1.4F * var7 / var1.speedValue;
+      this.leftLeg.xRot = Mth.cos((double)(var6 * 0.6662F + 3.1415927F)) * 1.4F * var7 / var1.speedValue;
       this.rightLeg.yRot = 0.005F;
       this.leftLeg.yRot = -0.005F;
       this.rightLeg.zRot = 0.005F;
@@ -217,8 +217,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
          float var18 = 0.3F;
          float var14 = 0.33333334F;
-         this.leftLeg.xRot = Mth.lerp(var4, this.leftLeg.xRot, 0.3F * Mth.cos(var6 * 0.33333334F + 3.1415927F));
-         this.rightLeg.xRot = Mth.lerp(var4, this.rightLeg.xRot, 0.3F * Mth.cos(var6 * 0.33333334F));
+         this.leftLeg.xRot = Mth.lerp(var4, this.leftLeg.xRot, 0.3F * Mth.cos((double)(var6 * 0.33333334F + 3.1415927F)));
+         this.rightLeg.xRot = Mth.lerp(var4, this.rightLeg.xRot, 0.3F * Mth.cos((double)(var6 * 0.33333334F)));
       }
 
    }
@@ -323,17 +323,17 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    protected void setupAttackAnimation(T var1) {
       float var2 = var1.attackTime;
       if (!(var2 <= 0.0F)) {
-         this.body.yRot = Mth.sin(Mth.sqrt(var2) * 6.2831855F) * 0.2F;
+         this.body.yRot = Mth.sin((double)(Mth.sqrt(var2) * 6.2831855F)) * 0.2F;
          if (var1.attackArm == HumanoidArm.LEFT) {
             ModelPart var10000 = this.body;
             var10000.yRot *= -1.0F;
          }
 
          float var3 = var1.ageScale;
-         this.rightArm.z = Mth.sin(this.body.yRot) * 5.0F * var3;
-         this.rightArm.x = -Mth.cos(this.body.yRot) * 5.0F * var3;
-         this.leftArm.z = -Mth.sin(this.body.yRot) * 5.0F * var3;
-         this.leftArm.x = Mth.cos(this.body.yRot) * 5.0F * var3;
+         this.rightArm.z = Mth.sin((double)this.body.yRot) * 5.0F * var3;
+         this.rightArm.x = -Mth.cos((double)this.body.yRot) * 5.0F * var3;
+         this.leftArm.z = -Mth.sin((double)this.body.yRot) * 5.0F * var3;
+         this.leftArm.x = Mth.cos((double)this.body.yRot) * 5.0F * var3;
          ModelPart var8 = this.rightArm;
          var8.yRot += this.body.yRot;
          var8 = this.leftArm;
@@ -343,12 +343,12 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          switch (var1.swingAnimationType) {
             case WHACK:
                float var4 = Ease.outQuart(var2);
-               float var5 = Mth.sin(var4 * 3.1415927F);
-               float var6 = Mth.sin(var2 * 3.1415927F) * -(this.head.xRot - 0.7F) * 0.75F;
+               float var5 = Mth.sin((double)(var4 * 3.1415927F));
+               float var6 = Mth.sin((double)(var2 * 3.1415927F)) * -(this.head.xRot - 0.7F) * 0.75F;
                ModelPart var7 = this.getArm(var1.attackArm);
                var7.xRot -= var5 * 1.2F + var6;
                var7.yRot += this.body.yRot * 2.0F;
-               var7.zRot += Mth.sin(var2 * 3.1415927F) * -0.4F;
+               var7.zRot += Mth.sin((double)(var2 * 3.1415927F)) * -0.4F;
             case NONE:
             default:
                break;

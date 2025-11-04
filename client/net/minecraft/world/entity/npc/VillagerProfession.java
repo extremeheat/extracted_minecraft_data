@@ -6,8 +6,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PoiTypeTags;
@@ -48,7 +48,7 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
    }
 
    private static ResourceKey<VillagerProfession> createKey(String var0) {
-      return ResourceKey.create(Registries.VILLAGER_PROFESSION, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.VILLAGER_PROFESSION, Identifier.withDefaultNamespace(var0));
    }
 
    private static VillagerProfession register(Registry<VillagerProfession> var0, ResourceKey<VillagerProfession> var1, ResourceKey<PoiType> var2, @Nullable SoundEvent var3) {
@@ -64,8 +64,8 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
    }
 
    private static VillagerProfession register(Registry<VillagerProfession> var0, ResourceKey<VillagerProfession> var1, Predicate<Holder<PoiType>> var2, Predicate<Holder<PoiType>> var3, ImmutableSet<Item> var4, ImmutableSet<Block> var5, @Nullable SoundEvent var6) {
-      String var10004 = var1.location().getNamespace();
-      return (VillagerProfession)Registry.register(var0, (ResourceKey)var1, new VillagerProfession(Component.translatable("entity." + var10004 + ".villager." + var1.location().getPath()), var2, var3, var4, var5, var6));
+      String var10004 = var1.identifier().getNamespace();
+      return (VillagerProfession)Registry.register(var0, (ResourceKey)var1, new VillagerProfession(Component.translatable("entity." + var10004 + ".villager." + var1.identifier().getPath()), var2, var3, var4, var5, var6));
    }
 
    public static VillagerProfession bootstrap(Registry<VillagerProfession> var0) {

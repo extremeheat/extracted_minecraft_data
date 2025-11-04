@@ -306,9 +306,9 @@ public class LevelEventHandler {
             for(int var51 = 0; var51 < 200; ++var51) {
                float var58 = var4.nextFloat() * 4.0F;
                float var67 = var4.nextFloat() * 6.2831855F;
-               double var71 = (double)(Mth.cos(var67) * var58);
+               double var71 = (double)(Mth.cos((double)var67) * var58);
                double var79 = 0.01 + var4.nextDouble() * 0.5;
-               double var83 = (double)(Mth.sin(var67) * var58);
+               double var83 = (double)(Mth.sin((double)var67) * var58);
                this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
             }
 

@@ -36,7 +36,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
@@ -60,12 +60,12 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPickerMenu> {
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
-   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller_disabled");
-   private static final ResourceLocation[] UNSELECTED_TOP_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
-   private static final ResourceLocation[] SELECTED_TOP_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
-   private static final ResourceLocation[] UNSELECTED_BOTTOM_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
-   private static final ResourceLocation[] SELECTED_BOTTOM_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller");
+   private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/creative_inventory/scroller_disabled");
+   private static final Identifier[] UNSELECTED_TOP_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
+   private static final Identifier[] SELECTED_TOP_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_top_selected_7")};
+   private static final Identifier[] UNSELECTED_BOTTOM_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_unselected_7")};
+   private static final Identifier[] SELECTED_BOTTOM_TABS = new Identifier[]{Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_1"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_2"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_3"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_4"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_5"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_6"), Identifier.withDefaultNamespace("container/creative_inventory/tab_bottom_selected_7")};
    private static final int NUM_ROWS = 5;
    private static final int NUM_COLS = 9;
    private static final int TAB_WIDTH = 26;
@@ -694,8 +694,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
-         ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         Identifier var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
@@ -750,14 +750,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       int var5 = var2.column();
       int var6 = this.leftPos + this.getTabX(var2);
       int var7 = this.topPos - (var4 ? 28 : -(this.imageHeight - 4));
-      ResourceLocation[] var8;
+      Identifier[] var8;
       if (var4) {
          var8 = var3 ? SELECTED_TOP_TABS : UNSELECTED_TOP_TABS;
       } else {
          var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
       int var9 = var6 + 13 - 8;
       int var10 = var7 + 16 - 8 + (var4 ? 1 : -1);
       var1.renderItem(var2.getIconItem(), var9, var10);
@@ -925,7 +925,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          return this.target.getMaxStackSize(var1);
       }
 
-      public @Nullable ResourceLocation getNoItemIcon() {
+      public @Nullable Identifier getNoItemIcon() {
          return this.target.getNoItemIcon();
       }
 

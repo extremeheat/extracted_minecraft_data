@@ -1,56 +1,62 @@
 package net.minecraft.client.renderer.rendertype;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.minecraft.Util;
+import java.util.function.Supplier;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 
 public class RenderTypes {
-   static final BiFunction<ResourceLocation, Boolean, RenderType> OUTLINE = Util.memoize((BiFunction)((var0, var1) -> RenderType.create("outline", RenderSetup.builder(var1 ? RenderPipelines.OUTLINE_CULL : RenderPipelines.OUTLINE_NO_CULL).withTexture("Sampler0", var0).setOutputTarget(OutputTarget.OUTLINE_TARGET).setOutline(RenderSetup.OutlineProperty.IS_OUTLINE).createRenderSetup())));
-   private static final RenderType SOLID;
-   private static final RenderType CUTOUT;
+   static final BiFunction<Identifier, Boolean, RenderType> OUTLINE = Util.memoize((BiFunction)((var0, var1) -> RenderType.create("outline", RenderSetup.builder(var1 ? RenderPipelines.OUTLINE_CULL : RenderPipelines.OUTLINE_NO_CULL).withTexture("Sampler0", var0).setOutputTarget(OutputTarget.OUTLINE_TARGET).setOutline(RenderSetup.OutlineProperty.IS_OUTLINE).createRenderSetup())));
+   public static final Supplier<GpuSampler> MOVING_BLOCK_SAMPLER = () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
+   private static final RenderType SOLID_MOVING_BLOCK;
+   private static final RenderType CUTOUT_MOVING_BLOCK;
    private static final RenderType TRANSLUCENT_MOVING_BLOCK;
-   private static final Function<ResourceLocation, RenderType> ARMOR_CUTOUT_NO_CULL;
-   private static final Function<ResourceLocation, RenderType> ARMOR_TRANSLUCENT;
-   private static final Function<ResourceLocation, RenderType> ENTITY_SOLID;
-   private static final Function<ResourceLocation, RenderType> ENTITY_SOLID_Z_OFFSET_FORWARD;
-   private static final Function<ResourceLocation, RenderType> ENTITY_CUTOUT;
-   private static final BiFunction<ResourceLocation, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL;
-   private static final BiFunction<ResourceLocation, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL_Z_OFFSET;
-   private static final Function<ResourceLocation, RenderType> ITEM_ENTITY_TRANSLUCENT_CULL;
-   private static final BiFunction<ResourceLocation, Boolean, RenderType> ENTITY_TRANSLUCENT;
-   private static final BiFunction<ResourceLocation, Boolean, RenderType> ENTITY_TRANSLUCENT_EMISSIVE;
-   private static final Function<ResourceLocation, RenderType> ENTITY_SMOOTH_CUTOUT;
-   private static final BiFunction<ResourceLocation, Boolean, RenderType> BEACON_BEAM;
-   private static final Function<ResourceLocation, RenderType> ENTITY_DECAL;
-   private static final Function<ResourceLocation, RenderType> ENTITY_NO_OUTLINE;
-   private static final Function<ResourceLocation, RenderType> ENTITY_SHADOW;
-   private static final Function<ResourceLocation, RenderType> DRAGON_EXPLOSION_ALPHA;
-   private static final Function<ResourceLocation, RenderType> EYES;
+   private static final Function<Identifier, RenderType> ARMOR_CUTOUT_NO_CULL;
+   private static final Function<Identifier, RenderType> ARMOR_TRANSLUCENT;
+   private static final Function<Identifier, RenderType> ENTITY_SOLID;
+   private static final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_FORWARD;
+   private static final Function<Identifier, RenderType> ENTITY_CUTOUT;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_CUTOUT_NO_CULL_Z_OFFSET;
+   private static final Function<Identifier, RenderType> ITEM_ENTITY_TRANSLUCENT_CULL;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_TRANSLUCENT;
+   private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_TRANSLUCENT_EMISSIVE;
+   private static final Function<Identifier, RenderType> ENTITY_SMOOTH_CUTOUT;
+   private static final BiFunction<Identifier, Boolean, RenderType> BEACON_BEAM;
+   private static final Function<Identifier, RenderType> ENTITY_DECAL;
+   private static final Function<Identifier, RenderType> ENTITY_NO_OUTLINE;
+   private static final Function<Identifier, RenderType> ENTITY_SHADOW;
+   private static final Function<Identifier, RenderType> DRAGON_EXPLOSION_ALPHA;
+   private static final Function<Identifier, RenderType> EYES;
    private static final RenderType LEASH;
    private static final RenderType WATER_MASK;
    private static final RenderType ARMOR_ENTITY_GLINT;
    private static final RenderType GLINT_TRANSLUCENT;
    private static final RenderType GLINT;
    private static final RenderType ENTITY_GLINT;
-   private static final Function<ResourceLocation, RenderType> CRUMBLING;
-   private static final Function<ResourceLocation, RenderType> TEXT;
+   private static final Function<Identifier, RenderType> CRUMBLING;
+   private static final Function<Identifier, RenderType> TEXT;
    private static final RenderType TEXT_BACKGROUND;
-   private static final Function<ResourceLocation, RenderType> TEXT_INTENSITY;
-   private static final Function<ResourceLocation, RenderType> TEXT_POLYGON_OFFSET;
-   private static final Function<ResourceLocation, RenderType> TEXT_INTENSITY_POLYGON_OFFSET;
-   private static final Function<ResourceLocation, RenderType> TEXT_SEE_THROUGH;
+   private static final Function<Identifier, RenderType> TEXT_INTENSITY;
+   private static final Function<Identifier, RenderType> TEXT_POLYGON_OFFSET;
+   private static final Function<Identifier, RenderType> TEXT_INTENSITY_POLYGON_OFFSET;
+   private static final Function<Identifier, RenderType> TEXT_SEE_THROUGH;
    private static final RenderType TEXT_BACKGROUND_SEE_THROUGH;
-   private static final Function<ResourceLocation, RenderType> TEXT_INTENSITY_SEE_THROUGH;
+   private static final Function<Identifier, RenderType> TEXT_INTENSITY_SEE_THROUGH;
    private static final RenderType LIGHTNING;
    private static final RenderType DRAGON_RAYS;
    private static final RenderType DRAGON_RAYS_DEPTH;
-   private static final RenderType TRIPWIRE;
+   private static final RenderType TRIPWIRE_MOVING_BLOCk;
    private static final RenderType END_PORTAL;
    private static final RenderType END_GATEWAY;
    public static final RenderType LINES;
@@ -59,125 +65,125 @@ public class RenderTypes {
    private static final RenderType DEBUG_POINT;
    private static final RenderType DEBUG_QUADS;
    private static final RenderType DEBUG_TRIANGLE_FAN;
-   private static final Function<ResourceLocation, RenderType> WEATHER_DEPTH_WRITE;
-   private static final Function<ResourceLocation, RenderType> WEATHER_NO_DEPTH_WRITE;
-   private static final Function<ResourceLocation, RenderType> BLOCK_SCREEN_EFFECT;
-   private static final Function<ResourceLocation, RenderType> FIRE_SCREEN_EFFECT;
+   private static final Function<Identifier, RenderType> WEATHER_DEPTH_WRITE;
+   private static final Function<Identifier, RenderType> WEATHER_NO_DEPTH_WRITE;
+   private static final Function<Identifier, RenderType> BLOCK_SCREEN_EFFECT;
+   private static final Function<Identifier, RenderType> FIRE_SCREEN_EFFECT;
 
    public RenderTypes() {
       super();
    }
 
-   public static RenderType solid() {
-      return SOLID;
+   public static RenderType solidMovingBlock() {
+      return SOLID_MOVING_BLOCK;
    }
 
-   public static RenderType cutout() {
-      return CUTOUT;
+   public static RenderType cutoutMovingBlock() {
+      return CUTOUT_MOVING_BLOCK;
    }
 
    public static RenderType translucentMovingBlock() {
       return TRANSLUCENT_MOVING_BLOCK;
    }
 
-   public static RenderType armorCutoutNoCull(ResourceLocation var0) {
+   public static RenderType armorCutoutNoCull(Identifier var0) {
       return (RenderType)ARMOR_CUTOUT_NO_CULL.apply(var0);
    }
 
-   public static RenderType createArmorDecalCutoutNoCull(ResourceLocation var0) {
+   public static RenderType createArmorDecalCutoutNoCull(Identifier var0) {
       RenderSetup var1 = RenderSetup.builder(RenderPipelines.ARMOR_DECAL_CUTOUT_NO_CULL).withTexture("Sampler0", var0).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
       return RenderType.create("armor_decal_cutout_no_cull", var1);
    }
 
-   public static RenderType armorTranslucent(ResourceLocation var0) {
+   public static RenderType armorTranslucent(Identifier var0) {
       return (RenderType)ARMOR_TRANSLUCENT.apply(var0);
    }
 
-   public static RenderType entitySolid(ResourceLocation var0) {
+   public static RenderType entitySolid(Identifier var0) {
       return (RenderType)ENTITY_SOLID.apply(var0);
    }
 
-   public static RenderType entitySolidZOffsetForward(ResourceLocation var0) {
+   public static RenderType entitySolidZOffsetForward(Identifier var0) {
       return (RenderType)ENTITY_SOLID_Z_OFFSET_FORWARD.apply(var0);
    }
 
-   public static RenderType entityCutout(ResourceLocation var0) {
+   public static RenderType entityCutout(Identifier var0) {
       return (RenderType)ENTITY_CUTOUT.apply(var0);
    }
 
-   public static RenderType entityCutoutNoCull(ResourceLocation var0, boolean var1) {
+   public static RenderType entityCutoutNoCull(Identifier var0, boolean var1) {
       return (RenderType)ENTITY_CUTOUT_NO_CULL.apply(var0, var1);
    }
 
-   public static RenderType entityCutoutNoCull(ResourceLocation var0) {
+   public static RenderType entityCutoutNoCull(Identifier var0) {
       return entityCutoutNoCull(var0, true);
    }
 
-   public static RenderType entityCutoutNoCullZOffset(ResourceLocation var0, boolean var1) {
+   public static RenderType entityCutoutNoCullZOffset(Identifier var0, boolean var1) {
       return (RenderType)ENTITY_CUTOUT_NO_CULL_Z_OFFSET.apply(var0, var1);
    }
 
-   public static RenderType entityCutoutNoCullZOffset(ResourceLocation var0) {
+   public static RenderType entityCutoutNoCullZOffset(Identifier var0) {
       return entityCutoutNoCullZOffset(var0, true);
    }
 
-   public static RenderType itemEntityTranslucentCull(ResourceLocation var0) {
+   public static RenderType itemEntityTranslucentCull(Identifier var0) {
       return (RenderType)ITEM_ENTITY_TRANSLUCENT_CULL.apply(var0);
    }
 
-   public static RenderType entityTranslucent(ResourceLocation var0, boolean var1) {
+   public static RenderType entityTranslucent(Identifier var0, boolean var1) {
       return (RenderType)ENTITY_TRANSLUCENT.apply(var0, var1);
    }
 
-   public static RenderType entityTranslucent(ResourceLocation var0) {
+   public static RenderType entityTranslucent(Identifier var0) {
       return entityTranslucent(var0, true);
    }
 
-   public static RenderType entityTranslucentEmissive(ResourceLocation var0, boolean var1) {
+   public static RenderType entityTranslucentEmissive(Identifier var0, boolean var1) {
       return (RenderType)ENTITY_TRANSLUCENT_EMISSIVE.apply(var0, var1);
    }
 
-   public static RenderType entityTranslucentEmissive(ResourceLocation var0) {
+   public static RenderType entityTranslucentEmissive(Identifier var0) {
       return entityTranslucentEmissive(var0, true);
    }
 
-   public static RenderType entitySmoothCutout(ResourceLocation var0) {
+   public static RenderType entitySmoothCutout(Identifier var0) {
       return (RenderType)ENTITY_SMOOTH_CUTOUT.apply(var0);
    }
 
-   public static RenderType beaconBeam(ResourceLocation var0, boolean var1) {
+   public static RenderType beaconBeam(Identifier var0, boolean var1) {
       return (RenderType)BEACON_BEAM.apply(var0, var1);
    }
 
-   public static RenderType entityDecal(ResourceLocation var0) {
+   public static RenderType entityDecal(Identifier var0) {
       return (RenderType)ENTITY_DECAL.apply(var0);
    }
 
-   public static RenderType entityNoOutline(ResourceLocation var0) {
+   public static RenderType entityNoOutline(Identifier var0) {
       return (RenderType)ENTITY_NO_OUTLINE.apply(var0);
    }
 
-   public static RenderType entityShadow(ResourceLocation var0) {
+   public static RenderType entityShadow(Identifier var0) {
       return (RenderType)ENTITY_SHADOW.apply(var0);
    }
 
-   public static RenderType dragonExplosionAlpha(ResourceLocation var0) {
+   public static RenderType dragonExplosionAlpha(Identifier var0) {
       return (RenderType)DRAGON_EXPLOSION_ALPHA.apply(var0);
    }
 
-   public static RenderType eyes(ResourceLocation var0) {
+   public static RenderType eyes(Identifier var0) {
       return (RenderType)EYES.apply(var0);
    }
 
-   public static RenderType breezeEyes(ResourceLocation var0) {
+   public static RenderType breezeEyes(Identifier var0) {
       return (RenderType)ENTITY_TRANSLUCENT_EMISSIVE.apply(var0, false);
    }
 
-   public static RenderType breezeWind(ResourceLocation var0, float var1, float var2) {
+   public static RenderType breezeWind(Identifier var0, float var1, float var2) {
       return RenderType.create("breeze_wind", RenderSetup.builder(RenderPipelines.BREEZE_WIND).withTexture("Sampler0", var0).setTextureTransform(new TextureTransform.OffsetTextureTransform(var1, var2)).useLightmap().sortOnUpload().createRenderSetup());
    }
 
-   public static RenderType energySwirl(ResourceLocation var0, float var1, float var2) {
+   public static RenderType energySwirl(Identifier var0, float var1, float var2) {
       return RenderType.create("energy_swirl", RenderSetup.builder(RenderPipelines.ENERGY_SWIRL).withTexture("Sampler0", var0).setTextureTransform(new TextureTransform.OffsetTextureTransform(var1, var2)).useLightmap().useOverlay().sortOnUpload().createRenderSetup());
    }
 
@@ -189,7 +195,7 @@ public class RenderTypes {
       return WATER_MASK;
    }
 
-   public static RenderType outline(ResourceLocation var0) {
+   public static RenderType outline(Identifier var0) {
       return (RenderType)OUTLINE.apply(var0, false);
    }
 
@@ -209,11 +215,11 @@ public class RenderTypes {
       return ENTITY_GLINT;
    }
 
-   public static RenderType crumbling(ResourceLocation var0) {
+   public static RenderType crumbling(Identifier var0) {
       return (RenderType)CRUMBLING.apply(var0);
    }
 
-   public static RenderType text(ResourceLocation var0) {
+   public static RenderType text(Identifier var0) {
       return (RenderType)TEXT.apply(var0);
    }
 
@@ -221,19 +227,19 @@ public class RenderTypes {
       return TEXT_BACKGROUND;
    }
 
-   public static RenderType textIntensity(ResourceLocation var0) {
+   public static RenderType textIntensity(Identifier var0) {
       return (RenderType)TEXT_INTENSITY.apply(var0);
    }
 
-   public static RenderType textPolygonOffset(ResourceLocation var0) {
+   public static RenderType textPolygonOffset(Identifier var0) {
       return (RenderType)TEXT_POLYGON_OFFSET.apply(var0);
    }
 
-   public static RenderType textIntensityPolygonOffset(ResourceLocation var0) {
+   public static RenderType textIntensityPolygonOffset(Identifier var0) {
       return (RenderType)TEXT_INTENSITY_POLYGON_OFFSET.apply(var0);
    }
 
-   public static RenderType textSeeThrough(ResourceLocation var0) {
+   public static RenderType textSeeThrough(Identifier var0) {
       return (RenderType)TEXT_SEE_THROUGH.apply(var0);
    }
 
@@ -241,7 +247,7 @@ public class RenderTypes {
       return TEXT_BACKGROUND_SEE_THROUGH;
    }
 
-   public static RenderType textIntensitySeeThrough(ResourceLocation var0) {
+   public static RenderType textIntensitySeeThrough(Identifier var0) {
       return (RenderType)TEXT_INTENSITY_SEE_THROUGH.apply(var0);
    }
 
@@ -257,8 +263,8 @@ public class RenderTypes {
       return DRAGON_RAYS_DEPTH;
    }
 
-   public static RenderType tripwire() {
-      return TRIPWIRE;
+   public static RenderType tripwireMovingBlock() {
+      return TRIPWIRE_MOVING_BLOCk;
    }
 
    public static RenderType endPortal() {
@@ -293,26 +299,26 @@ public class RenderTypes {
       return DEBUG_TRIANGLE_FAN;
    }
 
-   private static Function<ResourceLocation, RenderType> createWeather(RenderPipeline var0) {
+   private static Function<Identifier, RenderType> createWeather(RenderPipeline var0) {
       return Util.memoize((Function)((var1) -> RenderType.create("weather", RenderSetup.builder(var0).withTexture("Sampler0", var1).setOutputTarget(OutputTarget.WEATHER_TARGET).useLightmap().createRenderSetup())));
    }
 
-   public static RenderType weather(ResourceLocation var0, boolean var1) {
+   public static RenderType weather(Identifier var0, boolean var1) {
       return (RenderType)(var1 ? WEATHER_DEPTH_WRITE : WEATHER_NO_DEPTH_WRITE).apply(var0);
    }
 
-   public static RenderType blockScreenEffect(ResourceLocation var0) {
+   public static RenderType blockScreenEffect(Identifier var0) {
       return (RenderType)BLOCK_SCREEN_EFFECT.apply(var0);
    }
 
-   public static RenderType fireScreenEffect(ResourceLocation var0) {
+   public static RenderType fireScreenEffect(Identifier var0) {
       return (RenderType)FIRE_SCREEN_EFFECT.apply(var0);
    }
 
    static {
-      SOLID = RenderType.create("solid", RenderSetup.builder(RenderPipelines.SOLID_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
-      CUTOUT = RenderType.create("cutout", RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
-      TRANSLUCENT_MOVING_BLOCK = RenderType.create("translucent_moving_block", RenderSetup.builder(RenderPipelines.TRANSLUCENT_MOVING_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).sortOnUpload().bufferSize(786432).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      SOLID_MOVING_BLOCK = RenderType.create("solid_moving_block", RenderSetup.builder(RenderPipelines.SOLID_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      CUTOUT_MOVING_BLOCK = RenderType.create("cutout_moving_block", RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      TRANSLUCENT_MOVING_BLOCK = RenderType.create("translucent_moving_block", RenderSetup.builder(RenderPipelines.TRANSLUCENT_MOVING_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).sortOnUpload().bufferSize(786432).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       ARMOR_CUTOUT_NO_CULL = Util.memoize((Function)((var0) -> {
          RenderSetup var1 = RenderSetup.builder(RenderPipelines.ARMOR_CUTOUT_NO_CULL).withTexture("Sampler0", var0).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("armor_cutout_no_cull", var1);
@@ -396,7 +402,7 @@ public class RenderTypes {
       LIGHTNING = RenderType.create("lightning", RenderSetup.builder(RenderPipelines.LIGHTNING).setOutputTarget(OutputTarget.WEATHER_TARGET).sortOnUpload().createRenderSetup());
       DRAGON_RAYS = RenderType.create("dragon_rays", RenderSetup.builder(RenderPipelines.DRAGON_RAYS).createRenderSetup());
       DRAGON_RAYS_DEPTH = RenderType.create("dragon_rays_depth", RenderSetup.builder(RenderPipelines.DRAGON_RAYS_DEPTH).createRenderSetup());
-      TRIPWIRE = RenderType.create("tripwire", RenderSetup.builder(RenderPipelines.TRIPWIRE_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS).setOutputTarget(OutputTarget.WEATHER_TARGET).affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      TRIPWIRE_MOVING_BLOCk = RenderType.create("tripwire_moving_block", RenderSetup.builder(RenderPipelines.TRIPWIRE_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).setOutputTarget(OutputTarget.WEATHER_TARGET).affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
       END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       LINES = RenderType.create("lines", RenderSetup.builder(RenderPipelines.LINES).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());

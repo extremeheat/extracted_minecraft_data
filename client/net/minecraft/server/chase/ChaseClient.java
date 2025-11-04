@@ -143,7 +143,7 @@ public class ChaseClient {
    }
 
    private void handleTeleport(Scanner var1) {
-      this.parseTarget(var1).ifPresent((var1x) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.location(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x)));
+      this.parseTarget(var1).ifPresent((var1x) -> this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.identifier(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x)));
    }
 
    private Optional<TeleportTarget> parseTarget(Scanner var1) {

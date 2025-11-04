@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import org.joml.Quaternionfc;
 
@@ -31,7 +31,7 @@ public abstract class ArrowRenderer<T extends AbstractArrow, S extends ArrowRend
       super.submit(var1, var2, var3, var4);
    }
 
-   protected abstract ResourceLocation getTextureLocation(S var1);
+   protected abstract Identifier getTextureLocation(S var1);
 
    public void extractRenderState(T var1, S var2, float var3) {
       super.extractRenderState(var1, var2, var3);

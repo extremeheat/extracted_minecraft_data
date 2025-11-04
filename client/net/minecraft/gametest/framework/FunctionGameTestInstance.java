@@ -19,7 +19,7 @@ public class FunctionGameTestInstance extends GameTestInstance {
    }
 
    public void run(GameTestHelper var1) {
-      ((Consumer)var1.getLevel().registryAccess().get(this.function).map(Holder.Reference::value).orElseThrow(() -> new IllegalStateException("Trying to access missing test function: " + String.valueOf(this.function.location())))).accept(var1);
+      ((Consumer)var1.getLevel().registryAccess().get(this.function).map(Holder.Reference::value).orElseThrow(() -> new IllegalStateException("Trying to access missing test function: " + String.valueOf(this.function.identifier())))).accept(var1);
    }
 
    private ResourceKey<Consumer<GameTestHelper>> function() {
@@ -35,6 +35,6 @@ public class FunctionGameTestInstance extends GameTestInstance {
    }
 
    public Component describe() {
-      return this.describeType().append((Component)this.descriptionRow("test_instance.description.function", this.function.location().toString())).append(this.describeInfo());
+      return this.describeType().append((Component)this.descriptionRow("test_instance.description.function", this.function.identifier().toString())).append(this.describeInfo());
    }
 }

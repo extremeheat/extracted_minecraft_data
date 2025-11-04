@@ -2,7 +2,6 @@ package net.minecraft.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -13,6 +12,7 @@ import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class PlayerModel extends HumanoidModel<AvatarRenderState> {

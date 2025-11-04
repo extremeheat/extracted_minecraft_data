@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.telemetry;
 
 import java.net.URI;
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -17,6 +16,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class TelemetryInfoScreen extends Screen {

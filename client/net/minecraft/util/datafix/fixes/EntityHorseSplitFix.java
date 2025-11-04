@@ -7,7 +7,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Objects;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class EntityHorseSplitFix extends EntityRenameFix {
    public EntityHorseSplitFix(Schema var1, boolean var2) {

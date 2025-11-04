@@ -7,9 +7,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 public final class GameRule<T> {
@@ -39,15 +39,15 @@ public final class GameRule<T> {
    }
 
    public String id() {
-      return this.getResourceLocation().toShortString();
+      return this.getIdentifier().toShortString();
    }
 
-   public ResourceLocation getResourceLocation() {
-      return (ResourceLocation)Objects.requireNonNull(BuiltInRegistries.GAME_RULE.getKey(this));
+   public Identifier getIdentifier() {
+      return (Identifier)Objects.requireNonNull(BuiltInRegistries.GAME_RULE.getKey(this));
    }
 
    public String getDescriptionId() {
-      return Util.makeDescriptionId("gamerule", this.getResourceLocation());
+      return Util.makeDescriptionId("gamerule", this.getIdentifier());
    }
 
    public String serialize(T var1) {

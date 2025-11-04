@@ -17,13 +17,13 @@ import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.FileUtil;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.FileUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -564,7 +564,7 @@ public class ServerChunkCache extends ChunkSource {
 
    final class MainThreadExecutor extends BlockableEventLoop<Runnable> {
       MainThreadExecutor(final Level var2) {
-         super("Chunk source main thread executor for " + String.valueOf(var2.dimension().location()));
+         super("Chunk source main thread executor for " + String.valueOf(var2.dimension().identifier()));
       }
 
       public void managedBlock(BooleanSupplier var1) {

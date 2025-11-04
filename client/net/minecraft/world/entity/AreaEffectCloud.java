@@ -181,9 +181,9 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
          for(int var6 = 0; var6 < var4; ++var6) {
             float var7 = this.random.nextFloat() * 6.2831855F;
             float var8 = Mth.sqrt(this.random.nextFloat()) * var5;
-            double var9 = this.getX() + (double)(Mth.cos(var7) * var8);
+            double var9 = this.getX() + (double)(Mth.cos((double)var7) * var8);
             double var11 = this.getY();
-            double var13 = this.getZ() + (double)(Mth.sin(var7) * var8);
+            double var13 = this.getZ() + (double)(Mth.sin((double)var7) * var8);
             if (var3.getType() == ParticleTypes.ENTITY_EFFECT) {
                if (var1 && this.random.nextBoolean()) {
                   this.level().addAlwaysVisibleParticle(DEFAULT_PARTICLE, var9, var11, var13, 0.0, 0.0, 0.0);

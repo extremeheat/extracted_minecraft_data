@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.jspecify.annotations.Nullable;
@@ -17,13 +17,13 @@ public interface SpriteSource {
    MapCodec<? extends SpriteSource> codec();
 
    public interface Output {
-      default void add(ResourceLocation var1, Resource var2) {
+      default void add(Identifier var1, Resource var2) {
          this.add(var1, (DiscardableLoader)((var2x) -> var2x.loadSprite(var1, var2)));
       }
 
-      void add(ResourceLocation var1, DiscardableLoader var2);
+      void add(Identifier var1, DiscardableLoader var2);
 
-      void removeAll(Predicate<ResourceLocation> var1);
+      void removeAll(Predicate<Identifier> var1);
    }
 
    public interface DiscardableLoader extends Loader {

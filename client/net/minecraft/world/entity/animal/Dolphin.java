@@ -220,14 +220,14 @@ public class Dolphin extends AgeableWaterCreature {
                this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.2F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.2F)));
                this.setYRot(this.random.nextFloat() * 360.0F);
                this.setOnGround(false);
-               this.hasImpulse = true;
+               this.needsSync = true;
             }
          }
 
          if (this.level().isClientSide() && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03) {
             Vec3 var1 = this.getViewVector(0.0F);
-            float var2 = Mth.cos(this.getYRot() * 0.017453292F) * 0.3F;
-            float var3 = Mth.sin(this.getYRot() * 0.017453292F) * 0.3F;
+            float var2 = Mth.cos((double)(this.getYRot() * 0.017453292F)) * 0.3F;
+            float var3 = Mth.sin((double)(this.getYRot() * 0.017453292F)) * 0.3F;
             float var4 = 1.2F - this.random.nextFloat() * 0.7F;
 
             for(int var5 = 0; var5 < 2; ++var5) {
@@ -387,7 +387,7 @@ public class Dolphin extends AgeableWaterCreature {
             float var5 = 0.3F;
             float var6 = Dolphin.this.random.nextFloat() * 6.2831855F;
             float var7 = 0.02F * Dolphin.this.random.nextFloat();
-            var4.setDeltaMovement((double)(0.3F * -Mth.sin(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.cos(var6) * var7), (double)(0.3F * Mth.sin(Dolphin.this.getXRot() * 0.017453292F) * 1.5F), (double)(0.3F * Mth.cos(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.sin(var6) * var7));
+            var4.setDeltaMovement((double)(0.3F * -Mth.sin((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.cos((double)var6) * var7), (double)(0.3F * Mth.sin((double)(Dolphin.this.getXRot() * 0.017453292F)) * 1.5F), (double)(0.3F * Mth.cos((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.sin((double)var6) * var7));
             Dolphin.this.level().addFreshEntity(var4);
          }
       }

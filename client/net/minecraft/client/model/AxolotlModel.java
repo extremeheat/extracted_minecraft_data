@@ -82,8 +82,8 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
    private void setupLayStillOnGroundAnimation(float var1, float var2) {
       if (!(var2 <= 1.0E-5F)) {
          float var3 = var1 * 0.09F;
-         float var4 = Mth.sin(var3);
-         float var5 = Mth.cos(var3);
+         float var4 = Mth.sin((double)var3);
+         float var5 = Mth.cos((double)var3);
          float var6 = var4 * var4 - 2.0F * var4;
          float var7 = var5 * var5 - 3.0F * var4;
          ModelPart var10000 = this.head;
@@ -115,7 +115,7 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
    private void setupGroundCrawlingAnimation(float var1, float var2) {
       if (!(var2 <= 1.0E-5F)) {
          float var3 = var1 * 0.11F;
-         float var4 = Mth.cos(var3);
+         float var4 = Mth.cos((double)var3);
          float var5 = (var4 * var4 - 2.0F * var4) / 5.0F;
          float var6 = 0.7F * var4;
          float var7 = 0.09F * var4 * var2;
@@ -123,7 +123,7 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
          var10000.yRot += var7;
          var10000 = this.tail;
          var10000.yRot += var7;
-         float var8 = (0.6F - 0.08F * (var4 * var4 + 2.0F * Mth.sin(var3))) * var2;
+         float var8 = (0.6F - 0.08F * (var4 * var4 + 2.0F * Mth.sin((double)var3))) * var2;
          var10000 = this.topGills;
          var10000.xRot += var8;
          var10000 = this.leftGills;
@@ -156,8 +156,8 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
    private void setupWaterHoveringAnimation(float var1, float var2) {
       if (!(var2 <= 1.0E-5F)) {
          float var3 = var1 * 0.075F;
-         float var4 = Mth.cos(var3);
-         float var5 = Mth.sin(var3) * 0.15F;
+         float var4 = Mth.cos((double)var3);
+         float var5 = Mth.sin((double)var3) * 0.15F;
          float var6 = (-0.15F + 0.075F * var4) * var2;
          ModelPart var10000 = this.body;
          var10000.xRot += var6;
@@ -190,8 +190,8 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
    private void setupSwimmingAnimation(float var1, float var2, float var3) {
       if (!(var3 <= 1.0E-5F)) {
          float var4 = var1 * 0.33F;
-         float var5 = Mth.sin(var4);
-         float var6 = Mth.cos(var4);
+         float var5 = Mth.sin((double)var4);
+         float var6 = Mth.cos((double)var4);
          float var7 = 0.13F * var5;
          ModelPart var10000 = this.body;
          var10000.xRot += (var2 * 0.017453292F + var7) * var3;
@@ -207,7 +207,7 @@ public class AxolotlModel extends EntityModel<AxolotlRenderState> {
          var10000 = this.rightGills;
          var10000.yRot -= var8;
          var10000 = this.tail;
-         var10000.yRot += 0.3F * Mth.cos(var4 * 0.9F) * var3;
+         var10000.yRot += 0.3F * Mth.cos((double)(var4 * 0.9F)) * var3;
          var10000 = this.leftHindLeg;
          var10000.xRot += 1.8849558F * var3;
          var10000 = this.leftHindLeg;

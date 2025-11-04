@@ -5,17 +5,17 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FelineRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Ocelot;
 
 public class OcelotRenderer extends AgeableMobRenderer<Ocelot, FelineRenderState, OcelotModel> {
-   private static final ResourceLocation CAT_OCELOT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/cat/ocelot.png");
+   private static final Identifier CAT_OCELOT_LOCATION = Identifier.withDefaultNamespace("textures/entity/cat/ocelot.png");
 
    public OcelotRenderer(EntityRendererProvider.Context var1) {
       super(var1, new OcelotModel(var1.bakeLayer(ModelLayers.OCELOT)), new OcelotModel(var1.bakeLayer(ModelLayers.OCELOT_BABY)), 0.4F);
    }
 
-   public ResourceLocation getTextureLocation(FelineRenderState var1) {
+   public Identifier getTextureLocation(FelineRenderState var1) {
       return CAT_OCELOT_LOCATION;
    }
 
@@ -30,7 +30,7 @@ public class OcelotRenderer extends AgeableMobRenderer<Ocelot, FelineRenderState
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((FelineRenderState)var1);
    }
 

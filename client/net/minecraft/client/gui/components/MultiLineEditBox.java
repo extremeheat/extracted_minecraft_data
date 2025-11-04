@@ -3,7 +3,6 @@ package net.minecraft.client.gui.components;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Objects;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -16,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Util;
 
 public class MultiLineEditBox extends AbstractTextAreaWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;

@@ -13,16 +13,16 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 
 public class RealmsWorldSlotButton extends Button {
-   private static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
-   public static final ResourceLocation EMPTY_SLOT_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/empty_frame.png");
-   public static final ResourceLocation DEFAULT_WORLD_SLOT_1 = ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama_0.png");
-   public static final ResourceLocation DEFAULT_WORLD_SLOT_2 = ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama_2.png");
-   public static final ResourceLocation DEFAULT_WORLD_SLOT_3 = ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama_3.png");
+   private static final Identifier SLOT_FRAME_SPRITE = Identifier.withDefaultNamespace("widget/slot_frame");
+   public static final Identifier EMPTY_SLOT_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/empty_frame.png");
+   public static final Identifier DEFAULT_WORLD_SLOT_1 = Identifier.withDefaultNamespace("textures/gui/title/background/panorama_0.png");
+   public static final Identifier DEFAULT_WORLD_SLOT_2 = Identifier.withDefaultNamespace("textures/gui/title/background/panorama_2.png");
+   public static final Identifier DEFAULT_WORLD_SLOT_3 = Identifier.withDefaultNamespace("textures/gui/title/background/panorama_3.png");
    private static final Component SWITCH_TO_MINIGAME_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip.minigame");
    private static final Component SWITCH_TO_WORLD_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip");
    static final Component MINIGAME = Component.translatable("mco.worldSlot.minigame");
@@ -79,7 +79,7 @@ public class RealmsWorldSlotButton extends Button {
       int var5 = this.getX();
       int var6 = this.getY();
       boolean var7 = this.isHoveredOrFocused();
-      ResourceLocation var8;
+      Identifier var8;
       if (this.state.minigame) {
          var8 = RealmsTextureManager.worldTemplate(String.valueOf(this.state.imageId), this.state.image);
       } else if (this.state.empty) {
@@ -111,7 +111,7 @@ public class RealmsWorldSlotButton extends Button {
       }
 
       if (this.state.hardcore) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, var5 + 3, var6 + 4, 9, 8);
       }
 
       Font var10 = Minecraft.getInstance().font;

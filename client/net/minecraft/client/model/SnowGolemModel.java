@@ -44,8 +44,8 @@ public class SnowGolemModel extends EntityModel<LivingEntityRenderState> {
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
       this.upperBody.yRot = var1.yRot * 0.017453292F * 0.25F;
-      float var2 = Mth.sin(this.upperBody.yRot);
-      float var3 = Mth.cos(this.upperBody.yRot);
+      float var2 = Mth.sin((double)this.upperBody.yRot);
+      float var3 = Mth.cos((double)this.upperBody.yRot);
       this.leftArm.yRot = this.upperBody.yRot;
       this.rightArm.yRot = this.upperBody.yRot + 3.1415927F;
       this.leftArm.x = var3 * 5.0F;

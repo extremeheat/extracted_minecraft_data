@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.CowVariant;
 
@@ -29,7 +29,7 @@ public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
       return Maps.newEnumMap(Map.of(CowVariant.ModelType.NORMAL, new AdultAndBabyModelPair(new CowModel(var0.bakeLayer(ModelLayers.COW)), new CowModel(var0.bakeLayer(ModelLayers.COW_BABY))), CowVariant.ModelType.WARM, new AdultAndBabyModelPair(new CowModel(var0.bakeLayer(ModelLayers.WARM_COW)), new CowModel(var0.bakeLayer(ModelLayers.WARM_COW_BABY))), CowVariant.ModelType.COLD, new AdultAndBabyModelPair(new CowModel(var0.bakeLayer(ModelLayers.COLD_COW)), new CowModel(var0.bakeLayer(ModelLayers.COLD_COW_BABY)))));
    }
 
-   public ResourceLocation getTextureLocation(CowRenderState var1) {
+   public Identifier getTextureLocation(CowRenderState var1) {
       return var1.variant == null ? MissingTextureAtlasSprite.getLocation() : var1.variant.modelAndTexture().asset().texturePath();
    }
 
@@ -50,7 +50,7 @@ public class CowRenderer extends MobRenderer<Cow, CowRenderState, CowModel> {
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CowRenderState)var1);
    }
 

@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.StrictJsonParser;
@@ -34,7 +34,7 @@ public class SpriteSourceList {
    public List<SpriteSource.Loader> list(ResourceManager var1) {
       final HashMap var2 = new HashMap();
       SpriteSource.Output var3 = new SpriteSource.Output() {
-         public void add(ResourceLocation var1, SpriteSource.DiscardableLoader var2x) {
+         public void add(Identifier var1, SpriteSource.DiscardableLoader var2x) {
             SpriteSource.DiscardableLoader var3 = (SpriteSource.DiscardableLoader)var2.put(var1, var2x);
             if (var3 != null) {
                var3.discard();
@@ -42,12 +42,12 @@ public class SpriteSourceList {
 
          }
 
-         public void removeAll(Predicate<ResourceLocation> var1) {
+         public void removeAll(Predicate<Identifier> var1) {
             Iterator var2x = var2.entrySet().iterator();
 
             while(var2x.hasNext()) {
                Map.Entry var3 = (Map.Entry)var2x.next();
-               if (var1.test((ResourceLocation)var3.getKey())) {
+               if (var1.test((Identifier)var3.getKey())) {
                   ((SpriteSource.DiscardableLoader)var3.getValue()).discard();
                   var2x.remove();
                }
@@ -62,8 +62,8 @@ public class SpriteSourceList {
       return var4.build();
    }
 
-   public static SpriteSourceList load(ResourceManager var0, ResourceLocation var1) {
-      ResourceLocation var2 = ATLAS_INFO_CONVERTER.idToFile(var1);
+   public static SpriteSourceList load(ResourceManager var0, Identifier var1) {
+      Identifier var2 = ATLAS_INFO_CONVERTER.idToFile(var1);
       ArrayList var3 = new ArrayList();
 
       for(Resource var5 : var0.getResourceStack(var2)) {

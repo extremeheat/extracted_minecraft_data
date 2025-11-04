@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class MipmapGenerator {
@@ -15,7 +15,7 @@ public class MipmapGenerator {
       super();
    }
 
-   public static NativeImage[] generateMipLevels(ResourceLocation var0, NativeImage[] var1, int var2, MipmapStrategy var3) {
+   public static NativeImage[] generateMipLevels(Identifier var0, NativeImage[] var1, int var2, MipmapStrategy var3) {
       if (var2 + 1 <= var1.length) {
          return var1;
       } else {

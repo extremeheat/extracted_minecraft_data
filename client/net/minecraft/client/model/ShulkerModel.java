@@ -44,13 +44,13 @@ public class ShulkerModel extends EntityModel<ShulkerRenderState> {
    public void setupAnim(ShulkerRenderState var1) {
       super.setupAnim(var1);
       float var2 = (0.5F + var1.peekAmount) * 3.1415927F;
-      float var3 = -1.0F + Mth.sin(var2);
+      float var3 = -1.0F + Mth.sin((double)var2);
       float var4 = 0.0F;
       if (var2 > 3.1415927F) {
-         var4 = Mth.sin(var1.ageInTicks * 0.1F) * 0.7F;
+         var4 = Mth.sin((double)(var1.ageInTicks * 0.1F)) * 0.7F;
       }
 
-      this.lid.setPos(0.0F, 16.0F + Mth.sin(var2) * 8.0F + var4, 0.0F);
+      this.lid.setPos(0.0F, 16.0F + Mth.sin((double)var2) * 8.0F + var4, 0.0F);
       if (var1.peekAmount > 0.3F) {
          this.lid.yRot = var3 * var3 * var3 * var3 * 3.1415927F * 0.125F;
       } else {

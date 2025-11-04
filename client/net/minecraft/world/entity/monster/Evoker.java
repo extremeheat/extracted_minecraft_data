@@ -154,18 +154,18 @@ public class Evoker extends SpellcasterIllager {
          if (Evoker.this.distanceToSqr(var1) < 9.0) {
             for(int var7 = 0; var7 < 5; ++var7) {
                float var8 = var6 + (float)var7 * 3.1415927F * 0.4F;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 1.5, Evoker.this.getZ() + (double)Mth.sin(var8) * 1.5, var2, var4, var8, 0);
+               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos((double)var8) * 1.5, Evoker.this.getZ() + (double)Mth.sin((double)var8) * 1.5, var2, var4, var8, 0);
             }
 
             for(int var11 = 0; var11 < 8; ++var11) {
                float var13 = var6 + (float)var11 * 3.1415927F * 2.0F / 8.0F + 1.2566371F;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var13) * 2.5, Evoker.this.getZ() + (double)Mth.sin(var13) * 2.5, var2, var4, var13, 3);
+               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos((double)var13) * 2.5, Evoker.this.getZ() + (double)Mth.sin((double)var13) * 2.5, var2, var4, var13, 3);
             }
          } else {
             for(int var12 = 0; var12 < 16; ++var12) {
                double var14 = 1.25 * (double)(var12 + 1);
                int var10 = 1 * var12;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var6) * var14, Evoker.this.getZ() + (double)Mth.sin(var6) * var14, var2, var4, var6, var10);
+               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos((double)var6) * var14, Evoker.this.getZ() + (double)Mth.sin((double)var6) * var14, var2, var4, var6, var10);
             }
          }
 

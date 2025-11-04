@@ -3,9 +3,9 @@ package net.minecraft.server.level;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 
 public class Ticket {
    public static final MapCodec<Ticket> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.TICKET_TYPE.byNameCodec().fieldOf("type").forGetter(Ticket::getType), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("level").forGetter(Ticket::getTicketLevel), Codec.LONG.optionalFieldOf("ticks_left", 0L).forGetter((var0x) -> var0x.ticksLeft)).apply(var0, Ticket::new));

@@ -11,8 +11,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -113,9 +115,9 @@ public class FlowerPotBlock extends Block {
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.isRandomlyTicking(var1) && var2.dimensionType().natural()) {
+      if (this.isRandomlyTicking(var1)) {
          boolean var5 = this.potted == Blocks.OPEN_EYEBLOSSOM;
-         boolean var6 = CreakingHeartBlock.isNaturalNight(var2);
+         boolean var6 = ((TriState)var2.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, var3)).toBoolean(var5);
          if (var5 != var6) {
             var2.setBlock(var3, this.opposite(var1), 3);
             EyeblossomBlock.Type var7 = EyeblossomBlock.Type.fromBoolean(var5).transform();

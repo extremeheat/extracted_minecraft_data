@@ -2,8 +2,8 @@ package net.minecraft.world.attribute;
 
 import com.mojang.serialization.Codec;
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class EnvironmentAttribute<Value> {

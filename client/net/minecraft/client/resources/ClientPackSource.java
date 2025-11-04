@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.BuiltInMetadata;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
@@ -34,7 +34,7 @@ public class ClientPackSource extends BuiltInPackSource {
    private static final PackLocationInfo VANILLA_PACK_INFO;
    private static final PackSelectionConfig VANILLA_SELECTION_CONFIG;
    private static final PackSelectionConfig BUILT_IN_SELECTION_CONFIG;
-   private static final ResourceLocation PACKS_DIR;
+   private static final Identifier PACKS_DIR;
    private final @Nullable Path externalAssetDir;
 
    public ClientPackSource(Path var1, DirectoryValidator var2) {
@@ -90,6 +90,6 @@ public class ClientPackSource extends BuiltInPackSource {
       VANILLA_PACK_INFO = new PackLocationInfo("vanilla", Component.translatable("resourcePack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO));
       VANILLA_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);
       BUILT_IN_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
-      PACKS_DIR = ResourceLocation.withDefaultNamespace("resourcepacks");
+      PACKS_DIR = Identifier.withDefaultNamespace("resourcepacks");
    }
 }

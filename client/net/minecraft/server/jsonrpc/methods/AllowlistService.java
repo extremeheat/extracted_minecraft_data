@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.StoredUserEntry;
 import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.util.Util;
 
 public class AllowlistService {
    public AllowlistService() {

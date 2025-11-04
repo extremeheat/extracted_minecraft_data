@@ -9,7 +9,6 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import net.minecraft.FileUtil;
 
 public class DirectoryLock implements AutoCloseable {
    public static final String LOCK_FILE = "session.lock";

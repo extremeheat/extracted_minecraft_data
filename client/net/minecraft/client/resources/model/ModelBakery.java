@@ -26,7 +26,7 @@ import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.thread.ParallelMapTransform;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -41,19 +41,19 @@ public class ModelBakery {
    public static final Material SHIELD_BASE;
    public static final Material NO_PATTERN_SHIELD;
    public static final int DESTROY_STAGE_COUNT = 10;
-   public static final List<ResourceLocation> DESTROY_STAGES;
-   public static final List<ResourceLocation> BREAKING_LOCATIONS;
+   public static final List<Identifier> DESTROY_STAGES;
+   public static final List<Identifier> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
    static final Logger LOGGER;
    private final EntityModelSet entityModelSet;
    private final MaterialSet materials;
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final Map<BlockState, BlockStateModel.UnbakedRoot> unbakedBlockStateModels;
-   private final Map<ResourceLocation, ClientItem> clientInfos;
-   final Map<ResourceLocation, ResolvedModel> resolvedModels;
+   private final Map<Identifier, ClientItem> clientInfos;
+   final Map<Identifier, ResolvedModel> resolvedModels;
    final ResolvedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3, Map<BlockState, BlockStateModel.UnbakedRoot> var4, Map<ResourceLocation, ClientItem> var5, Map<ResourceLocation, ResolvedModel> var6, ResolvedModel var7) {
+   public ModelBakery(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3, Map<BlockState, BlockStateModel.UnbakedRoot> var4, Map<Identifier, ClientItem> var5, Map<Identifier, ResolvedModel> var6, ResolvedModel var7) {
       super();
       this.entityModelSet = var1;
       this.materials = var2;
@@ -100,10 +100,10 @@ public class ModelBakery {
       LAVA_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("lava_flow");
       WATER_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_flow");
       WATER_OVERLAY = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_overlay");
-      BANNER_BASE = new Material(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner_base"));
-      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
-      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
-      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0)).collect(Collectors.toList());
+      BANNER_BASE = new Material(Sheets.BANNER_SHEET, Identifier.withDefaultNamespace("entity/banner_base"));
+      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield_base"));
+      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, Identifier.withDefaultNamespace("entity/shield_base_nopattern"));
+      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> Identifier.withDefaultNamespace("block/destroy_stage_" + var0)).collect(Collectors.toList());
       BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
@@ -120,7 +120,7 @@ public class ModelBakery {
 
       public static MissingModels bake(ResolvedModel var0, final SpriteGetter var1) {
          ModelBaker var2 = new ModelBaker() {
-            public ResolvedModel getModel(ResourceLocation var1x) {
+            public ResolvedModel getModel(Identifier var1x) {
                throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(var1x));
             }
 
@@ -158,7 +158,7 @@ public class ModelBakery {
          return this.sprites;
       }
 
-      public ResolvedModel getModel(ResourceLocation var1) {
+      public ResolvedModel getModel(Identifier var1) {
          ResolvedModel var2 = (ResolvedModel)ModelBakery.this.resolvedModels.get(var1);
          if (var2 == null) {
             ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", var1);
@@ -173,8 +173,8 @@ public class ModelBakery {
       }
    }
 
-   public static record BakingResult(MissingModels missingModels, Map<BlockState, BlockStateModel> blockStateModels, Map<ResourceLocation, ItemModel> itemStackModels, Map<ResourceLocation, ClientItem.Properties> itemProperties) {
-      public BakingResult(MissingModels var1, Map<BlockState, BlockStateModel> var2, Map<ResourceLocation, ItemModel> var3, Map<ResourceLocation, ClientItem.Properties> var4) {
+   public static record BakingResult(MissingModels missingModels, Map<BlockState, BlockStateModel> blockStateModels, Map<Identifier, ItemModel> itemStackModels, Map<Identifier, ClientItem.Properties> itemProperties) {
+      public BakingResult(MissingModels var1, Map<BlockState, BlockStateModel> var2, Map<Identifier, ItemModel> var3, Map<Identifier, ClientItem.Properties> var4) {
          super();
          this.missingModels = var1;
          this.blockStateModels = var2;

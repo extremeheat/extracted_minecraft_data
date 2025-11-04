@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BedRenderer;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
@@ -31,14 +31,14 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
       this.bedRenderer.getExtents(var1);
    }
 
-   public static record Unbaked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier texture) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
 
       public Unbaked(DyeColor var1) {
          this(Sheets.colorToResourceMaterial(var1));
       }
 
-      public Unbaked(ResourceLocation var1) {
+      public Unbaked(Identifier var1) {
          super();
          this.texture = var1;
       }

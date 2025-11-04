@@ -7,7 +7,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
@@ -88,7 +88,7 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
       AbstractCookingRecipe var4 = this.factory.create((String)Objects.requireNonNullElse(this.group, ""), this.bookCategory, this.ingredient, new ItemStack(this.result), this.experience, this.cookingTime);
-      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private static CookingBookCategory determineSmeltingRecipeCategory(ItemLike var0) {
@@ -117,7 +117,7 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
 
    private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       }
    }
 

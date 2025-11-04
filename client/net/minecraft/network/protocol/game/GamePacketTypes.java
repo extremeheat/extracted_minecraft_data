@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.game;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class GamePacketTypes {
    public static final PacketType<ClientboundBundlePacket> CLIENTBOUND_BUNDLE = createClientbound("bundle");
@@ -195,10 +195,10 @@ public class GamePacketTypes {
    }
 
    private static <T extends Packet<ClientGamePacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerGamePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
    }
 }

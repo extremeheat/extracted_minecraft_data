@@ -3,8 +3,8 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import java.util.Arrays;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.util.Util;
 
 public class SectionBufferBuilderPack implements AutoCloseable {
    public static final int TOTAL_BUFFERS_SIZE = Arrays.stream(ChunkSectionLayer.values()).mapToInt(ChunkSectionLayer::bufferSize).sum();

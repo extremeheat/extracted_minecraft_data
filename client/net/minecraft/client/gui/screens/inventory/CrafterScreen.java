@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -15,10 +15,10 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
-   private static final ResourceLocation DISABLED_SLOT_LOCATION_SPRITE = ResourceLocation.withDefaultNamespace("container/crafter/disabled_slot");
-   private static final ResourceLocation POWERED_REDSTONE_LOCATION_SPRITE = ResourceLocation.withDefaultNamespace("container/crafter/powered_redstone");
-   private static final ResourceLocation UNPOWERED_REDSTONE_LOCATION_SPRITE = ResourceLocation.withDefaultNamespace("container/crafter/unpowered_redstone");
-   private static final ResourceLocation CONTAINER_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/crafter.png");
+   private static final Identifier DISABLED_SLOT_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/disabled_slot");
+   private static final Identifier POWERED_REDSTONE_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/powered_redstone");
+   private static final Identifier UNPOWERED_REDSTONE_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/unpowered_redstone");
+   private static final Identifier CONTAINER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/crafter.png");
    private static final Component DISABLED_SLOT_TOOLTIP = Component.translatable("gui.togglable_slot");
    private final Player player;
 
@@ -80,7 +80,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    }
 
    private void renderDisabledSlot(GuiGraphics var1, CrafterSlot var2) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DISABLED_SLOT_LOCATION_SPRITE, var2.x - 1, var2.y - 1, 18, 18);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISABLED_SLOT_LOCATION_SPRITE, var2.x - 1, var2.y - 1, 18, 18);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -96,14 +96,14 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    private void renderRedstone(GuiGraphics var1) {
       int var2 = this.width / 2 + 9;
       int var3 = this.height / 2 - 48;
-      ResourceLocation var4;
+      Identifier var4;
       if (((CrafterMenu)this.menu).isPowered()) {
          var4 = POWERED_REDSTONE_LOCATION_SPRITE;
       } else {
          var4 = UNPOWERED_REDSTONE_LOCATION_SPRITE;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var4, var2, var3, 16, 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var4, var2, var3, 16, 16);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {

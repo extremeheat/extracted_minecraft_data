@@ -8,9 +8,9 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.SurfaceRuleData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.OverworldBiomeBuilder;
 import net.minecraft.world.level.block.Blocks;
@@ -96,12 +96,12 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
 
    static {
       CODEC = RegistryFileCodec.<Holder<NoiseGeneratorSettings>>create(Registries.NOISE_SETTINGS, DIRECT_CODEC);
-      OVERWORLD = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("overworld"));
-      LARGE_BIOMES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("large_biomes"));
-      AMPLIFIED = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("amplified"));
-      NETHER = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("nether"));
-      END = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("end"));
-      CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("caves"));
-      FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("floating_islands"));
+      OVERWORLD = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("overworld"));
+      LARGE_BIOMES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("large_biomes"));
+      AMPLIFIED = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("amplified"));
+      NETHER = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("nether"));
+      END = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("end"));
+      CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("caves"));
+      FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, Identifier.withDefaultNamespace("floating_islands"));
    }
 }

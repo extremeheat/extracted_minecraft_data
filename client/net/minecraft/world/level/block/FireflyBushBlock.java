@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -30,7 +31,7 @@ public class FireflyBushBlock extends VegetationBlock implements BonemealableBlo
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(30) == 0 && var2.isMoonVisible() && var2.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3) <= var3.getY()) {
+      if (var4.nextInt(30) == 0 && (Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.FIREFLY_BUSH_SOUNDS, var3) && var2.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3) <= var3.getY()) {
          var2.playLocalSound(var3, SoundEvents.FIREFLY_BUSH_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
       }
 

@@ -310,7 +310,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
                if (var2.hasBlockEntity()) {
                   BlockEntity var20 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
                   if (var20 != null && !var20.isValidBlockState(var2)) {
-                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var20.getType().builtInRegistryHolder().key().location(), var2});
+                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var20.getType().builtInRegistryHolder().key().identifier(), var2});
                      this.removeBlockEntity(var1);
                      var20 = null;
                   }

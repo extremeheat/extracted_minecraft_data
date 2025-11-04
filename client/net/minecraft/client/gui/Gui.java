@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
-import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -43,8 +42,8 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
@@ -52,6 +51,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffect;
@@ -83,37 +83,37 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jspecify.annotations.Nullable;
 
 public class Gui {
-   private static final ResourceLocation CROSSHAIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_attack_indicator_full");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_attack_indicator_background");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_attack_indicator_progress");
-   private static final ResourceLocation EFFECT_BACKGROUND_AMBIENT_SPRITE = ResourceLocation.withDefaultNamespace("hud/effect_background_ambient");
-   private static final ResourceLocation EFFECT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/effect_background");
-   private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
-   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
-   private static final ResourceLocation HOTBAR_OFFHAND_LEFT_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
-   private static final ResourceLocation HOTBAR_OFFHAND_RIGHT_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_right");
-   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_background");
-   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_progress");
-   private static final ResourceLocation ARMOR_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_empty");
-   private static final ResourceLocation ARMOR_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_half");
-   private static final ResourceLocation ARMOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_full");
-   private static final ResourceLocation FOOD_EMPTY_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_empty_hunger");
-   private static final ResourceLocation FOOD_HALF_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_half_hunger");
-   private static final ResourceLocation FOOD_FULL_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_full_hunger");
-   private static final ResourceLocation FOOD_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_empty");
-   private static final ResourceLocation FOOD_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_half");
-   private static final ResourceLocation FOOD_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_full");
-   private static final ResourceLocation AIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/air");
-   private static final ResourceLocation AIR_POPPING_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_bursting");
-   private static final ResourceLocation AIR_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_empty");
-   private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_container");
-   private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_full");
-   private static final ResourceLocation HEART_VEHICLE_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_half");
-   private static final ResourceLocation VIGNETTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/vignette.png");
-   public static final ResourceLocation NAUSEA_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/nausea.png");
-   private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/spyglass_scope.png");
-   private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/powder_snow_outline.png");
+   private static final Identifier CROSSHAIR_SPRITE = Identifier.withDefaultNamespace("hud/crosshair");
+   private static final Identifier CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_full");
+   private static final Identifier CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_background");
+   private static final Identifier CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_progress");
+   private static final Identifier EFFECT_BACKGROUND_AMBIENT_SPRITE = Identifier.withDefaultNamespace("hud/effect_background_ambient");
+   private static final Identifier EFFECT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/effect_background");
+   private static final Identifier HOTBAR_SPRITE = Identifier.withDefaultNamespace("hud/hotbar");
+   private static final Identifier HOTBAR_SELECTION_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_selection");
+   private static final Identifier HOTBAR_OFFHAND_LEFT_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_offhand_left");
+   private static final Identifier HOTBAR_OFFHAND_RIGHT_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_offhand_right");
+   private static final Identifier HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_attack_indicator_background");
+   private static final Identifier HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_attack_indicator_progress");
+   private static final Identifier ARMOR_EMPTY_SPRITE = Identifier.withDefaultNamespace("hud/armor_empty");
+   private static final Identifier ARMOR_HALF_SPRITE = Identifier.withDefaultNamespace("hud/armor_half");
+   private static final Identifier ARMOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/armor_full");
+   private static final Identifier FOOD_EMPTY_HUNGER_SPRITE = Identifier.withDefaultNamespace("hud/food_empty_hunger");
+   private static final Identifier FOOD_HALF_HUNGER_SPRITE = Identifier.withDefaultNamespace("hud/food_half_hunger");
+   private static final Identifier FOOD_FULL_HUNGER_SPRITE = Identifier.withDefaultNamespace("hud/food_full_hunger");
+   private static final Identifier FOOD_EMPTY_SPRITE = Identifier.withDefaultNamespace("hud/food_empty");
+   private static final Identifier FOOD_HALF_SPRITE = Identifier.withDefaultNamespace("hud/food_half");
+   private static final Identifier FOOD_FULL_SPRITE = Identifier.withDefaultNamespace("hud/food_full");
+   private static final Identifier AIR_SPRITE = Identifier.withDefaultNamespace("hud/air");
+   private static final Identifier AIR_POPPING_SPRITE = Identifier.withDefaultNamespace("hud/air_bursting");
+   private static final Identifier AIR_EMPTY_SPRITE = Identifier.withDefaultNamespace("hud/air_empty");
+   private static final Identifier HEART_VEHICLE_CONTAINER_SPRITE = Identifier.withDefaultNamespace("hud/heart/vehicle_container");
+   private static final Identifier HEART_VEHICLE_FULL_SPRITE = Identifier.withDefaultNamespace("hud/heart/vehicle_full");
+   private static final Identifier HEART_VEHICLE_HALF_SPRITE = Identifier.withDefaultNamespace("hud/heart/vehicle_half");
+   private static final Identifier VIGNETTE_LOCATION = Identifier.withDefaultNamespace("textures/misc/vignette.png");
+   public static final Identifier NAUSEA_LOCATION = Identifier.withDefaultNamespace("textures/misc/nausea.png");
+   private static final Identifier SPYGLASS_SCOPE_LOCATION = Identifier.withDefaultNamespace("textures/misc/spyglass_scope.png");
+   private static final Identifier POWDER_SNOW_OUTLINE_LOCATION = Identifier.withDefaultNamespace("textures/misc/powder_snow_outline.png");
    private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER;
    private static final Component DEMO_EXPIRED_TEXT;
    private static final Component SAVING_TEXT;
@@ -265,7 +265,7 @@ public class Gui {
                ItemStack var9 = var3.getItemBySlot(var8);
                Equippable var10 = (Equippable)var9.get(DataComponents.EQUIPPABLE);
                if (var10 != null && var10.slot() == var8 && var10.cameraOverlay().isPresent()) {
-                  this.renderTextureOverlay(var1, ((ResourceLocation)var10.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
+                  this.renderTextureOverlay(var1, ((Identifier)var10.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
                }
             }
          }
@@ -427,7 +427,7 @@ public class Gui {
             if (!this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
                var1.nextStratum();
                boolean var4 = true;
-               var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
+               var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
                if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
                   float var5 = this.minecraft.player.getAttackStrengthScale(0.0F);
                   boolean var6 = false;
@@ -439,10 +439,10 @@ public class Gui {
                   int var7 = var1.guiHeight() / 2 - 7 + 16;
                   int var8 = var1.guiWidth() / 2 - 8;
                   if (var6) {
-                     var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var7, 16, 16);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var7, 16, 16);
                   } else if (var5 < 1.0F) {
                      int var9 = (int)(var5 * 17.0F);
-                     var1.blitSprite(RenderPipelines.CROSSHAIR, (ResourceLocation)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
                      var1.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var7, var9, 4);
                   }
                }
@@ -492,26 +492,26 @@ public class Gui {
 
                float var11 = 1.0F;
                if (var7.isAmbient()) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_AMBIENT_SPRITE, var9, var10, 24, 24);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EFFECT_BACKGROUND_AMBIENT_SPRITE, var9, var10, 24, 24);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)EFFECT_BACKGROUND_SPRITE, var9, var10, 24, 24);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EFFECT_BACKGROUND_SPRITE, var9, var10, 24, 24);
                   if (var7.endsWithin(200)) {
                      int var12 = var7.getDuration();
                      int var13 = 10 - var12 / 20;
-                     var11 = Mth.clamp((float)var12 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var12 * 3.1415927F / 5.0F) * Mth.clamp((float)var13 / 10.0F * 0.25F, 0.0F, 0.25F);
+                     var11 = Mth.clamp((float)var12 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((double)((float)var12 * 3.1415927F / 5.0F)) * Mth.clamp((float)var13 / 10.0F * 0.25F, 0.0F, 0.25F);
                      var11 = Mth.clamp(var11, 0.0F, 1.0F);
                   }
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)getMobEffectSprite(var8), var9 + 3, var10 + 3, 18, 18, ARGB.white(var11));
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)getMobEffectSprite(var8), var9 + 3, var10 + 3, 18, 18, ARGB.white(var11));
             }
          }
 
       }
    }
 
-   public static ResourceLocation getMobEffectSprite(Holder<MobEffect> var0) {
-      return (ResourceLocation)var0.unwrapKey().map(ResourceKey::location).map((var0x) -> var0x.withPrefix("mob_effect/")).orElseGet(MissingTextureAtlasSprite::getLocation);
+   public static Identifier getMobEffectSprite(Holder<MobEffect> var0) {
+      return (Identifier)var0.unwrapKey().map(ResourceKey::identifier).map((var0x) -> var0x.withPrefix("mob_effect/")).orElseGet(MissingTextureAtlasSprite::getLocation);
    }
 
    private void renderHotbarAndDecorations(GuiGraphics var1, DeltaTracker var2) {
@@ -553,13 +553,13 @@ public class Gui {
          int var6 = var1.guiWidth() / 2;
          boolean var7 = true;
          boolean var8 = true;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
             } else {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_OFFHAND_RIGHT_SPRITE, var6 + 91, var1.guiHeight() - 23, 29, 24);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_OFFHAND_RIGHT_SPRITE, var6 + 91, var1.guiHeight() - 23, 29, 24);
             }
          }
 
@@ -590,7 +590,7 @@ public class Gui {
                }
 
                int var13 = (int)(var17 * 19.0F);
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var19, var18 + 18 - var13, 18, var13);
             }
          }
@@ -817,15 +817,15 @@ public class Gui {
          for(int var8 = 0; var8 < 10; ++var8) {
             int var9 = var5 + var8 * 8;
             if (var8 * 2 + 1 < var6) {
-               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_FULL_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_FULL_SPRITE, var9, var7, 9, 9);
             }
 
             if (var8 * 2 + 1 == var6) {
-               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_HALF_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_HALF_SPRITE, var9, var7, 9, 9);
             }
 
             if (var8 * 2 + 1 > var6) {
-               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ARMOR_EMPTY_SPRITE, var9, var7, 9, 9);
+               var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_EMPTY_SPRITE, var9, var7, 9, 9);
             }
          }
 
@@ -877,7 +877,7 @@ public class Gui {
    }
 
    private void renderHeart(GuiGraphics var1, HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
    }
 
    private void renderAirBubbles(GuiGraphics var1, Player var2, int var3, int var4, int var5) {
@@ -897,13 +897,13 @@ public class Gui {
          for(int var13 = 1; var13 <= 10; ++var13) {
             int var14 = var5 - (var13 - 1) * 8 - 9;
             if (var13 <= var9) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_SPRITE, var14, var4, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_SPRITE, var14, var4, 9, 9);
             } else if (var12 && var13 == var10 && var8) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_POPPING_SPRITE, var14, var4, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_POPPING_SPRITE, var14, var4, 9, 9);
                this.playAirBubblePoppedSound(var13, var2, var11);
             } else if (var13 > 10 - var11) {
                int var15 = var11 == 10 && this.tickCount % 2 == 0 ? this.random.nextInt(2) : 0;
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)AIR_EMPTY_SPRITE, var14, var4 + var15, 9, 9);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_EMPTY_SPRITE, var14, var4 + var15, 9, 9);
             }
          }
       }
@@ -940,9 +940,9 @@ public class Gui {
 
       for(int var7 = 0; var7 < 10; ++var7) {
          int var8 = var3;
-         ResourceLocation var9;
-         ResourceLocation var10;
-         ResourceLocation var11;
+         Identifier var9;
+         Identifier var10;
+         Identifier var11;
          if (var2.hasEffect(MobEffects.HUNGER)) {
             var9 = FOOD_EMPTY_HUNGER_SPRITE;
             var10 = FOOD_HALF_HUNGER_SPRITE;
@@ -958,13 +958,13 @@ public class Gui {
          }
 
          int var12 = var4 - var7 * 8 - 9;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var9, var12, var8, 9, 9);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var9, var12, var8, 9, 9);
          if (var7 * 2 + 1 < var6) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var11, var12, var8, 9, 9);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var11, var12, var8, 9, 9);
          }
 
          if (var7 * 2 + 1 == var6) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, var12, var8, 9, 9);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var10, var12, var8, 9, 9);
          }
       }
 
@@ -987,13 +987,13 @@ public class Gui {
 
                for(int var10 = 0; var10 < var9; ++var10) {
                   int var11 = var6 - var10 * 8 - 9;
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_CONTAINER_SPRITE, var11, var7, 9, 9);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_CONTAINER_SPRITE, var11, var7, 9, 9);
                   if (var10 * 2 + 1 + var8 < var4) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_FULL_SPRITE, var11, var7, 9, 9);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_FULL_SPRITE, var11, var7, 9, 9);
                   }
 
                   if (var10 * 2 + 1 + var8 == var4) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HEART_VEHICLE_HALF_SPRITE, var11, var7, 9, 9);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_HALF_SPRITE, var11, var7, 9, 9);
                   }
                }
 
@@ -1004,7 +1004,7 @@ public class Gui {
       }
    }
 
-   private void renderTextureOverlay(GuiGraphics var1, ResourceLocation var2, float var3) {
+   private void renderTextureOverlay(GuiGraphics var1, Identifier var2, float var3) {
       int var4 = ARGB.white(var3);
       var1.blit(RenderPipelines.GUI_TEXTURED, var2, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var4);
    }
@@ -1303,23 +1303,23 @@ public class Gui {
    }
 
    static enum HeartType {
-      CONTAINER(ResourceLocation.withDefaultNamespace("hud/heart/container"), ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container"), ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking")),
-      NORMAL(ResourceLocation.withDefaultNamespace("hud/heart/full"), ResourceLocation.withDefaultNamespace("hud/heart/full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/half"), ResourceLocation.withDefaultNamespace("hud/heart/half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half_blinking")),
-      POISIONED(ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")),
-      WITHERED(ResourceLocation.withDefaultNamespace("hud/heart/withered_full"), ResourceLocation.withDefaultNamespace("hud/heart/withered_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/withered_half"), ResourceLocation.withDefaultNamespace("hud/heart/withered_half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_half_blinking")),
-      ABSORBING(ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_half_blinking")),
-      FROZEN(ResourceLocation.withDefaultNamespace("hud/heart/frozen_full"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_half"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_half_blinking"));
+      CONTAINER(Identifier.withDefaultNamespace("hud/heart/container"), Identifier.withDefaultNamespace("hud/heart/container_blinking"), Identifier.withDefaultNamespace("hud/heart/container"), Identifier.withDefaultNamespace("hud/heart/container_blinking"), Identifier.withDefaultNamespace("hud/heart/container_hardcore"), Identifier.withDefaultNamespace("hud/heart/container_hardcore_blinking"), Identifier.withDefaultNamespace("hud/heart/container_hardcore"), Identifier.withDefaultNamespace("hud/heart/container_hardcore_blinking")),
+      NORMAL(Identifier.withDefaultNamespace("hud/heart/full"), Identifier.withDefaultNamespace("hud/heart/full_blinking"), Identifier.withDefaultNamespace("hud/heart/half"), Identifier.withDefaultNamespace("hud/heart/half_blinking"), Identifier.withDefaultNamespace("hud/heart/hardcore_full"), Identifier.withDefaultNamespace("hud/heart/hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/hardcore_half"), Identifier.withDefaultNamespace("hud/heart/hardcore_half_blinking")),
+      POISIONED(Identifier.withDefaultNamespace("hud/heart/poisoned_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_half_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")),
+      WITHERED(Identifier.withDefaultNamespace("hud/heart/withered_full"), Identifier.withDefaultNamespace("hud/heart/withered_full_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_half"), Identifier.withDefaultNamespace("hud/heart/withered_half_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_half_blinking")),
+      ABSORBING(Identifier.withDefaultNamespace("hud/heart/absorbing_full"), Identifier.withDefaultNamespace("hud/heart/absorbing_full_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_half"), Identifier.withDefaultNamespace("hud/heart/absorbing_half_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_half_blinking")),
+      FROZEN(Identifier.withDefaultNamespace("hud/heart/frozen_full"), Identifier.withDefaultNamespace("hud/heart/frozen_full_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_half"), Identifier.withDefaultNamespace("hud/heart/frozen_half_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_half_blinking"));
 
-      private final ResourceLocation full;
-      private final ResourceLocation fullBlinking;
-      private final ResourceLocation half;
-      private final ResourceLocation halfBlinking;
-      private final ResourceLocation hardcoreFull;
-      private final ResourceLocation hardcoreFullBlinking;
-      private final ResourceLocation hardcoreHalf;
-      private final ResourceLocation hardcoreHalfBlinking;
+      private final Identifier full;
+      private final Identifier fullBlinking;
+      private final Identifier half;
+      private final Identifier halfBlinking;
+      private final Identifier hardcoreFull;
+      private final Identifier hardcoreFullBlinking;
+      private final Identifier hardcoreHalf;
+      private final Identifier hardcoreHalfBlinking;
 
-      private HeartType(final ResourceLocation var3, final ResourceLocation var4, final ResourceLocation var5, final ResourceLocation var6, final ResourceLocation var7, final ResourceLocation var8, final ResourceLocation var9, final ResourceLocation var10) {
+      private HeartType(final Identifier var3, final Identifier var4, final Identifier var5, final Identifier var6, final Identifier var7, final Identifier var8, final Identifier var9, final Identifier var10) {
          this.full = var3;
          this.fullBlinking = var4;
          this.half = var5;
@@ -1330,7 +1330,7 @@ public class Gui {
          this.hardcoreHalfBlinking = var10;
       }
 
-      public ResourceLocation getSprite(boolean var1, boolean var2, boolean var3) {
+      public Identifier getSprite(boolean var1, boolean var2, boolean var3) {
          if (!var1) {
             if (var2) {
                return var3 ? this.halfBlinking : this.half;

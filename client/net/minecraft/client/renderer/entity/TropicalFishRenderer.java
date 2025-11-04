@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TropicalFishRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.TropicalFish;
 import org.joml.Quaternionfc;
@@ -20,8 +20,8 @@ import org.joml.Quaternionfc;
 public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFishRenderState, EntityModel<TropicalFishRenderState>> {
    private final EntityModel<TropicalFishRenderState> modelA = this.getModel();
    private final EntityModel<TropicalFishRenderState> modelB;
-   private static final ResourceLocation MODEL_A_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fish/tropical_a.png");
-   private static final ResourceLocation MODEL_B_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fish/tropical_b.png");
+   private static final Identifier MODEL_A_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_a.png");
+   private static final Identifier MODEL_B_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_b.png");
 
    public TropicalFishRenderer(EntityRendererProvider.Context var1) {
       super(var1, new TropicalFishModelA(var1.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL)), 0.15F);
@@ -29,8 +29,8 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
       this.addLayer(new TropicalFishPatternLayer(this, var1.getModelSet()));
    }
 
-   public ResourceLocation getTextureLocation(TropicalFishRenderState var1) {
-      ResourceLocation var10000;
+   public Identifier getTextureLocation(TropicalFishRenderState var1) {
+      Identifier var10000;
       switch (var1.pattern.base()) {
          case SMALL -> var10000 = MODEL_A_TEXTURE;
          case LARGE -> var10000 = MODEL_B_TEXTURE;
@@ -69,7 +69,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
 
    protected void setupRotations(TropicalFishRenderState var1, PoseStack var2, float var3, float var4) {
       super.setupRotations(var1, var2, var3, var4);
-      float var5 = 4.3F * Mth.sin(0.6F * var1.ageInTicks);
+      float var5 = 4.3F * Mth.sin((double)(0.6F * var1.ageInTicks));
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
       if (!var1.isInWater) {
          var2.translate(0.2F, 0.1F, 0.0F);
@@ -79,7 +79,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((TropicalFishRenderState)var1);
    }
 

@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class NbtProviders {
    private static final Codec<NbtProvider> TYPED_CODEC;
@@ -18,7 +18,7 @@ public class NbtProviders {
    }
 
    private static LootNbtProviderType register(String var0, MapCodec<? extends NbtProvider> var1) {
-      return (LootNbtProviderType)Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootNbtProviderType(var1));
+      return (LootNbtProviderType)Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootNbtProviderType(var1));
    }
 
    static {

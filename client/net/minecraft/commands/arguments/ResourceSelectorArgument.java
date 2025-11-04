@@ -20,8 +20,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
 
 public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Holder.Reference<T>>> {
@@ -38,9 +38,9 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
 
    public Collection<Holder.Reference<T>> parse(StringReader var1) throws CommandSyntaxException {
       String var2 = ensureNamespaced(readPattern(var1));
-      List var3 = this.registryLookup.listElements().filter((var1x) -> matches(var2, var1x.key().location())).toList();
+      List var3 = this.registryLookup.listElements().filter((var1x) -> matches(var2, var1x.key().identifier())).toList();
       if (var3.isEmpty()) {
-         throw ERROR_NO_MATCHES.createWithContext(var1, var2, this.registryKey.location());
+         throw ERROR_NO_MATCHES.createWithContext(var1, var2, this.registryKey.identifier());
       } else {
          return var3;
       }
@@ -48,7 +48,7 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
 
    public static <T> Collection<Holder.Reference<T>> parse(StringReader var0, HolderLookup<T> var1) {
       String var2 = ensureNamespaced(readPattern(var0));
-      return var1.listElements().filter((var1x) -> matches(var2, var1x.key().location())).toList();
+      return var1.listElements().filter((var1x) -> matches(var2, var1x.key().identifier())).toList();
    }
 
    private static String readPattern(StringReader var0) {
@@ -62,14 +62,14 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
    }
 
    private static boolean isAllowedPatternCharacter(char var0) {
-      return ResourceLocation.isAllowedInResourceLocation(var0) || var0 == '*' || var0 == '?';
+      return Identifier.isAllowedInIdentifier(var0) || var0 == '*' || var0 == '?';
    }
 
    private static String ensureNamespaced(String var0) {
       return !var0.contains(":") ? "minecraft:" + var0 : var0;
    }
 
-   private static boolean matches(String var0, ResourceLocation var1) {
+   private static boolean matches(String var0, Identifier var1) {
       return FilenameUtils.wildcardMatch(var1.toString(), var0);
    }
 
@@ -108,7 +108,7 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
       }
 
       public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.location().toString());
+         var2.addProperty("registry", var1.registryKey.identifier().toString());
       }
 
       public Info<T>.Template unpack(ResourceSelectorArgument<T> var1) {

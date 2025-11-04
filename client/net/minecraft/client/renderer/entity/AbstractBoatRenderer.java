@@ -27,7 +27,7 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
       var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var1.yRot));
       float var5 = var1.hurtTime;
       if (var5 > 0.0F) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)var5) * var5 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
       if (!var1.isUnderWater && !Mth.equal(var1.bubbleAngle, 0.0F)) {

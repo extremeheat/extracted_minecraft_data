@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public interface HolderSet<T> extends Iterable<Holder<T>> {

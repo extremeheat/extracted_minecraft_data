@@ -12,10 +12,10 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class BreezeEyesLayer extends RenderLayer<BreezeRenderState, BreezeModel> {
-   private static final RenderType BREEZE_EYES = RenderTypes.breezeEyes(ResourceLocation.withDefaultNamespace("textures/entity/breeze/breeze_eyes.png"));
+   private static final RenderType BREEZE_EYES = RenderTypes.breezeEyes(Identifier.withDefaultNamespace("textures/entity/breeze/breeze_eyes.png"));
    private final BreezeModel model;
 
    public BreezeEyesLayer(RenderLayerParent<BreezeRenderState, BreezeModel> var1, EntityModelSet var2) {

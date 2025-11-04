@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryPosition implements DebugScreenEntry {
-   public static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("position");
+   public static final Identifier GROUP = Identifier.withDefaultNamespace("position");
 
    public DebugEntryPosition() {
       super();
@@ -42,12 +42,12 @@ public class DebugEntryPosition implements DebugScreenEntry {
 
          String var10 = var10000;
          Object var11 = var2 instanceof ServerLevel ? ((ServerLevel)var2).getForceLoadedChunks() : LongSets.EMPTY_SET;
-         ResourceLocation var10001 = GROUP;
+         Identifier var10001 = GROUP;
          String var10002 = String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", var5.getCameraEntity().getX(), var5.getCameraEntity().getY(), var5.getCameraEntity().getZ());
          String var10003 = String.format(Locale.ROOT, "Block: %d %d %d", var7.getX(), var7.getY(), var7.getZ());
          String var10004 = String.format(Locale.ROOT, "Chunk: %d %d %d [%d %d in r.%d.%d.mca]", var8.x, SectionPos.blockToSectionCoord(var7.getY()), var8.z, var8.getRegionLocalX(), var8.getRegionLocalZ(), var8.getRegionX(), var8.getRegionZ());
          String var10005 = String.format(Locale.ROOT, "Facing: %s (%s) (%.1f / %.1f)", var9, var10, Mth.wrapDegrees(var6.getYRot()), Mth.wrapDegrees(var6.getXRot()));
-         String var10006 = String.valueOf(var5.level.dimension().location());
+         String var10006 = String.valueOf(var5.level.dimension().identifier());
          var1.addToGroup(var10001, List.of(var10002, var10003, var10004, var10005, var10006 + " FC: " + ((LongSet)var11).size()));
       }
    }

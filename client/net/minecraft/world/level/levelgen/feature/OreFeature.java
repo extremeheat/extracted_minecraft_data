@@ -65,7 +65,7 @@ public class OreFeature extends Feature<OreConfiguration> {
          double var30 = Mth.lerp((double)var27, var12, var14);
          double var32 = Mth.lerp((double)var27, var8, var10);
          double var34 = var2.nextDouble() * (double)var24 / 16.0;
-         double var36 = ((double)(Mth.sin(3.1415927F * var27) + 1.0F) * var34 + 1.0) / 2.0;
+         double var36 = ((double)(Mth.sin((double)(3.1415927F * var27)) + 1.0F) * var34 + 1.0) / 2.0;
          var25[var26 * 4 + 0] = var28;
          var25[var26 * 4 + 1] = var30;
          var25[var26 * 4 + 2] = var32;

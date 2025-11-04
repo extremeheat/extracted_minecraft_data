@@ -244,9 +244,9 @@ import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionCheck;
@@ -1482,7 +1482,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSelectAdvancementsTab(ClientboundSelectAdvancementsTabPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
-      ResourceLocation var2 = var1.getTab();
+      Identifier var2 = var1.getTab();
       if (var2 == null) {
          this.advancements.setSelectedTab((AdvancementHolder)null, false);
       } else {
@@ -2583,7 +2583,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             return LiteralArgumentBuilder.literal(var1);
          }
 
-         public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable ResourceLocation var3) {
+         public ArgumentBuilder<ClientSuggestionProvider, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable Identifier var3) {
             RequiredArgumentBuilder var4 = RequiredArgumentBuilder.argument(var1, var2);
             if (var3 != null) {
                var4.suggests(SuggestionProviders.getProvider(var3));

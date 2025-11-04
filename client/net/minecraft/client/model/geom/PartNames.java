@@ -95,6 +95,17 @@ public class PartNames {
    public static final String CHEST_BOTTOM = "chest_bottom";
    public static final String CHEST_LID = "chest_lid";
    public static final String CHEST_LOCK = "chest_lock";
+   public static final String YELLOW_CORAL = "yellow_coral";
+   public static final String YELLOW_CORAL_FIRST = "yellow_coral_first";
+   public static final String YELLOW_CORAL_SECOND = "yellow_coral_second";
+   public static final String PINK_CORAL = "pink_coral";
+   public static final String PINK_CORAL_SECOND = "pink_coral_second";
+   public static final String BLUE_CORAL = "blue_coral";
+   public static final String BLUE_CORAL_FIRST = "blue_first";
+   public static final String BLUE_CORAL_SECOND = "blue_second";
+   public static final String RED_CORAL = "red_coral";
+   public static final String RED_CORAL_FIRST = "red_coral_first";
+   public static final String RED_CORAL_SECOND = "red_coral_second";
 
    public PartNames() {
       super();

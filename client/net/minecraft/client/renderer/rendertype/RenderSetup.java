@@ -1,17 +1,24 @@
 package net.minecraft.client.renderer.rendertype;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public final class RenderSetup {
    final RenderPipeline pipeline;
-   final Map<String, ResourceLocation> textures;
+   final Map<String, TextureBinding> textures;
    final TextureTransform textureTransform;
    final OutputTarget outputTarget;
    final OutlineProperty outlineProperty;
@@ -22,7 +29,7 @@ public final class RenderSetup {
    final int bufferSize;
    final LayeringTransform layeringTransform;
 
-   RenderSetup(RenderPipeline var1, Map<String, ResourceLocation> var2, boolean var3, boolean var4, LayeringTransform var5, OutputTarget var6, TextureTransform var7, OutlineProperty var8, boolean var9, boolean var10, int var11) {
+   RenderSetup(RenderPipeline var1, Map<String, TextureBinding> var2, boolean var3, boolean var4, LayeringTransform var5, OutputTarget var6, TextureTransform var7, OutlineProperty var8, boolean var9, boolean var10, int var11) {
       super();
       this.pipeline = var1;
       this.textures = var2;
@@ -46,15 +53,25 @@ public final class RenderSetup {
       return new RenderSetupBuilder(var0);
    }
 
-   public Map<String, AbstractTexture> getTextures() {
-      if (this.textures.isEmpty()) {
+   public Map<String, TextureAndSampler> getTextures() {
+      if (this.textures.isEmpty() && !this.useOverlay && !this.useLightmap) {
          return Collections.emptyMap();
       } else {
          HashMap var1 = new HashMap();
+         if (this.useOverlay) {
+            var1.put("Sampler1", new TextureAndSampler(Minecraft.getInstance().gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+         }
+
+         if (this.useLightmap) {
+            var1.put("Sampler2", new TextureAndSampler(Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)));
+         }
+
          TextureManager var2 = Minecraft.getInstance().getTextureManager();
 
          for(Map.Entry var4 : this.textures.entrySet()) {
-            var1.put((String)var4.getKey(), var2.getTexture((ResourceLocation)var4.getValue()));
+            AbstractTexture var5 = var2.getTexture(((TextureBinding)var4.getValue()).location);
+            GpuSampler var6 = (GpuSampler)((TextureBinding)var4.getValue()).sampler().get();
+            var1.put((String)var4.getKey(), new TextureAndSampler(var5.getTextureView(), var6 != null ? var6 : var5.getSampler()));
          }
 
          return var1;
@@ -93,7 +110,7 @@ public final class RenderSetup {
       private boolean sortOnUpload;
       private int bufferSize;
       private OutlineProperty outlineProperty;
-      private final Map<String, ResourceLocation> textures;
+      private final Map<String, TextureBinding> textures;
 
       RenderSetupBuilder(RenderPipeline var1) {
          super();
@@ -108,8 +125,13 @@ public final class RenderSetup {
          this.pipeline = var1;
       }
 
-      public RenderSetupBuilder withTexture(String var1, ResourceLocation var2) {
-         this.textures.put(var1, var2);
+      public RenderSetupBuilder withTexture(String var1, Identifier var2) {
+         this.textures.put(var1, new TextureBinding(var2, () -> null));
+         return this;
+      }
+
+      public RenderSetupBuilder withTexture(String var1, Identifier var2, @Nullable Supplier<GpuSampler> var3) {
+         this.textures.put(var1, new TextureBinding(var2, Suppliers.memoize(() -> var3 == null ? null : (GpuSampler)var3.get())));
          return this;
       }
 
@@ -160,6 +182,24 @@ public final class RenderSetup {
 
       public RenderSetup createRenderSetup() {
          return new RenderSetup(this.pipeline, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.outputTarget, this.textureTransform, this.outlineProperty, this.affectsCrumbling, this.sortOnUpload, this.bufferSize);
+      }
+   }
+
+   public static record TextureAndSampler(GpuTextureView textureView, GpuSampler sampler) {
+      public TextureAndSampler(GpuTextureView var1, GpuSampler var2) {
+         super();
+         this.textureView = var1;
+         this.sampler = var2;
+      }
+   }
+
+   static record TextureBinding(Identifier location, Supplier<@Nullable GpuSampler> sampler) {
+      final Identifier location;
+
+      TextureBinding(Identifier var1, Supplier<@Nullable GpuSampler> var2) {
+         super();
+         this.location = var1;
+         this.sampler = var2;
       }
    }
 }

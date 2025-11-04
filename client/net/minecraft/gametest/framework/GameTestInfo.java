@@ -15,8 +15,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -160,6 +160,7 @@ public class GameTestInfo {
    private void startTest() {
       if (!this.started) {
          this.started = true;
+         this.timer.start();
          this.getTestInstanceBlockEntity().setRunning();
 
          try {
@@ -177,8 +178,8 @@ public class GameTestInfo {
       this.runAtTickTimeMap.put(var3, var1);
    }
 
-   public ResourceLocation id() {
-      return this.test.key().location();
+   public Identifier id() {
+      return this.test.key().identifier();
    }
 
    public @Nullable BlockPos getTestBlockPos() {
@@ -320,7 +321,7 @@ public class GameTestInfo {
       return !((GameTestInstance)this.test.value()).required();
    }
 
-   public ResourceLocation getStructure() {
+   public Identifier getStructure() {
       return ((GameTestInstance)this.test.value()).structure();
    }
 

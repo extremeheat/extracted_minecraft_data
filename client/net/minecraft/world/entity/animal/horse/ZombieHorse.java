@@ -52,8 +52,9 @@ public class ZombieHorse extends AbstractHorse {
       return createBaseHorseAttributes().add(Attributes.MAX_HEALTH, 25.0);
    }
 
-   public boolean requiresCustomPersistence() {
-      return super.requiresCustomPersistence() || this.isTamed();
+   public InteractionResult interact(Player var1, InteractionHand var2) {
+      this.setPersistenceRequired();
+      return super.interact(var1, var2);
    }
 
    public boolean removeWhenFarAway(double var1) {
@@ -139,6 +140,10 @@ public class ZombieHorse extends AbstractHorse {
       } else {
          return super.mobInteract(var1, var2);
       }
+   }
+
+   public boolean canUseSlot(EquipmentSlot var1) {
+      return true;
    }
 
    public boolean canBeLeashed() {

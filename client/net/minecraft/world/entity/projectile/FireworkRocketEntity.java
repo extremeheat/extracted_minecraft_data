@@ -149,7 +149,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       if (!this.noPhysics && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
          this.hitTargetOrDeflectSelf(var1);
-         this.hasImpulse = true;
+         this.needsSync = true;
       }
 
       this.updateRotation();

@@ -26,7 +26,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
@@ -48,11 +47,13 @@ import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.StrictJsonParser;
+import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
+import net.minecraft.world.entity.animal.ZombieNautilusVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
@@ -81,11 +82,12 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import net.minecraft.world.timeline.Timeline;
 import org.slf4j.Logger;
 
 public class RegistryDataLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Comparator<ResourceKey<?>> ERROR_KEY_COMPARATOR = Comparator.comparing(ResourceKey::registry).thenComparing(ResourceKey::location);
+   private static final Comparator<ResourceKey<?>> ERROR_KEY_COMPARATOR = Comparator.comparing(ResourceKey::registry).thenComparing(ResourceKey::identifier);
    private static final RegistrationInfo NETWORK_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize((Function)((var0) -> {
       Lifecycle var1 = (Lifecycle)var0.map(KnownPack::isVanilla).map((var0x) -> Lifecycle.stable()).orElse(Lifecycle.experimental());
@@ -122,7 +124,7 @@ public class RegistryDataLoader {
          }
 
          if (var1x.data.requiredNonEmpty && var2.size() == 0) {
-            var3.put(var2.key(), new IllegalStateException("Registry must be non-empty: " + String.valueOf(var2.key().location())));
+            var3.put(var2.key(), new IllegalStateException("Registry must be non-empty: " + String.valueOf(var2.key().identifier())));
          }
 
       });
@@ -160,7 +162,7 @@ public class RegistryDataLoader {
    private static void printFullDetailsToLog(Map<ResourceKey<?>, Exception> var0) {
       StringWriter var1 = new StringWriter();
       PrintWriter var2 = new PrintWriter(var1);
-      Map var3 = (Map)var0.entrySet().stream().collect(Collectors.groupingBy((var0x) -> ((ResourceKey)var0x.getKey()).registry(), Collectors.toMap((var0x) -> ((ResourceKey)var0x.getKey()).location(), Map.Entry::getValue)));
+      Map var3 = (Map)var0.entrySet().stream().collect(Collectors.groupingBy((var0x) -> ((ResourceKey)var0x.getKey()).registry(), Collectors.toMap((var0x) -> ((ResourceKey)var0x.getKey()).identifier(), Map.Entry::getValue)));
       var3.entrySet().stream().sorted(Entry.comparingByKey()).forEach((var1x) -> {
          var2.printf(Locale.ROOT, "> Errors in registry %s:%n", var1x.getKey());
          ((Map)var1x.getValue()).entrySet().stream().sorted(Entry.comparingByKey()).forEach((var1) -> {
@@ -177,7 +179,7 @@ public class RegistryDataLoader {
       CrashReportCategory var2 = var1.addCategory("Loading info");
       var2.setDetail("Errors", (CrashReportDetail)(() -> {
          StringBuilder var1 = new StringBuilder();
-         var0.entrySet().stream().sorted(Entry.comparingByKey(ERROR_KEY_COMPARATOR)).forEach((var1x) -> var1.append("\n\t\t").append(((ResourceKey)var1x.getKey()).registry()).append("/").append(((ResourceKey)var1x.getKey()).location()).append(": ").append(((Exception)var1x.getValue()).getMessage()));
+         var0.entrySet().stream().sorted(Entry.comparingByKey(ERROR_KEY_COMPARATOR)).forEach((var1x) -> var1.append("\n\t\t").append(((ResourceKey)var1x.getKey()).registry()).append("/").append(((ResourceKey)var1x.getKey()).identifier()).append(": ").append(((Exception)var1x.getValue()).getMessage()));
          return var1.toString();
       }));
       return new ReportedException(var1);
@@ -214,7 +216,7 @@ public class RegistryDataLoader {
       RegistryOps var6 = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var1);
 
       for(Map.Entry var8 : var5.listMatchingResources(var0).entrySet()) {
-         ResourceLocation var9 = (ResourceLocation)var8.getKey();
+         Identifier var9 = (Identifier)var8.getKey();
          ResourceKey var10 = ResourceKey.create(var2.key(), var5.fileToId(var9));
          Resource var11 = (Resource)var8.getValue();
          RegistrationInfo var12 = (RegistrationInfo)REGISTRATION_INFO_CACHE.apply(var11.knownPackInfo());
@@ -248,7 +250,7 @@ public class RegistryDataLoader {
                   var5.put(var12, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse value %s from server", var13.get()), var16));
                }
             } else {
-               ResourceLocation var18 = var9.idToFile(var11.id());
+               Identifier var18 = var9.idToFile(var11.id());
 
                try {
                   Resource var19 = var1.getResourceOrThrow(var18);
@@ -264,9 +266,9 @@ public class RegistryDataLoader {
    }
 
    static {
-      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.TRIAL_SPAWNER_CONFIG, TrialSpawnerConfig.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.WOLF_SOUND_VARIANT, WolfSoundVariant.DIRECT_CODEC, true), new RegistryData(Registries.PIG_VARIANT, PigVariant.DIRECT_CODEC, true), new RegistryData(Registries.FROG_VARIANT, FrogVariant.DIRECT_CODEC, true), new RegistryData(Registries.CAT_VARIANT, CatVariant.DIRECT_CODEC, true), new RegistryData(Registries.COW_VARIANT, CowVariant.DIRECT_CODEC, true), new RegistryData(Registries.CHICKEN_VARIANT, ChickenVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC), new RegistryData(Registries.TEST_ENVIRONMENT, TestEnvironmentDefinition.DIRECT_CODEC), new RegistryData(Registries.TEST_INSTANCE, GameTestInstance.DIRECT_CODEC), new RegistryData(Registries.DIALOG, Dialog.DIRECT_CODEC));
+      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.TRIAL_SPAWNER_CONFIG, TrialSpawnerConfig.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.WOLF_SOUND_VARIANT, WolfSoundVariant.DIRECT_CODEC, true), new RegistryData(Registries.PIG_VARIANT, PigVariant.DIRECT_CODEC, true), new RegistryData(Registries.FROG_VARIANT, FrogVariant.DIRECT_CODEC, true), new RegistryData(Registries.CAT_VARIANT, CatVariant.DIRECT_CODEC, true), new RegistryData(Registries.COW_VARIANT, CowVariant.DIRECT_CODEC, true), new RegistryData(Registries.CHICKEN_VARIANT, ChickenVariant.DIRECT_CODEC, true), new RegistryData(Registries.ZOMBIE_NAUTILUS_VARIANT, ZombieNautilusVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC), new RegistryData(Registries.TEST_ENVIRONMENT, TestEnvironmentDefinition.DIRECT_CODEC), new RegistryData(Registries.TEST_INSTANCE, GameTestInstance.DIRECT_CODEC), new RegistryData(Registries.DIALOG, Dialog.DIRECT_CODEC), new RegistryData(Registries.TIMELINE, Timeline.DIRECT_CODEC));
       DIMENSION_REGISTRIES = List.of(new RegistryData(Registries.LEVEL_STEM, LevelStem.CODEC));
-      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.NETWORK_CODEC, true), new RegistryData(Registries.WOLF_SOUND_VARIANT, WolfSoundVariant.NETWORK_CODEC, true), new RegistryData(Registries.PIG_VARIANT, PigVariant.NETWORK_CODEC, true), new RegistryData(Registries.FROG_VARIANT, FrogVariant.NETWORK_CODEC, true), new RegistryData(Registries.CAT_VARIANT, CatVariant.NETWORK_CODEC, true), new RegistryData(Registries.COW_VARIANT, CowVariant.NETWORK_CODEC, true), new RegistryData(Registries.CHICKEN_VARIANT, ChickenVariant.NETWORK_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.NETWORK_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC), new RegistryData(Registries.TEST_ENVIRONMENT, TestEnvironmentDefinition.DIRECT_CODEC), new RegistryData(Registries.TEST_INSTANCE, GameTestInstance.DIRECT_CODEC), new RegistryData(Registries.DIALOG, Dialog.DIRECT_CODEC));
+      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.NETWORK_CODEC, true), new RegistryData(Registries.WOLF_SOUND_VARIANT, WolfSoundVariant.NETWORK_CODEC, true), new RegistryData(Registries.PIG_VARIANT, PigVariant.NETWORK_CODEC, true), new RegistryData(Registries.FROG_VARIANT, FrogVariant.NETWORK_CODEC, true), new RegistryData(Registries.CAT_VARIANT, CatVariant.NETWORK_CODEC, true), new RegistryData(Registries.COW_VARIANT, CowVariant.NETWORK_CODEC, true), new RegistryData(Registries.CHICKEN_VARIANT, ChickenVariant.NETWORK_CODEC, true), new RegistryData(Registries.ZOMBIE_NAUTILUS_VARIANT, ZombieNautilusVariant.NETWORK_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.NETWORK_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC), new RegistryData(Registries.TEST_ENVIRONMENT, TestEnvironmentDefinition.DIRECT_CODEC), new RegistryData(Registries.TEST_INSTANCE, GameTestInstance.DIRECT_CODEC), new RegistryData(Registries.DIALOG, Dialog.DIRECT_CODEC), new RegistryData(Registries.TIMELINE, Timeline.NETWORK_CODEC));
    }
 
    public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {

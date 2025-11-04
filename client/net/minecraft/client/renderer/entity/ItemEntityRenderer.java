@@ -45,7 +45,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
          var2.pushPose();
          AABB var5 = var1.item.getModelBoundingBox();
          float var6 = -((float)var5.minY) + 0.0625F;
-         float var7 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
+         float var7 = Mth.sin((double)(var1.ageInTicks / 10.0F + var1.bobOffset)) * 0.1F + 0.1F;
          var2.translate(0.0F, var7 + var6, 0.0F);
          float var8 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
          var2.mulPose((Quaternionfc)Axis.YP.rotation(var8));

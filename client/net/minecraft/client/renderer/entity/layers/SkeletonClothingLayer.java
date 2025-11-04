@@ -8,13 +8,13 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class SkeletonClothingLayer<S extends SkeletonRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
    private final SkeletonModel<S> layerModel;
-   private final ResourceLocation clothesLocation;
+   private final Identifier clothesLocation;
 
-   public SkeletonClothingLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, ModelLayerLocation var3, ResourceLocation var4) {
+   public SkeletonClothingLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, ModelLayerLocation var3, Identifier var4) {
       super(var1);
       this.clothesLocation = var4;
       this.layerModel = new SkeletonModel<S>(var2.bakeLayer(var3));

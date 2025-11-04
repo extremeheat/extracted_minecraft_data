@@ -6,19 +6,19 @@ import net.minecraft.client.model.SquidModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SquidRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Squid;
 import org.joml.Quaternionfc;
 
 public class SquidRenderer<T extends Squid> extends AgeableMobRenderer<T, SquidRenderState, SquidModel> {
-   private static final ResourceLocation SQUID_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/squid/squid.png");
+   private static final Identifier SQUID_LOCATION = Identifier.withDefaultNamespace("textures/entity/squid/squid.png");
 
    public SquidRenderer(EntityRendererProvider.Context var1, SquidModel var2, SquidModel var3) {
       super(var1, var2, var3, 0.7F);
    }
 
-   public ResourceLocation getTextureLocation(SquidRenderState var1) {
+   public Identifier getTextureLocation(SquidRenderState var1) {
       return SQUID_LOCATION;
    }
 
@@ -42,7 +42,7 @@ public class SquidRenderer<T extends Squid> extends AgeableMobRenderer<T, SquidR
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SquidRenderState)var1);
    }
 

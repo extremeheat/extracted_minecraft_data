@@ -47,6 +47,6 @@ public class SalmonModel extends EntityModel<SalmonRenderState> {
          var3 = 1.7F;
       }
 
-      this.bodyBack.yRot = -var2 * 0.25F * Mth.sin(var3 * 0.6F * var1.ageInTicks);
+      this.bodyBack.yRot = -var2 * 0.25F * Mth.sin((double)(var3 * 0.6F * var1.ageInTicks));
    }
 }

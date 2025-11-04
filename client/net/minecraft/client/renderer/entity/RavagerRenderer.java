@@ -5,17 +5,17 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.RavagerRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Ravager;
 
 public class RavagerRenderer extends MobRenderer<Ravager, RavagerRenderState, RavagerModel> {
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/illager/ravager.png");
+   private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/illager/ravager.png");
 
    public RavagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new RavagerModel(var1.bakeLayer(ModelLayers.RAVAGER)), 1.1F);
    }
 
-   public ResourceLocation getTextureLocation(RavagerRenderState var1) {
+   public Identifier getTextureLocation(RavagerRenderState var1) {
       return TEXTURE_LOCATION;
    }
 
@@ -36,7 +36,7 @@ public class RavagerRenderer extends MobRenderer<Ravager, RavagerRenderState, Ra
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((RavagerRenderState)var1);
    }
 

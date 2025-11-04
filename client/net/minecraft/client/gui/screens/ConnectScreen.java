@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -30,6 +29,7 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.server.network.EventLoopGroupHolder;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

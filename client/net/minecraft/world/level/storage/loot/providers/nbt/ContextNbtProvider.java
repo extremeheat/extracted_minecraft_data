@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.advancements.criterion.NbtPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.context.ContextKey;

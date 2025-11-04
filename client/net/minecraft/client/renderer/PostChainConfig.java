@@ -12,13 +12,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 
-public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTargets, List<Pass> passes) {
-   public static final Codec<PostChainConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(ResourceLocation.CODEC, PostChainConfig.InternalTarget.CODEC).optionalFieldOf("targets", Map.of()).forGetter(PostChainConfig::internalTargets), PostChainConfig.Pass.CODEC.listOf().optionalFieldOf("passes", List.of()).forGetter(PostChainConfig::passes)).apply(var0, PostChainConfig::new));
+public record PostChainConfig(Map<Identifier, InternalTarget> internalTargets, List<Pass> passes) {
+   public static final Codec<PostChainConfig> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(Identifier.CODEC, PostChainConfig.InternalTarget.CODEC).optionalFieldOf("targets", Map.of()).forGetter(PostChainConfig::internalTargets), PostChainConfig.Pass.CODEC.listOf().optionalFieldOf("passes", List.of()).forGetter(PostChainConfig::passes)).apply(var0, PostChainConfig::new));
 
-   public PostChainConfig(Map<ResourceLocation, InternalTarget> var1, List<Pass> var2) {
+   public PostChainConfig(Map<Identifier, InternalTarget> var1, List<Pass> var2) {
       super();
       this.internalTargets = var1;
       this.passes = var2;
@@ -36,12 +36,12 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
       }
    }
 
-   public static record Pass(ResourceLocation vertexShaderId, ResourceLocation fragmentShaderId, List<Input> inputs, ResourceLocation outputTarget, Map<String, List<UniformValue>> uniforms) {
+   public static record Pass(Identifier vertexShaderId, Identifier fragmentShaderId, List<Input> inputs, Identifier outputTarget, Map<String, List<UniformValue>> uniforms) {
       private static final Codec<List<Input>> INPUTS_CODEC;
       private static final Codec<Map<String, List<UniformValue>>> UNIFORM_BLOCKS_CODEC;
       public static final Codec<Pass> CODEC;
 
-      public Pass(ResourceLocation var1, ResourceLocation var2, List<Input> var3, ResourceLocation var4, Map<String, List<UniformValue>> var5) {
+      public Pass(Identifier var1, Identifier var2, List<Input> var3, Identifier var4, Map<String, List<UniformValue>> var5) {
          super();
          this.vertexShaderId = var1;
          this.fragmentShaderId = var2;
@@ -50,7 +50,7 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
          this.uniforms = var5;
       }
 
-      public Stream<ResourceLocation> referencedTargets() {
+      public Stream<Identifier> referencedTargets() {
          Stream var1 = this.inputs.stream().flatMap((var0) -> var0.referencedTargets().stream());
          return Stream.concat(var1, Stream.of(this.outputTarget));
       }
@@ -68,7 +68,7 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
             return DataResult.success(var0);
          });
          UNIFORM_BLOCKS_CODEC = Codec.unboundedMap(Codec.STRING, UniformValue.CODEC.listOf());
-         CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("vertex_shader").forGetter(Pass::vertexShaderId), ResourceLocation.CODEC.fieldOf("fragment_shader").forGetter(Pass::fragmentShaderId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), UNIFORM_BLOCKS_CODEC.optionalFieldOf("uniforms", Map.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("vertex_shader").forGetter(Pass::vertexShaderId), Identifier.CODEC.fieldOf("fragment_shader").forGetter(Pass::fragmentShaderId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), Identifier.CODEC.fieldOf("output").forGetter(Pass::outputTarget), UNIFORM_BLOCKS_CODEC.optionalFieldOf("uniforms", Map.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new));
       }
    }
 
@@ -98,13 +98,13 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
 
       String samplerName();
 
-      Set<ResourceLocation> referencedTargets();
+      Set<Identifier> referencedTargets();
    }
 
-   public static record TextureInput(String samplerName, ResourceLocation location, int width, int height, boolean bilinear) implements Input {
-      public static final Codec<TextureInput> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("sampler_name").forGetter(TextureInput::samplerName), ResourceLocation.CODEC.fieldOf("location").forGetter(TextureInput::location), ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(TextureInput::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(TextureInput::height), Codec.BOOL.optionalFieldOf("bilinear", false).forGetter(TextureInput::bilinear)).apply(var0, TextureInput::new));
+   public static record TextureInput(String samplerName, Identifier location, int width, int height, boolean bilinear) implements Input {
+      public static final Codec<TextureInput> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("sampler_name").forGetter(TextureInput::samplerName), Identifier.CODEC.fieldOf("location").forGetter(TextureInput::location), ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(TextureInput::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(TextureInput::height), Codec.BOOL.optionalFieldOf("bilinear", false).forGetter(TextureInput::bilinear)).apply(var0, TextureInput::new));
 
-      public TextureInput(String var1, ResourceLocation var2, int var3, int var4, boolean var5) {
+      public TextureInput(String var1, Identifier var2, int var3, int var4, boolean var5) {
          super();
          this.samplerName = var1;
          this.location = var2;
@@ -113,15 +113,15 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
          this.bilinear = var5;
       }
 
-      public Set<ResourceLocation> referencedTargets() {
+      public Set<Identifier> referencedTargets() {
          return Set.of();
       }
    }
 
-   public static record TargetInput(String samplerName, ResourceLocation targetId, boolean useDepthBuffer, boolean bilinear) implements Input {
-      public static final Codec<TargetInput> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("sampler_name").forGetter(TargetInput::samplerName), ResourceLocation.CODEC.fieldOf("target").forGetter(TargetInput::targetId), Codec.BOOL.optionalFieldOf("use_depth_buffer", false).forGetter(TargetInput::useDepthBuffer), Codec.BOOL.optionalFieldOf("bilinear", false).forGetter(TargetInput::bilinear)).apply(var0, TargetInput::new));
+   public static record TargetInput(String samplerName, Identifier targetId, boolean useDepthBuffer, boolean bilinear) implements Input {
+      public static final Codec<TargetInput> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("sampler_name").forGetter(TargetInput::samplerName), Identifier.CODEC.fieldOf("target").forGetter(TargetInput::targetId), Codec.BOOL.optionalFieldOf("use_depth_buffer", false).forGetter(TargetInput::useDepthBuffer), Codec.BOOL.optionalFieldOf("bilinear", false).forGetter(TargetInput::bilinear)).apply(var0, TargetInput::new));
 
-      public TargetInput(String var1, ResourceLocation var2, boolean var3, boolean var4) {
+      public TargetInput(String var1, Identifier var2, boolean var3, boolean var4) {
          super();
          this.samplerName = var1;
          this.targetId = var2;
@@ -129,7 +129,7 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
          this.bilinear = var4;
       }
 
-      public Set<ResourceLocation> referencedTargets() {
+      public Set<Identifier> referencedTargets() {
          return Set.of(this.targetId);
       }
    }

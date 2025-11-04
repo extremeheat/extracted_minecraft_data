@@ -1,6 +1,6 @@
 package net.minecraft.client.input;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class InputQuirks {
    private static final boolean ON_OSX;

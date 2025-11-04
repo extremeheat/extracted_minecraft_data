@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
@@ -24,7 +24,7 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
    private final WolfModel adultModel;
    private final WolfModel babyModel;
    private final EquipmentLayerRenderer equipmentRenderer;
-   private static final Map<Crackiness.Level, ResourceLocation> ARMOR_CRACK_LOCATIONS;
+   private static final Map<Crackiness.Level, Identifier> ARMOR_CRACK_LOCATIONS;
 
    public WolfArmorLayer(RenderLayerParent<WolfRenderState, WolfModel> var1, EntityModelSet var2, EquipmentLayerRenderer var3) {
       super(var1);
@@ -46,12 +46,12 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
    private void maybeRenderCracks(PoseStack var1, SubmitNodeCollector var2, int var3, ItemStack var4, Model<WolfRenderState> var5, WolfRenderState var6) {
       Crackiness.Level var7 = Crackiness.WOLF_ARMOR.byDamage(var4);
       if (var7 != Crackiness.Level.NONE) {
-         ResourceLocation var8 = (ResourceLocation)ARMOR_CRACK_LOCATIONS.get(var7);
+         Identifier var8 = (Identifier)ARMOR_CRACK_LOCATIONS.get(var7);
          var2.submitModel(var5, var6, var1, RenderTypes.armorTranslucent(var8), var3, OverlayTexture.NO_OVERLAY, var6.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 
    static {
-      ARMOR_CRACK_LOCATIONS = Map.of(Crackiness.Level.LOW, ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_low.png"), Crackiness.Level.MEDIUM, ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_medium.png"), Crackiness.Level.HIGH, ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_high.png"));
+      ARMOR_CRACK_LOCATIONS = Map.of(Crackiness.Level.LOW, Identifier.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_low.png"), Crackiness.Level.MEDIUM, Identifier.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_medium.png"), Crackiness.Level.HIGH, Identifier.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_high.png"));
    }
 }

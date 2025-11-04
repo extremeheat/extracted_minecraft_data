@@ -2,7 +2,7 @@ package net.minecraft.client.resources.sounds;
 
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractSoundInstance implements SoundInstance {
    protected @Nullable Sound sound;
    protected final SoundSource source;
-   protected final ResourceLocation location;
+   protected final Identifier identifier;
    protected float volume;
    protected float pitch;
    protected double x;
@@ -27,26 +27,26 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       this(var1.location(), var2, var3);
    }
 
-   protected AbstractSoundInstance(ResourceLocation var1, SoundSource var2, RandomSource var3) {
+   protected AbstractSoundInstance(Identifier var1, SoundSource var2, RandomSource var3) {
       super();
       this.volume = 1.0F;
       this.pitch = 1.0F;
       this.attenuation = SoundInstance.Attenuation.LINEAR;
-      this.location = var1;
+      this.identifier = var1;
       this.source = var2;
       this.random = var3;
    }
 
-   public ResourceLocation getLocation() {
-      return this.location;
+   public Identifier getIdentifier() {
+      return this.identifier;
    }
 
    public @Nullable WeighedSoundEvents resolve(SoundManager var1) {
-      if (this.location.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
+      if (this.identifier.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
          return SoundManager.INTENTIONALLY_EMPTY_SOUND_EVENT;
       } else {
-         WeighedSoundEvents var2 = var1.getSoundEvent(this.location);
+         WeighedSoundEvents var2 = var1.getSoundEvent(this.identifier);
          if (var2 == null) {
             this.sound = SoundManager.EMPTY_SOUND;
          } else {
@@ -102,6 +102,6 @@ public abstract class AbstractSoundInstance implements SoundInstance {
    }
 
    public String toString() {
-      return "SoundInstance[" + String.valueOf(this.location) + "]";
+      return "SoundInstance[" + String.valueOf(this.identifier) + "]";
    }
 }

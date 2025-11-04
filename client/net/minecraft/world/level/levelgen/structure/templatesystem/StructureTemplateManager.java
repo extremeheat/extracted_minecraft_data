@@ -29,8 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.FileUtil;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.data.CachedOutput;
@@ -41,9 +40,10 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.FastBufferedInputStream;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.LevelResource;
@@ -57,7 +57,7 @@ public class StructureTemplateManager {
    private static final String STRUCTURE_GENERATED_DIRECTORY_NAME = "structures";
    private static final String STRUCTURE_FILE_EXTENSION = ".nbt";
    private static final String STRUCTURE_TEXT_FILE_EXTENSION = ".snbt";
-   private final Map<ResourceLocation, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
+   private final Map<Identifier, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
    private final DataFixer fixerUpper;
    private ResourceManager resourceManager;
    private final Path generatedDir;
@@ -81,7 +81,7 @@ public class StructureTemplateManager {
       this.sources = var5.build();
    }
 
-   public StructureTemplate getOrCreate(ResourceLocation var1) {
+   public StructureTemplate getOrCreate(Identifier var1) {
       Optional var2 = this.get(var1);
       if (var2.isPresent()) {
          return (StructureTemplate)var2.get();
@@ -92,15 +92,15 @@ public class StructureTemplateManager {
       }
    }
 
-   public Optional<StructureTemplate> get(ResourceLocation var1) {
+   public Optional<StructureTemplate> get(Identifier var1) {
       return (Optional)this.structureRepository.computeIfAbsent(var1, this::tryLoad);
    }
 
-   public Stream<ResourceLocation> listTemplates() {
+   public Stream<Identifier> listTemplates() {
       return this.sources.stream().flatMap((var0) -> (Stream)var0.lister().get()).distinct();
    }
 
-   private Optional<StructureTemplate> tryLoad(ResourceLocation var1) {
+   private Optional<StructureTemplate> tryLoad(Identifier var1) {
       for(Source var3 : this.sources) {
          try {
             Optional var4 = (Optional)var3.loader().apply(var1);
@@ -119,23 +119,23 @@ public class StructureTemplateManager {
       this.structureRepository.clear();
    }
 
-   private Optional<StructureTemplate> loadFromResource(ResourceLocation var1) {
-      ResourceLocation var2 = RESOURCE_LISTER.idToFile(var1);
+   private Optional<StructureTemplate> loadFromResource(Identifier var1) {
+      Identifier var2 = RESOURCE_LISTER.idToFile(var1);
       return this.load(() -> this.resourceManager.open(var2), (var1x) -> LOGGER.error("Couldn't load structure {}", var1, var1x));
    }
 
-   private Stream<ResourceLocation> listResources() {
+   private Stream<Identifier> listResources() {
       Stream var10000 = RESOURCE_LISTER.listMatchingResources(this.resourceManager).keySet().stream();
       FileToIdConverter var10001 = RESOURCE_LISTER;
       Objects.requireNonNull(var10001);
       return var10000.map(var10001::fileToId);
    }
 
-   private Optional<StructureTemplate> loadFromTestStructures(ResourceLocation var1) {
+   private Optional<StructureTemplate> loadFromTestStructures(Identifier var1) {
       return this.loadFromSnbt(var1, StructureUtils.testStructuresDir);
    }
 
-   private Stream<ResourceLocation> listTestStructures() {
+   private Stream<Identifier> listTestStructures() {
       if (!Files.isDirectory(StructureUtils.testStructuresDir, new LinkOption[0])) {
          return Stream.empty();
       } else {
@@ -147,7 +147,7 @@ public class StructureTemplateManager {
       }
    }
 
-   private Optional<StructureTemplate> loadFromGenerated(ResourceLocation var1) {
+   private Optional<StructureTemplate> loadFromGenerated(Identifier var1) {
       if (!Files.isDirectory(this.generatedDir, new LinkOption[0])) {
          return Optional.empty();
       } else {
@@ -156,7 +156,7 @@ public class StructureTemplateManager {
       }
    }
 
-   private Stream<ResourceLocation> listGenerated() {
+   private Stream<Identifier> listGenerated() {
       if (!Files.isDirectory(this.generatedDir, new LinkOption[0])) {
          return Stream.empty();
       } else {
@@ -194,7 +194,7 @@ public class StructureTemplateManager {
       }
    }
 
-   private void listFolderContents(Path var1, String var2, String var3, Consumer<ResourceLocation> var4) {
+   private void listFolderContents(Path var1, String var2, String var3, Consumer<Identifier> var4) {
       int var5 = var3.length();
       Function var6 = (var1x) -> var1x.substring(0, var1x.length() - var5);
 
@@ -204,8 +204,8 @@ public class StructureTemplateManager {
          try {
             var7.forEach((var5x) -> {
                try {
-                  var4.accept(ResourceLocation.fromNamespaceAndPath(var2, (String)var6.apply(this.relativize(var1, var5x))));
-               } catch (ResourceLocationException var7) {
+                  var4.accept(Identifier.fromNamespaceAndPath(var2, (String)var6.apply(this.relativize(var1, var5x))));
+               } catch (IdentifierException var7) {
                   LOGGER.error("Invalid location while listing folder {} contents", var1, var7);
                }
 
@@ -235,7 +235,7 @@ public class StructureTemplateManager {
       return var1.relativize(var2).toString().replace(File.separator, "/");
    }
 
-   private Optional<StructureTemplate> loadFromSnbt(ResourceLocation var1, Path var2) {
+   private Optional<StructureTemplate> loadFromSnbt(Identifier var1, Path var2) {
       if (!Files.isDirectory(var2, new LinkOption[0])) {
          return Optional.empty();
       } else {
@@ -332,7 +332,7 @@ public class StructureTemplateManager {
       return var2;
    }
 
-   public boolean save(ResourceLocation var1) {
+   public boolean save(Identifier var1) {
       Optional var2 = (Optional)this.structureRepository.get(var1);
       if (var2.isEmpty()) {
          return false;
@@ -384,9 +384,9 @@ public class StructureTemplateManager {
       }
    }
 
-   public Path createAndValidatePathToGeneratedStructure(ResourceLocation var1, String var2) {
+   public Path createAndValidatePathToGeneratedStructure(Identifier var1, String var2) {
       if (var1.getPath().contains("//")) {
-         throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var1));
+         throw new IdentifierException("Invalid resource path: " + String.valueOf(var1));
       } else {
          try {
             Path var3 = this.generatedDir.resolve(var1.getNamespace());
@@ -395,20 +395,20 @@ public class StructureTemplateManager {
             if (var5.startsWith(this.generatedDir) && FileUtil.isPathNormalized(var5) && FileUtil.isPathPortable(var5)) {
                return var5;
             } else {
-               throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var5));
+               throw new IdentifierException("Invalid resource path: " + String.valueOf(var5));
             }
          } catch (InvalidPathException var6) {
-            throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var1), var6);
+            throw new IdentifierException("Invalid resource path: " + String.valueOf(var1), var6);
          }
       }
    }
 
-   public void remove(ResourceLocation var1) {
+   public void remove(Identifier var1) {
       this.structureRepository.remove(var1);
    }
 
-   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
-      Source(Function<ResourceLocation, Optional<StructureTemplate>> var1, Supplier<Stream<ResourceLocation>> var2) {
+   static record Source(Function<Identifier, Optional<StructureTemplate>> loader, Supplier<Stream<Identifier>> lister) {
+      Source(Function<Identifier, Optional<StructureTemplate>> var1, Supplier<Stream<Identifier>> var2) {
          super();
          this.loader = var1;
          this.lister = var2;

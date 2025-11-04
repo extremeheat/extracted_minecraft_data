@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LootPoolEntries {
    public static final Codec<LootPoolEntryContainer> CODEC;
@@ -23,7 +23,7 @@ public class LootPoolEntries {
    }
 
    private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
-      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootPoolEntryType(var1));
+      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootPoolEntryType(var1));
    }
 
    static {

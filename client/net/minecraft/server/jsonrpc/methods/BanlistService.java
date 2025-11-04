@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
@@ -18,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanListEntry;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class BanlistService {

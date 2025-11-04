@@ -21,8 +21,8 @@ public abstract class AbstractBoatModel extends EntityModel<BoatRenderState> {
    }
 
    private static void animatePaddle(float var0, int var1, ModelPart var2) {
-      var2.xRot = Mth.clampedLerp(-1.0471976F, -0.2617994F, (Mth.sin(-var0) + 1.0F) / 2.0F);
-      var2.yRot = Mth.clampedLerp(-0.7853982F, 0.7853982F, (Mth.sin(-var0 + 1.0F) + 1.0F) / 2.0F);
+      var2.xRot = Mth.clampedLerp((Mth.sin((double)(-var0)) + 1.0F) / 2.0F, -1.0471976F, -0.2617994F);
+      var2.yRot = Mth.clampedLerp((Mth.sin((double)(-var0 + 1.0F)) + 1.0F) / 2.0F, -0.7853982F, 0.7853982F);
       if (var1 == 1) {
          var2.yRot = 3.1415927F - var2.yRot;
       }

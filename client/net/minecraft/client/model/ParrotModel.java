@@ -57,9 +57,9 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
       switch (var1.pose.ordinal()) {
          case 1:
             ModelPart var14 = this.leftLeg;
-            var14.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed;
+            var14.xRot += Mth.cos((double)(var1.walkAnimationPos * 0.6662F)) * 1.4F * var1.walkAnimationSpeed;
             var14 = this.rightLeg;
-            var14.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed;
+            var14.xRot += Mth.cos((double)(var1.walkAnimationPos * 0.6662F + 3.1415927F)) * 1.4F * var1.walkAnimationSpeed;
          case 0:
          case 4:
          default:
@@ -67,7 +67,7 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
             ModelPart var16 = this.head;
             var16.y += var4;
             var16 = this.tail;
-            var16.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 0.3F * var1.walkAnimationSpeed;
+            var16.xRot += Mth.cos((double)(var1.walkAnimationPos * 0.6662F)) * 0.3F * var1.walkAnimationSpeed;
             var16 = this.tail;
             var16.y += var4;
             var16 = this.body;
@@ -85,15 +85,15 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
          case 2:
             break;
          case 3:
-            float var2 = Mth.cos(var1.ageInTicks);
-            float var3 = Mth.sin(var1.ageInTicks);
+            float var2 = Mth.cos((double)var1.ageInTicks);
+            float var3 = Mth.sin((double)var1.ageInTicks);
             ModelPart var10000 = this.head;
             var10000.x += var2;
             var10000 = this.head;
             var10000.y += var3;
             this.head.xRot = 0.0F;
             this.head.yRot = 0.0F;
-            this.head.zRot = Mth.sin(var1.ageInTicks) * 0.4F;
+            this.head.zRot = Mth.sin((double)var1.ageInTicks) * 0.4F;
             var10000 = this.body;
             var10000.x += var2;
             var10000 = this.body;

@@ -7,8 +7,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.DialogTags;
 
 public class Dialogs {
@@ -23,7 +23,7 @@ public class Dialogs {
    }
 
    private static ResourceKey<Dialog> create(String var0) {
-      return ResourceKey.create(Registries.DIALOG, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.DIALOG, Identifier.withDefaultNamespace(var0));
    }
 
    public static void bootstrap(BootstrapContext<Dialog> var0) {

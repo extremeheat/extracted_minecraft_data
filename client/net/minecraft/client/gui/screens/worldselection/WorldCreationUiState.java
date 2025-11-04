@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
-import net.minecraft.FileUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -17,6 +16,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.WorldPresetTags;
+import net.minecraft.util.FileUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -283,7 +283,7 @@ public class WorldCreationUiState {
       }
 
       public Component describePreset() {
-         return (Component)Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).map((var0) -> Component.translatable(var0.location().toLanguageKey("generator"))).orElse(CUSTOM_WORLD_DESCRIPTION);
+         return (Component)Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).map((var0) -> Component.translatable(var0.identifier().toLanguageKey("generator"))).orElse(CUSTOM_WORLD_DESCRIPTION);
       }
 
       public boolean isAmplified() {

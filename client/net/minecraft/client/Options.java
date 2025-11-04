@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -69,6 +68,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -607,12 +607,16 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
-         Minecraft var2x = Minecraft.getInstance();
-         SoundManager var3 = var2x.getSoundManager();
-         var3.updateSourceVolume(var2);
-         if (var2x.level == null) {
-            SoundPreviewHandler.preview(var3, var2, var1x.floatValue());
+      return new OptionInstance<Double>(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var2x) -> {
+         Minecraft var3 = Minecraft.getInstance();
+         SoundManager var4 = var3.getSoundManager();
+         if ((var2 == SoundSource.MASTER || var2 == SoundSource.MUSIC) && this.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
+            var3.getMusicManager().showNowPlayingToastIfNeeded();
+         }
+
+         var4.refreshCategoryVolume(var2);
+         if (var3.level == null) {
+            SoundPreviewHandler.preview(var4, var2, var2x.floatValue());
          }
 
       });
@@ -781,9 +785,9 @@ public class Options {
          }
 
          return var10000;
-      }, OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (var0) -> {
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(InactivityFpsLimit.values()), InactivityFpsLimit.CODEC), InactivityFpsLimit.AFK, (var0) -> {
       });
-      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var1x) -> this.setGraphicsPresetToCustom());
+      this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var1x) -> this.setGraphicsPresetToCustom());
       this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var1x) -> {
          Minecraft.getInstance().levelRenderer.getCloudRenderer().markForRebuild();
          this.setGraphicsPresetToCustom();
@@ -820,10 +824,10 @@ public class Options {
          }
 
          return var10000;
-      }, OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), Codec.INT.xmap(PrioritizeChunkUpdates::byId, PrioritizeChunkUpdates::getId)), PrioritizeChunkUpdates.NONE, (var1x) -> this.setGraphicsPresetToCustom());
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (var1x) -> this.setGraphicsPresetToCustom());
       this.resourcePacks = Lists.newArrayList();
       this.incompatibleResourcePacks = Lists.newArrayList();
-      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), Codec.INT.xmap(ChatVisiblity::byId, ChatVisiblity::getId)), ChatVisiblity.FULL, (var0) -> {
+      this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (var0) -> {
       });
       this.chatOpacity = new OptionInstance<Double>("options.chat.opacity", OptionInstance.noTooltip(), (var0, var1x) -> percentValueLabel(var0, var1x * 0.9 + 0.1), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatLineSpacing = new OptionInstance<Double>("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (var0) -> {
@@ -848,7 +852,7 @@ public class Options {
       this.narratorHotkey = OptionInstance.createBoolean("options.accessibility.narrator_hotkey", OptionInstance.cachedConstantTooltip(InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip") : Component.translatable("options.accessibility.narrator_hotkey.tooltip")), true);
       this.pauseOnLostFocus = true;
       this.modelParts = EnumSet.allOf(PlayerModelPart.class);
-      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
+      this.mainHand = new OptionInstance<HumanoidArm>("options.mainHand", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC), HumanoidArm.RIGHT, (var0) -> {
       });
       this.chatScale = new OptionInstance<Double>("options.chat.scale", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0.0 ? CommonComponents.optionStatus(var0, false) : percentValueLabel(var0, var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
       this.chatWidth = new OptionInstance<Double>("options.chat.width", OptionInstance.noTooltip(), (var0, var1x) -> pixelValueLabel(var0, ChatComponent.getWidth(var1x)), OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> Minecraft.getInstance().gui.getChat().rescaleChat());
@@ -863,7 +867,7 @@ public class Options {
          Minecraft.getInstance().levelRenderer.onChangeMaxAnisotropy();
       });
       this.useNativeTransport = true;
-      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), Codec.INT.xmap(AttackIndicatorStatus::byId, AttackIndicatorStatus::getId)), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
+      this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
       });
       this.tutorialStep = TutorialSteps.MOVEMENT;
       this.joinedFirstServer = false;
@@ -1062,8 +1066,8 @@ public class Options {
          Minecraft var0 = Minecraft.getInstance();
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
       }, 2147483646), 0, (var1x) -> this.minecraft.resizeDisplay());
-      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), Codec.INT.xmap(ParticleStatus::byId, ParticleStatus::getId)), ParticleStatus.ALL, (var1x) -> this.setGraphicsPresetToCustom());
-      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId)), NarratorStatus.OFF, (var1x) -> this.minecraft.getNarrator().updateNarratorStatus(var1x));
+      this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (var1x) -> this.setGraphicsPresetToCustom());
+      this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (var1x) -> this.minecraft.getNarrator().updateNarratorStatus(var1x));
       this.languageCode = "en_us";
       this.soundDevice = new OptionInstance<String>("options.audioDevice", OptionInstance.noTooltip(), (var0, var1x) -> {
          if ("".equals(var1x)) {
@@ -1077,7 +1081,7 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
-      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
+      this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
       this.showNowPlayingToast = OptionInstance.createBoolean("options.showNowPlayingToast", OptionInstance.cachedConstantTooltip(NOW_PLAYING_TOAST_TOOLTIP), false, (var1x) -> {
          if (var1x) {
             this.minecraft.getToastManager().createNowPlayingToast();

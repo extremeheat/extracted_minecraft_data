@@ -13,8 +13,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -144,11 +144,11 @@ public interface TestEnvironmentDefinition {
       }
    }
 
-   public static record Functions(Optional<ResourceLocation> setupFunction, Optional<ResourceLocation> teardownFunction) implements TestEnvironmentDefinition {
+   public static record Functions(Optional<Identifier> setupFunction, Optional<Identifier> teardownFunction) implements TestEnvironmentDefinition {
       private static final Logger LOGGER = LogUtils.getLogger();
-      public static final MapCodec<Functions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.optionalFieldOf("setup").forGetter(Functions::setupFunction), ResourceLocation.CODEC.optionalFieldOf("teardown").forGetter(Functions::teardownFunction)).apply(var0, Functions::new));
+      public static final MapCodec<Functions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.optionalFieldOf("setup").forGetter(Functions::setupFunction), Identifier.CODEC.optionalFieldOf("teardown").forGetter(Functions::teardownFunction)).apply(var0, Functions::new));
 
-      public Functions(Optional<ResourceLocation> var1, Optional<ResourceLocation> var2) {
+      public Functions(Optional<Identifier> var1, Optional<Identifier> var2) {
          super();
          this.setupFunction = var1;
          this.teardownFunction = var2;
@@ -162,7 +162,7 @@ public interface TestEnvironmentDefinition {
          this.teardownFunction.ifPresent((var1x) -> run(var1, var1x));
       }
 
-      private static void run(ServerLevel var0, ResourceLocation var1) {
+      private static void run(ServerLevel var0, Identifier var1) {
          MinecraftServer var2 = var0.getServer();
          ServerFunctionManager var3 = var2.getFunctions();
          Optional var4 = var3.get(var1);

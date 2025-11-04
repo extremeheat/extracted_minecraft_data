@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -36,6 +35,7 @@ import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.util.Util;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import org.slf4j.Logger;
 

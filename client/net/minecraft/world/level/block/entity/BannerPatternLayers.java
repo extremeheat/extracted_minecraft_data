@@ -83,7 +83,7 @@ public record BannerPatternLayers(List<Layer> layers) implements TooltipProvider
       public Builder addIfRegistered(HolderGetter<BannerPattern> var1, ResourceKey<BannerPattern> var2, DyeColor var3) {
          Optional var4 = var1.get(var2);
          if (var4.isEmpty()) {
-            BannerPatternLayers.LOGGER.warn("Unable to find banner pattern with id: '{}'", var2.location());
+            BannerPatternLayers.LOGGER.warn("Unable to find banner pattern with id: '{}'", var2.identifier());
             return this;
          } else {
             return this.add((Holder)var4.get(), var3);

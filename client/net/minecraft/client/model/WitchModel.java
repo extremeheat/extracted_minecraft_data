@@ -44,11 +44,11 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
       super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
-      this.rightLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
-      this.leftLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
+      this.rightLeg.xRot = Mth.cos((double)(var1.walkAnimationPos * 0.6662F)) * 1.4F * var1.walkAnimationSpeed * 0.5F;
+      this.leftLeg.xRot = Mth.cos((double)(var1.walkAnimationPos * 0.6662F + 3.1415927F)) * 1.4F * var1.walkAnimationSpeed * 0.5F;
       float var2 = 0.01F * (float)(var1.entityId % 10);
-      this.nose.xRot = Mth.sin(var1.ageInTicks * var2) * 4.5F * 0.017453292F;
-      this.nose.zRot = Mth.cos(var1.ageInTicks * var2) * 2.5F * 0.017453292F;
+      this.nose.xRot = Mth.sin((double)(var1.ageInTicks * var2)) * 4.5F * 0.017453292F;
+      this.nose.zRot = Mth.cos((double)(var1.ageInTicks * var2)) * 2.5F * 0.017453292F;
       if (var1.isHoldingItem) {
          this.nose.setPos(0.0F, 1.0F, -1.5F);
          this.nose.xRot = -0.9F;

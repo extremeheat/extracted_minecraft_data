@@ -29,7 +29,7 @@ public class LinearPosTest extends PosRuleTest {
    public boolean test(BlockPos var1, BlockPos var2, BlockPos var3, RandomSource var4) {
       int var5 = var2.distManhattan(var3);
       float var6 = var4.nextFloat();
-      return var6 <= Mth.clampedLerp(this.minChance, this.maxChance, Mth.inverseLerp((float)var5, (float)this.minDist, (float)this.maxDist));
+      return var6 <= Mth.clampedLerp(Mth.inverseLerp((float)var5, (float)this.minDist, (float)this.maxDist), this.minChance, this.maxChance);
    }
 
    protected PosRuleTestType<?> getType() {

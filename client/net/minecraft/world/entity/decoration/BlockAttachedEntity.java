@@ -137,7 +137,7 @@ public abstract class BlockAttachedEntity extends Entity {
    public void setPos(double var1, double var3, double var5) {
       this.pos = BlockPos.containing(var1, var3, var5);
       this.recalculateBoundingBox();
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    public BlockPos getPos() {

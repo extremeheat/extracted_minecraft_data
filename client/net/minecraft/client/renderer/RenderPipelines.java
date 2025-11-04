@@ -13,10 +13,10 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class RenderPipelines {
-   private static final Map<ResourceLocation, RenderPipeline> PIPELINES_BY_LOCATION = new HashMap();
+   private static final Map<Identifier, RenderPipeline> PIPELINES_BY_LOCATION = new HashMap();
    private static final RenderPipeline.Snippet MATRICES_PROJECTION_SNIPPET;
    private static final RenderPipeline.Snippet FOG_SNIPPET;
    private static final RenderPipeline.Snippet GLOBALS_SNIPPET;

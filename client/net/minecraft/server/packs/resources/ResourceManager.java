@@ -6,17 +6,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 
 public interface ResourceManager extends ResourceProvider {
    Set<String> getNamespaces();
 
-   List<Resource> getResourceStack(ResourceLocation var1);
+   List<Resource> getResourceStack(Identifier var1);
 
-   Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2);
+   Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2);
 
-   Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2);
+   Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2);
 
    Stream<PackResources> listPacks();
 
@@ -30,19 +30,19 @@ public interface ResourceManager extends ResourceProvider {
          return Set.of();
       }
 
-      public Optional<Resource> getResource(ResourceLocation var1) {
+      public Optional<Resource> getResource(Identifier var1) {
          return Optional.empty();
       }
 
-      public List<Resource> getResourceStack(ResourceLocation var1) {
+      public List<Resource> getResourceStack(Identifier var1) {
          return List.of();
       }
 
-      public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
+      public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
          return Map.of();
       }
 
-      public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
+      public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
          return Map.of();
       }
 

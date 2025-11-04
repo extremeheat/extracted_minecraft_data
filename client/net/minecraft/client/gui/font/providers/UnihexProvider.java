@@ -26,7 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FastBufferedInputStream;
@@ -258,11 +258,11 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    public static class Definition implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
-      private final ResourceLocation hexFile;
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().optionalFieldOf("size_overrides", List.of()).forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
+      private final Identifier hexFile;
       private final List<OverrideRange> sizeOverrides;
 
-      private Definition(ResourceLocation var1, List<OverrideRange> var2) {
+      private Definition(Identifier var1, List<OverrideRange> var2) {
          super();
          this.hexFile = var1;
          this.sizeOverrides = var2;

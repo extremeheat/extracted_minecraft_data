@@ -55,7 +55,7 @@ public class RidingEntitySoundInstance extends AbstractTickableSoundInstance {
          } else {
             float var1 = this.getEntitySpeed();
             if (var1 >= 0.01F && this.shoudlPlaySound()) {
-               this.volume = this.volumeAmplifier * Mth.clampedLerp(this.volumeMin, this.volumeMax, var1);
+               this.volume = this.volumeAmplifier * Mth.clampedLerp(var1, this.volumeMin, this.volumeMax);
             } else {
                this.volume = this.volumeMin;
             }

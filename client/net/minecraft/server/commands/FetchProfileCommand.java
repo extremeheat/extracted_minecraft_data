@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
@@ -23,6 +22,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.objects.PlayerSprite;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.ProfileResolver;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 
 public class FetchProfileCommand {

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemOwner;
@@ -26,12 +26,12 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
-   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/smithing/error");
-   private static final ResourceLocation EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM = ResourceLocation.withDefaultNamespace("container/slot/smithing_template_armor_trim");
-   private static final ResourceLocation EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE = ResourceLocation.withDefaultNamespace("container/slot/smithing_template_netherite_upgrade");
+   private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/smithing/error");
+   private static final Identifier EMPTY_SLOT_SMITHING_TEMPLATE_ARMOR_TRIM = Identifier.withDefaultNamespace("container/slot/smithing_template_armor_trim");
+   private static final Identifier EMPTY_SLOT_SMITHING_TEMPLATE_NETHERITE_UPGRADE = Identifier.withDefaultNamespace("container/slot/smithing_template_netherite_upgrade");
    private static final Component MISSING_TEMPLATE_TOOLTIP = Component.translatable("container.upgrade.missing_template_tooltip");
    private static final Component ERROR_TOOLTIP = Component.translatable("container.upgrade.error_tooltip");
-   private static final List<ResourceLocation> EMPTY_SLOT_SMITHING_TEMPLATES;
+   private static final List<Identifier> EMPTY_SLOT_SMITHING_TEMPLATES;
    private static final int TITLE_LABEL_X = 44;
    private static final int TITLE_LABEL_Y = 15;
    private static final int ERROR_ICON_WIDTH = 28;
@@ -54,7 +54,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private final ArmorStandRenderState armorStandPreview = new ArmorStandRenderState();
 
    public SmithingScreen(SmithingMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, ResourceLocation.withDefaultNamespace("textures/gui/container/smithing.png"));
+      super(var1, var2, var3, Identifier.withDefaultNamespace("textures/gui/container/smithing.png"));
       this.titleLabelX = 44;
       this.titleLabelY = 15;
       this.armorStandPreview.entityType = EntityType.ARMOR_STAND;
@@ -159,7 +159,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
       }
 
    }

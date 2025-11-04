@@ -23,8 +23,8 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
@@ -152,7 +152,7 @@ public class StructureCheck {
             Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
             Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
             var3.forEach((var2x, var3x) -> {
-               ResourceLocation var4x = ResourceLocation.tryParse(var2x);
+               Identifier var4x = Identifier.tryParse(var2x);
                if (var4x != null) {
                   Structure var5x = (Structure)var5.getValue(var4x);
                   if (var5x != null) {

@@ -13,7 +13,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundJigsawGeneratePacket;
 import net.minecraft.network.protocol.game.ServerboundSetJigsawBlockPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
@@ -57,7 +57,7 @@ public class JigsawBlockEditScreen extends Screen {
    }
 
    private void sendToServer() {
-      this.minecraft.getConnection().send(new ServerboundSetJigsawBlockPacket(this.jigsawEntity.getBlockPos(), ResourceLocation.parse(this.nameEdit.getValue()), ResourceLocation.parse(this.targetEdit.getValue()), ResourceLocation.parse(this.poolEdit.getValue()), this.finalStateEdit.getValue(), this.joint, this.parseAsInt(this.selectionPriorityEdit.getValue()), this.parseAsInt(this.placementPriorityEdit.getValue())));
+      this.minecraft.getConnection().send(new ServerboundSetJigsawBlockPacket(this.jigsawEntity.getBlockPos(), Identifier.parse(this.nameEdit.getValue()), Identifier.parse(this.targetEdit.getValue()), Identifier.parse(this.poolEdit.getValue()), this.finalStateEdit.getValue(), this.joint, this.parseAsInt(this.selectionPriorityEdit.getValue()), this.parseAsInt(this.placementPriorityEdit.getValue())));
    }
 
    private int parseAsInt(String var1) {
@@ -79,7 +79,7 @@ public class JigsawBlockEditScreen extends Screen {
    protected void init() {
       this.poolEdit = new EditBox(this.font, this.width / 2 - 153, 20, 300, 20, POOL_LABEL);
       this.poolEdit.setMaxLength(128);
-      this.poolEdit.setValue(this.jigsawEntity.getPool().location().toString());
+      this.poolEdit.setValue(this.jigsawEntity.getPool().identifier().toString());
       this.poolEdit.setResponder((var1x) -> this.updateValidity());
       this.addWidget(this.poolEdit);
       this.nameEdit = new EditBox(this.font, this.width / 2 - 153, 55, 300, 20, NAME_LABEL);
@@ -121,7 +121,7 @@ public class JigsawBlockEditScreen extends Screen {
          }
 
          protected void applyValue() {
-            JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(0.0, 20.0, this.value));
+            JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(this.value, 0.0, 20.0));
          }
       });
       this.addRenderableWidget(CycleButton.onOffBuilder(this.keepJigsaws).create(this.width / 2 - 50, 185, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2) -> this.keepJigsaws = var2));
@@ -138,12 +138,12 @@ public class JigsawBlockEditScreen extends Screen {
       this.setInitialFocus(this.poolEdit);
    }
 
-   public static boolean isValidResourceLocation(String var0) {
-      return ResourceLocation.tryParse(var0) != null;
+   public static boolean isValidIdentifier(String var0) {
+      return Identifier.tryParse(var0) != null;
    }
 
    private void updateValidity() {
-      boolean var1 = isValidResourceLocation(this.nameEdit.getValue()) && isValidResourceLocation(this.targetEdit.getValue()) && isValidResourceLocation(this.poolEdit.getValue());
+      boolean var1 = isValidIdentifier(this.nameEdit.getValue()) && isValidIdentifier(this.targetEdit.getValue()) && isValidIdentifier(this.poolEdit.getValue());
       this.doneButton.active = var1;
       this.generateButton.active = var1;
    }

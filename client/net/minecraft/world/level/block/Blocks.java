@@ -15,8 +15,8 @@ import net.minecraft.data.worldgen.features.CaveFeatures;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.references.Items;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -1304,7 +1304,7 @@ public class Blocks {
    }
 
    private static ResourceKey<Block> vanillaBlockId(String var0) {
-      return ResourceKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
    }
 
    private static Block register(String var0, Function<BlockBehaviour.Properties, Block> var1, BlockBehaviour.Properties var2) {

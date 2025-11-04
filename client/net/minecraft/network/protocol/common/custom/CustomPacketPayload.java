@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.codec.StreamMemberEncoder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface CustomPacketPayload {
    Type<? extends CustomPacketPayload> type();
@@ -18,19 +18,19 @@ public interface CustomPacketPayload {
    }
 
    static <T extends CustomPacketPayload> Type<T> createType(String var0) {
-      return new Type<T>(ResourceLocation.withDefaultNamespace(var0));
+      return new Type<T>(Identifier.withDefaultNamespace(var0));
    }
 
    static <B extends FriendlyByteBuf> StreamCodec<B, CustomPacketPayload> codec(final FallbackProvider<B> var0, List<TypeAndCodec<? super B, ?>> var1) {
       final Map var2 = (Map)var1.stream().collect(Collectors.toUnmodifiableMap((var0x) -> var0x.type().id(), TypeAndCodec::codec));
       return new StreamCodec<B, CustomPacketPayload>() {
-         private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation var1) {
+         private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(Identifier var1) {
             StreamCodec var2x = (StreamCodec)var2.get(var1);
             return var2x != null ? var2x : var0.create(var1);
          }
 
          private <T extends CustomPacketPayload> void writeCap(B var1, Type<T> var2x, CustomPacketPayload var3) {
-            var1.writeResourceLocation(var2x.id());
+            var1.writeIdentifier(var2x.id());
             StreamCodec var4 = this.findCodec(var2x.id);
             var4.encode(var1, var3);
          }
@@ -40,7 +40,7 @@ public interface CustomPacketPayload {
          }
 
          public CustomPacketPayload decode(B var1) {
-            ResourceLocation var2x = var1.readResourceLocation();
+            Identifier var2x = var1.readIdentifier();
             return (CustomPacketPayload)this.findCodec(var2x).decode(var1);
          }
 
@@ -56,10 +56,10 @@ public interface CustomPacketPayload {
       };
    }
 
-   public static record Type<T extends CustomPacketPayload>(ResourceLocation id) {
-      final ResourceLocation id;
+   public static record Type<T extends CustomPacketPayload>(Identifier id) {
+      final Identifier id;
 
-      public Type(ResourceLocation var1) {
+      public Type(Identifier var1) {
          super();
          this.id = var1;
       }
@@ -74,6 +74,6 @@ public interface CustomPacketPayload {
    }
 
    public interface FallbackProvider<B extends FriendlyByteBuf> {
-      StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation var1);
+      StreamCodec<B, ? extends CustomPacketPayload> create(Identifier var1);
    }
 }

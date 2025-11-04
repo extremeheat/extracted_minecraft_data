@@ -108,6 +108,7 @@ import net.minecraft.client.model.WindChargeModel;
 import net.minecraft.client.model.WitchModel;
 import net.minecraft.client.model.WitherBossModel;
 import net.minecraft.client.model.WolfModel;
+import net.minecraft.client.model.ZombieNautilusCoralModel;
 import net.minecraft.client.model.ZombieVillagerModel;
 import net.minecraft.client.model.dragon.DragonHeadModel;
 import net.minecraft.client.model.dragon.EnderDragonModel;
@@ -345,6 +346,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.NAUTILUS_SADDLE, var61);
       var0.put(ModelLayers.NAUTILUS_ARMOR, NautilusArmorModel.createBodyLayer());
       var0.put(ModelLayers.ZOMBIE_NAUTILUS, NautilusModel.createBodyLayer());
+      var0.put(ModelLayers.ZOMBIE_NAUTILUS_CORAL, ZombieNautilusCoralModel.createBodyLayer());
       var0.put(ModelLayers.OCELOT, var22);
       var0.put(ModelLayers.OCELOT_BABY, var23);
       var0.put(ModelLayers.PANDA, var42);

@@ -4,8 +4,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.MapColor;
 
 public class MapDecorationTypes {
@@ -59,8 +59,8 @@ public class MapDecorationTypes {
    }
 
    private static Holder<MapDecorationType> register(String var0, String var1, boolean var2, int var3, boolean var4, boolean var5) {
-      ResourceKey var6 = ResourceKey.create(Registries.MAP_DECORATION_TYPE, ResourceLocation.withDefaultNamespace(var0));
-      MapDecorationType var7 = new MapDecorationType(ResourceLocation.withDefaultNamespace(var1), var2, var3, var5, var4);
+      ResourceKey var6 = ResourceKey.create(Registries.MAP_DECORATION_TYPE, Identifier.withDefaultNamespace(var0));
+      MapDecorationType var7 = new MapDecorationType(Identifier.withDefaultNamespace(var1), var2, var3, var5, var4);
       return Registry.registerForHolder(BuiltInRegistries.MAP_DECORATION_TYPE, var6, var7);
    }
 

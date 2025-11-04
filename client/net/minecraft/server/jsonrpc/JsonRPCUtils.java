@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import org.jspecify.annotations.Nullable;
 
@@ -24,7 +24,7 @@ public class JsonRPCUtils {
       return var2;
    }
 
-   public static JsonObject createRequest(@Nullable Integer var0, ResourceLocation var1, List<JsonElement> var2) {
+   public static JsonObject createRequest(@Nullable Integer var0, Identifier var1, List<JsonElement> var2) {
       JsonObject var3 = new JsonObject();
       var3.addProperty("jsonrpc", "2.0");
       if (var0 != null) {

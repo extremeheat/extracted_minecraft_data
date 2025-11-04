@@ -4,11 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
-import net.minecraft.core.Direction;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, int contactCooldownTicks, int delayTicks, Optional<Condition> dismountConditions, Optional<Condition> knockbackConditions, Optional<Condition> damageConditions, float forwardMovement, float damageMultiplier, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
-   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("min_reach", 0.0F).forGetter(KineticWeapon::minReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("max_reach", 3.0F).forGetter(KineticWeapon::maxReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("hitbox_margin", 0.3F).forGetter(KineticWeapon::hitboxMargin), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
+   public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 128.0F).optionalFieldOf("min_reach", 0.0F).forGetter(KineticWeapon::minReach), ExtraCodecs.floatRange(0.0F, 128.0F).optionalFieldOf("max_reach", 3.0F).forGetter(KineticWeapon::maxReach), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(KineticWeapon::hitboxMargin), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, KineticWeapon> STREAM_CODEC;
 
    public KineticWeapon(float var1, float var2, float var3, int var4, int var5, Optional<Condition> var6, Optional<Condition> var7, Optional<Condition> var8, float var9, float var10, Optional<Holder<SoundEvent>> var11, Optional<Holder<SoundEvent>> var12) {
@@ -47,8 +48,7 @@ public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, 
          var0 = var0.getRootVehicle();
       }
 
-      Vec3 var1 = var0.getKnownMovement().scale(20.0);
-      return var0.onGround() ? var1.with(Direction.Axis.Y, 0.0) : var1;
+      return var0.getKnownSpeed().scale(20.0);
    }
 
    public void makeSound(Entity var1) {
@@ -94,6 +94,10 @@ public record KineticWeapon(float minReach, float maxReach, float hitboxMargin, 
          if (var13) {
             this.makeHitSound(var3);
             var3.level().broadcastEntityEvent(var3, (byte)2);
+            if (var3 instanceof ServerPlayer) {
+               ServerPlayer var27 = (ServerPlayer)var3;
+               CriteriaTriggers.SPEAR_MOBS_TRIGGER.trigger(var27, var3.stabbedEntities());
+            }
          }
 
       }

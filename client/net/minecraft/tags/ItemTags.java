@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 public final class ItemTags {
@@ -209,6 +209,6 @@ public final class ItemTags {
    }
 
    private static TagKey<Item> bind(String var0) {
-      return TagKey.<Item>create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Item>create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
    }
 }

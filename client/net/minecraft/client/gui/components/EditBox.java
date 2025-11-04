@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,14 +20,15 @@ import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class EditBox extends AbstractWidget {
-   private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted"));
+   private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/text_field"), Identifier.withDefaultNamespace("widget/text_field_highlighted"));
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -410,7 +410,7 @@ public class EditBox extends AbstractWidget {
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
          if (this.isBordered()) {
-            ResourceLocation var5 = SPRITES.get(this.isActive(), this.isFocused());
+            Identifier var5 = SPRITES.get(this.isActive(), this.isFocused());
             var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 

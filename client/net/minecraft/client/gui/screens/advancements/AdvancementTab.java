@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -89,7 +89,7 @@ public class AdvancementTab {
       var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
       var1.pose().pushMatrix();
       var1.pose().translate((float)var2, (float)var3);
-      ResourceLocation var4 = (ResourceLocation)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+      Identifier var4 = (Identifier)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
       int var7 = var5 % 16;

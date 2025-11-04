@@ -47,17 +47,17 @@ public class BookModel extends Model<State> {
 
    public void setupAnim(State var1) {
       super.setupAnim(var1);
-      float var2 = (Mth.sin(var1.animationPos * 0.02F) * 0.1F + 1.25F) * var1.open;
+      float var2 = (Mth.sin((double)(var1.animationPos * 0.02F)) * 0.1F + 1.25F) * var1.open;
       this.leftLid.yRot = 3.1415927F + var2;
       this.rightLid.yRot = -var2;
       this.leftPages.yRot = var2;
       this.rightPages.yRot = -var2;
       this.flipPage1.yRot = var2 - var2 * 2.0F * var1.pageFlip1;
       this.flipPage2.yRot = var2 - var2 * 2.0F * var1.pageFlip2;
-      this.leftPages.x = Mth.sin(var2);
-      this.rightPages.x = Mth.sin(var2);
-      this.flipPage1.x = Mth.sin(var2);
-      this.flipPage2.x = Mth.sin(var2);
+      this.leftPages.x = Mth.sin((double)var2);
+      this.rightPages.x = Mth.sin((double)var2);
+      this.flipPage1.x = Mth.sin((double)var2);
+      this.flipPage2.x = Mth.sin((double)var2);
    }
 
    public static record State(float animationPos, float pageFlip1, float pageFlip2, float open) {

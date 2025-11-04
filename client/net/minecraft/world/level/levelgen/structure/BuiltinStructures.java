@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public interface BuiltinStructures {
    ResourceKey<Structure> PILLAGER_OUTPOST = createKey("pillager_outpost");
@@ -41,6 +41,6 @@ public interface BuiltinStructures {
    ResourceKey<Structure> TRIAL_CHAMBERS = createKey("trial_chambers");
 
    private static ResourceKey<Structure> createKey(String var0) {
-      return ResourceKey.create(Registries.STRUCTURE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.STRUCTURE, Identifier.withDefaultNamespace(var0));
    }
 }

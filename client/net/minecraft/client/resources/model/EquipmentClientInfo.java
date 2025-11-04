@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
@@ -37,29 +37,29 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
       CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.nonEmptyMap(Codec.unboundedMap(EquipmentClientInfo.LayerType.CODEC, LAYER_LIST_CODEC)).fieldOf("layers").forGetter(EquipmentClientInfo::layers)).apply(var0, EquipmentClientInfo::new));
    }
 
-   public static record Layer(ResourceLocation textureId, Optional<Dyeable> dyeable, boolean usePlayerTexture) {
-      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Layer::textureId), EquipmentClientInfo.Dyeable.CODEC.optionalFieldOf("dyeable").forGetter(Layer::dyeable), Codec.BOOL.optionalFieldOf("use_player_texture", false).forGetter(Layer::usePlayerTexture)).apply(var0, Layer::new));
+   public static record Layer(Identifier textureId, Optional<Dyeable> dyeable, boolean usePlayerTexture) {
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Layer::textureId), EquipmentClientInfo.Dyeable.CODEC.optionalFieldOf("dyeable").forGetter(Layer::dyeable), Codec.BOOL.optionalFieldOf("use_player_texture", false).forGetter(Layer::usePlayerTexture)).apply(var0, Layer::new));
 
-      public Layer(ResourceLocation var1) {
+      public Layer(Identifier var1) {
          this(var1, Optional.empty(), false);
       }
 
-      public Layer(ResourceLocation var1, Optional<Dyeable> var2, boolean var3) {
+      public Layer(Identifier var1, Optional<Dyeable> var2, boolean var3) {
          super();
          this.textureId = var1;
          this.dyeable = var2;
          this.usePlayerTexture = var3;
       }
 
-      public static Layer leatherDyeable(ResourceLocation var0, boolean var1) {
+      public static Layer leatherDyeable(Identifier var0, boolean var1) {
          return new Layer(var0, var1 ? Optional.of(new Dyeable(Optional.of(-6265536))) : Optional.empty(), false);
       }
 
-      public static Layer onlyIfDyed(ResourceLocation var0, boolean var1) {
+      public static Layer onlyIfDyed(Identifier var0, boolean var1) {
          return new Layer(var0, var1 ? Optional.of(new Dyeable(Optional.empty())) : Optional.empty(), false);
       }
 
-      public ResourceLocation getTextureLocation(LayerType var1) {
+      public Identifier getTextureLocation(LayerType var1) {
          return this.textureId.withPath((UnaryOperator)((var1x) -> {
             String var10000 = var1.getSerializedName();
             return "textures/entity/equipment/" + var10000 + "/" + var1x + ".png";
@@ -83,17 +83,17 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
          super();
       }
 
-      public Builder addHumanoidLayers(ResourceLocation var1) {
+      public Builder addHumanoidLayers(Identifier var1) {
          return this.addHumanoidLayers(var1, false);
       }
 
-      public Builder addHumanoidLayers(ResourceLocation var1, boolean var2) {
+      public Builder addHumanoidLayers(Identifier var1, boolean var2) {
          this.addLayers(EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS, EquipmentClientInfo.Layer.leatherDyeable(var1, var2));
          this.addMainHumanoidLayer(var1, var2);
          return this;
       }
 
-      public Builder addMainHumanoidLayer(ResourceLocation var1, boolean var2) {
+      public Builder addMainHumanoidLayer(Identifier var1, boolean var2) {
          return this.addLayers(EquipmentClientInfo.LayerType.HUMANOID, EquipmentClientInfo.Layer.leatherDyeable(var1, var2));
       }
 

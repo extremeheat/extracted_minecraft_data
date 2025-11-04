@@ -36,14 +36,14 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
+   static final Identifier SLOT_FRAME_SPRITE = Identifier.withDefaultNamespace("widget/slot_frame");
    private static final Component SELECT_BUTTON_NAME = Component.translatable("mco.template.button.select");
    private static final Component TRAILER_BUTTON_NAME = Component.translatable("mco.template.button.trailer");
    private static final Component PUBLISHER_BUTTON_NAME = Component.translatable("mco.template.button.publisher");
@@ -271,8 +271,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    class Entry extends ObjectSelectionList.Entry<Entry> {
-      private static final WidgetSprites WEBSITE_LINK_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("icon/link"), ResourceLocation.withDefaultNamespace("icon/link_highlighted"));
-      private static final WidgetSprites TRAILER_LINK_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("icon/video_link"), ResourceLocation.withDefaultNamespace("icon/video_link_highlighted"));
+      private static final WidgetSprites WEBSITE_LINK_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("icon/link"), Identifier.withDefaultNamespace("icon/link_highlighted"));
+      private static final WidgetSprites TRAILER_LINK_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("icon/video_link"), Identifier.withDefaultNamespace("icon/video_link_highlighted"));
       private static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
       private static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
       public final WorldTemplate template;
@@ -314,7 +314,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          var1.blit(RenderPipelines.GUI_TEXTURED, RealmsTextureManager.worldTemplate(this.template.id(), this.template.image()), this.getContentX() + 1, this.getContentY() + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, this.getContentX(), this.getContentY() + 1, 40, 40);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, this.getContentX(), this.getContentY() + 1, 40, 40);
          boolean var6 = true;
          int var7 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version());
          if (this.websiteButton != null) {

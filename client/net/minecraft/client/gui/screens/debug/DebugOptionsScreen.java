@@ -35,7 +35,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class DebugOptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("debug.options.title");
@@ -123,9 +123,9 @@ public class DebugOptionsScreen extends Screen {
    }
 
    public class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {
-      private static final Comparator<Map.Entry<ResourceLocation, DebugScreenEntry>> COMPARATOR = (var0, var1) -> {
+      private static final Comparator<Map.Entry<Identifier, DebugScreenEntry>> COMPARATOR = (var0, var1) -> {
          int var2 = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)var0.getValue()).category().sortKey(), ((DebugScreenEntry)var1.getValue()).category().sortKey());
-         return var2 != 0 ? var2 : ((ResourceLocation)var0.getKey()).compareTo((ResourceLocation)var1.getKey());
+         return var2 != 0 ? var2 : ((Identifier)var0.getKey()).compareTo((Identifier)var1.getKey());
       };
       private static final int ITEM_HEIGHT = 20;
 
@@ -153,14 +153,14 @@ public class DebugOptionsScreen extends Screen {
          DebugEntryCategory var3 = null;
 
          for(Map.Entry var5 : var2) {
-            if (((ResourceLocation)var5.getKey()).getPath().contains(var1)) {
+            if (((Identifier)var5.getKey()).getPath().contains(var1)) {
                DebugEntryCategory var6 = ((DebugScreenEntry)var5.getValue()).category();
                if (!var6.equals(var3)) {
                   this.addEntry(DebugOptionsScreen.this.new CategoryEntry(var6.label()));
                   var3 = var6;
                }
 
-               this.addEntry(DebugOptionsScreen.this.new OptionEntry((ResourceLocation)var5.getKey()));
+               this.addEntry(DebugOptionsScreen.this.new OptionEntry((Identifier)var5.getKey()));
             }
          }
 
@@ -215,7 +215,7 @@ public class DebugOptionsScreen extends Screen {
 
    class OptionEntry extends AbstractOptionEntry {
       private static final int BUTTON_WIDTH = 60;
-      private final ResourceLocation location;
+      private final Identifier location;
       protected final List<AbstractWidget> children = Lists.newArrayList();
       private final CycleButton<Boolean> always;
       private final CycleButton<Boolean> overlay;
@@ -223,7 +223,7 @@ public class DebugOptionsScreen extends Screen {
       private final String name;
       private final boolean isAllowed;
 
-      public OptionEntry(final ResourceLocation var2) {
+      public OptionEntry(final Identifier var2) {
          super();
          this.location = var2;
          DebugScreenEntry var3 = DebugScreenEntries.getEntry(var2);
@@ -251,7 +251,7 @@ public class DebugOptionsScreen extends Screen {
          return CommonComponents.optionNameValue(var3, var1.getMessage());
       }
 
-      private void setValue(ResourceLocation var1, DebugScreenEntryStatus var2) {
+      private void setValue(Identifier var1, DebugScreenEntryStatus var2) {
          DebugOptionsScreen.this.minecraft.debugEntries.setStatus(var1, var2);
 
          for(Button var4 : DebugOptionsScreen.this.profileButtons) {

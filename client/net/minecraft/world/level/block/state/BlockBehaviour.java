@@ -15,7 +15,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -29,6 +28,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -412,7 +412,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
-      public static final Codec<Properties> CODEC = Codec.unit(() -> of());
+      public static final Codec<Properties> CODEC = MapCodec.unitCodec(() -> of());
       Function<BlockState, MapColor> mapColor = (var0) -> MapColor.NONE;
       boolean hasCollision = true;
       SoundType soundType;
@@ -458,8 +458,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.friction = 0.6F;
          this.speedFactor = 1.0F;
          this.jumpFactor = 1.0F;
-         this.drops = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("blocks/")));
-         this.descriptionId = (var0) -> Util.makeDescriptionId("block", var0.location());
+         this.drops = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.identifier().withPrefix("blocks/")));
+         this.descriptionId = (var0) -> Util.makeDescriptionId("block", var0.identifier());
          this.canOcclude = true;
          this.pushReaction = PushReaction.NORMAL;
          this.spawnTerrainParticles = true;

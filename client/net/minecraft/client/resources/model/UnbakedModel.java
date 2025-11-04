@@ -2,7 +2,7 @@ package net.minecraft.client.resources.model;
 
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public interface UnbakedModel {
@@ -28,7 +28,7 @@ public interface UnbakedModel {
       return null;
    }
 
-   default @Nullable ResourceLocation parent() {
+   default @Nullable Identifier parent() {
       return null;
    }
 

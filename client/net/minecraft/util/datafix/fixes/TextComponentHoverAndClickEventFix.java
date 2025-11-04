@@ -12,7 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.jspecify.annotations.Nullable;
 

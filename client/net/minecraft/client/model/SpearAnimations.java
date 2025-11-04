@@ -95,7 +95,7 @@ public class SpearAnimations {
          int var7 = var3 == HumanoidArm.RIGHT ? 1 : -1;
          var1.translate((double)((float)var7 * (var6.raiseProgress() * 0.15F + var6.raiseProgressEnd() * -0.05F + var6.swayProgress() * -0.1F + var6.swayScaleSlow() * 0.005F)), (double)(var6.raiseProgress() * -0.075F + var6.raiseProgressMiddle() * 0.075F + var6.swayScaleFast() * 0.01F), (double)var6.raiseProgressStart() * 0.05 + (double)var6.raiseProgressEnd() * -0.05 + (double)(var6.swayScaleSlow() * 0.005F));
          var1.rotateAround(Axis.XP.rotationDegrees(-65.0F * Ease.inOutBack(var6.raiseProgress()) - 35.0F * var6.lowerProgress() + 100.0F * var6.raiseBackProgress() + -0.5F * var6.swayScaleFast()), 0.0F, 0.1F, 0.0F);
-         var1.rotateAround(Axis.YN.rotationDegrees((float)var7 * (-90.0F * progress(var6.raiseProgress(), 0.5F, 0.55F) + 60.0F * var6.swayProgress() + 30.0F * var6.raiseBackProgress() + 2.0F * var6.swayScaleSlow())), 0.15F, 0.0F, 0.0F);
+         var1.rotateAround(Axis.YN.rotationDegrees((float)var7 * (-90.0F * progress(var6.raiseProgress(), 0.5F, 0.55F) + 60.0F * var6.swayProgress() + 30.0F * var6.raiseBackProgress() + 2.0F * var6.swayScaleSlow())), (float)var7 * 0.15F, 0.0F, 0.0F);
          var1.translate(0.0F, -hitFeedbackAmount(var0), 0.0F);
       }
    }
@@ -137,8 +137,8 @@ public class SpearAnimations {
          float var11 = Ease.outCubic(Ease.inOutElastic(SpearAnimations.progress(var1, (float)var4, (float)(var5 - 5))));
          float var12 = SpearAnimations.progress(var1, (float)(var5 - 5), (float)var5);
          float var13 = 2.0F * Ease.outCirc(var10) - 2.0F * Ease.inCirc(var12);
-         float var14 = Mth.sin(var1 * 19.0F * 0.017453292F) * var13;
-         float var15 = Mth.sin(var1 * 30.0F * 0.017453292F) * var13;
+         float var14 = Mth.sin((double)(var1 * 19.0F * 0.017453292F)) * var13;
+         float var15 = Mth.sin((double)(var1 * 30.0F * 0.017453292F)) * var13;
          return new UseParams(var6, var7, var8, var9, var10, var11, var12, var13, var14, var15);
       }
    }

@@ -2,7 +2,7 @@ package net.minecraft.tags;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class TagBuilder {
    private final List<TagEntry> entries = new ArrayList();
@@ -24,19 +24,19 @@ public class TagBuilder {
       return this;
    }
 
-   public TagBuilder addElement(ResourceLocation var1) {
+   public TagBuilder addElement(Identifier var1) {
       return this.add(TagEntry.element(var1));
    }
 
-   public TagBuilder addOptionalElement(ResourceLocation var1) {
+   public TagBuilder addOptionalElement(Identifier var1) {
       return this.add(TagEntry.optionalElement(var1));
    }
 
-   public TagBuilder addTag(ResourceLocation var1) {
+   public TagBuilder addTag(Identifier var1) {
       return this.add(TagEntry.tag(var1));
    }
 
-   public TagBuilder addOptionalTag(ResourceLocation var1) {
+   public TagBuilder addOptionalTag(Identifier var1) {
       return this.add(TagEntry.optionalTag(var1));
    }
 }

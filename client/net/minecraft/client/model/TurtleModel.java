@@ -43,15 +43,15 @@ public class TurtleModel extends QuadrupedModel<TurtleRenderState> {
          float var4 = var1.isLayingEgg ? 4.0F : 1.0F;
          float var5 = var1.isLayingEgg ? 2.0F : 1.0F;
          float var6 = var2 * 5.0F;
-         float var7 = Mth.cos(var4 * var6);
-         float var8 = Mth.cos(var6);
+         float var7 = Mth.cos((double)(var4 * var6));
+         float var8 = Mth.cos((double)var6);
          this.rightFrontLeg.yRot = -var7 * 8.0F * var3 * var5;
          this.leftFrontLeg.yRot = var7 * 8.0F * var3 * var5;
          this.rightHindLeg.yRot = -var8 * 3.0F * var3;
          this.leftHindLeg.yRot = var8 * 3.0F * var3;
       } else {
          float var9 = 0.5F * var3;
-         float var10 = Mth.cos(var2 * 0.6662F * 0.6F) * var9;
+         float var10 = Mth.cos((double)(var2 * 0.6662F * 0.6F)) * var9;
          this.rightHindLeg.xRot = var10;
          this.leftHindLeg.xRot = -var10;
          this.rightFrontLeg.zRot = -var10;

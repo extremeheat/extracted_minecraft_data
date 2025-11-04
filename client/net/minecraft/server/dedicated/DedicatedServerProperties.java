@@ -25,9 +25,9 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.jsonrpc.security.SecurityConfig;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
@@ -171,7 +171,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       boolean var3 = this.get("generate-structures", true);
       long var4 = WorldOptions.parseSeed(var2).orElse(WorldOptions.randomSeed());
       this.worldOptions = new WorldOptions(var4, var3, false);
-      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (var0) -> GsonHelper.parse(!var0.isEmpty() ? var0 : "{}"), new JsonObject()), (String)this.get("level-type", (var0) -> var0.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.location().toString()));
+      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (var0) -> GsonHelper.parse(!var0.isEmpty() ? var0 : "{}"), new JsonObject()), (String)this.get("level-type", (var0) -> var0.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.identifier().toString()));
       this.serverResourcePackInfo = getServerPackInfo(this.get("resource-pack-id", ""), this.get("resource-pack", ""), this.get("resource-pack-sha1", ""), this.getLegacyString("resource-pack-hash"), this.get("require-resource-pack", false), this.get("resource-pack-prompt", ""));
       this.initialDataPackConfiguration = getDatapackConfig(this.get("initial-enabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getEnabled())), this.get("initial-disabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getDisabled())));
    }
@@ -278,10 +278,10 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       public WorldDimensions create(HolderLookup.Provider var1) {
          HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WORLD_PRESET);
          Holder.Reference var3 = (Holder.Reference)var2.get(WorldPresets.NORMAL).or(() -> var2.listElements().findAny()).orElseThrow(() -> new IllegalStateException("Invalid datapack contents: can't find default preset"));
-         Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(this.levelType)).map((var0) -> ResourceKey.create(Registries.WORLD_PRESET, var0)).or(() -> Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType)));
+         Optional var10000 = Optional.ofNullable(Identifier.tryParse(this.levelType)).map((var0) -> ResourceKey.create(Registries.WORLD_PRESET, var0)).or(() -> Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType)));
          Objects.requireNonNull(var2);
          Holder var4 = (Holder)var10000.flatMap(var2::get).orElseGet(() -> {
-            DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().location());
+            DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().identifier());
             return var3;
          });
          WorldDimensions var5 = ((WorldPreset)var4.value()).createWorldDimensions();

@@ -55,17 +55,17 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
          float var5 = Mth.triangleWave(var3, 10.0F);
          float var6 = (1.0F + var5) * 0.5F;
          float var7 = var6 * var6 * var6 * 12.0F;
-         float var8 = var7 * Mth.sin(this.neck.xRot);
+         float var8 = var7 * Mth.sin((double)this.neck.xRot);
          this.neck.z = -6.5F + var7;
          this.neck.y = -7.0F - var8;
          if (var3 > 5.0F) {
-            this.mouth.xRot = Mth.sin((-4.0F + var3) / 4.0F) * 3.1415927F * 0.4F;
+            this.mouth.xRot = Mth.sin((double)((-4.0F + var3) / 4.0F)) * 3.1415927F * 0.4F;
          } else {
-            this.mouth.xRot = 0.15707964F * Mth.sin(3.1415927F * var3 / 10.0F);
+            this.mouth.xRot = 0.15707964F * Mth.sin((double)(3.1415927F * var3 / 10.0F));
          }
       } else {
          float var10 = -1.0F;
-         float var12 = -1.0F * Mth.sin(this.neck.xRot);
+         float var12 = -1.0F * Mth.sin((double)this.neck.xRot);
          this.neck.x = 0.0F;
          this.neck.y = -7.0F - var12;
          this.neck.z = 5.5F;
@@ -76,7 +76,7 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
             double var15 = (double)var2 / 40.0;
             this.neck.x = (float)Math.sin(var15 * 10.0) * 3.0F;
          } else if ((double)var1.roarAnimation > 0.0) {
-            float var16 = Mth.sin(var1.roarAnimation * 3.1415927F * 0.25F);
+            float var16 = Mth.sin((double)(var1.roarAnimation * 3.1415927F * 0.25F));
             this.mouth.xRot = 1.5707964F * var16;
          }
       }
@@ -85,9 +85,9 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
       this.head.yRot = var1.yRot * 0.017453292F;
       float var11 = var1.walkAnimationPos;
       float var13 = 0.4F * var1.walkAnimationSpeed;
-      this.rightHindLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
-      this.leftHindLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
-      this.rightFrontLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
-      this.leftFrontLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
+      this.rightHindLeg.xRot = Mth.cos((double)(var11 * 0.6662F)) * var13;
+      this.leftHindLeg.xRot = Mth.cos((double)(var11 * 0.6662F + 3.1415927F)) * var13;
+      this.rightFrontLeg.xRot = Mth.cos((double)(var11 * 0.6662F + 3.1415927F)) * var13;
+      this.leftFrontLeg.xRot = Mth.cos((double)(var11 * 0.6662F)) * var13;
    }
 }

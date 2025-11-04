@@ -3,8 +3,8 @@ package net.minecraft.world.entity.animal;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.variant.BiomeCheck;
@@ -22,7 +22,7 @@ public class CowVariants {
       super();
    }
 
-   private static ResourceKey<CowVariant> createKey(ResourceLocation var0) {
+   private static ResourceKey<CowVariant> createKey(Identifier var0) {
       return ResourceKey.create(Registries.COW_VARIANT, var0);
    }
 
@@ -38,7 +38,7 @@ public class CowVariants {
    }
 
    private static void register(BootstrapContext<CowVariant> var0, ResourceKey<CowVariant> var1, CowVariant.ModelType var2, String var3, SpawnPrioritySelectors var4) {
-      ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/cow/" + var3);
+      Identifier var5 = Identifier.withDefaultNamespace("entity/cow/" + var3);
       var0.register(var1, new CowVariant(new ModelAndTexture(var2, var5), var4));
    }
 

@@ -71,8 +71,8 @@ public class MoveControl implements Control {
          var5 = var2 / var5;
          var3 *= var5;
          var4 *= var5;
-         float var6 = Mth.sin(this.mob.getYRot() * 0.017453292F);
-         float var7 = Mth.cos(this.mob.getYRot() * 0.017453292F);
+         float var6 = Mth.sin((double)(this.mob.getYRot() * 0.017453292F));
+         float var7 = Mth.cos((double)(this.mob.getYRot() * 0.017453292F));
          float var8 = var3 * var7 - var4 * var6;
          float var9 = var4 * var7 + var3 * var6;
          if (!this.isWalkable(var8, var9)) {

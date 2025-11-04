@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -64,12 +64,12 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 public class Zombie extends Monster {
-   private static final ResourceLocation SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
+   private static final Identifier SPEED_MODIFIER_BABY_ID = Identifier.withDefaultNamespace("baby");
    private static final AttributeModifier SPEED_MODIFIER_BABY;
-   private static final ResourceLocation REINFORCEMENT_CALLER_CHARGE_ID;
+   private static final Identifier REINFORCEMENT_CALLER_CHARGE_ID;
    private static final AttributeModifier ZOMBIE_REINFORCEMENT_CALLEE_CHARGE;
-   private static final ResourceLocation LEADER_ZOMBIE_BONUS_ID;
-   private static final ResourceLocation ZOMBIE_RANDOM_SPAWN_BONUS_ID;
+   private static final Identifier LEADER_ZOMBIE_BONUS_ID;
+   private static final Identifier ZOMBIE_RANDOM_SPAWN_BONUS_ID;
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final EntityDataAccessor<Integer> DATA_SPECIAL_TYPE_ID;
    private static final EntityDataAccessor<Boolean> DATA_DROWNED_CONVERSION_ID;
@@ -492,10 +492,10 @@ public class Zombie extends Monster {
 
    static {
       SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
-      REINFORCEMENT_CALLER_CHARGE_ID = ResourceLocation.withDefaultNamespace("reinforcement_caller_charge");
-      ZOMBIE_REINFORCEMENT_CALLEE_CHARGE = new AttributeModifier(ResourceLocation.withDefaultNamespace("reinforcement_callee_charge"), -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE);
-      LEADER_ZOMBIE_BONUS_ID = ResourceLocation.withDefaultNamespace("leader_zombie_bonus");
-      ZOMBIE_RANDOM_SPAWN_BONUS_ID = ResourceLocation.withDefaultNamespace("zombie_random_spawn_bonus");
+      REINFORCEMENT_CALLER_CHARGE_ID = Identifier.withDefaultNamespace("reinforcement_caller_charge");
+      ZOMBIE_REINFORCEMENT_CALLEE_CHARGE = new AttributeModifier(Identifier.withDefaultNamespace("reinforcement_callee_charge"), -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE);
+      LEADER_ZOMBIE_BONUS_ID = Identifier.withDefaultNamespace("leader_zombie_bonus");
+      ZOMBIE_RANDOM_SPAWN_BONUS_ID = Identifier.withDefaultNamespace("zombie_random_spawn_bonus");
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       DATA_SPECIAL_TYPE_ID = SynchedEntityData.<Integer>defineId(Zombie.class, EntityDataSerializers.INT);
       DATA_DROWNED_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);

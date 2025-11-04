@@ -6,22 +6,22 @@ import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 
 public abstract class Model<S> {
    protected final ModelPart root;
-   protected final Function<ResourceLocation, RenderType> renderType;
+   protected final Function<Identifier, RenderType> renderType;
    private final List<ModelPart> allParts;
 
-   public Model(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
+   public Model(ModelPart var1, Function<Identifier, RenderType> var2) {
       super();
       this.root = var1;
       this.renderType = var2;
       this.allParts = var1.getAllParts();
    }
 
-   public final RenderType renderType(ResourceLocation var1) {
+   public final RenderType renderType(Identifier var1) {
       return (RenderType)this.renderType.apply(var1);
    }
 
@@ -53,7 +53,7 @@ public abstract class Model<S> {
    }
 
    public static class Simple extends Model<Unit> {
-      public Simple(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
+      public Simple(ModelPart var1, Function<Identifier, RenderType> var2) {
          super(var1, var2);
       }
 

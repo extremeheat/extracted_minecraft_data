@@ -5,19 +5,21 @@ import com.mojang.serialization.Codec;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
 
-public record AttributeType<Value>(Codec<Value> valueCodec, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, Codec<AttributeModifier<Value, ?>> modifierCodec, LerpFunction<Value> spatialLerp, LerpFunction<Value> partialTickLerp) {
-   public AttributeType(Codec<Value> var1, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var2, Codec<AttributeModifier<Value, ?>> var3, LerpFunction<Value> var4, LerpFunction<Value> var5) {
+public record AttributeType<Value>(Codec<Value> valueCodec, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, Codec<AttributeModifier<Value, ?>> modifierCodec, LerpFunction<Value> keyframeLerp, LerpFunction<Value> stateChangeLerp, LerpFunction<Value> spatialLerp, LerpFunction<Value> partialTickLerp) {
+   public AttributeType(Codec<Value> var1, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var2, Codec<AttributeModifier<Value, ?>> var3, LerpFunction<Value> var4, LerpFunction<Value> var5, LerpFunction<Value> var6, LerpFunction<Value> var7) {
       super();
       this.valueCodec = var1;
       this.modifierLibrary = var2;
       this.modifierCodec = var3;
-      this.spatialLerp = var4;
-      this.partialTickLerp = var5;
+      this.keyframeLerp = var4;
+      this.stateChangeLerp = var5;
+      this.spatialLerp = var6;
+      this.partialTickLerp = var7;
    }
 
    public static <Value> AttributeType<Value> ofInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1, LerpFunction<Value> var2) {
@@ -25,11 +27,11 @@ public record AttributeType<Value>(Codec<Value> valueCodec, Map<AttributeModifie
    }
 
    public static <Value> AttributeType<Value> ofInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1, LerpFunction<Value> var2, LerpFunction<Value> var3) {
-      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), var2, var3);
+      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), var2, var2, var2, var3);
    }
 
    public static <Value> AttributeType<Value> ofNotInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1) {
-      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), LerpFunction.ofStep(0.5F), LerpFunction.ofStep(0.0F));
+      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), LerpFunction.ofStep(1.0F), LerpFunction.ofStep(0.0F), LerpFunction.ofStep(0.5F), LerpFunction.ofStep(0.0F));
    }
 
    public static <Value> AttributeType<Value> ofNotInterpolated(Codec<Value> var0) {

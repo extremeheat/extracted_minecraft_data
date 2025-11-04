@@ -153,8 +153,8 @@ public class LiquidBlockRenderer {
             } else {
                TextureAtlasSprite var54 = var7[1];
                float var55 = (float)Mth.atan2(var53.z, var53.x) - 1.5707964F;
-               float var56 = Mth.sin(var55) * 0.25F;
-               float var57 = Mth.cos(var55) * 0.25F;
+               float var56 = Mth.sin((double)var55) * 0.25F;
+               float var57 = Mth.cos((double)var55) * 0.25F;
                float var58 = 0.5F;
                var45 = var54.getU(0.5F + (-var57 - var56));
                var49 = var54.getV(0.5F + -var57 + var56);

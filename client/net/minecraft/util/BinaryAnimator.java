@@ -2,18 +2,18 @@ package net.minecraft.util;
 
 public class BinaryAnimator {
    private final int animationLength;
-   private final EasingFunction easingFunction;
+   private final EasingType easing;
    private int ticks;
    private int ticksOld;
 
-   public BinaryAnimator(int var1, EasingFunction var2) {
+   public BinaryAnimator(int var1, EasingType var2) {
       super();
       this.animationLength = var1;
-      this.easingFunction = var2;
+      this.easing = var2;
    }
 
    public BinaryAnimator(int var1) {
-      this(var1, (var0) -> var0);
+      this(var1, EasingType.LINEAR);
    }
 
    public void tick(boolean var1) {
@@ -30,10 +30,6 @@ public class BinaryAnimator {
 
    public float getFactor(float var1) {
       float var2 = Mth.lerp(var1, (float)this.ticksOld, (float)this.ticks) / (float)this.animationLength;
-      return this.easingFunction.apply(var2);
-   }
-
-   public interface EasingFunction {
-      float apply(float var1);
+      return this.easing.apply(var2);
    }
 }

@@ -13,16 +13,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -41,12 +41,12 @@ public class LootTable {
    public static final Codec<Holder<LootTable>> CODEC;
    public static final LootTable EMPTY;
    private final ContextKeySet paramSet;
-   private final Optional<ResourceLocation> randomSequence;
+   private final Optional<Identifier> randomSequence;
    private final List<LootPool> pools;
    private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
 
-   LootTable(ContextKeySet var1, Optional<ResourceLocation> var2, List<LootPool> var3, List<LootItemFunction> var4) {
+   LootTable(ContextKeySet var1, Optional<Identifier> var2, List<LootPool> var3, List<LootItemFunction> var4) {
       super();
       this.paramSet = var1;
       this.randomSequence = var2;
@@ -219,7 +219,7 @@ public class LootTable {
    static {
       KEY_CODEC = ResourceKey.codec(Registries.LOOT_TABLE);
       DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new)));
+      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new)));
       CODEC = RegistryFileCodec.<Holder<LootTable>>create(Registries.LOOT_TABLE, DIRECT_CODEC);
       EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
    }
@@ -228,7 +228,7 @@ public class LootTable {
       private final ImmutableList.Builder<LootPool> pools = ImmutableList.builder();
       private final ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
       private ContextKeySet paramSet;
-      private Optional<ResourceLocation> randomSequence;
+      private Optional<Identifier> randomSequence;
 
       public Builder() {
          super();
@@ -246,7 +246,7 @@ public class LootTable {
          return this;
       }
 
-      public Builder setRandomSequence(ResourceLocation var1) {
+      public Builder setRandomSequence(Identifier var1) {
          this.randomSequence = Optional.of(var1);
          return this;
       }

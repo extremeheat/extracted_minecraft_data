@@ -7,18 +7,18 @@ import net.minecraft.client.renderer.entity.state.DolphinRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Dolphin;
 
 public class DolphinRenderer extends AgeableMobRenderer<Dolphin, DolphinRenderState, DolphinModel> {
-   private static final ResourceLocation DOLPHIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/dolphin.png");
+   private static final Identifier DOLPHIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/dolphin.png");
 
    public DolphinRenderer(EntityRendererProvider.Context var1) {
       super(var1, new DolphinModel(var1.bakeLayer(ModelLayers.DOLPHIN)), new DolphinModel(var1.bakeLayer(ModelLayers.DOLPHIN_BABY)), 0.7F);
       this.addLayer(new DolphinCarryingItemLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(DolphinRenderState var1) {
+   public Identifier getTextureLocation(DolphinRenderState var1) {
       return DOLPHIN_LOCATION;
    }
 
@@ -33,7 +33,7 @@ public class DolphinRenderer extends AgeableMobRenderer<Dolphin, DolphinRenderSt
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((DolphinRenderState)var1);
    }
 

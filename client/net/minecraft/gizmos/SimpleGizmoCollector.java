@@ -3,8 +3,8 @@ package net.minecraft.gizmos;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class SimpleGizmoCollector implements GizmoCollector {
    private final List<GizmoInstance> gizmos = new ArrayList();

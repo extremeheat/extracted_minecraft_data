@@ -8,11 +8,11 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.EvokerRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.SpellcasterIllager;
 
 public class EvokerRenderer<T extends SpellcasterIllager> extends IllagerRenderer<T, EvokerRenderState> {
-   private static final ResourceLocation EVOKER_ILLAGER = ResourceLocation.withDefaultNamespace("textures/entity/illager/evoker.png");
+   private static final Identifier EVOKER_ILLAGER = Identifier.withDefaultNamespace("textures/entity/illager/evoker.png");
 
    public EvokerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.EVOKER)), 0.5F);
@@ -26,7 +26,7 @@ public class EvokerRenderer<T extends SpellcasterIllager> extends IllagerRendere
       });
    }
 
-   public ResourceLocation getTextureLocation(EvokerRenderState var1) {
+   public Identifier getTextureLocation(EvokerRenderState var1) {
       return EVOKER_ILLAGER;
    }
 
@@ -40,7 +40,7 @@ public class EvokerRenderer<T extends SpellcasterIllager> extends IllagerRendere
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((EvokerRenderState)var1);
    }
 

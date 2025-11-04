@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.TextAlignment;
@@ -9,6 +8,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class GenericWaitingScreen extends Screen {

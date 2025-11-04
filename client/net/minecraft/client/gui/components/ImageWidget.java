@@ -7,7 +7,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ImageWidget extends AbstractWidget {
@@ -15,11 +15,11 @@ public abstract class ImageWidget extends AbstractWidget {
       super(var1, var2, var3, var4, CommonComponents.EMPTY);
    }
 
-   public static ImageWidget texture(int var0, int var1, ResourceLocation var2, int var3, int var4) {
+   public static ImageWidget texture(int var0, int var1, Identifier var2, int var3, int var4) {
       return new Texture(0, 0, var0, var1, var2, var3, var4);
    }
 
-   public static ImageWidget sprite(int var0, int var1, ResourceLocation var2) {
+   public static ImageWidget sprite(int var0, int var1, Identifier var2) {
       return new Sprite(0, 0, var0, var1, var2);
    }
 
@@ -33,16 +33,16 @@ public abstract class ImageWidget extends AbstractWidget {
       return false;
    }
 
-   public abstract void updateResource(ResourceLocation var1);
+   public abstract void updateResource(Identifier var1);
 
    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 
    static class Sprite extends ImageWidget {
-      private ResourceLocation sprite;
+      private Identifier sprite;
 
-      public Sprite(int var1, int var2, int var3, int var4, ResourceLocation var5) {
+      public Sprite(int var1, int var2, int var3, int var4, Identifier var5) {
          super(var1, var2, var3, var4);
          this.sprite = var5;
       }
@@ -51,17 +51,17 @@ public abstract class ImageWidget extends AbstractWidget {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
 
-      public void updateResource(ResourceLocation var1) {
+      public void updateResource(Identifier var1) {
          this.sprite = var1;
       }
    }
 
    static class Texture extends ImageWidget {
-      private ResourceLocation texture;
+      private Identifier texture;
       private final int textureWidth;
       private final int textureHeight;
 
-      public Texture(int var1, int var2, int var3, int var4, ResourceLocation var5, int var6, int var7) {
+      public Texture(int var1, int var2, int var3, int var4, Identifier var5, int var6, int var7) {
          super(var1, var2, var3, var4);
          this.texture = var5;
          this.textureWidth = var6;
@@ -72,7 +72,7 @@ public abstract class ImageWidget extends AbstractWidget {
          var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
       }
 
-      public void updateResource(ResourceLocation var1) {
+      public void updateResource(Identifier var1) {
          this.texture = var1;
       }
    }

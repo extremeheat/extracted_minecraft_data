@@ -69,7 +69,7 @@ public class BeeModel extends EntityModel<BeeRenderState> {
       if (!var1.isOnGround) {
          float var2 = var1.ageInTicks * 120.32113F * 0.017453292F;
          this.rightWing.yRot = 0.0F;
-         this.rightWing.zRot = Mth.cos(var2) * 3.1415927F * 0.15F;
+         this.rightWing.zRot = Mth.cos((double)var2) * 3.1415927F * 0.15F;
          this.leftWing.xRot = this.rightWing.xRot;
          this.leftWing.yRot = this.rightWing.yRot;
          this.leftWing.zRot = -this.rightWing.zRot;
@@ -79,14 +79,14 @@ public class BeeModel extends EntityModel<BeeRenderState> {
       }
 
       if (!var1.isAngry && !var1.isOnGround) {
-         float var3 = Mth.cos(var1.ageInTicks * 0.18F);
+         float var3 = Mth.cos((double)(var1.ageInTicks * 0.18F));
          this.bone.xRot = 0.1F + var3 * 3.1415927F * 0.025F;
          this.leftAntenna.xRot = var3 * 3.1415927F * 0.03F;
          this.rightAntenna.xRot = var3 * 3.1415927F * 0.03F;
          this.frontLeg.xRot = -var3 * 3.1415927F * 0.1F + 0.3926991F;
          this.backLeg.xRot = -var3 * 3.1415927F * 0.05F + 0.7853982F;
          ModelPart var10000 = this.bone;
-         var10000.y -= Mth.cos(var1.ageInTicks * 0.18F) * 0.9F;
+         var10000.y -= Mth.cos((double)(var1.ageInTicks * 0.18F)) * 0.9F;
       }
 
       if (this.rollAmount > 0.0F) {

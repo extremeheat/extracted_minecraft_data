@@ -627,8 +627,8 @@ public class Raid {
 
       for(int var10 = 0; var10 < var2; ++var10) {
          float var11 = var9 + 3.1415927F * (float)var10 / 8.0F;
-         int var5 = this.center.getX() + Mth.floor(Mth.cos(var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
-         int var7 = this.center.getZ() + Mth.floor(Mth.sin(var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
+         int var5 = this.center.getX() + Mth.floor(Mth.cos((double)var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
+         int var7 = this.center.getZ() + Mth.floor(Mth.sin((double)var11) * 32.0F * var4) + var1.random.nextInt(3) * Mth.floor(var4);
          int var6 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var5, var7);
          if (Mth.abs(var6 - this.center.getY()) <= 96) {
             var8.set(var5, var6, var7);

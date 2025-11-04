@@ -10,8 +10,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public class UnflattenTextComponentFix extends DataFix {

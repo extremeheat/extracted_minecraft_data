@@ -6,13 +6,13 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.multiplayer.chat.report.BanReason;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
 
 public class BanNoticeScreens {

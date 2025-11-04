@@ -1,13 +1,13 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.List;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.entity.variant.MoonBrightnessCheck;
 import net.minecraft.world.entity.variant.PriorityProvider;
@@ -28,7 +28,7 @@ public interface CatVariants {
    ResourceKey<CatVariant> ALL_BLACK = createKey("all_black");
 
    private static ResourceKey<CatVariant> createKey(String var0) {
-      return ResourceKey.create(Registries.CAT_VARIANT, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.CAT_VARIANT, Identifier.withDefaultNamespace(var0));
    }
 
    static void bootstrap(BootstrapContext<CatVariant> var0) {
@@ -51,6 +51,6 @@ public interface CatVariants {
    }
 
    private static void register(BootstrapContext<CatVariant> var0, ResourceKey<CatVariant> var1, String var2, SpawnPrioritySelectors var3) {
-      var0.register(var1, new CatVariant(new ClientAsset.ResourceTexture(ResourceLocation.withDefaultNamespace(var2)), var3));
+      var0.register(var1, new CatVariant(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(var2)), var3));
    }
 }

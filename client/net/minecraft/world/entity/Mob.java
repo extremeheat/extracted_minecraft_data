@@ -17,8 +17,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.EntityTypeTags;
@@ -37,6 +37,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -108,7 +109,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private static final boolean DEFAULT_PERSISTENCE_REQUIRED = false;
    private static final boolean DEFAULT_LEFT_HANDED = false;
    private static final boolean DEFAULT_NO_AI = false;
-   protected static final ResourceLocation RANDOM_SPAWN_BONUS_ID;
+   protected static final Identifier RANDOM_SPAWN_BONUS_ID;
    public static final String TAG_DROP_CHANCES = "drop_chances";
    public static final String TAG_LEFT_HANDED = "LeftHanded";
    public static final String TAG_CAN_PICK_UP_LOOT = "CanPickUpLoot";
@@ -498,10 +499,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    private boolean isSunBurnTick() {
-      if (this.level().isBrightOutside() && !this.level().isClientSide()) {
+      if (!this.level().isClientSide() && (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, this.position())) {
          float var1 = this.getLightLevelDependentMagicValue();
          BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
-         boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
+         boolean var3 = this.isInWater() || this.isInPowderSnow || this.wasInPowderSnow;
          if (var1 > 0.5F && this.random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F && !var3 && this.level().canSeeSky(var2)) {
             return true;
          }
@@ -1091,7 +1092,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return this.persistenceRequired;
    }
 
-   public final InteractionResult interact(Player var1, InteractionHand var2) {
+   public InteractionResult interact(Player var1, InteractionHand var2) {
       if (!this.isAlive()) {
          return InteractionResult.PASS;
       } else {
@@ -1421,6 +1422,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       ITEM_PICKUP_REACH = new Vec3i(1, 0, 1);
       EQUIPMENT_POPULATION_ORDER = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
       DEFAULT_ATTACK_REACH = Math.sqrt(2.0399999618530273) - 0.6000000238418579;
-      RANDOM_SPAWN_BONUS_ID = ResourceLocation.withDefaultNamespace("random_spawn_bonus");
+      RANDOM_SPAWN_BONUS_ID = Identifier.withDefaultNamespace("random_spawn_bonus");
    }
 }

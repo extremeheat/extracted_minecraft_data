@@ -5,12 +5,12 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record ClientboundCooldownPacket(ResourceLocation cooldownGroup, int duration) implements Packet<ClientGamePacketListener> {
+public record ClientboundCooldownPacket(Identifier cooldownGroup, int duration) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC;
 
-   public ClientboundCooldownPacket(ResourceLocation var1, int var2) {
+   public ClientboundCooldownPacket(Identifier var1, int var2) {
       super();
       this.cooldownGroup = var1;
       this.duration = var2;
@@ -25,6 +25,6 @@ public record ClientboundCooldownPacket(ResourceLocation cooldownGroup, int dura
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, ClientboundCooldownPacket::cooldownGroup, ByteBufCodecs.VAR_INT, ClientboundCooldownPacket::duration, ClientboundCooldownPacket::new);
+      STREAM_CODEC = StreamCodec.composite(Identifier.STREAM_CODEC, ClientboundCooldownPacket::cooldownGroup, ByteBufCodecs.VAR_INT, ClientboundCooldownPacket::duration, ClientboundCooldownPacket::new);
    }
 }

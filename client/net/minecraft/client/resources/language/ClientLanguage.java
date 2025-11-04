@@ -11,7 +11,7 @@ import java.util.Objects;
 import net.minecraft.locale.DeprecatedTranslationsInfo;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.FormattedCharSequence;
@@ -36,7 +36,7 @@ public class ClientLanguage extends Language {
 
          for(String var8 : var0.getNamespaces()) {
             try {
-               ResourceLocation var9 = ResourceLocation.fromNamespaceAndPath(var8, var6);
+               Identifier var9 = Identifier.fromNamespaceAndPath(var8, var6);
                appendFrom(var5, var0.getResourceStack(var9), var3);
             } catch (Exception var10) {
                LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{var8, var6, var10.toString()});

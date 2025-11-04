@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -20,28 +20,28 @@ import org.slf4j.Logger;
 public class RealmsTextureManager {
    private static final Map<String, RealmsTexture> TEXTURES = Maps.newHashMap();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation TEMPLATE_ICON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/presets/isles.png");
+   private static final Identifier TEMPLATE_ICON_LOCATION = Identifier.withDefaultNamespace("textures/gui/presets/isles.png");
 
    public RealmsTextureManager() {
       super();
    }
 
-   public static ResourceLocation worldTemplate(String var0, @Nullable String var1) {
+   public static Identifier worldTemplate(String var0, @Nullable String var1) {
       return var1 == null ? TEMPLATE_ICON_LOCATION : getTexture(var0, var1);
    }
 
-   private static ResourceLocation getTexture(String var0, String var1) {
+   private static Identifier getTexture(String var0, String var1) {
       RealmsTexture var2 = (RealmsTexture)TEXTURES.get(var0);
       if (var2 != null && var2.image().equals(var1)) {
          return var2.textureId;
       } else {
          NativeImage var3 = loadImage(var1);
          if (var3 == null) {
-            ResourceLocation var5 = MissingTextureAtlasSprite.getLocation();
+            Identifier var5 = MissingTextureAtlasSprite.getLocation();
             TEXTURES.put(var0, new RealmsTexture(var1, var5));
             return var5;
          } else {
-            ResourceLocation var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
+            Identifier var4 = Identifier.fromNamespaceAndPath("realms", "dynamic/" + var0);
             TextureManager var10000 = Minecraft.getInstance().getTextureManager();
             Objects.requireNonNull(var4);
             var10000.register(var4, new DynamicTexture(var4::toString, var3));
@@ -67,10 +67,10 @@ public class RealmsTextureManager {
       return null;
    }
 
-   public static record RealmsTexture(String image, ResourceLocation textureId) {
-      final ResourceLocation textureId;
+   public static record RealmsTexture(String image, Identifier textureId) {
+      final Identifier textureId;
 
-      public RealmsTexture(String var1, ResourceLocation var2) {
+      public RealmsTexture(String var1, Identifier var2) {
          super();
          this.image = var1;
          this.textureId = var2;

@@ -90,7 +90,7 @@ public interface HolderLookup<T> extends HolderGetter<T> {
       <T> Optional<? extends RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
 
       default <T> RegistryLookup<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
-         return (RegistryLookup)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(var1.location()) + " not found"));
+         return (RegistryLookup)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(var1.identifier()) + " not found"));
       }
 
       default <V> RegistryOps<V> createSerializationContext(DynamicOps<V> var1) {

@@ -6,11 +6,11 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -21,7 +21,7 @@ import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLookingAtFluid implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("looking_at_fluid");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("looking_at_fluid");
 
    public DebugEntryLookingAtFluid() {
       super();

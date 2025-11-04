@@ -4,7 +4,7 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
@@ -17,8 +17,8 @@ import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 
 public class BrewingStandMenu extends AbstractContainerMenu {
-   static final ResourceLocation EMPTY_SLOT_FUEL = ResourceLocation.withDefaultNamespace("container/slot/brewing_fuel");
-   static final ResourceLocation EMPTY_SLOT_POTION = ResourceLocation.withDefaultNamespace("container/slot/potion");
+   static final Identifier EMPTY_SLOT_FUEL = Identifier.withDefaultNamespace("container/slot/brewing_fuel");
+   static final Identifier EMPTY_SLOT_POTION = Identifier.withDefaultNamespace("container/slot/potion");
    private static final int BOTTLE_SLOT_START = 0;
    private static final int BOTTLE_SLOT_END = 2;
    private static final int INGREDIENT_SLOT = 3;
@@ -145,7 +145,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
          return var0.is(Items.POTION) || var0.is(Items.SPLASH_POTION) || var0.is(Items.LINGERING_POTION) || var0.is(Items.GLASS_BOTTLE);
       }
 
-      public ResourceLocation getNoItemIcon() {
+      public Identifier getNoItemIcon() {
          return BrewingStandMenu.EMPTY_SLOT_POTION;
       }
    }
@@ -176,7 +176,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
          return var0.is(ItemTags.BREWING_FUEL);
       }
 
-      public ResourceLocation getNoItemIcon() {
+      public Identifier getNoItemIcon() {
          return BrewingStandMenu.EMPTY_SLOT_FUEL;
       }
    }

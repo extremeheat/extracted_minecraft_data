@@ -27,7 +27,7 @@ import net.minecraft.client.renderer.item.properties.select.LocalTime;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperty;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.SpecialDates;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -37,11 +37,11 @@ public class ItemModelUtils {
       super();
    }
 
-   public static ItemModel.Unbaked plainModel(ResourceLocation var0) {
+   public static ItemModel.Unbaked plainModel(Identifier var0) {
       return new BlockModelWrapper.Unbaked(var0, List.of());
    }
 
-   public static ItemModel.Unbaked tintedModel(ResourceLocation var0, ItemTintSource... var1) {
+   public static ItemModel.Unbaked tintedModel(Identifier var0, ItemTintSource... var1) {
       return new BlockModelWrapper.Unbaked(var0, List.of(var1));
    }
 
@@ -53,7 +53,7 @@ public class ItemModelUtils {
       return new CompositeModel.Unbaked(List.of(var0));
    }
 
-   public static ItemModel.Unbaked specialModel(ResourceLocation var0, SpecialModelRenderer.Unbaked var1) {
+   public static ItemModel.Unbaked specialModel(Identifier var0, SpecialModelRenderer.Unbaked var1) {
       return new SpecialModelWrapper.Unbaked(var0, var1);
    }
 

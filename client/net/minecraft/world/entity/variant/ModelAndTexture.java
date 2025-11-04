@@ -6,10 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record ModelAndTexture<T>(T model, ClientAsset.ResourceTexture asset) {
-   public ModelAndTexture(T var1, ResourceLocation var2) {
+   public ModelAndTexture(T var1, Identifier var2) {
       this(var1, (ClientAsset.ResourceTexture)(new ClientAsset.ResourceTexture(var2)));
    }
 

@@ -4,22 +4,22 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ExtraCodecs;
 
 public class TimerCallbacks<C> {
    public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS;
-   private final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>> idMapper = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends TimerCallback<C>>>();
+   private final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends TimerCallback<C>>> idMapper = new ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends TimerCallback<C>>>();
    private final Codec<TimerCallback<C>> codec;
 
    @VisibleForTesting
    public TimerCallbacks() {
       super();
-      this.codec = this.idMapper.codec(ResourceLocation.CODEC).dispatch("Type", TimerCallback::codec, Function.identity());
+      this.codec = this.idMapper.codec(Identifier.CODEC).dispatch("Type", TimerCallback::codec, Function.identity());
    }
 
-   public TimerCallbacks<C> register(ResourceLocation var1, MapCodec<? extends TimerCallback<C>> var2) {
+   public TimerCallbacks<C> register(Identifier var1, MapCodec<? extends TimerCallback<C>> var2) {
       this.idMapper.put(var1, var2);
       return this;
    }
@@ -29,6 +29,6 @@ public class TimerCallbacks<C> {
    }
 
    static {
-      SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(ResourceLocation.withDefaultNamespace("function"), FunctionCallback.CODEC).register(ResourceLocation.withDefaultNamespace("function_tag"), FunctionTagCallback.CODEC);
+      SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(Identifier.withDefaultNamespace("function"), FunctionCallback.CODEC).register(Identifier.withDefaultNamespace("function_tag"), FunctionTagCallback.CODEC);
    }
 }

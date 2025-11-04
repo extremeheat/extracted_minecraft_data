@@ -30,7 +30,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -54,12 +54,12 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    private final RealmsServer serverData;
    private final Component subtitle;
    private final Component resetTaskTitle;
-   private static final ResourceLocation UPLOAD_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/upload.png");
-   private static final ResourceLocation ADVENTURE_MAP_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/adventure.png");
-   private static final ResourceLocation SURVIVAL_SPAWN_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/survival_spawn.png");
-   private static final ResourceLocation NEW_WORLD_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/new_world.png");
-   private static final ResourceLocation EXPERIENCE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/experience.png");
-   private static final ResourceLocation INSPIRATION_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/inspiration.png");
+   private static final Identifier UPLOAD_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/upload.png");
+   private static final Identifier ADVENTURE_MAP_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/adventure.png");
+   private static final Identifier SURVIVAL_SPAWN_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/survival_spawn.png");
+   private static final Identifier NEW_WORLD_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/new_world.png");
+   private static final Identifier EXPERIENCE_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/experience.png");
+   private static final Identifier INSPIRATION_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/inspiration.png");
    WorldTemplatePaginatedList templates;
    WorldTemplatePaginatedList adventuremaps;
    WorldTemplatePaginatedList experiences;
@@ -179,13 +179,13 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    }
 
    class FrameButton extends Button {
-      private static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
+      private static final Identifier SLOT_FRAME_SPRITE = Identifier.withDefaultNamespace("widget/slot_frame");
       private static final int FRAME_SIZE = 60;
       private static final int FRAME_WIDTH = 2;
       private static final int IMAGE_SIZE = 56;
-      private final ResourceLocation image;
+      private final Identifier image;
 
-      FrameButton(final Font var2, final Component var3, final ResourceLocation var4, final Button.OnPress var5) {
+      FrameButton(final Font var2, final Component var3, final Identifier var4, final Button.OnPress var5) {
          Objects.requireNonNull(var2);
          super(0, 0, 60, 60 + 9, var3, var5, DEFAULT_NARRATION);
          this.image = var4;
@@ -201,7 +201,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
          int var7 = this.getX();
          int var8 = this.getY();
          var1.blit(RenderPipelines.GUI_TEXTURED, this.image, var7 + 2, var8 + 2, 0.0F, 0.0F, 56, 56, 56, 56, 56, 56, var6);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var7, var8, 60, 60, var6);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, var7, var8, 60, 60, var6);
          int var9 = var5 ? -6250336 : -1;
          var1.drawCenteredString(RealmsResetWorldScreen.this.font, this.getMessage(), var7 + 28, var8 - 14, var9);
       }

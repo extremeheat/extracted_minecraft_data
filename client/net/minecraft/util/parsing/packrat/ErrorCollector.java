@@ -2,7 +2,7 @@ package net.minecraft.util.parsing.packrat;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public interface ErrorCollector<S> {

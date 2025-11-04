@@ -23,19 +23,19 @@ import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
 
 public class PostPass implements AutoCloseable {
    private static final int UBO_SIZE_PER_SAMPLER = (new Std140SizeCalculator()).putVec2().get();
    private final String name;
    private final RenderPipeline pipeline;
-   private final ResourceLocation outputTargetId;
+   private final Identifier outputTargetId;
    private final Map<String, GpuBuffer> customUniforms = new HashMap();
    private final MappableRingBuffer infoUbo;
    private final List<Input> inputs;
 
-   public PostPass(RenderPipeline var1, ResourceLocation var2, Map<String, List<UniformValue>> var3, List<Input> var4) {
+   public PostPass(RenderPipeline var1, Identifier var2, Map<String, List<UniformValue>> var3, List<Input> var4) {
       super();
       this.pipeline = var1;
       this.name = var1.getLocation().toString();
@@ -86,7 +86,7 @@ public class PostPass implements AutoCloseable {
       this.infoUbo = new MappableRingBuffer(() -> this.name + " SamplerInfo", 130, (var4.size() + 1) * UBO_SIZE_PER_SAMPLER);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
+   public void addToFrame(FrameGraphBuilder var1, Map<Identifier, ResourceHandle<RenderTarget>> var2, GpuBufferSlice var3) {
       FramePass var4 = var1.addPass(this.name);
 
       for(Input var6 : this.inputs) {
@@ -150,12 +150,12 @@ public class PostPass implements AutoCloseable {
    }
 
    public interface Input {
-      void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+      void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2);
 
-      default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      default void cleanup(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
       }
 
-      GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1);
+      GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1);
 
       String samplerName();
 
@@ -172,16 +172,16 @@ public class PostPass implements AutoCloseable {
          this.bilinear = var5;
       }
 
-      public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
       }
 
-      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          return this.texture.getTextureView();
       }
    }
 
-   public static record TargetInput(String samplerName, ResourceLocation targetId, boolean depthBuffer, boolean bilinear) implements Input {
-      public TargetInput(String var1, ResourceLocation var2, boolean var3, boolean var4) {
+   public static record TargetInput(String samplerName, Identifier targetId, boolean depthBuffer, boolean bilinear) implements Input {
+      public TargetInput(String var1, Identifier var2, boolean var3, boolean var4) {
          super();
          this.samplerName = var1;
          this.targetId = var2;
@@ -189,7 +189,7 @@ public class PostPass implements AutoCloseable {
          this.bilinear = var4;
       }
 
-      private ResourceHandle<RenderTarget> getHandle(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      private ResourceHandle<RenderTarget> getHandle(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          ResourceHandle var2 = (ResourceHandle)var1.get(this.targetId);
          if (var2 == null) {
             throw new IllegalStateException("Missing handle for target " + String.valueOf(this.targetId));
@@ -198,11 +198,11 @@ public class PostPass implements AutoCloseable {
          }
       }
 
-      public void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2) {
+      public void addToPass(FramePass var1, Map<Identifier, ResourceHandle<RenderTarget>> var2) {
          var1.reads(this.getHandle(var2));
       }
 
-      public GpuTextureView texture(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      public GpuTextureView texture(Map<Identifier, ResourceHandle<RenderTarget>> var1) {
          ResourceHandle var2 = this.getHandle(var1);
          RenderTarget var3 = (RenderTarget)var2.get();
          GpuTextureView var4 = this.depthBuffer ? var3.getDepthTextureView() : var3.getColorTextureView();

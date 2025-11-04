@@ -27,14 +27,14 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.FileUtil;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.io.IOUtils;
@@ -65,7 +65,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       Map var4 = var1.listResources("shaders", ShaderManager::isShader);
 
       for(Map.Entry var6 : var4.entrySet()) {
-         ResourceLocation var7 = (ResourceLocation)var6.getKey();
+         Identifier var7 = (Identifier)var6.getKey();
          ShaderType var8 = ShaderType.byLocation(var7);
          if (var8 != null) {
             loadShader(var7, (Resource)var6.getValue(), var8, var4, var3);
@@ -75,14 +75,14 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       ImmutableMap.Builder var9 = ImmutableMap.builder();
 
       for(Map.Entry var11 : POST_CHAIN_ID_CONVERTER.listMatchingResources(var1).entrySet()) {
-         loadPostChain((ResourceLocation)var11.getKey(), (Resource)var11.getValue(), var9);
+         loadPostChain((Identifier)var11.getKey(), (Resource)var11.getValue(), var9);
       }
 
       return new Configs(var3.build(), var9.build());
    }
 
-   private static void loadShader(ResourceLocation var0, Resource var1, ShaderType var2, Map<ResourceLocation, Resource> var3, ImmutableMap.Builder<ShaderSourceKey, String> var4) {
-      ResourceLocation var5 = var2.idConverter().fileToId(var0);
+   private static void loadShader(Identifier var0, Resource var1, ShaderType var2, Map<Identifier, Resource> var3, ImmutableMap.Builder<ShaderSourceKey, String> var4) {
+      Identifier var5 = var2.idConverter().fileToId(var0);
       GlslPreprocessor var6 = createPreprocessor(var3, var0);
 
       try {
@@ -112,20 +112,20 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    }
 
-   private static GlslPreprocessor createPreprocessor(final Map<ResourceLocation, Resource> var0, ResourceLocation var1) {
-      final ResourceLocation var2 = var1.withPath(FileUtil::getFullResourcePath);
+   private static GlslPreprocessor createPreprocessor(final Map<Identifier, Resource> var0, Identifier var1) {
+      final Identifier var2 = var1.withPath(FileUtil::getFullResourcePath);
       return new GlslPreprocessor() {
-         private final Set<ResourceLocation> importedLocations = new ObjectArraySet();
+         private final Set<Identifier> importedLocations = new ObjectArraySet();
 
          public @Nullable String applyImport(boolean var1, String var2x) {
-            ResourceLocation var3;
+            Identifier var3;
             try {
                if (var1) {
                   var3 = var2.withPath((UnaryOperator)((var1x) -> FileUtil.normalizeResourcePath(var1x + var2x)));
                } else {
-                  var3 = ResourceLocation.parse(var2x).withPrefix("shaders/include/");
+                  var3 = Identifier.parse(var2x).withPrefix("shaders/include/");
                }
-            } catch (ResourceLocationException var8) {
+            } catch (IdentifierException var8) {
                ShaderManager.LOGGER.error("Malformed GLSL import {}: {}", var2x, var8.getMessage());
                return "#error " + var8.getMessage();
             }
@@ -165,8 +165,8 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       };
    }
 
-   private static void loadPostChain(ResourceLocation var0, Resource var1, ImmutableMap.Builder<ResourceLocation, PostChainConfig> var2) {
-      ResourceLocation var3 = POST_CHAIN_ID_CONVERTER.fileToId(var0);
+   private static void loadPostChain(Identifier var0, Resource var1, ImmutableMap.Builder<Identifier, PostChainConfig> var2) {
+      Identifier var3 = POST_CHAIN_ID_CONVERTER.fileToId(var0);
 
       try {
          BufferedReader var4 = var1.openAsReader();
@@ -195,7 +195,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    }
 
-   private static boolean isShader(ResourceLocation var0) {
+   private static boolean isShader(Identifier var0) {
       return ShaderType.byLocation(var0) != null || var0.getPath().endsWith(".glsl");
    }
 
@@ -235,7 +235,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       }
    }
 
-   public @Nullable PostChain getPostChain(ResourceLocation var1, Set<ResourceLocation> var2) {
+   public @Nullable PostChain getPostChain(Identifier var1, Set<Identifier> var2) {
       try {
          return this.compilationCache.getOrLoadPostChain(var1, var2);
       } catch (CompilationException var4) {
@@ -251,7 +251,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       this.postChainProjectionMatrixBuffer.close();
    }
 
-   public @Nullable String getShader(ResourceLocation var1, ShaderType var2) {
+   public @Nullable String getShader(Identifier var1, ShaderType var2) {
       return this.compilationCache.getShaderSource(var1, var2);
    }
 
@@ -260,12 +260,12 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       return this.prepare(var1, var2);
    }
 
-   public static record Configs(Map<ShaderSourceKey, String> shaderSources, Map<ResourceLocation, PostChainConfig> postChains) {
+   public static record Configs(Map<ShaderSourceKey, String> shaderSources, Map<Identifier, PostChainConfig> postChains) {
       final Map<ShaderSourceKey, String> shaderSources;
-      final Map<ResourceLocation, PostChainConfig> postChains;
+      final Map<Identifier, PostChainConfig> postChains;
       public static final Configs EMPTY = new Configs(Map.of(), Map.of());
 
-      public Configs(Map<ShaderSourceKey, String> var1, Map<ResourceLocation, PostChainConfig> var2) {
+      public Configs(Map<ShaderSourceKey, String> var1, Map<Identifier, PostChainConfig> var2) {
          super();
          this.shaderSources = var1;
          this.postChains = var2;
@@ -274,7 +274,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    class CompilationCache implements AutoCloseable {
       private final Configs configs;
-      final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap();
+      final Map<Identifier, Optional<PostChain>> postChains = new HashMap();
       boolean triggeredRecovery;
 
       CompilationCache(final Configs var2) {
@@ -282,7 +282,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          this.configs = var2;
       }
 
-      public @Nullable PostChain getOrLoadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws CompilationException {
+      public @Nullable PostChain getOrLoadPostChain(Identifier var1, Set<Identifier> var2) throws CompilationException {
          Optional var3 = (Optional)this.postChains.get(var1);
          if (var3 != null) {
             return (PostChain)var3.orElse((Object)null);
@@ -293,7 +293,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          }
       }
 
-      private PostChain loadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws CompilationException {
+      private PostChain loadPostChain(Identifier var1, Set<Identifier> var2) throws CompilationException {
          PostChainConfig var3 = (PostChainConfig)this.configs.postChains.get(var1);
          if (var3 == null) {
             throw new CompilationException("Could not find post chain with id: " + String.valueOf(var1));
@@ -307,13 +307,13 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          this.postChains.clear();
       }
 
-      public @Nullable String getShaderSource(ResourceLocation var1, ShaderType var2) {
+      public @Nullable String getShaderSource(Identifier var1, ShaderType var2) {
          return (String)this.configs.shaderSources.get(new ShaderSourceKey(var1, var2));
       }
    }
 
-   static record ShaderSourceKey(ResourceLocation id, ShaderType type) {
-      ShaderSourceKey(ResourceLocation var1, ShaderType var2) {
+   static record ShaderSourceKey(Identifier id, ShaderType type) {
+      ShaderSourceKey(Identifier var1, ShaderType var2) {
          super();
          this.id = var1;
          this.type = var2;

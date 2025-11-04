@@ -17,12 +17,12 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class DeathScreen extends Screen {
    private static final int TITLE_SCALE = 2;
-   private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
+   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
    private int delayTicker;
    private final @Nullable Component causeOfDeath;
    private final boolean hardcore;
@@ -88,7 +88,7 @@ public class DeathScreen extends Screen {
       super.render(var1, var2, var3, var4);
       this.visitText(var1.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR));
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
       }
 
    }

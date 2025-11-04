@@ -6,10 +6,10 @@ import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import java.util.stream.IntStream;
 import javax.annotation.concurrent.Immutable;
-import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.joml.Vector3i;
 
 @Immutable

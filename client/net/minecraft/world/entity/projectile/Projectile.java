@@ -128,7 +128,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public void shoot(double var1, double var3, double var5, float var7, float var8) {
       Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
-      this.hasImpulse = true;
+      this.needsSync = true;
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
       this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));
@@ -137,9 +137,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public void shootFromRotation(Entity var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = -Mth.sin(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
-      float var8 = -Mth.sin((var2 + var4) * 0.017453292F);
-      float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
+      float var7 = -Mth.sin((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
+      float var8 = -Mth.sin((double)((var2 + var4) * 0.017453292F));
+      float var9 = Mth.cos((double)(var3 * 0.017453292F)) * Mth.cos((double)(var2 * 0.017453292F));
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
       Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));

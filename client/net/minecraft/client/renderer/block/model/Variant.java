@@ -9,17 +9,17 @@ import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.ResolvableModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record Variant(ResourceLocation modelLocation, SimpleModelState modelState) implements BlockModelPart.Unbaked {
-   public static final MapCodec<Variant> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("model").forGetter(Variant::modelLocation), Variant.SimpleModelState.MAP_CODEC.forGetter(Variant::modelState)).apply(var0, Variant::new));
+public record Variant(Identifier modelLocation, SimpleModelState modelState) implements BlockModelPart.Unbaked {
+   public static final MapCodec<Variant> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("model").forGetter(Variant::modelLocation), Variant.SimpleModelState.MAP_CODEC.forGetter(Variant::modelState)).apply(var0, Variant::new));
    public static final Codec<Variant> CODEC;
 
-   public Variant(ResourceLocation var1) {
+   public Variant(Identifier var1) {
       this(var1, Variant.SimpleModelState.DEFAULT);
    }
 
-   public Variant(ResourceLocation var1, SimpleModelState var2) {
+   public Variant(Identifier var1, SimpleModelState var2) {
       super();
       this.modelLocation = var1;
       this.modelState = var2;
@@ -37,7 +37,7 @@ public record Variant(ResourceLocation modelLocation, SimpleModelState modelStat
       return this.withState(this.modelState.withUvLock(var1));
    }
 
-   public Variant withModel(ResourceLocation var1) {
+   public Variant withModel(Identifier var1) {
       return new Variant(var1, this.modelState);
    }
 

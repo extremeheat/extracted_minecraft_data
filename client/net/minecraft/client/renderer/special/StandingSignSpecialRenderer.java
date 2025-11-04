@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector3f;
@@ -40,14 +40,14 @@ public class StandingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       this.model.root().getExtentsForGui(var2, var1);
    }
 
-   public static record Unbaked(WoodType woodType, Optional<ResourceLocation> texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+   public static record Unbaked(WoodType woodType, Optional<Identifier> texture) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(Unbaked::woodType), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
 
       public Unbaked(WoodType var1) {
          this(var1, Optional.empty());
       }
 
-      public Unbaked(WoodType var1, Optional<ResourceLocation> var2) {
+      public Unbaked(WoodType var1, Optional<Identifier> var2) {
          super();
          this.woodType = var1;
          this.texture = var2;

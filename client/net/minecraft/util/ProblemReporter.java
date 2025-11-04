@@ -47,7 +47,7 @@ public interface ProblemReporter {
       }
 
       public String get() {
-         String var10000 = String.valueOf(this.id.location());
+         String var10000 = String.valueOf(this.id.identifier());
          return "{" + var10000 + "@" + String.valueOf(this.id.registry()) + "}";
       }
    }
@@ -93,7 +93,7 @@ public interface ProblemReporter {
       }
 
       public String get() {
-         String var10000 = String.valueOf(this.id.location());
+         String var10000 = String.valueOf(this.id.identifier());
          return "->{" + var10000 + "@" + String.valueOf(this.id.registry()) + "}";
       }
    }

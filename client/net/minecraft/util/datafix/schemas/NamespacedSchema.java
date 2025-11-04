@@ -7,7 +7,7 @@ import com.mojang.datafixers.types.templates.Const;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class NamespacedSchema extends Schema {
    public static final PrimitiveCodec<String> NAMESPACED_STRING_CODEC = new PrimitiveCodec<String>() {
@@ -35,7 +35,7 @@ public class NamespacedSchema extends Schema {
    }
 
    public static String ensureNamespaced(String var0) {
-      ResourceLocation var1 = ResourceLocation.tryParse(var0);
+      Identifier var1 = Identifier.tryParse(var0);
       return var1 != null ? var1.toString() : var0;
    }
 

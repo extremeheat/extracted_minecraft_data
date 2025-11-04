@@ -1,9 +1,9 @@
 package net.minecraft.client.resources.model;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface ModelBaker {
-   ResolvedModel getModel(ResourceLocation var1);
+   ResolvedModel getModel(Identifier var1);
 
    SpriteGetter sprites();
 

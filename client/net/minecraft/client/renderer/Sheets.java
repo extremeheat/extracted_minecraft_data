@@ -16,8 +16,8 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
@@ -26,18 +26,18 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import org.jspecify.annotations.Nullable;
 
 public class Sheets {
-   public static final ResourceLocation SHULKER_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/shulker_boxes.png");
-   public static final ResourceLocation BED_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/beds.png");
-   public static final ResourceLocation BANNER_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/banner_patterns.png");
-   public static final ResourceLocation SHIELD_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/shield_patterns.png");
-   public static final ResourceLocation SIGN_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/signs.png");
-   public static final ResourceLocation CHEST_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/chest.png");
-   public static final ResourceLocation ARMOR_TRIMS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/armor_trims.png");
-   public static final ResourceLocation DECORATED_POT_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/decorated_pot.png");
-   public static final ResourceLocation GUI_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/gui.png");
-   public static final ResourceLocation MAP_DECORATIONS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/map_decorations.png");
-   public static final ResourceLocation PAINTINGS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/paintings.png");
-   public static final ResourceLocation CELESTIAL_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/celestials.png");
+   public static final Identifier SHULKER_SHEET = Identifier.withDefaultNamespace("textures/atlas/shulker_boxes.png");
+   public static final Identifier BED_SHEET = Identifier.withDefaultNamespace("textures/atlas/beds.png");
+   public static final Identifier BANNER_SHEET = Identifier.withDefaultNamespace("textures/atlas/banner_patterns.png");
+   public static final Identifier SHIELD_SHEET = Identifier.withDefaultNamespace("textures/atlas/shield_patterns.png");
+   public static final Identifier SIGN_SHEET = Identifier.withDefaultNamespace("textures/atlas/signs.png");
+   public static final Identifier CHEST_SHEET = Identifier.withDefaultNamespace("textures/atlas/chest.png");
+   public static final Identifier ARMOR_TRIMS_SHEET = Identifier.withDefaultNamespace("textures/atlas/armor_trims.png");
+   public static final Identifier DECORATED_POT_SHEET = Identifier.withDefaultNamespace("textures/atlas/decorated_pot.png");
+   public static final Identifier GUI_SHEET = Identifier.withDefaultNamespace("textures/atlas/gui.png");
+   public static final Identifier MAP_DECORATIONS_SHEET = Identifier.withDefaultNamespace("textures/atlas/map_decorations.png");
+   public static final Identifier PAINTINGS_SHEET = Identifier.withDefaultNamespace("textures/atlas/paintings.png");
+   public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
    private static final RenderType SHULKER_BOX_SHEET_TYPE;
    private static final RenderType BED_SHEET_TYPE;
    private static final RenderType BANNER_SHEET_TYPE;
@@ -48,7 +48,8 @@ public class Sheets {
    private static final RenderType ARMOR_TRIMS_DECAL_SHEET_TYPE;
    private static final RenderType SOLID_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_SHEET;
-   private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
+   private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
+   private static final RenderType TRANSLUCENT_ITEM_SHEET;
    public static final MaterialMapper ITEMS_MAPPER;
    public static final MaterialMapper BLOCKS_MAPPER;
    public static final MaterialMapper BLOCK_ENTITIES_MAPPER;
@@ -66,8 +67,8 @@ public class Sheets {
    public static final Map<WoodType, Material> HANGING_SIGN_MATERIALS;
    public static final Material BANNER_BASE;
    public static final Material SHIELD_BASE;
-   private static final Map<ResourceLocation, Material> BANNER_MATERIALS;
-   private static final Map<ResourceLocation, Material> SHIELD_MATERIALS;
+   private static final Map<Identifier, Material> BANNER_MATERIALS;
+   private static final Map<Identifier, Material> SHIELD_MATERIALS;
    public static final Map<ResourceKey<DecoratedPotPattern>, Material> DECORATED_POT_MATERIALS;
    public static final Material DECORATED_POT_BASE;
    public static final Material DECORATED_POT_SIDE;
@@ -140,15 +141,19 @@ public class Sheets {
    }
 
    public static RenderType translucentItemSheet() {
-      return TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
+      return TRANSLUCENT_ITEM_SHEET;
+   }
+
+   public static RenderType translucentBlockItemSheet() {
+      return TRANSLUCENT_BLOCK_ITEM_SHEET;
    }
 
    public static Material getBedMaterial(DyeColor var0) {
       return BED_TEXTURES[var0.getId()];
    }
 
-   public static ResourceLocation colorToResourceMaterial(DyeColor var0) {
-      return ResourceLocation.withDefaultNamespace(var0.getName());
+   public static Identifier colorToResourceMaterial(DyeColor var0) {
+      return Identifier.withDefaultNamespace(var0.getName());
    }
 
    public static Material createBedMaterial(DyeColor var0) {
@@ -159,8 +164,8 @@ public class Sheets {
       return (Material)SHULKER_TEXTURE_LOCATION.get(var0.getId());
    }
 
-   public static ResourceLocation colorToShulkerMaterial(DyeColor var0) {
-      return ResourceLocation.withDefaultNamespace("shulker_" + var0.getName());
+   public static Identifier colorToShulkerMaterial(DyeColor var0) {
+      return Identifier.withDefaultNamespace("shulker_" + var0.getName());
    }
 
    public static Material createShulkerMaterial(DyeColor var0) {
@@ -185,7 +190,7 @@ public class Sheets {
 
    public static Material getBannerMaterial(Holder<BannerPattern> var0) {
       Map var10000 = BANNER_MATERIALS;
-      ResourceLocation var10001 = ((BannerPattern)var0.value()).assetId();
+      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
       MaterialMapper var10002 = BANNER_MAPPER;
       Objects.requireNonNull(var10002);
       return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
@@ -193,7 +198,7 @@ public class Sheets {
 
    public static Material getShieldMaterial(Holder<BannerPattern> var0) {
       Map var10000 = SHIELD_MATERIALS;
-      ResourceLocation var10001 = ((BannerPattern)var0.value()).assetId();
+      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
       MaterialMapper var10002 = SHIELD_MAPPER;
       Objects.requireNonNull(var10002);
       return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
@@ -243,8 +248,9 @@ public class Sheets {
       ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
       SOLID_BLOCK_SHEET = RenderTypes.entitySolid(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_BLOCK_SHEET = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "item");
+      TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_ITEMS);
+      ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_ITEMS, "item");
       BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
       BLOCK_ENTITIES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity");
       BANNER_MAPPER = new MaterialMapper(BANNER_SHEET, "entity/banner");

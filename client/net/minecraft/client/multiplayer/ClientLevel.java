@@ -21,7 +21,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
@@ -32,7 +31,6 @@ import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.EndFlashState;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -62,6 +60,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
@@ -69,6 +68,8 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.AmbientParticle;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -133,14 +134,12 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final LevelRenderer levelRenderer;
    private final LevelEventHandler levelEventHandler;
    private final ClientLevelData clientLevelData;
-   private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
    private final @Nullable EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    final List<EnderDragonPart> dragonParts = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
-   private static final int CLOUD_COLOR = -1;
    private int skyFlashTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (var1x) -> {
       var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER)));
@@ -155,6 +154,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
    private final ClientExplosionTracker explosionTracker = new ClientExplosionTracker();
    private final WorldBorder worldBorder = new WorldBorder();
+   private final EnvironmentAttributeSystem environmentAttributes;
    private final int seaLevel;
    private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS;
@@ -225,12 +225,20 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.levelRenderer = var7;
       this.seaLevel = var11;
       this.levelEventHandler = new LevelEventHandler(this.minecraft, this);
-      this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
-      this.endFlashState = this.effects.hasEndFlashes() ? new EndFlashState() : null;
+      this.endFlashState = ((DimensionType)var4.value()).hasEndFlashes() ? new EndFlashState() : null;
       this.setRespawnData(LevelData.RespawnData.of(var3, new BlockPos(8, 64, 8), 0.0F, 0.0F));
       this.serverSimulationDistance = var6;
+      this.environmentAttributes = this.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
       this.updateSkyBrightness();
       this.prepareWeather();
+   }
+
+   private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(EnvironmentAttributeSystem.Builder var1) {
+      var1.addDefaultLayers(this);
+      int var2 = ARGB.color(204, 204, 255);
+      var1.addTimeBasedLayer(EnvironmentAttributes.SKY_COLOR, (var2x, var3) -> this.getSkyFlashTime() > 0 ? ARGB.srgbLerp(0.22F, var2x, var2) : var2x);
+      var1.addTimeBasedLayer(EnvironmentAttributes.SKY_LIGHT_FACTOR, (var1x, var2x) -> this.getSkyFlashTime() > 0 ? 1.0F : var1x);
+      return var1;
    }
 
    public void queueLightUpdate(Runnable var1) {
@@ -250,10 +258,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
          var4.run();
       }
 
-   }
-
-   public DimensionSpecialEffects effects() {
-      return this.effects;
    }
 
    public @Nullable EndFlashState endFlashState() {
@@ -285,6 +289,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       }
 
       JvmProfiler.INSTANCE.onClientTick(this.minecraft.getFps());
+      this.environmentAttributes().invalidateTickCache();
    }
 
    private void tickTime() {
@@ -573,6 +578,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.tickRateManager;
    }
 
+   public EnvironmentAttributeSystem environmentAttributes() {
+      return this.environmentAttributes;
+   }
+
    public LevelTickAccess<Block> getBlockTicks() {
       return BlackholeTickAccess.<Block>emptyLevelList();
    }
@@ -697,77 +706,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
    }
 
-   public float getSkyDarken(float var1) {
-      float var2 = this.getTimeOfDay(var1);
-      float var3 = 1.0F - (Mth.cos(var2 * 6.2831855F) * 2.0F + 0.2F);
-      var3 = Mth.clamp(var3, 0.0F, 1.0F);
-      var3 = 1.0F - var3;
-      var3 *= 1.0F - this.getRainLevel(var1) * 5.0F / 16.0F;
-      var3 *= 1.0F - this.getThunderLevel(var1) * 5.0F / 16.0F;
-      return var3 * 0.8F + 0.2F;
-   }
-
-   public int getSkyColor(Camera var1, float var2) {
-      float var3 = this.getTimeOfDay(var2);
-      int var4 = (Integer)var1.attributeProbe().getValue(EnvironmentAttributes.SKY_COLOR, var2);
-      float var5 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
-      var5 = Mth.clamp(var5, 0.0F, 1.0F);
-      var4 = ARGB.scaleRGB(var4, var5);
-      float var6 = this.getRainLevel(var2);
-      if (var6 > 0.0F) {
-         float var7 = 0.6F;
-         float var8 = var6 * 0.75F;
-         int var9 = ARGB.scaleRGB(ARGB.greyscale(var4), 0.6F);
-         var4 = ARGB.srgbLerp(var8, var4, var9);
-      }
-
-      float var13 = this.getThunderLevel(var2);
-      if (var13 > 0.0F) {
-         float var14 = 0.2F;
-         float var16 = var13 * 0.75F;
-         int var10 = ARGB.scaleRGB(ARGB.greyscale(var4), 0.2F);
-         var4 = ARGB.srgbLerp(var16, var4, var10);
-      }
-
-      int var15 = this.getSkyFlashTime();
-      if (var15 > 0) {
-         float var17 = Math.min((float)var15 - var2, 1.0F);
-         var17 *= 0.45F;
-         var4 = ARGB.srgbLerp(var17, var4, ARGB.color(204, 204, 255));
-      }
-
-      return var4;
-   }
-
-   public int getCloudColor(float var1, Camera var2) {
-      int var3 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.CLOUD_COLOR, var1);
-      float var4 = this.getRainLevel(var1);
-      if (var4 > 0.0F) {
-         int var5 = ARGB.scaleRGB(ARGB.greyscale(var3), 0.6F);
-         var3 = ARGB.srgbLerp(var4 * 0.95F, var3, var5);
-      }
-
-      float var10 = this.getTimeOfDay(var1);
-      float var6 = Mth.cos(var10 * 6.2831855F) * 2.0F + 0.5F;
-      var6 = Mth.clamp(var6, 0.0F, 1.0F);
-      var3 = ARGB.multiply(var3, ARGB.colorFromFloat(1.0F, var6 * 0.9F + 0.1F, var6 * 0.9F + 0.1F, var6 * 0.85F + 0.15F));
-      float var7 = this.getThunderLevel(var1);
-      if (var7 > 0.0F) {
-         int var8 = ARGB.scaleRGB(ARGB.greyscale(var3), 0.2F);
-         var3 = ARGB.srgbLerp(var7 * 0.95F, var3, var8);
-      }
-
-      return var3;
-   }
-
-   public float getStarBrightness(float var1) {
-      float var2 = this.getTimeOfDay(var1);
-      float var3 = 1.0F - (Mth.cos(var2 * 6.2831855F) * 2.0F + 0.25F);
-      var3 = Mth.clamp(var3, 0.0F, 1.0F);
-      return var3 * var3 * 0.5F;
-   }
-
-   public int getSkyFlashTime() {
+   private int getSkyFlashTime() {
       return (Boolean)this.minecraft.options.hideLightningFlash().get() ? 0 : this.skyFlashTime;
    }
 
@@ -776,24 +715,31 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    }
 
    public float getShade(Direction var1, boolean var2) {
-      boolean var3 = this.effects().constantAmbientLight();
+      DimensionType.CardinalLightType var3 = this.dimensionType().cardinalLightType();
       if (!var2) {
-         return var3 ? 0.9F : 1.0F;
+         return var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
       } else {
+         float var10000;
          switch (var1) {
             case DOWN:
-               return var3 ? 0.9F : 0.5F;
+               var10000 = var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 0.5F;
+               break;
             case UP:
-               return var3 ? 0.9F : 1.0F;
+               var10000 = var3 == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
+               break;
             case NORTH:
             case SOUTH:
-               return 0.8F;
+               var10000 = 0.8F;
+               break;
             case WEST:
             case EAST:
-               return 0.6F;
+               var10000 = 0.6F;
+               break;
             default:
-               return 1.0F;
+               throw new MatchException((String)null, (Throwable)null);
          }
+
+         return var10000;
       }
    }
 
@@ -982,6 +928,11 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
    // $FF: synthetic method
    public ChunkSource getChunkSource() {
       return this.getChunkSource();
+   }
+
+   // $FF: synthetic method
+   public EnvironmentAttributeReader environmentAttributes() {
+      return this.environmentAttributes();
    }
 
    static {

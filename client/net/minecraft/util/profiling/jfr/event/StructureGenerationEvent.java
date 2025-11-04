@@ -44,7 +44,7 @@ public class StructureGenerationEvent extends Event {
       this.chunkPosX = var1.x;
       this.chunkPosZ = var1.z;
       this.structure = var2.getRegisteredName();
-      this.level = var3.location().toString();
+      this.level = var3.identifier().toString();
    }
 
    public interface Fields {

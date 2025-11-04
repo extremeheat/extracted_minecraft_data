@@ -8,12 +8,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.api.PlayerDto;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraft.util.Util;
 
 public class OperatorService {
    public OperatorService() {

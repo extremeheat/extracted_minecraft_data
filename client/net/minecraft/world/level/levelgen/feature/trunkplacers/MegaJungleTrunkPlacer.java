@@ -35,8 +35,8 @@ public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
          int var11 = 0;
 
          for(int var12 = 0; var12 < 5; ++var12) {
-            var10 = (int)(1.5F + Mth.cos(var9) * (float)var12);
-            var11 = (int)(1.5F + Mth.sin(var9) * (float)var12);
+            var10 = (int)(1.5F + Mth.cos((double)var9) * (float)var12);
+            var11 = (int)(1.5F + Mth.sin((double)var9) * (float)var12);
             BlockPos var13 = var5.offset(var10, var8 - 3 + var12 / 2, var11);
             this.placeLog(var1, var2, var3, var13, var6);
          }

@@ -32,8 +32,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.BlockUtil;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -55,8 +53,8 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -71,7 +69,9 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Difficulty;
@@ -154,8 +154,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public static final String TAG_DEATH_TIME = "DeathTime";
    public static final String TAG_HURT_BY_TIMESTAMP = "HurtByTimestamp";
    public static final String TAG_HEALTH = "Health";
-   private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
-   private static final ResourceLocation SPRINTING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("sprinting");
+   private static final Identifier SPEED_MODIFIER_POWDER_SNOW_ID = Identifier.withDefaultNamespace("powder_snow");
+   private static final Identifier SPRINTING_MODIFIER_ID = Identifier.withDefaultNamespace("sprinting");
    private static final AttributeModifier SPEED_MODIFIER_SPRINTING;
    public static final int EQUIPMENT_SLOT_OFFSET = 98;
    public static final int ARMOR_SLOT_OFFSET = 100;
@@ -1431,6 +1431,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             this.stopSleeping();
          }
 
+         this.stopUsingItem();
          if (!this.level().isClientSide() && this.hasCustomName()) {
             LOGGER.info("Named entity {} died: {}", this, this.getCombatTracker().getDeathMessage().getString());
          }
@@ -1564,7 +1565,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public void knockback(double var1, double var3, double var5) {
       var1 *= 1.0 - this.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
       if (!(var1 <= 0.0)) {
-         this.hasImpulse = true;
+         this.needsSync = true;
 
          Vec3 var7;
          for(var7 = this.getDeltaMovement(); var3 * var3 + var5 * var5 < 9.999999747378752E-6; var5 = (Math.random() - Math.random()) * 0.01) {
@@ -2215,10 +2216,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.setDeltaMovement(var2.x, Math.max((double)var1, var2.y), var2.z);
          if (this.isSprinting()) {
             float var3 = this.getYRot() * 0.017453292F;
-            this.addDeltaMovement(new Vec3((double)(-Mth.sin(var3)) * 0.2, 0.0, (double)Mth.cos(var3) * 0.2));
+            this.addDeltaMovement(new Vec3((double)(-Mth.sin((double)var3)) * 0.2, 0.0, (double)Mth.cos((double)var3) * 0.2));
          }
 
-         this.hasImpulse = true;
+         this.needsSync = true;
       }
    }
 
@@ -2423,7 +2424,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (var3 < 0.0F && var4 > 0.0) {
-         double var15 = var6 * (double)(-Mth.sin(var3)) * 0.04;
+         double var15 = var6 * (double)(-Mth.sin((double)var3)) * 0.04;
          var1 = var1.add(-var2.x * var15 / var4, var15 * 3.2, -var2.z * var15 / var4);
       }
 
@@ -2551,7 +2552,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void causeExtraKnockback(Entity var1, float var2, Vec3 var3) {
       if (var2 > 0.0F && var1 instanceof LivingEntity var4) {
-         var4.knockback((double)var2, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+         var4.knockback((double)var2, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
       }
 
@@ -2689,6 +2690,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.recentKineticEnemies.put(var1, this.level().getGameTime());
       }
 
+   }
+
+   public int stabbedEntities() {
+      return this.recentKineticEnemies == null ? 0 : this.recentKineticEnemies.size();
    }
 
    public boolean stabAttack(EquipmentSlot var1, Entity var2, float var3, boolean var4, boolean var5, boolean var6) {
@@ -3255,13 +3260,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (var2) {
             float var7 = this.random.nextFloat() * 0.5F;
             float var8 = this.random.nextFloat() * 6.2831855F;
-            var6.setDeltaMovement((double)(-Mth.sin(var8) * var7), 0.20000000298023224, (double)(Mth.cos(var8) * var7));
+            var6.setDeltaMovement((double)(-Mth.sin((double)var8) * var7), 0.20000000298023224, (double)(Mth.cos((double)var8) * var7));
          } else {
             float var14 = 0.3F;
-            float var15 = Mth.sin(this.getXRot() * 0.017453292F);
-            float var9 = Mth.cos(this.getXRot() * 0.017453292F);
-            float var10 = Mth.sin(this.getYRot() * 0.017453292F);
-            float var11 = Mth.cos(this.getYRot() * 0.017453292F);
+            float var15 = Mth.sin((double)(this.getXRot() * 0.017453292F));
+            float var9 = Mth.cos((double)(this.getXRot() * 0.017453292F));
+            float var10 = Mth.sin((double)(this.getYRot() * 0.017453292F));
+            float var11 = Mth.cos((double)(this.getYRot() * 0.017453292F));
             float var12 = this.random.nextFloat() * 6.2831855F;
             float var13 = 0.02F * this.random.nextFloat();
             var6.setDeltaMovement((double)(-var10 * var9 * 0.3F) + Math.cos((double)var12) * (double)var13, (double)(-var15 * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(var11 * var9 * 0.3F) + Math.sin((double)var12) * (double)var13);
@@ -3582,7 +3587,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.setPosToBed(var1);
       this.setSleepingPos(var1);
       this.setDeltaMovement(Vec3.ZERO);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    private void setPosToBed(BlockPos var1) {

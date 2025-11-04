@@ -1,6 +1,6 @@
 package net.minecraft.world.inventory;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -13,9 +13,9 @@ import org.jspecify.annotations.Nullable;
 class ArmorSlot extends Slot {
    private final LivingEntity owner;
    private final EquipmentSlot slot;
-   private final @Nullable ResourceLocation emptyIcon;
+   private final @Nullable Identifier emptyIcon;
 
-   public ArmorSlot(Container var1, LivingEntity var2, EquipmentSlot var3, int var4, int var5, int var6, @Nullable ResourceLocation var7) {
+   public ArmorSlot(Container var1, LivingEntity var2, EquipmentSlot var3, int var4, int var5, int var6, @Nullable Identifier var7) {
       super(var1, var4, var5, var6);
       this.owner = var2;
       this.slot = var3;
@@ -44,7 +44,7 @@ class ArmorSlot extends Slot {
       return !var2.isEmpty() && !var1.isCreative() && EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) ? false : super.mayPickup(var1);
    }
 
-   public @Nullable ResourceLocation getNoItemIcon() {
+   public @Nullable Identifier getNoItemIcon() {
       return this.emptyIcon;
    }
 }

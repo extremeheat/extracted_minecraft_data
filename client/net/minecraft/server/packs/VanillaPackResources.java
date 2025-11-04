@@ -13,12 +13,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.FileUtil;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.util.FileUtil;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -53,7 +53,7 @@ public class VanillaPackResources implements PackResources {
       return null;
    }
 
-   public void listRawPaths(PackType var1, ResourceLocation var2, Consumer<Path> var3) {
+   public void listRawPaths(PackType var1, Identifier var2, Consumer<Path> var3) {
       FileUtil.decomposePath(var2.getPath()).ifSuccess((var4) -> {
          String var5 = var2.getNamespace();
 
@@ -97,7 +97,7 @@ public class VanillaPackResources implements PackResources {
       PathPackResources.listPath(var1, var4, var3, var0);
    }
 
-   public @Nullable IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
       return (IoSupplier)FileUtil.decomposePath(var2.getPath()).mapOrElse((var3) -> {
          String var4 = var2.getNamespace();
 

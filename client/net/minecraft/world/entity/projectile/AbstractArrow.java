@@ -267,7 +267,7 @@ public abstract class AbstractArrow extends Projectile {
             if (var3.isEmpty()) {
                if (this.isAlive() && var1.getType() != HitResult.Type.MISS) {
                   this.hitTargetOrDeflectSelf(var1);
-                  this.hasImpulse = true;
+                  this.needsSync = true;
                }
             } else {
                if (!this.isAlive() || this.noPhysics) {
@@ -275,7 +275,7 @@ public abstract class AbstractArrow extends Projectile {
                }
 
                ProjectileDeflection var6 = this.hitTargetsOrDeflectSelf(var3);
-               this.hasImpulse = true;
+               this.needsSync = true;
                if (this.getPierceLevel() > 0 && var6 == ProjectileDeflection.NONE) {
                   continue;
                }

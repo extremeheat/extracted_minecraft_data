@@ -17,8 +17,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -88,7 +88,7 @@ public class SurfaceRules {
    }
 
    public static ConditionSource verticalGradient(String var0, VerticalAnchor var1, VerticalAnchor var2) {
-      return new VerticalGradientConditionSource(ResourceLocation.parse(var0), var1, var2);
+      return new VerticalGradientConditionSource(Identifier.parse(var0), var1, var2);
    }
 
    public static ConditionSource steep() {
@@ -734,10 +734,10 @@ public class SurfaceRules {
       }
    }
 
-   static record VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
-      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.<VerticalGradientConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new)));
+   static record VerticalGradientConditionSource(Identifier randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
+      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.<VerticalGradientConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new)));
 
-      VerticalGradientConditionSource(ResourceLocation var1, VerticalAnchor var2, VerticalAnchor var3) {
+      VerticalGradientConditionSource(Identifier var1, VerticalAnchor var2, VerticalAnchor var3) {
          super();
          this.randomName = var1;
          this.trueAtAndBelow = var2;

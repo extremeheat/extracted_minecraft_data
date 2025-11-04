@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.DyeColor;
 
 public class BuiltInLootTables {
@@ -142,14 +142,14 @@ public class BuiltInLootTables {
    }
 
    private static ResourceKey<LootTable> register(String var0) {
-      return register(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace(var0)));
+      return register(ResourceKey.create(Registries.LOOT_TABLE, Identifier.withDefaultNamespace(var0)));
    }
 
    private static ResourceKey<LootTable> register(ResourceKey<LootTable> var0) {
       if (LOCATIONS.add(var0)) {
          return var0;
       } else {
-         throw new IllegalArgumentException(String.valueOf(var0.location()) + " is already a registered built-in loot table");
+         throw new IllegalArgumentException(String.valueOf(var0.identifier()) + " is already a registered built-in loot table");
       }
    }
 

@@ -52,13 +52,13 @@ public class ChickenModel extends EntityModel<ChickenRenderState> {
 
    public void setupAnim(ChickenRenderState var1) {
       super.setupAnim(var1);
-      float var2 = (Mth.sin(var1.flap) + 1.0F) * var1.flapSpeed;
+      float var2 = (Mth.sin((double)var1.flap) + 1.0F) * var1.flapSpeed;
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
       float var3 = var1.walkAnimationSpeed;
       float var4 = var1.walkAnimationPos;
-      this.rightLeg.xRot = Mth.cos(var4 * 0.6662F) * 1.4F * var3;
-      this.leftLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * 1.4F * var3;
+      this.rightLeg.xRot = Mth.cos((double)(var4 * 0.6662F)) * 1.4F * var3;
+      this.leftLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 3.1415927F)) * 1.4F * var3;
       this.rightWing.zRot = var2;
       this.leftWing.zRot = -var2;
    }

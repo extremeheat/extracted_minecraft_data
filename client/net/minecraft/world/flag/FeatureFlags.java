@@ -3,7 +3,7 @@ package net.minecraft.world.flag;
 import com.mojang.serialization.Codec;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class FeatureFlags {
    public static final FeatureFlag VANILLA;
@@ -26,7 +26,7 @@ public class FeatureFlags {
    public static String printMissingFlags(FeatureFlagRegistry var0, FeatureFlagSet var1, FeatureFlagSet var2) {
       Set var3 = var0.toNames(var2);
       Set var4 = var0.toNames(var1);
-      return (String)var3.stream().filter((var1x) -> !var4.contains(var1x)).map(ResourceLocation::toString).collect(Collectors.joining(", "));
+      return (String)var3.stream().filter((var1x) -> !var4.contains(var1x)).map(Identifier::toString).collect(Collectors.joining(", "));
    }
 
    public static boolean isExperimental(FeatureFlagSet var0) {

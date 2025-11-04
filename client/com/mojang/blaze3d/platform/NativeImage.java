@@ -106,7 +106,6 @@ public final class NativeImage implements AutoCloseable {
       NativeImage var3;
       try {
          var2 = TextureUtil.readResource(var1);
-         var2.rewind();
          var3 = read(var0, var2);
       } finally {
          MemoryUtil.memFree(var2);

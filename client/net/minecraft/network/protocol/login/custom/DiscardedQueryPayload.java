@@ -1,10 +1,10 @@
 package net.minecraft.network.protocol.login.custom;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record DiscardedQueryPayload(ResourceLocation id) implements CustomQueryPayload {
-   public DiscardedQueryPayload(ResourceLocation var1) {
+public record DiscardedQueryPayload(Identifier id) implements CustomQueryPayload {
+   public DiscardedQueryPayload(Identifier var1) {
       super();
       this.id = var1;
    }

@@ -1,6 +1,6 @@
 package net.minecraft.util.parsing.packrat;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public abstract class CachedParseState<S> implements ParseState<S> {

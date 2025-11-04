@@ -8,7 +8,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.eventlog.EventLogDirectory;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;

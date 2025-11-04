@@ -40,8 +40,8 @@ public class DripstoneUtils {
          float var4 = 6.0F / (float)var2;
 
          for(float var5 = 0.0F; var5 < 6.2831855F; var5 += var4) {
-            int var6 = (int)(Mth.cos(var5) * (float)var2);
-            int var7 = (int)(Mth.sin(var5) * (float)var2);
+            int var6 = (int)(Mth.cos((double)var5) * (float)var2);
+            int var7 = (int)(Mth.sin((double)var5) * (float)var2);
             if (isEmptyOrWaterOrLava(var0, var1.offset(var6, 0, var7))) {
                return false;
             }

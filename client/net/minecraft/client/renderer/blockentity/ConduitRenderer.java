@@ -103,7 +103,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
          var2.popPose();
       } else {
          float var5 = var1.activeRotation * 57.295776F;
-         float var6 = Mth.sin(var1.animTime * 0.1F) / 2.0F + 0.5F;
+         float var6 = Mth.sin((double)(var1.animTime * 0.1F)) / 2.0F + 0.5F;
          var6 = var6 * var6 + var6;
          var2.pushPose();
          var2.translate(0.5F, 0.3F + var6 * 0.2F, 0.5F);

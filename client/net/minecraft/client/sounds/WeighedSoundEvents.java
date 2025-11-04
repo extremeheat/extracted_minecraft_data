@@ -7,7 +7,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
@@ -15,7 +15,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
    private final List<Weighted<Sound>> list = Lists.newArrayList();
    private final @Nullable Component subtitle;
 
-   public WeighedSoundEvents(ResourceLocation var1, @Nullable String var2) {
+   public WeighedSoundEvents(Identifier var1, @Nullable String var2) {
       super();
       if (SharedConstants.DEBUG_SUBTITLES) {
          MutableComponent var3 = Component.literal(var1.getPath());

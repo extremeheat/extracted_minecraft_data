@@ -5,11 +5,11 @@ import java.util.List;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.UnboundEntryAction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public record PlainTextFunction<T>(ResourceLocation id, List<UnboundEntryAction<T>> entries) implements CommandFunction<T>, InstantiatedFunction<T> {
-   public PlainTextFunction(ResourceLocation var1, List<UnboundEntryAction<T>> var2) {
+public record PlainTextFunction<T>(Identifier id, List<UnboundEntryAction<T>> entries) implements CommandFunction<T>, InstantiatedFunction<T> {
+   public PlainTextFunction(Identifier var1, List<UnboundEntryAction<T>> var2) {
       super();
       this.id = var1;
       this.entries = var2;

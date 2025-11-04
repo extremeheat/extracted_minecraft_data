@@ -5,30 +5,30 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class CustomBossEvents {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Codec<Map<ResourceLocation, CustomBossEvent.Packed>> EVENTS_CODEC;
-   private final Map<ResourceLocation, CustomBossEvent> events = Maps.newHashMap();
+   private static final Codec<Map<Identifier, CustomBossEvent.Packed>> EVENTS_CODEC;
+   private final Map<Identifier, CustomBossEvent> events = Maps.newHashMap();
 
    public CustomBossEvents() {
       super();
    }
 
-   public @Nullable CustomBossEvent get(ResourceLocation var1) {
+   public @Nullable CustomBossEvent get(Identifier var1) {
       return (CustomBossEvent)this.events.get(var1);
    }
 
-   public CustomBossEvent create(ResourceLocation var1, Component var2) {
+   public CustomBossEvent create(Identifier var1, Component var2) {
       CustomBossEvent var3 = new CustomBossEvent(var1, var2);
       this.events.put(var1, var3);
       return var3;
@@ -38,7 +38,7 @@ public class CustomBossEvents {
       this.events.remove(var1.getTextId());
    }
 
-   public Collection<ResourceLocation> getIds() {
+   public Collection<Identifier> getIds() {
       return this.events.keySet();
    }
 
@@ -71,6 +71,6 @@ public class CustomBossEvents {
    }
 
    static {
-      EVENTS_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, CustomBossEvent.Packed.CODEC);
+      EVENTS_CODEC = Codec.unboundedMap(Identifier.CODEC, CustomBossEvent.Packed.CODEC);
    }
 }

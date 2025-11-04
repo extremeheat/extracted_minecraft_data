@@ -55,7 +55,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
    public void submit(EnchantTableRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       var2.pushPose();
       var2.translate(0.5F, 0.75F, 0.5F);
-      var2.translate(0.0F, 0.1F + Mth.sin(var1.time * 0.1F) * 0.01F, 0.0F);
+      var2.translate(0.0F, 0.1F + Mth.sin((double)(var1.time * 0.1F)) * 0.01F, 0.0F);
       float var5 = var1.yRot;
       var2.mulPose((Quaternionfc)Axis.YP.rotation(-var5));
       var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));

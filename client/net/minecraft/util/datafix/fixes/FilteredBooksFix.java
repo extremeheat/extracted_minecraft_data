@@ -2,7 +2,7 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class FilteredBooksFix extends ItemStackTagFix {
    public FilteredBooksFix(Schema var1) {

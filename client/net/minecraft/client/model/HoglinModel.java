@@ -74,8 +74,8 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       super.setupAnim(var1);
       float var2 = var1.walkAnimationSpeed;
       float var3 = var1.walkAnimationPos;
-      this.rightEar.zRot = -0.6981317F - var2 * Mth.sin(var3);
-      this.leftEar.zRot = 0.6981317F + var2 * Mth.sin(var3);
+      this.rightEar.zRot = -0.6981317F - var2 * Mth.sin((double)var3);
+      this.leftEar.zRot = 0.6981317F + var2 * Mth.sin((double)var3);
       this.head.yRot = var1.yRot * 0.017453292F;
       float var4 = 1.0F - (float)Mth.abs(10 - 2 * var1.attackAnimationRemainingTicks) / 10.0F;
       this.head.xRot = Mth.lerp(var4, 0.87266463F, -0.34906584F);
@@ -85,8 +85,8 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       }
 
       float var5 = 1.2F;
-      this.rightFrontLeg.xRot = Mth.cos(var3) * 1.2F * var2;
-      this.leftFrontLeg.xRot = Mth.cos(var3 + 3.1415927F) * 1.2F * var2;
+      this.rightFrontLeg.xRot = Mth.cos((double)var3) * 1.2F * var2;
+      this.leftFrontLeg.xRot = Mth.cos((double)(var3 + 3.1415927F)) * 1.2F * var2;
       this.rightHindLeg.xRot = this.leftFrontLeg.xRot;
       this.leftHindLeg.xRot = this.rightFrontLeg.xRot;
    }

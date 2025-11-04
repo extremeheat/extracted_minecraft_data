@@ -23,11 +23,7 @@ import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, ScheduledTickAccess {
-   default long dayTime() {
-      return this.getLevelData().getDayTime();
-   }
-
+public interface LevelAccessor extends CommonLevelAccessor, LevelReader, ScheduledTickAccess {
    long nextSubTickCount();
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {

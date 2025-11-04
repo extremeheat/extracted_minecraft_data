@@ -11,11 +11,14 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.util.OptionalInt;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -27,7 +30,6 @@ public class LightTexture implements AutoCloseable {
    public static final int FULL_BLOCK = 240;
    private static final int TEXTURE_SIZE = 16;
    private static final int LIGHTMAP_UBO_SIZE = (new Std140SizeCalculator()).putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().putVec3().putVec3().get();
-   private static final Vector3f END_FLASH_SKY_LIGHT_COLOR = new Vector3f(0.9F, 0.5F, 1.0F);
    private final GpuTexture texture;
    private final GpuTextureView textureView;
    private boolean updateLightTexture;
@@ -65,7 +67,7 @@ public class LightTexture implements AutoCloseable {
 
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {
       float var4 = 0.45F * var2;
-      return Math.max(0.0F, Mth.cos(((float)var1.tickCount - var3) * 3.1415927F * 0.025F) * var4);
+      return Math.max(0.0F, Mth.cos((double)(((float)var1.tickCount - var3) * 3.1415927F * 0.025F)) * var4);
    }
 
    public void updateLightTexture(float var1) {
@@ -75,61 +77,48 @@ public class LightTexture implements AutoCloseable {
          var2.push("lightTex");
          ClientLevel var3 = this.minecraft.level;
          if (var3 != null) {
-            float var4 = var3.getSkyDarken(1.0F);
-            float var5;
-            Vector3f var6;
-            if (var3.effects().hasEndFlashes()) {
-               var6 = new Vector3f(0.99F, 1.12F, 1.0F);
-               EndFlashState var7 = var3.endFlashState();
-               if (var7 != null && !(Boolean)this.minecraft.options.hideLightningFlash().get()) {
-                  float var8 = var7.getIntensity(var1);
+            Camera var4 = this.minecraft.gameRenderer.getMainCamera();
+            int var5 = (Integer)var4.attributeProbe().getValue(EnvironmentAttributes.SKY_LIGHT_COLOR, var1);
+            float var6 = var3.dimensionType().ambientLight();
+            float var8 = (Float)var4.attributeProbe().getValue(EnvironmentAttributes.SKY_LIGHT_FACTOR, var1);
+            EndFlashState var9 = var3.endFlashState();
+            Vector3f var7;
+            if (var9 != null) {
+               var7 = new Vector3f(0.99F, 1.12F, 1.0F);
+               if (!(Boolean)this.minecraft.options.hideLightningFlash().get()) {
+                  float var10 = var9.getIntensity(var1);
                   if (this.minecraft.gui.getBossOverlay().shouldCreateWorldFog()) {
-                     var5 = var8 / 3.0F;
+                     var8 += var10 / 3.0F;
                   } else {
-                     var5 = var8;
+                     var8 += var10;
                   }
-               } else {
-                  var5 = 0.0F;
                }
             } else {
-               var6 = new Vector3f(1.0F, 1.0F, 1.0F);
-               if (var3.getSkyFlashTime() > 0) {
-                  var5 = 1.0F;
-               } else {
-                  var5 = var4 * 0.95F + 0.05F;
-               }
+               var7 = new Vector3f(1.0F, 1.0F, 1.0F);
             }
 
-            float var24 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
-            float var25 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var24;
-            float var9 = this.calculateDarknessScale(this.minecraft.player, var25, var1) * var24;
-            float var11 = this.minecraft.player.getWaterVision();
-            float var10;
+            float var25 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
+            float var11 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var25;
+            float var12 = this.calculateDarknessScale(this.minecraft.player, var11, var1) * var25;
+            float var14 = this.minecraft.player.getWaterVision();
+            float var13;
             if (this.minecraft.player.hasEffect(MobEffects.NIGHT_VISION)) {
-               var10 = GameRenderer.getNightVisionScale(this.minecraft.player, var1);
-            } else if (var11 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONDUIT_POWER)) {
-               var10 = var11;
+               var13 = GameRenderer.getNightVisionScale(this.minecraft.player, var1);
+            } else if (var14 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONDUIT_POWER)) {
+               var13 = var14;
             } else {
-               var10 = 0.0F;
+               var13 = 0.0F;
             }
 
-            Vector3f var12;
-            if (var3.effects().hasEndFlashes()) {
-               var12 = END_FLASH_SKY_LIGHT_COLOR;
-            } else {
-               var12 = (new Vector3f(var4, var4, 1.0F)).lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
+            float var15 = this.blockLightRedFlicker + 1.5F;
+            float var16 = ((Double)this.minecraft.options.gamma().get()).floatValue();
+            CommandEncoder var17 = RenderSystem.getDevice().createCommandEncoder();
+
+            try (GpuBuffer.MappedView var18 = var17.mapBuffer(this.ubo.currentBuffer(), false, true)) {
+               Std140Builder.intoBuffer(var18.data()).putFloat(var6).putFloat(var8).putFloat(var15).putFloat(var13).putFloat(var12).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var16 - var11)).putVec3(ARGB.vector3fFromRGB24(var5)).putVec3(var7);
             }
 
-            float var13 = this.blockLightRedFlicker + 1.5F;
-            float var14 = var3.dimensionType().ambientLight();
-            float var15 = ((Double)this.minecraft.options.gamma().get()).floatValue();
-            CommandEncoder var16 = RenderSystem.getDevice().createCommandEncoder();
-
-            try (GpuBuffer.MappedView var17 = var16.mapBuffer(this.ubo.currentBuffer(), false, true)) {
-               Std140Builder.intoBuffer(var17.data()).putFloat(var14).putFloat(var5).putFloat(var13).putFloat(var10).putFloat(var9).putFloat(this.renderer.getDarkenWorldAmount(var1)).putFloat(Math.max(0.0F, var15 - var25)).putVec3(var12).putVec3(var6);
-            }
-
-            try (RenderPass var26 = var16.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
+            try (RenderPass var26 = var17.createRenderPass(() -> "Update light", this.textureView, OptionalInt.empty())) {
                var26.setPipeline(RenderPipelines.LIGHTMAP);
                RenderSystem.bindDefaultUniforms(var26);
                var26.setUniform("LightmapInfo", this.ubo.currentBuffer());

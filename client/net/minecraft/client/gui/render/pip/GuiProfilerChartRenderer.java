@@ -34,8 +34,8 @@ public class GuiProfilerChartRenderer extends PictureInPictureRenderer<GuiProfil
 
          for(int var12 = var8; var12 >= 0; --var12) {
             float var13 = (float)((var3 + var7.percentage * (double)var12 / (double)var8) * 6.2831854820251465 / 100.0);
-            float var14 = Mth.sin(var13) * 105.0F;
-            float var15 = Mth.cos(var13) * 105.0F * 0.5F;
+            float var14 = Mth.sin((double)var13) * 105.0F;
+            float var15 = Mth.cos((double)var13) * 105.0F * 0.5F;
             var9.addVertex((Matrix4fc)var5, var14, var15, 0.0F).setColor(var10);
          }
 
@@ -43,11 +43,11 @@ public class GuiProfilerChartRenderer extends PictureInPictureRenderer<GuiProfil
 
          for(int var20 = var8; var20 > 0; --var20) {
             float var21 = (float)((var3 + var7.percentage * (double)var20 / (double)var8) * 6.2831854820251465 / 100.0);
-            float var22 = Mth.sin(var21) * 105.0F;
-            float var23 = Mth.cos(var21) * 105.0F * 0.5F;
+            float var22 = Mth.sin((double)var21) * 105.0F;
+            float var23 = Mth.cos((double)var21) * 105.0F * 0.5F;
             float var16 = (float)((var3 + var7.percentage * (double)(var20 - 1) / (double)var8) * 6.2831854820251465 / 100.0);
-            float var17 = Mth.sin(var16) * 105.0F;
-            float var18 = Mth.cos(var16) * 105.0F * 0.5F;
+            float var17 = Mth.sin((double)var16) * 105.0F;
+            float var18 = Mth.cos((double)var16) * 105.0F * 0.5F;
             if (!((var23 + var18) / 2.0F < 0.0F)) {
                var9.addVertex((Matrix4fc)var5, var22, var23, 0.0F).setColor(var11);
                var9.addVertex((Matrix4fc)var5, var22, var23 + 10.0F, 0.0F).setColor(var11);

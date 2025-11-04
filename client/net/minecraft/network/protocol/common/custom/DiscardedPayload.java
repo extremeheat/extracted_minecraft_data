@@ -4,15 +4,15 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.codec.StreamMemberEncoder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record DiscardedPayload(ResourceLocation id) implements CustomPacketPayload {
-   public DiscardedPayload(ResourceLocation var1) {
+public record DiscardedPayload(Identifier id) implements CustomPacketPayload {
+   public DiscardedPayload(Identifier var1) {
       super();
       this.id = var1;
    }
 
-   public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(ResourceLocation var0, int var1) {
+   public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(Identifier var0, int var1) {
       return CustomPacketPayload.codec((StreamMemberEncoder)((var0x, var1x) -> {
       }), (StreamDecoder)((var2) -> {
          int var3 = var2.readableBytes();

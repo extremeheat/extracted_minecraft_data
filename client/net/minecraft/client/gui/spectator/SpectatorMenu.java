@@ -9,13 +9,13 @@ import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class SpectatorMenu {
-   static final ResourceLocation CLOSE_SPRITE = ResourceLocation.withDefaultNamespace("spectator/close");
-   static final ResourceLocation SCROLL_LEFT_SPRITE = ResourceLocation.withDefaultNamespace("spectator/scroll_left");
-   static final ResourceLocation SCROLL_RIGHT_SPRITE = ResourceLocation.withDefaultNamespace("spectator/scroll_right");
+   static final Identifier CLOSE_SPRITE = Identifier.withDefaultNamespace("spectator/close");
+   static final Identifier SCROLL_LEFT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_left");
+   static final Identifier SCROLL_RIGHT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_right");
    private static final SpectatorMenuItem CLOSE_ITEM = new CloseSpectatorItem();
    private static final SpectatorMenuItem SCROLL_LEFT = new ScrollMenuItem(-1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new ScrollMenuItem(1, true);
@@ -124,7 +124,7 @@ public class SpectatorMenu {
       }
 
       public void renderIcon(GuiGraphics var1, float var2, float var3) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
       }
 
       public boolean isEnabled() {
@@ -153,9 +153,9 @@ public class SpectatorMenu {
       public void renderIcon(GuiGraphics var1, float var2, float var3) {
          int var4 = ARGB.colorFromFloat(var3, var2, var2, var2);
          if (this.direction < 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
          } else {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
          }
 
       }

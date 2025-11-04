@@ -7,12 +7,12 @@ import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Slime;
 
 public class SlimeRenderer extends MobRenderer<Slime, SlimeRenderState, SlimeModel> {
-   public static final ResourceLocation SLIME_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/slime/slime.png");
+   public static final Identifier SLIME_LOCATION = Identifier.withDefaultNamespace("textures/entity/slime/slime.png");
 
    public SlimeRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SlimeModel(var1.bakeLayer(ModelLayers.SLIME)), 0.25F);
@@ -33,7 +33,7 @@ public class SlimeRenderer extends MobRenderer<Slime, SlimeRenderState, SlimeMod
       var2.scale(var6 * var4, 1.0F / var6 * var4, var6 * var4);
    }
 
-   public ResourceLocation getTextureLocation(SlimeRenderState var1) {
+   public Identifier getTextureLocation(SlimeRenderState var1) {
       return SLIME_LOCATION;
    }
 

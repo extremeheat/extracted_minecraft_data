@@ -39,7 +39,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
@@ -54,10 +54,10 @@ import org.jspecify.annotations.Nullable;
 
 public class StatsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.stats");
-   static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
-   static final ResourceLocation HEADER_SPRITE = ResourceLocation.withDefaultNamespace("statistics/header");
-   static final ResourceLocation SORT_UP_SPRITE = ResourceLocation.withDefaultNamespace("statistics/sort_up");
-   static final ResourceLocation SORT_DOWN_SPRITE = ResourceLocation.withDefaultNamespace("statistics/sort_down");
+   static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
+   static final Identifier HEADER_SPRITE = Identifier.withDefaultNamespace("statistics/header");
+   static final Identifier SORT_UP_SPRITE = Identifier.withDefaultNamespace("statistics/sort_up");
+   static final Identifier SORT_DOWN_SPRITE = Identifier.withDefaultNamespace("statistics/sort_down");
    private static final Component PENDING_TEXT = Component.translatable("multiplayer.downloadingStats");
    static final Component NO_VALUE_DISPLAY = Component.translatable("stats.none");
    private static final Component GENERAL_BUTTON = Component.translatable("stat.generalButton");
@@ -172,8 +172,8 @@ public class StatsScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   static String getTranslationKey(Stat<ResourceLocation> var0) {
-      String var10000 = ((ResourceLocation)var0.getValue()).toString();
+   static String getTranslationKey(Stat<Identifier> var0) {
+      String var10000 = ((Identifier)var0.getValue()).toString();
       return "stat." + var10000.replace(':', '.');
    }
 
@@ -217,10 +217,10 @@ public class StatsScreen extends Screen {
       }
 
       class Entry extends ObjectSelectionList.Entry<Entry> {
-         private final Stat<ResourceLocation> stat;
+         private final Stat<Identifier> stat;
          private final Component statDisplay;
 
-         Entry(final Stat<ResourceLocation> var2) {
+         Entry(final Stat<Identifier> var2) {
             super();
             this.stat = var2;
             this.statDisplay = Component.translatable(StatsScreen.getTranslationKey(var2));
@@ -471,7 +471,7 @@ public class StatsScreen extends Screen {
             }
 
             protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)StatsScreen.SLOT_SPRITE, ItemRow.this.getContentX(), ItemRow.this.getContentY(), 18, 18);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)StatsScreen.SLOT_SPRITE, ItemRow.this.getContentX(), ItemRow.this.getContentY(), 18, 18);
                super.renderWidget(var1, var2, var3, var4);
             }
 
@@ -482,12 +482,12 @@ public class StatsScreen extends Screen {
       }
 
       class HeaderEntry extends Entry {
-         private static final ResourceLocation BLOCK_MINED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/block_mined");
-         private static final ResourceLocation ITEM_BROKEN_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_broken");
-         private static final ResourceLocation ITEM_CRAFTED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_crafted");
-         private static final ResourceLocation ITEM_USED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_used");
-         private static final ResourceLocation ITEM_PICKED_UP_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_picked_up");
-         private static final ResourceLocation ITEM_DROPPED_SPRITE = ResourceLocation.withDefaultNamespace("statistics/item_dropped");
+         private static final Identifier BLOCK_MINED_SPRITE = Identifier.withDefaultNamespace("statistics/block_mined");
+         private static final Identifier ITEM_BROKEN_SPRITE = Identifier.withDefaultNamespace("statistics/item_broken");
+         private static final Identifier ITEM_CRAFTED_SPRITE = Identifier.withDefaultNamespace("statistics/item_crafted");
+         private static final Identifier ITEM_USED_SPRITE = Identifier.withDefaultNamespace("statistics/item_used");
+         private static final Identifier ITEM_PICKED_UP_SPRITE = Identifier.withDefaultNamespace("statistics/item_picked_up");
+         private static final Identifier ITEM_DROPPED_SPRITE = Identifier.withDefaultNamespace("statistics/item_dropped");
          private final StatSortButton blockMined;
          private final StatSortButton itemBroken;
          private final StatSortButton itemCrafted;
@@ -522,8 +522,8 @@ public class StatsScreen extends Screen {
             this.itemDropped.render(var1, var2, var3, var5);
             if (ItemStatisticsList.this.sortColumn != null) {
                int var6 = ItemStatisticsList.this.getColumnX(ItemStatisticsList.this.getColumnIndex(ItemStatisticsList.this.sortColumn)) - 36;
-               ResourceLocation var7 = ItemStatisticsList.this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var7, this.getContentX() + var6, this.getContentY() + 1, 18, 18);
+               Identifier var7 = ItemStatisticsList.this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var7, this.getContentX() + var6, this.getContentY() + 1, 18, 18);
             }
 
          }
@@ -537,16 +537,16 @@ public class StatsScreen extends Screen {
          }
 
          class StatSortButton extends ImageButton {
-            private final ResourceLocation sprite;
+            private final Identifier sprite;
 
-            StatSortButton(final int var2, final ResourceLocation var3) {
+            StatSortButton(final int var2, final Identifier var3) {
                super(18, 18, new WidgetSprites(StatsScreen.HEADER_SPRITE, StatsScreen.SLOT_SPRITE), (var2x) -> ItemStatisticsList.this.sortByColumn(ItemStatisticsList.this.getColumn(var2)), ItemStatisticsList.this.getColumn(var2).getDisplayName());
                this.sprite = var3;
                this.setTooltip(Tooltip.create(this.getMessage()));
             }
 
             public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-               ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+               Identifier var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
                var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.width, this.height);
             }

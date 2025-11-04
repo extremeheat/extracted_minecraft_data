@@ -2,13 +2,13 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public final class MissingTextureAtlasSprite {
    private static final int MISSING_IMAGE_WIDTH = 16;
    private static final int MISSING_IMAGE_HEIGHT = 16;
    private static final String MISSING_TEXTURE_NAME = "missingno";
-   private static final ResourceLocation MISSING_TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("missingno");
+   private static final Identifier MISSING_TEXTURE_LOCATION = Identifier.withDefaultNamespace("missingno");
 
    public MissingTextureAtlasSprite() {
       super();
@@ -40,7 +40,7 @@ public final class MissingTextureAtlasSprite {
       return new SpriteContents(MISSING_TEXTURE_LOCATION, new FrameSize(16, 16), var0);
    }
 
-   public static ResourceLocation getLocation() {
+   public static Identifier getLocation() {
       return MISSING_TEXTURE_LOCATION;
    }
 }

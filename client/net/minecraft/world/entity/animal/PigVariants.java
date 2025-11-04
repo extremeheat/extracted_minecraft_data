@@ -3,8 +3,8 @@ package net.minecraft.world.entity.animal;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.variant.BiomeCheck;
@@ -22,7 +22,7 @@ public class PigVariants {
       super();
    }
 
-   private static ResourceKey<PigVariant> createKey(ResourceLocation var0) {
+   private static ResourceKey<PigVariant> createKey(Identifier var0) {
       return ResourceKey.create(Registries.PIG_VARIANT, var0);
    }
 
@@ -38,7 +38,7 @@ public class PigVariants {
    }
 
    private static void register(BootstrapContext<PigVariant> var0, ResourceKey<PigVariant> var1, PigVariant.ModelType var2, String var3, SpawnPrioritySelectors var4) {
-      ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/pig/" + var3);
+      Identifier var5 = Identifier.withDefaultNamespace("entity/pig/" + var3);
       var0.register(var1, new PigVariant(new ModelAndTexture(var2, var5), var4));
    }
 

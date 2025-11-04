@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -216,7 +216,7 @@ public class ConduitBlockEntity extends BlockEntity {
 
    private static void animationTick(Level var0, BlockPos var1, List<BlockPos> var2, @Nullable Entity var3, int var4) {
       RandomSource var5 = var0.random;
-      double var6 = (double)(Mth.sin((float)(var4 + 35) * 0.1F) / 2.0F + 0.5F);
+      double var6 = (double)(Mth.sin((double)((float)(var4 + 35) * 0.1F)) / 2.0F + 0.5F);
       var6 = (var6 * var6 + var6) * 0.30000001192092896;
       Vec3 var8 = new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 1.5 + var6, (double)var1.getZ() + 0.5);
 

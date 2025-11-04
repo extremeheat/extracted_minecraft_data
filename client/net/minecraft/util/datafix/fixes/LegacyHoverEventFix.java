@@ -13,8 +13,8 @@ import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Util;
 
 public class LegacyHoverEventFix extends DataFix {
    public LegacyHoverEventFix(Schema var1) {

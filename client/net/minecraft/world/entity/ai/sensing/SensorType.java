@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.sensing;
 import java.util.function.Supplier;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
@@ -47,6 +47,6 @@ public class SensorType<U extends Sensor<?>> {
    }
 
    private static <U extends Sensor<?>> SensorType<U> register(String var0, Supplier<U> var1) {
-      return (SensorType)Registry.register(BuiltInRegistries.SENSOR_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new SensorType(var1));
+      return (SensorType)Registry.register(BuiltInRegistries.SENSOR_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new SensorType(var1));
    }
 }

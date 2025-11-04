@@ -29,7 +29,7 @@ public class ArrowModel extends EntityModel<ArrowRenderState> {
    public void setupAnim(ArrowRenderState var1) {
       super.setupAnim(var1);
       if (var1.shake > 0.0F) {
-         float var2 = -Mth.sin(var1.shake * 3.0F) * var1.shake;
+         float var2 = -Mth.sin((double)(var1.shake * 3.0F)) * var1.shake;
          ModelPart var10000 = this.root;
          var10000.zRot += var2 * 0.017453292F;
       }

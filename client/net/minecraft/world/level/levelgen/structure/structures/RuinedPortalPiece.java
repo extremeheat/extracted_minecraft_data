@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -53,7 +53,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    private final VerticalPlacement verticalPlacement;
    private final Properties properties;
 
-   public RuinedPortalPiece(StructureTemplateManager var1, BlockPos var2, VerticalPlacement var3, Properties var4, ResourceLocation var5, StructureTemplate var6, Rotation var7, Mirror var8, BlockPos var9) {
+   public RuinedPortalPiece(StructureTemplateManager var1, BlockPos var2, VerticalPlacement var3, Properties var4, Identifier var5, StructureTemplate var6, Rotation var7, Mirror var8, BlockPos var9) {
       super(StructurePieceType.RUINED_PORTAL, 0, var1, var5, var5.toString(), makeSettings(var8, var7, var3, var9, var4), var2);
       this.verticalPlacement = var3;
       this.properties = var4;
@@ -73,7 +73,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       var2.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
-   private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, ResourceLocation var2) {
+   private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, Identifier var2) {
       StructureTemplate var3 = var0.getOrCreate(var2);
       BlockPos var4 = new BlockPos(var3.getSize().getX() / 2, 0, var3.getSize().getZ() / 2);
       return makeSettings((Mirror)var1.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var1.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)var1.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), var4, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow());

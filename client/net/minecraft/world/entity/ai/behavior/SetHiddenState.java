@@ -31,7 +31,7 @@ public class SetHiddenState {
                } else {
                   var5.erase();
                   var4.erase();
-                  var7.getBrain().updateActivityFromSchedule(var6.getDayTime(), var6.getGameTime());
+                  var7.getBrain().updateActivityFromSchedule(var6.environmentAttributes(), var6.getGameTime(), var7.position());
                   var3.setValue(0);
                   return true;
                }

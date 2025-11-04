@@ -11,17 +11,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 
 public abstract class TagsProvider<T> implements DataProvider {
    protected final PackOutput.PathProvider pathProvider;
@@ -29,7 +29,7 @@ public abstract class TagsProvider<T> implements DataProvider {
    private final CompletableFuture<Void> contentsDone;
    private final CompletableFuture<TagLookup<T>> parentProvider;
    protected final ResourceKey<? extends Registry<T>> registryKey;
-   private final Map<ResourceLocation, TagBuilder> builders;
+   private final Map<Identifier, TagBuilder> builders;
 
    protected TagsProvider(PackOutput var1, ResourceKey<? extends Registry<T>> var2, CompletableFuture<HolderLookup.Provider> var3) {
       this(var1, var2, var3, CompletableFuture.completedFuture(TagsProvider.TagLookup.empty()));
@@ -46,7 +46,7 @@ public abstract class TagsProvider<T> implements DataProvider {
    }
 
    public final String getName() {
-      return "Tags for " + String.valueOf(this.registryKey.location());
+      return "Tags for " + String.valueOf(this.registryKey.identifier());
    }
 
    protected abstract void addTags(HolderLookup.Provider var1);
@@ -73,7 +73,7 @@ public abstract class TagsProvider<T> implements DataProvider {
          Predicate var4 = (var2x) -> var3.get(ResourceKey.create(this.registryKey, var2x)).isPresent();
          Predicate var5 = (var2x) -> this.builders.containsKey(var2x) || var2.parent.contains(TagKey.create(this.registryKey, var2x));
          return CompletableFuture.allOf((CompletableFuture[])this.builders.entrySet().stream().map((var5x) -> {
-            ResourceLocation var6 = (ResourceLocation)var5x.getKey();
+            Identifier var6 = (Identifier)var5x.getKey();
             TagBuilder var7 = (TagBuilder)var5x.getValue();
             List var8 = var7.build();
             List var9 = var8.stream().filter((var2x) -> !var2x.verifyIfPresent(var4, var5)).toList();

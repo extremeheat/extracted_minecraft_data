@@ -19,9 +19,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

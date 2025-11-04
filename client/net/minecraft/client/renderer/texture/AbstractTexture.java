@@ -15,7 +15,7 @@ public abstract class AbstractTexture implements AutoCloseable {
 
    public AbstractTexture() {
       super();
-      this.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR);
+      this.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
    }
 
    public void close() {

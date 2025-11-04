@@ -4,9 +4,9 @@ import com.google.common.base.MoreObjects;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -52,7 +52,7 @@ class ReportGameListener implements GameTestListener {
          this.handleRetry(var1, var2, true);
       } else if (!var1.isFlaky()) {
          String var4 = String.valueOf(var1.id());
-         reportPassed(var1, var4 + " passed! (" + var1.getRunTime() + "ms)");
+         reportPassed(var1, var4 + " passed! (" + var1.getRunTime() + "ms / " + var1.getTick() + "gameticks)");
       } else {
          if (this.successes >= var1.requiredSuccesses()) {
             String var10001 = String.valueOf(var1);

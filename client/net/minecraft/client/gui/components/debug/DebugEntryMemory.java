@@ -5,13 +5,13 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryMemory implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("memory");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("memory");
    private final AllocationRateCalculator allocationRateCalculator = new AllocationRateCalculator();
 
    public DebugEntryMemory() {

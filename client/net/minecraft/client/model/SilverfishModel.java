@@ -55,8 +55,8 @@ public class SilverfishModel extends EntityModel<EntityRenderState> {
       super.setupAnim(var1);
 
       for(int var2 = 0; var2 < this.bodyParts.length; ++var2) {
-         this.bodyParts[var2].yRot = Mth.cos(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var2 - 2));
-         this.bodyParts[var2].x = Mth.sin(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.2F * (float)Math.abs(var2 - 2);
+         this.bodyParts[var2].yRot = Mth.cos((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var2 - 2));
+         this.bodyParts[var2].x = Mth.sin((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.2F * (float)Math.abs(var2 - 2);
       }
 
       this.bodyLayers[0].yRot = this.bodyParts[2].yRot;

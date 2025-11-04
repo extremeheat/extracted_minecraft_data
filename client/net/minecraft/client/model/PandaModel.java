@@ -36,10 +36,10 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
    public void setupAnim(PandaRenderState var1) {
       super.setupAnim(var1);
       if (var1.isUnhappy) {
-         this.head.yRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);
-         this.head.zRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);
-         this.rightFrontLeg.xRot = -0.75F * Mth.sin(0.3F * var1.ageInTicks);
-         this.leftFrontLeg.xRot = 0.75F * Mth.sin(0.3F * var1.ageInTicks);
+         this.head.yRot = 0.35F * Mth.sin((double)(0.6F * var1.ageInTicks));
+         this.head.zRot = 0.35F * Mth.sin((double)(0.6F * var1.ageInTicks));
+         this.rightFrontLeg.xRot = -0.75F * Mth.sin((double)(0.3F * var1.ageInTicks));
+         this.leftFrontLeg.xRot = 0.75F * Mth.sin((double)(0.3F * var1.ageInTicks));
       } else {
          this.head.zRot = 0.0F;
       }
@@ -61,9 +61,9 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
          this.rightHindLeg.zRot = 0.5707964F;
          this.leftHindLeg.zRot = -0.5707964F;
          if (var1.isEating) {
-            this.head.xRot = 1.5707964F + 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
-            this.rightFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
-            this.leftFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
+            this.head.xRot = 1.5707964F + 0.2F * Mth.sin((double)(var1.ageInTicks * 0.6F));
+            this.rightFrontLeg.xRot = -0.4F - 0.2F * Mth.sin((double)(var1.ageInTicks * 0.6F));
+            this.leftFrontLeg.xRot = -0.4F - 0.2F * Mth.sin((double)(var1.ageInTicks * 0.6F));
          }
 
          if (var1.isScared) {
@@ -79,19 +79,19 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
       }
 
       if (var1.lieOnBackAmount > 0.0F) {
-         this.rightHindLeg.xRot = -0.6F * Mth.sin(var1.ageInTicks * 0.15F);
-         this.leftHindLeg.xRot = 0.6F * Mth.sin(var1.ageInTicks * 0.15F);
-         this.rightFrontLeg.xRot = 0.3F * Mth.sin(var1.ageInTicks * 0.25F);
-         this.leftFrontLeg.xRot = -0.3F * Mth.sin(var1.ageInTicks * 0.25F);
+         this.rightHindLeg.xRot = -0.6F * Mth.sin((double)(var1.ageInTicks * 0.15F));
+         this.leftHindLeg.xRot = 0.6F * Mth.sin((double)(var1.ageInTicks * 0.15F));
+         this.rightFrontLeg.xRot = 0.3F * Mth.sin((double)(var1.ageInTicks * 0.25F));
+         this.leftFrontLeg.xRot = -0.3F * Mth.sin((double)(var1.ageInTicks * 0.25F));
          this.head.xRot = Mth.rotLerpRad(var1.lieOnBackAmount, this.head.xRot, 1.5707964F);
       }
 
       if (var1.rollAmount > 0.0F) {
          this.head.xRot = Mth.rotLerpRad(var1.rollAmount, this.head.xRot, 2.0561945F);
-         this.rightHindLeg.xRot = -0.5F * Mth.sin(var1.ageInTicks * 0.5F);
-         this.leftHindLeg.xRot = 0.5F * Mth.sin(var1.ageInTicks * 0.5F);
-         this.rightFrontLeg.xRot = 0.5F * Mth.sin(var1.ageInTicks * 0.5F);
-         this.leftFrontLeg.xRot = -0.5F * Mth.sin(var1.ageInTicks * 0.5F);
+         this.rightHindLeg.xRot = -0.5F * Mth.sin((double)(var1.ageInTicks * 0.5F));
+         this.leftHindLeg.xRot = 0.5F * Mth.sin((double)(var1.ageInTicks * 0.5F));
+         this.rightFrontLeg.xRot = 0.5F * Mth.sin((double)(var1.ageInTicks * 0.5F));
+         this.leftFrontLeg.xRot = -0.5F * Mth.sin((double)(var1.ageInTicks * 0.5F));
       }
 
    }

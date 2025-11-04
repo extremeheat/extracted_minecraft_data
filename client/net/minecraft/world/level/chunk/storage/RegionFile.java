@@ -17,8 +17,8 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
@@ -174,7 +174,7 @@ public class RegionFile implements AutoCloseable {
       RegionFileVersion var4 = RegionFileVersion.fromId(var2);
       if (var4 == RegionFileVersion.VERSION_CUSTOM) {
          String var5 = (new DataInputStream(var3)).readUTF();
-         ResourceLocation var6 = ResourceLocation.tryParse(var5);
+         Identifier var6 = Identifier.tryParse(var5);
          if (var6 != null) {
             LOGGER.error("Unrecognized custom compression {}", var6);
             return null;

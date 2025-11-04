@@ -31,8 +31,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -321,7 +321,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       return this.server.getScoreboard().getTeamNames();
    }
 
-   public Stream<ResourceLocation> getAvailableSounds() {
+   public Stream<Identifier> getAvailableSounds() {
       return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
    }
 
@@ -331,7 +331,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
       if (var1 == Registries.RECIPE) {
-         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> var0.id().location()), var3);
+         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> var0.id().identifier()), var3);
       } else if (var1 == Registries.ADVANCEMENT) {
          Collection var5 = this.server.getAdvancements().getAllAdvancements();
          return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);

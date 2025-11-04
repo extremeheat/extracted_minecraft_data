@@ -2,10 +2,10 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;

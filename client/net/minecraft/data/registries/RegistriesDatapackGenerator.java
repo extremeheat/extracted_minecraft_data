@@ -36,7 +36,7 @@ public class RegistriesDatapackGenerator implements DataProvider {
       ResourceKey var5 = var4.key();
       return var2.lookup(var5).map((var5x) -> {
          PackOutput.PathProvider var6 = this.output.createRegistryElementsPathProvider(var5);
-         return CompletableFuture.allOf((CompletableFuture[])var5x.listElements().map((var4x) -> dumpValue(var6.json(var4x.key().location()), var1, var3, var4.elementCodec(), var4x.value())).toArray((var0) -> new CompletableFuture[var0]));
+         return CompletableFuture.allOf((CompletableFuture[])var5x.listElements().map((var4x) -> dumpValue(var6.json(var4x.key().identifier()), var1, var3, var4.elementCodec(), var4x.value())).toArray((var0) -> new CompletableFuture[var0]));
       });
    }
 

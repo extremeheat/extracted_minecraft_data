@@ -21,8 +21,8 @@ import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -32,27 +32,27 @@ import org.slf4j.Logger;
 
 public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ResourceKey<Registry<CommandFunction<CommandSourceStack>>> TYPE_KEY = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("function"));
+   public static final ResourceKey<Registry<CommandFunction<CommandSourceStack>>> TYPE_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("function"));
    private static final FileToIdConverter LISTER;
-   private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
+   private volatile Map<Identifier, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
    private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader;
-   private volatile Map<ResourceLocation, List<CommandFunction<CommandSourceStack>>> tags;
+   private volatile Map<Identifier, List<CommandFunction<CommandSourceStack>>> tags;
    private final PermissionSet functionCompilationPermissions;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
-   public Optional<CommandFunction<CommandSourceStack>> getFunction(ResourceLocation var1) {
+   public Optional<CommandFunction<CommandSourceStack>> getFunction(Identifier var1) {
       return Optional.ofNullable((CommandFunction)this.functions.get(var1));
    }
 
-   public Map<ResourceLocation, CommandFunction<CommandSourceStack>> getFunctions() {
+   public Map<Identifier, CommandFunction<CommandSourceStack>> getFunctions() {
       return this.functions;
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
+   public List<CommandFunction<CommandSourceStack>> getTag(Identifier var1) {
       return (List)this.tags.getOrDefault(var1, List.of());
    }
 
-   public Iterable<ResourceLocation> getAvailableTags() {
+   public Iterable<Identifier> getAvailableTags() {
       return this.tags.keySet();
    }
 
@@ -72,8 +72,8 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
          CommandSourceStack var4 = Commands.createCompilationContext(this.functionCompilationPermissions);
 
          for(Map.Entry var6 : var2x.entrySet()) {
-            ResourceLocation var7 = (ResourceLocation)var6.getKey();
-            ResourceLocation var8 = LISTER.fileToId(var7);
+            Identifier var7 = (Identifier)var6.getKey();
+            Identifier var8 = LISTER.fileToId(var7);
             var3.put(var8, CompletableFuture.supplyAsync(() -> {
                List var4x = readLines((Resource)var6.getValue());
                return CommandFunction.fromLines(var8, this.dispatcher, var4, var4x);

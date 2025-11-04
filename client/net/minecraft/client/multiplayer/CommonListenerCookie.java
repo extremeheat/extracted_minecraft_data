@@ -7,13 +7,13 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.world.flag.FeatureFlagSet;
 import org.jspecify.annotations.Nullable;
 
-public record CommonListenerCookie(LevelLoadTracker levelLoadTracker, GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<ResourceLocation, byte[]> serverCookies, ChatComponent.@Nullable State chatState, Map<String, String> customReportDetails, ServerLinks serverLinks, Map<UUID, PlayerInfo> seenPlayers, boolean seenInsecureChatWarning) {
-   public CommonListenerCookie(LevelLoadTracker var1, GameProfile var2, WorldSessionTelemetryManager var3, RegistryAccess.Frozen var4, FeatureFlagSet var5, @Nullable String var6, @Nullable ServerData var7, @Nullable Screen var8, Map<ResourceLocation, byte[]> var9, ChatComponent.@Nullable State var10, Map<String, String> var11, ServerLinks var12, Map<UUID, PlayerInfo> var13, boolean var14) {
+public record CommonListenerCookie(LevelLoadTracker levelLoadTracker, GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<Identifier, byte[]> serverCookies, ChatComponent.@Nullable State chatState, Map<String, String> customReportDetails, ServerLinks serverLinks, Map<UUID, PlayerInfo> seenPlayers, boolean seenInsecureChatWarning) {
+   public CommonListenerCookie(LevelLoadTracker var1, GameProfile var2, WorldSessionTelemetryManager var3, RegistryAccess.Frozen var4, FeatureFlagSet var5, @Nullable String var6, @Nullable ServerData var7, @Nullable Screen var8, Map<Identifier, byte[]> var9, ChatComponent.@Nullable State var10, Map<String, String> var11, ServerLinks var12, Map<UUID, PlayerInfo> var13, boolean var14) {
       super();
       this.levelLoadTracker = var1;
       this.localGameProfile = var2;

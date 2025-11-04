@@ -17,7 +17,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelDebugName;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -43,26 +44,26 @@ public class TextureSlots {
       return var0.charAt(0) == '#';
    }
 
-   public static Data parseTextureMap(JsonObject var0, ResourceLocation var1) {
-      Data.Builder var2 = new Data.Builder();
+   public static Data parseTextureMap(JsonObject var0) {
+      Data.Builder var1 = new Data.Builder();
 
-      for(Map.Entry var4 : var0.entrySet()) {
-         parseEntry(var1, (String)var4.getKey(), ((JsonElement)var4.getValue()).getAsString(), var2);
+      for(Map.Entry var3 : var0.entrySet()) {
+         parseEntry((String)var3.getKey(), ((JsonElement)var3.getValue()).getAsString(), var1);
       }
 
-      return var2.build();
+      return var1.build();
    }
 
-   private static void parseEntry(ResourceLocation var0, String var1, String var2, Data.Builder var3) {
-      if (isTextureReference(var2)) {
-         var3.addReference(var1, var2.substring(1));
+   private static void parseEntry(String var0, String var1, Data.Builder var2) {
+      if (isTextureReference(var1)) {
+         var2.addReference(var0, var1.substring(1));
       } else {
-         ResourceLocation var4 = ResourceLocation.tryParse(var2);
-         if (var4 == null) {
-            throw new JsonParseException(var2 + " is not valid resource location");
+         Identifier var3 = Identifier.tryParse(var1);
+         if (var3 == null) {
+            throw new JsonParseException(var1 + " is not valid resource location");
          }
 
-         var3.addTexture(var1, new Material(var0, var4));
+         var2.addTexture(var0, new Material(ModelManager.BLOCK_OR_ITEM, var3));
       }
 
    }

@@ -20,7 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -291,7 +291,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
          this.display = var4;
       }
 
-      public boolean matches(Holder<Attribute> var1, ResourceLocation var2) {
+      public boolean matches(Holder<Attribute> var1, Identifier var2) {
          return var1.equals(this.attribute) && this.modifier.is(var2);
       }
 

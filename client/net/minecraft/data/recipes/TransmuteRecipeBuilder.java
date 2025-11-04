@@ -7,7 +7,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
@@ -58,12 +58,12 @@ public class TransmuteRecipeBuilder implements RecipeBuilder {
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
       TransmuteRecipe var4 = new TransmuteRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.input, this.material, new TransmuteResult(this.result.value()));
-      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       }
    }
 

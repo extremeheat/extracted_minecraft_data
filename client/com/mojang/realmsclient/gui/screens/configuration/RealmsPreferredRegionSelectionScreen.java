@@ -18,7 +18,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class RealmsPreferredRegionSelectionScreen extends Screen {
@@ -119,7 +119,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
             var1.drawString(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
             if (this.regionSelection.region() != null && RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.containsKey(this.regionSelection.region())) {
                ServiceQuality var6 = (ServiceQuality)RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.getOrDefault(this.regionSelection.region(), ServiceQuality.UNKNOWN);
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var6.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
             }
 
          }

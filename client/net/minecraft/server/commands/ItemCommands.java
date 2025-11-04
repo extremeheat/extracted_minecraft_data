@@ -78,7 +78,8 @@ public class ItemCommands {
             if (var7.set(var8)) {
                var4.put(var6, var8);
                if (var6 instanceof ServerPlayer) {
-                  ((ServerPlayer)var6).containerMenu.broadcastChanges();
+                  ServerPlayer var9 = (ServerPlayer)var6;
+                  var9.containerMenu.broadcastChanges();
                }
             }
          }
@@ -88,8 +89,8 @@ public class ItemCommands {
          throw ERROR_TARGET_NO_CHANGES.create(var2);
       } else {
          if (var4.size() == 1) {
-            Map.Entry var9 = (Map.Entry)var4.entrySet().iterator().next();
-            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var9.getKey()).getDisplayName(), ((ItemStack)var9.getValue()).getDisplayName()), true);
+            Map.Entry var10 = (Map.Entry)var4.entrySet().iterator().next();
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var10.getKey()).getDisplayName(), ((ItemStack)var10.getValue()).getDisplayName()), true);
          } else {
             var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size()), true);
          }
@@ -111,10 +112,10 @@ public class ItemCommands {
 
    static Container getContainer(CommandSourceStack var0, BlockPos var1, Dynamic3CommandExceptionType var2) throws CommandSyntaxException {
       BlockEntity var3 = var0.getLevel().getBlockEntity(var1);
-      if (!(var3 instanceof Container)) {
-         throw var2.create(var1.getX(), var1.getY(), var1.getZ());
+      if (var3 instanceof Container var4) {
+         return var4;
       } else {
-         return (Container)var3;
+         throw var2.create(var1.getX(), var1.getY(), var1.getZ());
       }
    }
 
@@ -126,7 +127,8 @@ public class ItemCommands {
          if (var7 != null && var7.set(var3.copy())) {
             var4.add(var6);
             if (var6 instanceof ServerPlayer) {
-               ((ServerPlayer)var6).containerMenu.broadcastChanges();
+               ServerPlayer var8 = (ServerPlayer)var6;
+               var8.containerMenu.broadcastChanges();
             }
          }
       }
@@ -135,7 +137,7 @@ public class ItemCommands {
          throw ERROR_TARGET_NO_CHANGES_KNOWN_ITEM.create(var3.getDisplayName(), var2);
       } else {
          if (var4.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.getFirst()).getDisplayName(), var3.getDisplayName()), true);
          } else {
             var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size(), var3.getDisplayName()), true);
          }

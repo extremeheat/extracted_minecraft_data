@@ -3,8 +3,8 @@ package net.minecraft.world.entity;
 import com.mojang.serialization.Codec;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 
 public record DropChances(Map<EquipmentSlot, Float> byEquipment) {
    public static final float DEFAULT_EQUIPMENT_DROP_CHANCE = 0.085F;

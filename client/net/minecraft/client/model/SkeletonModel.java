@@ -47,8 +47,8 @@ public class SkeletonModel<S extends SkeletonRenderState> extends HumanoidModel<
       super.setupAnim(var1);
       if (var1.isAggressive && !var1.isHoldingBow) {
          float var2 = var1.attackTime;
-         float var3 = Mth.sin(var2 * 3.1415927F);
-         float var4 = Mth.sin((1.0F - (1.0F - var2) * (1.0F - var2)) * 3.1415927F);
+         float var3 = Mth.sin((double)(var2 * 3.1415927F));
+         float var4 = Mth.sin((double)((1.0F - (1.0F - var2) * (1.0F - var2)) * 3.1415927F));
          this.rightArm.zRot = 0.0F;
          this.leftArm.zRot = 0.0F;
          this.rightArm.yRot = -(0.1F - var3 * 0.6F);

@@ -32,14 +32,14 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
 
 public class ChatSelectionScreen extends Screen {
-   static final ResourceLocation CHECKMARK_SPRITE = ResourceLocation.withDefaultNamespace("icon/checkmark");
+   static final Identifier CHECKMARK_SPRITE = Identifier.withDefaultNamespace("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
    private final @Nullable Screen lastScreen;
@@ -323,7 +323,7 @@ public class ChatSelectionScreen extends Screen {
 
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
          }
 
          private int getMaximumTextWidth() {

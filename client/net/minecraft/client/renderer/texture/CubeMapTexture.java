@@ -7,18 +7,18 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class CubeMapTexture extends ReloadableTexture {
    private static final String[] SUFFIXES = new String[]{"_1.png", "_3.png", "_5.png", "_4.png", "_0.png", "_2.png"};
 
-   public CubeMapTexture(ResourceLocation var1) {
+   public CubeMapTexture(Identifier var1) {
       super(var1);
    }
 
    public TextureContents loadContents(ResourceManager var1) throws IOException {
-      ResourceLocation var2 = this.resourceId();
+      Identifier var2 = this.resourceId();
       TextureContents var3 = TextureContents.load(var1, var2.withSuffix(SUFFIXES[0]));
 
       TextureContents var15;
@@ -80,7 +80,7 @@ public class CubeMapTexture extends ReloadableTexture {
       int var3 = var1.getWidth();
       int var4 = var1.getHeight() / 6;
       this.close();
-      ResourceLocation var10002 = this.resourceId();
+      Identifier var10002 = this.resourceId();
       Objects.requireNonNull(var10002);
       this.texture = var2.createTexture(var10002::toString, 21, TextureFormat.RGBA8, var3, var4, 6, 1);
       this.textureView = var2.createTextureView(this.texture);

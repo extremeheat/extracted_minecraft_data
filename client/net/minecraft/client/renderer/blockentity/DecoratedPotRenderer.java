@@ -139,12 +139,12 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
          if (var1.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
             float var6 = 0.015625F;
             float var7 = var1.wobbleProgress * 6.2831855F;
-            float var8 = -1.5F * (Mth.cos(var7) + 0.5F) * Mth.sin(var7 / 2.0F);
+            float var8 = -1.5F * (Mth.cos((double)var7) + 0.5F) * Mth.sin((double)(var7 / 2.0F));
             var2.rotateAround(Axis.XP.rotation(var8 * 0.015625F), 0.5F, 0.0F, 0.5F);
-            float var9 = Mth.sin(var7);
+            float var9 = Mth.sin((double)var7);
             var2.rotateAround(Axis.ZP.rotation(var9 * 0.015625F), 0.5F, 0.0F, 0.5F);
          } else {
-            float var10 = Mth.sin(-var1.wobbleProgress * 3.0F * 3.1415927F) * 0.125F;
+            float var10 = Mth.sin((double)(-var1.wobbleProgress * 3.0F * 3.1415927F)) * 0.125F;
             float var11 = 1.0F - var1.wobbleProgress;
             var2.rotateAround(Axis.YP.rotation(var10 * var11), 0.5F, 0.0F, 0.5F);
          }

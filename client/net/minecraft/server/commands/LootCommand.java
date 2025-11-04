@@ -203,9 +203,9 @@ public class LootCommand {
    private static void callback(CommandSourceStack var0, List<ItemStack> var1, ResourceKey<LootTable> var2) {
       if (var1.size() == 1) {
          ItemStack var3 = (ItemStack)var1.get(0);
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), Component.translationArg(var2.location())), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), Component.translationArg(var2.identifier())), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), Component.translationArg(var2.location())), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), Component.translationArg(var2.identifier())), false);
       }
 
    }

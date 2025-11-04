@@ -1,8 +1,8 @@
 package net.minecraft.references;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
 public class Items {
@@ -14,6 +14,6 @@ public class Items {
    }
 
    private static ResourceKey<Item> createKey(String var0) {
-      return ResourceKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
    }
 }

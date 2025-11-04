@@ -32,7 +32,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -137,7 +137,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       }
    }
 
-   public ResourceLocation getTextureLocation(AvatarRenderState var1) {
+   public Identifier getTextureLocation(AvatarRenderState var1) {
       return var1.skin.body().texturePath();
    }
 
@@ -230,8 +230,8 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       double var7 = var4.getInterpolatedCloakY(var3) - Mth.lerp((double)var3, var1.yo, var1.getY());
       double var9 = var4.getInterpolatedCloakZ(var3) - Mth.lerp((double)var3, var1.zo, var1.getZ());
       float var11 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
-      double var12 = (double)Mth.sin(var11 * 0.017453292F);
-      double var14 = (double)(-Mth.cos(var11 * 0.017453292F));
+      double var12 = (double)Mth.sin((double)(var11 * 0.017453292F));
+      double var14 = (double)(-Mth.cos((double)(var11 * 0.017453292F)));
       var2.capeFlap = (float)var7 * 10.0F;
       var2.capeFlap = Mth.clamp(var2.capeFlap, -6.0F, 32.0F);
       var2.capeLean = (float)(var5 * var12 + var9 * var14) * 100.0F;
@@ -241,18 +241,18 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       var2.capeLean2 = Mth.clamp(var2.capeLean2, -20.0F, 20.0F);
       float var16 = var4.getInterpolatedBob(var3);
       float var17 = var4.getInterpolatedWalkDistance(var3);
-      var2.capeFlap += Mth.sin(var17 * 6.0F) * 32.0F * var16;
+      var2.capeFlap += Mth.sin((double)(var17 * 6.0F)) * 32.0F * var16;
    }
 
-   public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderRightHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).rightArm, var5);
    }
 
-   public void renderLeftHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, boolean var5) {
+   public void renderLeftHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, boolean var5) {
       this.renderHand(var1, var2, var3, var4, (this.model).leftArm, var5);
    }
 
-   private void renderHand(PoseStack var1, SubmitNodeCollector var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
+   private void renderHand(PoseStack var1, SubmitNodeCollector var2, int var3, Identifier var4, ModelPart var5, boolean var6) {
       PlayerModel var7 = (PlayerModel)this.getModel();
       var5.resetPose();
       var5.visible = true;
@@ -313,7 +313,7 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((AvatarRenderState)var1);
    }
 

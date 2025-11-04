@@ -10,7 +10,6 @@ import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -29,7 +28,8 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -115,8 +115,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    class Entry extends ContainerObjectSelectionList.Entry<Entry> {
       private static final Component ACCEPT_INVITE = Component.translatable("mco.invites.button.accept");
       private static final Component REJECT_INVITE = Component.translatable("mco.invites.button.reject");
-      private static final WidgetSprites ACCEPT_SPRITE = new WidgetSprites(ResourceLocation.withDefaultNamespace("pending_invite/accept"), ResourceLocation.withDefaultNamespace("pending_invite/accept_highlighted"));
-      private static final WidgetSprites REJECT_SPRITE = new WidgetSprites(ResourceLocation.withDefaultNamespace("pending_invite/reject"), ResourceLocation.withDefaultNamespace("pending_invite/reject_highlighted"));
+      private static final WidgetSprites ACCEPT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("pending_invite/accept"), Identifier.withDefaultNamespace("pending_invite/accept_highlighted"));
+      private static final WidgetSprites REJECT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("pending_invite/reject"), Identifier.withDefaultNamespace("pending_invite/reject_highlighted"));
       private static final int SPRITE_TEXTURE_SIZE = 18;
       private static final int SPRITE_SIZE = 21;
       private static final int TEXT_LEFT = 38;

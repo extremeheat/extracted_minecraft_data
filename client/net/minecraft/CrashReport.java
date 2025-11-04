@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.MemoryReserve;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;

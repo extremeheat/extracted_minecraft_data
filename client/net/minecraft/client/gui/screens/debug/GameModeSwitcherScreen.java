@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,9 +23,9 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 
 public class GameModeSwitcherScreen extends Screen {
-   static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("gamemode_switcher/slot");
-   static final ResourceLocation SELECTION_SPRITE = ResourceLocation.withDefaultNamespace("gamemode_switcher/selection");
-   private static final ResourceLocation GAMEMODE_SWITCHER_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/gamemode_switcher.png");
+   static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("gamemode_switcher/slot");
+   static final Identifier SELECTION_SPRITE = Identifier.withDefaultNamespace("gamemode_switcher/selection");
+   private static final Identifier GAMEMODE_SWITCHER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/gamemode_switcher.png");
    private static final int SPRITE_SHEET_WIDTH = 128;
    private static final int SPRITE_SHEET_HEIGHT = 128;
    private static final int SLOT_AREA = 26;
@@ -219,11 +219,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       private void drawSlot(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
       private void drawSelection(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }
 }

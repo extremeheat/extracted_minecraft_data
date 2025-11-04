@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -30,8 +29,8 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,6 +49,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -525,7 +525,7 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (var1 != null) {
-         this.setDeltaMovement((double)(-Mth.cos((this.getHurtDir() + this.getYRot()) * 0.017453292F) * 0.1F), 0.10000000149011612, (double)(-Mth.sin((this.getHurtDir() + this.getYRot()) * 0.017453292F) * 0.1F));
+         this.setDeltaMovement((double)(-Mth.cos((double)((this.getHurtDir() + this.getYRot()) * 0.017453292F)) * 0.1F), 0.10000000149011612, (double)(-Mth.sin((double)((this.getHurtDir() + this.getYRot()) * 0.017453292F)) * 0.1F));
       } else {
          this.setDeltaMovement(0.0, 0.1, 0.0);
       }
@@ -915,14 +915,13 @@ public abstract class Player extends Avatar implements ContainerUser {
          float var2 = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
          ItemStack var3 = this.getWeaponItem();
          DamageSource var4 = this.createAttackSource(var3);
-         float var5 = this.getEnchantedDamage(var1, var2, var4) - var2;
-         float var6 = this.getAttackStrengthScale(0.5F);
-         var2 *= 0.2F + var6 * var6 * 0.8F;
-         var5 *= var6;
+         float var5 = this.getAttackStrengthScale(0.5F);
+         float var6 = var5 * (this.getEnchantedDamage(var1, var2, var4) - var2);
+         var2 *= this.baseDamageScaleFactor();
          this.onAttack();
          if (!this.deflectProjectile(var1)) {
-            if (var2 > 0.0F || var5 > 0.0F) {
-               boolean var7 = var6 > 0.9F;
+            if (var2 > 0.0F || var6 > 0.0F) {
+               boolean var7 = var5 > 0.9F;
                boolean var8;
                if (this.isSprinting() && var7) {
                   this.makeSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK);
@@ -937,7 +936,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                   var2 *= 1.5F;
                }
 
-               float var10 = var2 + var5;
+               float var10 = var2 + var6;
                boolean var11 = this.isSweepAttack(var7, var9, var8);
                float var12 = 0.0F;
                if (var1 instanceof LivingEntity) {
@@ -945,27 +944,31 @@ public abstract class Player extends Avatar implements ContainerUser {
                   var12 = var13.getHealth();
                }
 
-               Vec3 var18 = var1.getDeltaMovement();
+               Vec3 var17 = var1.getDeltaMovement();
                boolean var14 = var1.hurtOrSimulate(var4, var10);
                if (var14) {
-                  this.causeExtraKnockback(var1, this.getKnockback(var1, var4) + (var8 ? 0.5F : 0.0F), var18);
+                  this.causeExtraKnockback(var1, this.getKnockback(var1, var4) + (var8 ? 0.5F : 0.0F), var17);
                   if (var11) {
-                     this.doSweepAttack(var1, var2, var4, var6);
+                     this.doSweepAttack(var1, var2, var4, var5);
                   }
 
-                  this.attackVisualEffects(var1, var9, var11, var7, var5);
+                  this.attackVisualEffects(var1, var9, var11, var7, var6);
                   this.setLastHurtMob(var1);
                   this.itemAttackInteraction(var1, var3, var4, true);
                   this.damageStatsAndHearts(var1, var12);
                   this.causeFoodExhaustion(0.1F);
                } else {
-                  this.makeSound(SoundEvents.PLAYER_ATTACK_NODAMAGE);
+                  this.playServerSideSound(SoundEvents.PLAYER_ATTACK_NODAMAGE);
                }
             }
 
             this.lungeForwardMaybe();
          }
       }
+   }
+
+   private void playServerSideSound(SoundEvent var1) {
+      this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F);
    }
 
    private DamageSource createAttackSource(ItemStack var1) {
@@ -1005,12 +1008,12 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    private void attackVisualEffects(Entity var1, boolean var2, boolean var3, boolean var4, float var5) {
       if (var2) {
-         this.makeSound(SoundEvents.PLAYER_ATTACK_CRIT);
+         this.playServerSideSound(SoundEvents.PLAYER_ATTACK_CRIT);
          this.crit(var1);
       }
 
       if (!var2 && !var3) {
-         this.makeSound(var4 ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
+         this.playServerSideSound(var4 ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
       }
 
       if (var5 > 0.0F) {
@@ -1069,9 +1072,9 @@ public abstract class Player extends Avatar implements ContainerUser {
       if (var2 > 0.0F) {
          if (var1 instanceof LivingEntity) {
             LivingEntity var4 = (LivingEntity)var1;
-            var4.knockback((double)var2, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+            var4.knockback((double)var2, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
          } else {
-            var1.push((double)(-Mth.sin(this.getYRot() * 0.017453292F) * var2), 0.1, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var2));
+            var1.push((double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)) * var2), 0.1, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * var2));
          }
 
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
@@ -1091,7 +1094,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    private void doSweepAttack(Entity var1, float var2, DamageSource var3, float var4) {
-      this.makeSound(SoundEvents.PLAYER_ATTACK_SWEEP);
+      this.playServerSideSound(SoundEvents.PLAYER_ATTACK_SWEEP);
       Level var6 = this.level();
       if (var6 instanceof ServerLevel var5) {
          float var12 = 1.0F + (float)this.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * var2;
@@ -1108,15 +1111,15 @@ public abstract class Player extends Avatar implements ContainerUser {
                if (this.distanceToSqr(var9) < 9.0) {
                   float var14 = this.getEnchantedDamage(var9, var12, var3) * var4;
                   if (var9.hurtServer(var5, var3, var14)) {
-                     var9.knockback(0.4000000059604645, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+                     var9.knockback(0.4000000059604645, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)), (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))));
                      EnchantmentHelper.doPostAttackEffects(var5, var9, var3);
                   }
                }
             }
          }
 
-         double var13 = (double)(-Mth.sin(this.getYRot() * 0.017453292F));
-         double var15 = (double)Mth.cos(this.getYRot() * 0.017453292F);
+         double var13 = (double)(-Mth.sin((double)(this.getYRot() * 0.017453292F)));
+         double var15 = (double)Mth.cos((double)(this.getYRot() * 0.017453292F));
          var5.sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + var13, this.getY(0.5), this.getZ() + var15, 0, var13, 0.0, var15, 0.0);
       }
    }
@@ -1132,13 +1135,19 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void crit(Entity var1) {
    }
 
+   private float baseDamageScaleFactor() {
+      float var1 = this.getAttackStrengthScale(0.5F);
+      return 0.2F + var1 * var1 * 0.8F;
+   }
+
    public boolean stabAttack(EquipmentSlot var1, Entity var2, float var3, boolean var4, boolean var5, boolean var6) {
       if (this.cannotAttack(var2)) {
          return false;
       } else {
          ItemStack var7 = this.getItemBySlot(var1);
          DamageSource var8 = this.createAttackSource(var7);
-         float var9 = this.getEnchantedDamage(var2, var3, var8) - var3;
+         float var9 = this.getAttackStrengthScale(0.5F) * (this.getEnchantedDamage(var2, var3, var8) - var3);
+         var3 *= this.baseDamageScaleFactor();
          if (var5 && this.deflectProjectile(var2)) {
             return true;
          } else {
@@ -1149,10 +1158,10 @@ public abstract class Player extends Avatar implements ContainerUser {
                var11 = var12.getHealth();
             }
 
-            Vec3 var15 = var2.getDeltaMovement();
+            Vec3 var16 = var2.getDeltaMovement();
             boolean var13 = var4 && var2.hurtOrSimulate(var8, var10);
             if (var5) {
-               this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var8), var15);
+               this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var8), var16);
             }
 
             boolean var14 = false;
@@ -1164,7 +1173,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             if (!var13 && !var5 && !var14) {
                return false;
             } else {
-               this.attackVisualEffects(var2, false, false, true, var9);
+               this.attackVisualEffects(var2, false, false, var4, var9);
                this.setLastHurtMob(var2);
                this.itemAttackInteraction(var2, var7, var8, var13);
                this.damageStatsAndHearts(var2, var11);
@@ -1272,11 +1281,11 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void displayClientMessage(Component var1, boolean var2) {
    }
 
-   public void awardStat(ResourceLocation var1) {
+   public void awardStat(Identifier var1) {
       this.awardStat(Stats.CUSTOM.get(var1));
    }
 
-   public void awardStat(ResourceLocation var1, int var2) {
+   public void awardStat(Identifier var1, int var2) {
       this.awardStat(Stats.CUSTOM.get(var1), var2);
    }
 
@@ -1511,10 +1520,14 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void lungeForwardMaybe() {
-      if (this.foodData.hasEnoughFood()) {
+      if (this.hasEnoughFoodToDoExhaustiveManoeuvres()) {
          super.lungeForwardMaybe();
       }
 
+   }
+
+   protected boolean hasEnoughFoodToDoExhaustiveManoeuvres() {
+      return this.getFoodData().hasEnoughFood() || this.getAbilities().mayfly;
    }
 
    public Optional<WardenSpawnTracker> getWardenSpawnTracker() {

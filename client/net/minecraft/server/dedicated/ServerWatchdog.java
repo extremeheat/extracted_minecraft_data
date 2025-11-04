@@ -14,9 +14,9 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
-import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
@@ -46,7 +46,7 @@ public class ServerWatchdog implements Runnable {
             CrashReportCategory var8 = var7.addCategory("Performance stats");
             var8.setDetail("Random tick rate", (CrashReportDetail)(() -> this.server.getWorldData().getGameRules().getAsString(GameRules.RANDOM_TICK_SPEED)));
             var8.setDetail("Level stats", (CrashReportDetail)(() -> (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
-                  String var10000 = String.valueOf(var0.dimension().location());
+                  String var10000 = String.valueOf(var0.dimension().identifier());
                   return var10000 + ": " + var0.getWatchdogStats();
                }).collect(Collectors.joining(",\n"))));
             Bootstrap.realStdoutPrintln("Crash report:\n" + var7.getFriendlyReport(ReportType.CRASH));

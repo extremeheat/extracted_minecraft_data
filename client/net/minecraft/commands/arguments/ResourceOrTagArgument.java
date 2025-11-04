@@ -25,8 +25,8 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
 public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
@@ -51,10 +51,10 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       Optional var4 = var3.cast(var2);
       return (Result)var4.orElseThrow(() -> (CommandSyntaxException)var3.unwrap().map((var1) -> {
             ResourceKey var2x = var1.key();
-            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.location(), var2x.registry(), var2.location());
+            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.identifier(), var2x.registry(), var2.identifier());
          }, (var1) -> {
             TagKey var2x = var1.key();
-            return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.location());
+            return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.identifier());
          }));
    }
 
@@ -64,18 +64,18 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
 
          try {
             var1.skip();
-            ResourceLocation var8 = ResourceLocation.read(var1);
+            Identifier var8 = Identifier.read(var1);
             TagKey var9 = TagKey.create(this.registryKey, var8);
-            HolderSet.Named var5 = (HolderSet.Named)this.registryLookup.get(var9).orElseThrow(() -> ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.location()));
+            HolderSet.Named var5 = (HolderSet.Named)this.registryLookup.get(var9).orElseThrow(() -> ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.identifier()));
             return new TagResult<T>(var5);
          } catch (CommandSyntaxException var6) {
             var1.setCursor(var7);
             throw var6;
          }
       } else {
-         ResourceLocation var2 = ResourceLocation.read(var1);
+         Identifier var2 = Identifier.read(var1);
          ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-         Holder.Reference var4 = (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
+         Holder.Reference var4 = (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.identifier()));
          return new ResourceResult<T>(var4);
       }
    }
@@ -112,7 +112,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       }
 
       public String asPrintable() {
-         return this.value.key().location().toString();
+         return this.value.key().identifier().toString();
       }
 
       // $FF: synthetic method
@@ -163,7 +163,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       }
 
       public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.location().toString());
+         var2.addProperty("registry", var1.registryKey.identifier().toString());
       }
 
       public Info<T>.Template unpack(ResourceOrTagArgument<T> var1) {

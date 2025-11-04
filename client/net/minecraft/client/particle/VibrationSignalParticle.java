@@ -37,7 +37,7 @@ public class VibrationSignalParticle extends SingleQuadParticle {
    }
 
    public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
-      float var4 = Mth.sin(((float)this.age + var3 - 6.2831855F) * 0.05F) * 2.0F;
+      float var4 = Mth.sin((double)(((float)this.age + var3 - 6.2831855F) * 0.05F)) * 2.0F;
       float var5 = Mth.lerp(var3, this.rotO, this.rot);
       float var6 = Mth.lerp(var3, this.pitchO, this.pitch) + 1.5707964F;
       Quaternionf var7 = new Quaternionf();

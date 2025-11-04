@@ -19,19 +19,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
-import net.minecraft.Util;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class MappedRegistry<T> implements WritableRegistry<T> {
    private final ResourceKey<? extends Registry<T>> key;
    private final ObjectList<Holder.Reference<T>> byId;
    private final Reference2IntMap<T> toId;
-   private final Map<ResourceLocation, Holder.Reference<T>> byLocation;
+   private final Map<Identifier, Holder.Reference<T>> byLocation;
    private final Map<ResourceKey<T>, Holder.Reference<T>> byKey;
    private final Map<T, Holder.Reference<T>> byValue;
    private final Map<ResourceKey<T>, RegistrationInfo> registrationInfos;
@@ -92,7 +92,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       this.validateWrite(var1);
       Objects.requireNonNull(var1);
       Objects.requireNonNull(var2);
-      if (this.byLocation.containsKey(var1.location())) {
+      if (this.byLocation.containsKey(var1.identifier())) {
          throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + String.valueOf(var1) + "' to registry"));
       } else if (this.byValue.containsKey(var2)) {
          throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + String.valueOf(var2) + "' to registry"));
@@ -111,7 +111,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          }
 
          this.byKey.put(var1, var4);
-         this.byLocation.put(var1.location(), var4);
+         this.byLocation.put(var1.identifier(), var4);
          this.byValue.put(var2, var4);
          int var5 = this.byId.size();
          this.byId.add(var4);
@@ -122,9 +122,9 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       }
    }
 
-   public @Nullable ResourceLocation getKey(T var1) {
+   public @Nullable Identifier getKey(T var1) {
       Holder.Reference var2 = (Holder.Reference)this.byValue.get(var1);
-      return var2 != null ? var2.key().location() : null;
+      return var2 != null ? var2.key().identifier() : null;
    }
 
    public Optional<ResourceKey<T>> getResourceKey(T var1) {
@@ -147,7 +147,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return var1 >= 0 && var1 < this.byId.size() ? Optional.ofNullable((Holder.Reference)this.byId.get(var1)) : Optional.empty();
    }
 
-   public Optional<Holder.Reference<T>> get(ResourceLocation var1) {
+   public Optional<Holder.Reference<T>> get(Identifier var1) {
       return Optional.ofNullable((Holder.Reference)this.byLocation.get(var1));
    }
 
@@ -191,7 +191,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return Iterators.transform(this.byId.iterator(), Holder::value);
    }
 
-   public @Nullable T getValue(@Nullable ResourceLocation var1) {
+   public @Nullable T getValue(@Nullable Identifier var1) {
       Holder.Reference var2 = (Holder.Reference)this.byLocation.get(var1);
       return (T)getValueFromNullable(var2);
    }
@@ -200,7 +200,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return (T)(var0 != null ? var0.value() : null);
    }
 
-   public Set<ResourceLocation> keySet() {
+   public Set<Identifier> keySet() {
       return Collections.unmodifiableSet(this.byLocation.keySet());
    }
 
@@ -236,7 +236,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return Util.<Holder.Reference<T>>getRandomSafe(this.byId, var1);
    }
 
-   public boolean containsKey(ResourceLocation var1) {
+   public boolean containsKey(Identifier var1) {
       return this.byLocation.containsKey(var1);
    }
 
@@ -250,7 +250,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       } else {
          this.frozen = true;
          this.byValue.forEach((var0, var1x) -> var1x.bindValue(var0));
-         List var1 = this.byKey.entrySet().stream().filter((var0) -> !((Holder.Reference)var0.getValue()).isBound()).map((var0) -> ((ResourceKey)var0.getKey()).location()).sorted().toList();
+         List var1 = this.byKey.entrySet().stream().filter((var0) -> !((Holder.Reference)var0.getValue()).isBound()).map((var0) -> ((ResourceKey)var0.getKey()).identifier()).sorted().toList();
          if (!var1.isEmpty()) {
             String var3 = String.valueOf(this.key());
             throw new IllegalStateException("Unbound values in registry " + var3 + ": " + String.valueOf(var1));

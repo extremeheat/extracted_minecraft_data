@@ -39,7 +39,7 @@ public class SetSpawnCommand {
          var9.setRespawnPosition(new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var4, var2, var6, var7), true), false);
       }
 
-      String var10 = var4.location().toString();
+      String var10 = var4.identifier().toString();
       if (var1.size() == 1) {
          var0.sendSuccess(() -> Component.translatable("commands.spawnpoint.success.single", var2.getX(), var2.getY(), var2.getZ(), var6, var7, var10, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
       } else {

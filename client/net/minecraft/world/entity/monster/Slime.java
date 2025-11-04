@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
@@ -134,8 +135,8 @@ public class Slime extends Mob implements Enemy {
          for(int var3 = 0; (float)var3 < var1 * 16.0F; ++var3) {
             float var4 = this.random.nextFloat() * 6.2831855F;
             float var5 = this.random.nextFloat() * 0.5F + 0.5F;
-            float var6 = Mth.sin(var4) * var2 * var5;
-            float var7 = Mth.cos(var4) * var2 * var5;
+            float var6 = Mth.sin((double)var4) * var2 * var5;
+            float var7 = Mth.cos((double)var4) * var2 * var5;
             this.level().addParticle(this.getParticleType(), this.getX() + (double)var6, this.getY(), this.getZ() + (double)var7, 0.0, 0.0, 0.0);
          }
 
@@ -264,7 +265,7 @@ public class Slime extends Mob implements Enemy {
          }
 
          if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70) {
-            float var5 = var1.getMoonBrightness() * 0.5F;
+            float var5 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SURFACE_SLIME_SPAWN_CHANCE, var3);
             if (var4.nextFloat() < var5 && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
@@ -299,7 +300,7 @@ public class Slime extends Mob implements Enemy {
    public void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {

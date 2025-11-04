@@ -10,6 +10,8 @@ import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
 import com.mojang.blaze3d.audio.ListenerTransform;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,19 +20,19 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Options;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -45,12 +47,11 @@ public class SoundEngine {
    private static final float VOLUME_MIN = 0.0F;
    private static final float VOLUME_MAX = 1.0F;
    private static final int MIN_SOURCE_LIFETIME = 20;
-   private static final Set<ResourceLocation> ONLY_WARN_ONCE = Sets.newHashSet();
+   private static final Set<Identifier> ONLY_WARN_ONCE = Sets.newHashSet();
    private static final long DEFAULT_DEVICE_CHECK_INTERVAL_MS = 1000L;
    public static final String MISSING_SOUND = "FOR THE DEBUG!";
    public static final String OPEN_AL_SOFT_PREFIX = "OpenAL Soft on ";
    public static final int OPEN_AL_SOFT_PREFIX_LENGTH = "OpenAL Soft on ".length();
-   private final MusicManager musicManager;
    private final SoundManager soundManager;
    private final Options options;
    private boolean loaded;
@@ -64,6 +65,7 @@ public class SoundEngine {
    private final AtomicReference<DeviceCheckState> devicePoolState;
    private final Map<SoundInstance, ChannelAccess.ChannelHandle> instanceToChannel;
    private final Multimap<SoundSource, SoundInstance> instanceBySource;
+   private final Object2FloatMap<SoundSource> gainBySource;
    private final List<TickableSoundInstance> tickingSounds;
    private final Map<SoundInstance, Integer> queuedSounds;
    private final Map<SoundInstance, Integer> soundDeleteTime;
@@ -71,7 +73,7 @@ public class SoundEngine {
    private final List<TickableSoundInstance> queuedTickableSounds;
    private final List<Sound> preloadQueue;
 
-   public SoundEngine(MusicManager var1, SoundManager var2, Options var3, ResourceProvider var4) {
+   public SoundEngine(SoundManager var1, Options var2, ResourceProvider var3) {
       super();
       this.listener = this.library.getListener();
       this.executor = new SoundEngineExecutor();
@@ -79,16 +81,16 @@ public class SoundEngine {
       this.devicePoolState = new AtomicReference(SoundEngine.DeviceCheckState.NO_CHANGE);
       this.instanceToChannel = Maps.newHashMap();
       this.instanceBySource = HashMultimap.create();
+      this.gainBySource = (Object2FloatMap)Util.make(new Object2FloatOpenHashMap(), (var0) -> var0.defaultReturnValue(1.0F));
       this.tickingSounds = Lists.newArrayList();
       this.queuedSounds = Maps.newHashMap();
       this.soundDeleteTime = Maps.newHashMap();
       this.listeners = Lists.newArrayList();
       this.queuedTickableSounds = Lists.newArrayList();
       this.preloadQueue = Lists.newArrayList();
-      this.musicManager = var1;
-      this.soundManager = var2;
-      this.options = var3;
-      this.soundBuffers = new SoundBufferLibrary(var4);
+      this.soundManager = var1;
+      this.options = var2;
+      this.soundBuffers = new SoundBufferLibrary(var3);
    }
 
    public void reload() {
@@ -96,7 +98,7 @@ public class SoundEngine {
 
       for(SoundEvent var2 : BuiltInRegistries.SOUND_EVENT) {
          if (var2 != SoundEvents.EMPTY) {
-            ResourceLocation var3 = var2.location();
+            Identifier var3 = var2.location();
             if (this.soundManager.getSoundEvent(var3) == null) {
                LOGGER.warn("Missing sound for event: {}", BuiltInRegistries.SOUND_EVENT.getKey(var2));
                ONLY_WARN_ONCE.add(var3);
@@ -127,15 +129,14 @@ public class SoundEngine {
       }
    }
 
-   public void updateCategoryVolume(SoundSource var1) {
+   public void refreshCategoryVolume(SoundSource var1) {
       if (this.loaded) {
-         if ((var1 == SoundSource.MASTER || var1 == SoundSource.MUSIC) && this.options.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
-            this.musicManager.showNowPlayingToastIfNeeded();
-         }
+         this.instanceToChannel.forEach((var2, var3) -> {
+            if (var1 == var2.getSource() || var1 == SoundSource.MASTER) {
+               float var4 = this.calculateVolume(var2);
+               var3.execute((var1x) -> var1x.setVolume(var4));
+            }
 
-         this.instanceToChannel.forEach((var1x, var2) -> {
-            float var3 = this.calculateVolume(var1x);
-            var2.execute((var1) -> var1.setVolume(var3));
          });
       }
    }
@@ -167,14 +168,9 @@ public class SoundEngine {
 
    }
 
-   public void setVolume(SoundInstance var1, float var2) {
-      if (this.loaded) {
-         ChannelAccess.ChannelHandle var3 = (ChannelAccess.ChannelHandle)this.instanceToChannel.get(var1);
-         if (var3 != null) {
-            var3.execute((var3x) -> var3x.setVolume(var2 * this.calculateVolume(var1)));
-         }
-      }
-
+   public void updateCategoryVolume(SoundSource var1, float var2) {
+      this.gainBySource.put(var1, Mth.clamp(var2, 0.0F, 1.0F));
+      this.refreshCategoryVolume(var1);
    }
 
    public void stopAll() {
@@ -187,6 +183,7 @@ public class SoundEngine {
          this.instanceBySource.clear();
          this.soundDeleteTime.clear();
          this.queuedTickableSounds.clear();
+         this.gainBySource.clear();
          this.executor.startUp();
       }
 
@@ -363,7 +360,7 @@ public class SoundEngine {
          return SoundEngine.PlayResult.NOT_STARTED;
       } else {
          WeighedSoundEvents var2 = var1.resolve(this.soundManager);
-         ResourceLocation var3 = var1.getLocation();
+         Identifier var3 = var1.getIdentifier();
          if (var2 == null) {
             if (ONLY_WARN_ONCE.add(var3)) {
                LOGGER.warn(MARKER, "Unable to play unknown soundEvent: {}", var3);
@@ -479,7 +476,7 @@ public class SoundEngine {
    }
 
    private float calculateVolume(float var1, SoundSource var2) {
-      return Mth.clamp(var1, 0.0F, 1.0F) * Mth.clamp(this.options.getFinalSoundSourceVolume(var2), 0.0F, 1.0F);
+      return Mth.clamp(var1, 0.0F, 1.0F) * Mth.clamp(this.options.getFinalSoundSourceVolume(var2), 0.0F, 1.0F) * this.gainBySource.getFloat(var2);
    }
 
    public void pauseAllExcept(SoundSource... var1) {
@@ -511,10 +508,10 @@ public class SoundEngine {
       }
    }
 
-   public void stop(@Nullable ResourceLocation var1, @Nullable SoundSource var2) {
+   public void stop(@Nullable Identifier var1, @Nullable SoundSource var2) {
       if (var2 != null) {
          for(SoundInstance var4 : this.instanceBySource.get(var2)) {
-            if (var1 == null || var4.getLocation().equals(var1)) {
+            if (var1 == null || var4.getIdentifier().equals(var1)) {
                this.stop(var4);
             }
          }
@@ -522,7 +519,7 @@ public class SoundEngine {
          this.stopAll();
       } else {
          for(SoundInstance var6 : this.instanceToChannel.keySet()) {
-            if (var6.getLocation().equals(var1)) {
+            if (var6.getIdentifier().equals(var1)) {
                this.stop(var6);
             }
          }

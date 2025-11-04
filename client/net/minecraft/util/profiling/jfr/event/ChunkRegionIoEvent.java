@@ -57,7 +57,7 @@ public abstract class ChunkRegionIoEvent extends Event {
       this.chunkPosX = var2.x;
       this.chunkPosZ = var2.z;
       this.levelId = var1.level();
-      this.dimension = var1.dimension().location().toString();
+      this.dimension = var1.dimension().identifier().toString();
       this.type = var1.type();
       this.compression = "standard:" + var3.getId();
       this.bytes = var4;

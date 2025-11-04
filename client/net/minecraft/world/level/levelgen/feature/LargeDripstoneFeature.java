@@ -192,7 +192,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          this.originY = var1;
          float var4 = var3.sample(var2);
          float var5 = Mth.randomBetween(var2, 0.0F, 3.1415927F);
-         this.windSpeed = new Vec3((double)(Mth.cos(var5) * var4), 0.0, (double)(Mth.sin(var5) * var4));
+         this.windSpeed = new Vec3((double)(Mth.cos((double)var5) * var4), 0.0, (double)(Mth.sin((double)var5) * var4));
       }
 
       private WindOffsetter() {

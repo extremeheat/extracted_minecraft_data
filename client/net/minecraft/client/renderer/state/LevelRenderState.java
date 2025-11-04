@@ -16,6 +16,7 @@ public class LevelRenderState {
    public final WeatherRenderState weatherRenderState = new WeatherRenderState();
    public final WorldBorderRenderState worldBorderRenderState = new WorldBorderRenderState();
    public final SkyRenderState skyRenderState = new SkyRenderState();
+   public long gameTime;
 
    public LevelRenderState() {
       super();
@@ -30,5 +31,6 @@ public class LevelRenderState {
       this.weatherRenderState.reset();
       this.worldBorderRenderState.reset();
       this.skyRenderState.reset();
+      this.gameTime = 0L;
    }
 }

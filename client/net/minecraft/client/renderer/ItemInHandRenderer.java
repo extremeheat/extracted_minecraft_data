@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -38,8 +38,8 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Quaternionfc;
 
 public class ItemInHandRenderer {
-   private static final RenderType MAP_BACKGROUND = RenderTypes.text(ResourceLocation.withDefaultNamespace("textures/map/map_background.png"));
-   private static final RenderType MAP_BACKGROUND_CHECKERBOARD = RenderTypes.text(ResourceLocation.withDefaultNamespace("textures/map/map_background_checkerboard.png"));
+   private static final RenderType MAP_BACKGROUND = RenderTypes.text(Identifier.withDefaultNamespace("textures/map/map_background.png"));
+   private static final RenderType MAP_BACKGROUND_CHECKERBOARD = RenderTypes.text(Identifier.withDefaultNamespace("textures/map/map_background_checkerboard.png"));
    private static final float ITEM_SWING_X_POS_SCALE = -0.4F;
    private static final float ITEM_SWING_Y_POS_SCALE = 0.2F;
    private static final float ITEM_SWING_Z_POS_SCALE = -0.2F;
@@ -143,7 +143,7 @@ public class ItemInHandRenderer {
    private float calculateMapTilt(float var1) {
       float var2 = 1.0F - var1 / 45.0F + 0.1F;
       var2 = Mth.clamp(var2, 0.0F, 1.0F);
-      var2 = -Mth.cos(var2 * 3.1415927F) * 0.5F + 0.5F;
+      var2 = -Mth.cos((double)(var2 * 3.1415927F)) * 0.5F + 0.5F;
       return var2;
    }
 
@@ -155,7 +155,7 @@ public class ItemInHandRenderer {
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(45.0F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var6 * -41.0F));
       var1.translate(var6 * 0.3F, -1.1F, 0.45F);
-      ResourceLocation var7 = this.minecraft.player.getSkin().body().texturePath();
+      Identifier var7 = this.minecraft.player.getSkin().body().texturePath();
       if (var4 == HumanoidArm.RIGHT) {
          var5.renderRightHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
@@ -178,10 +178,10 @@ public class ItemInHandRenderer {
       var1.pushPose();
       var1.translate(var8 * 0.51F, -0.08F + var4 * -1.2F, -0.75F);
       float var9 = Mth.sqrt(var6);
-      float var10 = Mth.sin(var9 * 3.1415927F);
+      float var10 = Mth.sin((double)(var9 * 3.1415927F));
       float var11 = -0.5F * var10;
-      float var12 = 0.4F * Mth.sin(var9 * 6.2831855F);
-      float var13 = -0.3F * Mth.sin(var6 * 3.1415927F);
+      float var12 = 0.4F * Mth.sin((double)(var9 * 6.2831855F));
+      float var13 = -0.3F * Mth.sin((double)(var6 * 3.1415927F));
       var1.translate(var8 * var11, var12 - 0.3F * var10, var13);
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var10 * -45.0F));
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * var10 * -30.0F));
@@ -191,8 +191,8 @@ public class ItemInHandRenderer {
 
    private void renderTwoHandedMap(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6) {
       float var7 = Mth.sqrt(var6);
-      float var8 = -0.2F * Mth.sin(var6 * 3.1415927F);
-      float var9 = -0.4F * Mth.sin(var7 * 3.1415927F);
+      float var8 = -0.2F * Mth.sin((double)(var6 * 3.1415927F));
+      float var9 = -0.4F * Mth.sin((double)(var7 * 3.1415927F));
       var1.translate(0.0F, -var8 / 2.0F, var9);
       float var10 = this.calculateMapTilt(var4);
       var1.translate(0.0F, 0.04F + var5 * -1.2F + var10 * -0.5F, -0.72F);
@@ -205,7 +205,7 @@ public class ItemInHandRenderer {
          var1.popPose();
       }
 
-      float var11 = Mth.sin(var7 * 3.1415927F);
+      float var11 = Mth.sin((double)(var7 * 3.1415927F));
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var11 * 20.0F));
       var1.scale(2.0F, 2.0F, 2.0F);
       this.renderMap(var1, var2, var3, this.mainHandItem);
@@ -238,13 +238,13 @@ public class ItemInHandRenderer {
       boolean var7 = var6 != HumanoidArm.LEFT;
       float var8 = var7 ? 1.0F : -1.0F;
       float var9 = Mth.sqrt(var5);
-      float var10 = -0.3F * Mth.sin(var9 * 3.1415927F);
-      float var11 = 0.4F * Mth.sin(var9 * 6.2831855F);
-      float var12 = -0.4F * Mth.sin(var5 * 3.1415927F);
+      float var10 = -0.3F * Mth.sin((double)(var9 * 3.1415927F));
+      float var11 = 0.4F * Mth.sin((double)(var9 * 6.2831855F));
+      float var12 = -0.4F * Mth.sin((double)(var5 * 3.1415927F));
       var1.translate(var8 * (var10 + 0.64000005F), var11 + -0.6F + var4 * -0.6F, var12 + -0.71999997F);
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * 45.0F));
-      float var13 = Mth.sin(var5 * var5 * 3.1415927F);
-      float var14 = Mth.sin(var9 * 3.1415927F);
+      float var13 = Mth.sin((double)(var5 * var5 * 3.1415927F));
+      float var14 = Mth.sin((double)(var9 * 3.1415927F));
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * var14 * 70.0F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var8 * var13 * -20.0F));
       LocalPlayer var15 = this.minecraft.player;
@@ -254,7 +254,7 @@ public class ItemInHandRenderer {
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * -135.0F));
       var1.translate(var8 * 5.6F, 0.0F, 0.0F);
       AvatarRenderer var16 = this.entityRenderDispatcher.getPlayerRenderer(var15);
-      ResourceLocation var17 = ((AbstractClientPlayer)var15).getSkin().body().texturePath();
+      Identifier var17 = ((AbstractClientPlayer)var15).getSkin().body().texturePath();
       if (var7) {
          var16.renderRightHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
@@ -267,7 +267,7 @@ public class ItemInHandRenderer {
       float var6 = (float)var5.getUseItemRemainingTicks() - var2 + 1.0F;
       float var7 = var6 / (float)var4.getUseDuration(var5);
       if (var7 < 0.8F) {
-         float var8 = Mth.abs(Mth.cos(var6 / 4.0F * 3.1415927F) * 0.1F);
+         float var8 = Mth.abs(Mth.cos((double)(var6 / 4.0F * 3.1415927F)) * 0.1F);
          var1.translate(0.0F, var8, 0.0F);
       }
 
@@ -288,7 +288,7 @@ public class ItemInHandRenderer {
       float var10 = 150.0F;
       float var11 = -15.0F;
       boolean var12 = true;
-      float var13 = -15.0F + 75.0F * Mth.cos(var7 * 2.0F * 3.1415927F);
+      float var13 = -15.0F + 75.0F * Mth.cos((double)(var7 * 2.0F * 3.1415927F));
       if (var3 != HumanoidArm.RIGHT) {
          var1.translate(0.1, 0.83, 0.35);
          var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
@@ -307,9 +307,9 @@ public class ItemInHandRenderer {
 
    private void applyItemArmAttackTransform(PoseStack var1, HumanoidArm var2, float var3) {
       int var4 = var2 == HumanoidArm.RIGHT ? 1 : -1;
-      float var5 = Mth.sin(var3 * var3 * 3.1415927F);
+      float var5 = Mth.sin((double)(var3 * var3 * 3.1415927F));
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var4 * (45.0F + var5 * -20.0F)));
-      float var6 = Mth.sin(Mth.sqrt(var3) * 3.1415927F);
+      float var6 = Mth.sin((double)(Mth.sqrt(var3) * 3.1415927F));
       var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var4 * var6 * -20.0F));
       var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * -80.0F));
       var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var4 * -45.0F));
@@ -406,7 +406,7 @@ public class ItemInHandRenderer {
                }
 
                if (var17 > 0.1F) {
-                  float var18 = Mth.sin((var16 - 0.1F) * 1.3F);
+                  float var18 = Mth.sin((double)((var16 - 0.1F) * 1.3F));
                   float var19 = var17 - 0.1F;
                   float var20 = var18 * var19;
                   var8.translate(var20 * 0.0F, var20 * 0.004F, var20 * 0.0F);
@@ -463,7 +463,7 @@ public class ItemInHandRenderer {
                      }
 
                      if (var28 > 0.1F) {
-                        float var31 = Mth.sin((var26 - 0.1F) * 1.3F);
+                        float var31 = Mth.sin((double)((var26 - 0.1F) * 1.3F));
                         float var33 = var28 - 0.1F;
                         float var35 = var31 * var33;
                         var8.translate(var35 * 0.0F, var35 * 0.004F, var35 * 0.0F);
@@ -485,7 +485,7 @@ public class ItemInHandRenderer {
                      }
 
                      if (var27 > 0.1F) {
-                        float var30 = Mth.sin((var25 - 0.1F) * 1.3F);
+                        float var30 = Mth.sin((double)((var25 - 0.1F) * 1.3F));
                         float var32 = var27 - 0.1F;
                         float var34 = var30 * var32;
                         var8.translate(var34 * 0.0F, var34 * 0.004F, var34 * 0.0F);
@@ -533,9 +533,9 @@ public class ItemInHandRenderer {
    }
 
    private void swingArm(float var1, PoseStack var2, int var3, HumanoidArm var4) {
-      float var5 = -0.4F * Mth.sin(Mth.sqrt(var1) * 3.1415927F);
-      float var6 = 0.2F * Mth.sin(Mth.sqrt(var1) * 6.2831855F);
-      float var7 = -0.2F * Mth.sin(var1 * 3.1415927F);
+      float var5 = -0.4F * Mth.sin((double)(Mth.sqrt(var1) * 3.1415927F));
+      float var6 = 0.2F * Mth.sin((double)(Mth.sqrt(var1) * 6.2831855F));
+      float var7 = -0.2F * Mth.sin((double)(var1 * 3.1415927F));
       var2.translate((float)var3 * var5, var6, var7);
       this.applyItemArmAttackTransform(var2, var4, var1);
    }

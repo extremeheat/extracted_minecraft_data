@@ -8,14 +8,14 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class ShadowFeatureRenderer {
-   private static final RenderType SHADOW_RENDER_TYPE = RenderTypes.entityShadow(ResourceLocation.withDefaultNamespace("textures/misc/shadow.png"));
+   private static final RenderType SHADOW_RENDER_TYPE = RenderTypes.entityShadow(Identifier.withDefaultNamespace("textures/misc/shadow.png"));
 
    public ShadowFeatureRenderer() {
       super();

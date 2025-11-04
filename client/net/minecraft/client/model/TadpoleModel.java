@@ -32,6 +32,6 @@ public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
    public void setupAnim(LivingEntityRenderState var1) {
       super.setupAnim(var1);
       float var2 = var1.isInWater ? 1.0F : 1.5F;
-      this.tail.yRot = -var2 * 0.25F * Mth.sin(0.3F * var1.ageInTicks);
+      this.tail.yRot = -var2 * 0.25F * Mth.sin((double)(0.3F * var1.ageInTicks));
    }
 }

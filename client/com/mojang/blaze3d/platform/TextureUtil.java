@@ -51,6 +51,7 @@ public class TextureUtil {
             }
          }
 
+         var2.flip();
          return var2;
       } catch (IOException var4) {
          MemoryUtil.memFree(var2);

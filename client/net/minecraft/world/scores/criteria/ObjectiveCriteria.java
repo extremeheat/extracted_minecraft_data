@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.StringRepresentable;
 
@@ -67,11 +67,11 @@ public class ObjectiveCriteria {
          return Optional.of(var1);
       } else {
          int var2 = var0.indexOf(58);
-         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> getStat(var2x, ResourceLocation.bySeparator(var0.substring(var2 + 1), '.')));
+         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(Identifier.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> getStat(var2x, Identifier.bySeparator(var0.substring(var2 + 1), '.')));
       }
    }
 
-   private static <T> Optional<ObjectiveCriteria> getStat(StatType<T> var0, ResourceLocation var1) {
+   private static <T> Optional<ObjectiveCriteria> getStat(StatType<T> var0, Identifier var1) {
       Optional var10000 = var0.getRegistry().getOptional(var1);
       Objects.requireNonNull(var0);
       return var10000.map(var0::get);

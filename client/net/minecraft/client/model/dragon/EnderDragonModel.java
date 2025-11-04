@@ -115,8 +115,8 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
    public void setupAnim(EnderDragonRenderState var1) {
       super.setupAnim(var1);
       float var2 = var1.flapTime * 6.2831855F;
-      this.jaw.xRot = (Mth.sin(var2) + 1.0F) * 0.2F;
-      float var3 = Mth.sin(var2 - 1.0F) + 1.0F;
+      this.jaw.xRot = (Mth.sin((double)var2) + 1.0F) * 0.2F;
+      float var3 = Mth.sin((double)(var2 - 1.0F)) + 1.0F;
       var3 = (var3 * var3 + var3 * 2.0F) * 0.05F;
       this.root.y = (var3 - 2.0F) * 16.0F;
       this.root.z = -48.0F;
@@ -132,16 +132,16 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       for(int var11 = 0; var11 < 5; ++var11) {
          ModelPart var12 = this.neckParts[var11];
          DragonFlightHistory.Sample var13 = var1.getHistoricalPos(5 - var11);
-         float var14 = Mth.cos((float)var11 * 0.45F + var2) * 0.15F;
+         float var14 = Mth.cos((double)((float)var11 * 0.45F + var2)) * 0.15F;
          var12.yRot = Mth.wrapDegrees(var13.yRot() - var8.yRot()) * 0.017453292F * 1.5F;
          var12.xRot = var14 + var1.getHeadPartYOffset(var11, var8, var13) * 0.017453292F * 1.5F * 5.0F;
          var12.zRot = -Mth.wrapDegrees(var13.yRot() - var10) * 0.017453292F * 1.5F;
          var12.y = var5;
          var12.z = var6;
          var12.x = var4;
-         var4 -= Mth.sin(var12.yRot) * Mth.cos(var12.xRot) * 10.0F;
-         var5 += Mth.sin(var12.xRot) * 10.0F;
-         var6 -= Mth.cos(var12.yRot) * Mth.cos(var12.xRot) * 10.0F;
+         var4 -= Mth.sin((double)var12.yRot) * Mth.cos((double)var12.xRot) * 10.0F;
+         var5 += Mth.sin((double)var12.xRot) * 10.0F;
+         var6 -= Mth.cos((double)var12.yRot) * Mth.cos((double)var12.xRot) * 10.0F;
       }
 
       this.head.y = var5;
@@ -152,10 +152,10 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       this.head.xRot = Mth.wrapDegrees(var1.getHeadPartYOffset(6, var8, var21)) * 0.017453292F * 1.5F * 5.0F;
       this.head.zRot = -Mth.wrapDegrees(var21.yRot() - var10) * 0.017453292F;
       this.body.zRot = -var9 * 1.5F * 0.017453292F;
-      this.leftWing.xRot = 0.125F - Mth.cos(var2) * 0.2F;
+      this.leftWing.xRot = 0.125F - Mth.cos((double)var2) * 0.2F;
       this.leftWing.yRot = -0.25F;
-      this.leftWing.zRot = -(Mth.sin(var2) + 0.125F) * 0.8F;
-      this.leftWingTip.zRot = (Mth.sin(var2 + 2.0F) + 0.5F) * 0.75F;
+      this.leftWing.zRot = -(Mth.sin((double)var2) + 0.125F) * 0.8F;
+      this.leftWingTip.zRot = (Mth.sin((double)(var2 + 2.0F)) + 0.5F) * 0.75F;
       this.rightWing.xRot = this.leftWing.xRot;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.rightWing.zRot = -this.leftWing.zRot;
@@ -170,7 +170,7 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
 
       for(int var23 = 0; var23 < 12; ++var23) {
          DragonFlightHistory.Sample var24 = var1.getHistoricalPos(12 + var23);
-         var22 += Mth.sin((float)var23 * 0.45F + var2) * 0.05F;
+         var22 += Mth.sin((double)((float)var23 * 0.45F + var2)) * 0.05F;
          ModelPart var15 = this.tailParts[var23];
          var15.yRot = (Mth.wrapDegrees(var24.yRot() - var8.yRot()) * 1.5F + 180.0F) * 0.017453292F;
          var15.xRot = var22 + (float)(var24.y() - var8.y()) * 0.017453292F * 1.5F * 5.0F;
@@ -178,9 +178,9 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
          var15.y = var5;
          var15.z = var6;
          var15.x = var4;
-         var5 += Mth.sin(var15.xRot) * 10.0F;
-         var6 -= Mth.cos(var15.yRot) * Mth.cos(var15.xRot) * 10.0F;
-         var4 -= Mth.sin(var15.yRot) * Mth.cos(var15.xRot) * 10.0F;
+         var5 += Mth.sin((double)var15.xRot) * 10.0F;
+         var6 -= Mth.cos((double)var15.yRot) * Mth.cos((double)var15.xRot) * 10.0F;
+         var4 -= Mth.sin((double)var15.yRot) * Mth.cos((double)var15.xRot) * 10.0F;
       }
 
    }

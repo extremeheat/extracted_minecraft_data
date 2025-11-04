@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.searchtree.FullTextSearchTree;
@@ -18,6 +17,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -90,7 +90,7 @@ public class SessionSearchTrees {
          Item.TooltipContext var3 = Item.TooltipContext.of(var1);
          TooltipFlag.Default var4 = TooltipFlag.Default.NORMAL.asCreative();
          CompletableFuture var5 = this.creativeByNameSearch;
-         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var2x) -> getTooltipLines(Stream.of(var2x), var3, var4), (var0) -> var0.getItemHolder().unwrapKey().map(ResourceKey::location).stream(), var2), Util.backgroundExecutor());
+         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var2x) -> getTooltipLines(Stream.of(var2x), var3, var4), (var0) -> var0.getItemHolder().unwrapKey().map(ResourceKey::identifier).stream(), var2), Util.backgroundExecutor());
          var5.cancel(true);
       });
    }

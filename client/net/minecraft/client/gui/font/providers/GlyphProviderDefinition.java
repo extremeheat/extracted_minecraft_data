@@ -7,7 +7,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.IOException;
 import net.minecraft.client.gui.font.FontOption;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public interface GlyphProviderDefinition {
@@ -17,8 +17,8 @@ public interface GlyphProviderDefinition {
 
    Either<Loader, Reference> unpack();
 
-   public static record Reference(ResourceLocation id) {
-      public Reference(ResourceLocation var1) {
+   public static record Reference(Identifier id) {
+      public Reference(Identifier var1) {
          super();
          this.id = var1;
       }

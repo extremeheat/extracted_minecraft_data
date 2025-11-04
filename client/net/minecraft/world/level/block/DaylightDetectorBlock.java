@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -54,14 +55,14 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
 
    private static void updateSignalStrength(BlockState var0, Level var1, BlockPos var2) {
       int var3 = var1.getBrightness(LightLayer.SKY, var2) - var1.getSkyDarken();
-      float var4 = var1.getSunAngle(1.0F);
+      float var4 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, var2) * 0.017453292F;
       boolean var5 = (Boolean)var0.getValue(INVERTED);
       if (var5) {
          var3 = 15 - var3;
       } else if (var3 > 0) {
          float var6 = var4 < 3.1415927F ? 0.0F : 6.2831855F;
          var4 += (var6 - var4) * 0.2F;
-         var3 = Math.round((float)var3 * Mth.cos(var4));
+         var3 = Math.round((float)var3 * Mth.cos((double)var4));
       }
 
       var3 = Mth.clamp(var3, 0, 15);

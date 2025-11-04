@@ -4,6 +4,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.PanoramicScreenshotParameters;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
@@ -13,8 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class AtmosphericFogEnvironment extends FogEnvironment {
@@ -28,52 +28,43 @@ public class AtmosphericFogEnvironment extends FogEnvironment {
    }
 
    public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
-      float var5 = Mth.clamp(Mth.cos(var1.getTimeOfDay(var4) * 6.2831855F) * 2.0F + 0.5F, 0.0F, 1.0F);
-      Vec3 var6 = var1.effects().getBrightnessDependentFogColor(new Vec3(ARGB.vector3fFromRGB24((Integer)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, var4))), var5);
-      float var7 = (float)var6.x();
-      float var8 = (float)var6.y();
-      float var9 = (float)var6.z();
+      int var5 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_COLOR, var4);
       if (var3 >= 4) {
-         float var10 = Mth.sin(var1.getSunAngle(var4)) > 0.0F ? -1.0F : 1.0F;
-         Vector3f var11 = new Vector3f(var10, 0.0F, 0.0F);
-         float var12 = var2.forwardVector().dot(var11);
-         if (var12 > 0.0F && var1.effects().isSunriseOrSunset(var1.getTimeOfDay(var4))) {
-            int var13 = var1.effects().getSunriseOrSunsetColor(var1.getTimeOfDay(var4));
-            var12 *= ARGB.alphaFloat(var13);
-            var7 = Mth.lerp(var12, var7, ARGB.redFloat(var13));
-            var8 = Mth.lerp(var12, var8, ARGB.greenFloat(var13));
-            var9 = Mth.lerp(var12, var9, ARGB.blueFloat(var13));
+         float var6 = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, var4) * 0.017453292F;
+         float var7 = Mth.sin((double)var6) > 0.0F ? -1.0F : 1.0F;
+         PanoramicScreenshotParameters var8 = Minecraft.getInstance().gameRenderer.getPanoramicScreenshotParameters();
+         Vector3fc var9 = var8 != null ? var8.forwardVector() : var2.forwardVector();
+         float var10 = var9.dot(var7, 0.0F, 0.0F);
+         if (var10 > 0.0F) {
+            int var11 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, var4);
+            float var12 = ARGB.alphaFloat(var11);
+            if (var12 > 0.0F) {
+               var5 = ARGB.srgbLerp(var10 * var12, var5, ARGB.opaque(var11));
+            }
          }
       }
 
-      int var22 = var1.getSkyColor(var2, var4);
-      float var23 = ARGB.redFloat(var22);
-      float var25 = ARGB.greenFloat(var22);
-      float var26 = ARGB.blueFloat(var22);
-      float var14 = Math.min((Float)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, var4) / 16.0F, (float)var3);
-      float var15 = Mth.clampedLerp(0.25F, 1.0F, var14 / 32.0F);
-      var15 = 1.0F - (float)Math.pow((double)var15, 0.25);
-      var7 += (var23 - var7) * var15;
-      var8 += (var25 - var8) * var15;
-      var9 += (var26 - var9) * var15;
-      float var16 = var1.getRainLevel(var4);
-      if (var16 > 0.0F) {
-         float var17 = 1.0F - var16 * 0.5F;
-         float var18 = 1.0F - var16 * 0.4F;
-         var7 *= var17;
-         var8 *= var17;
-         var9 *= var18;
+      int var14 = (Integer)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_COLOR, var4);
+      var14 = applyWeatherDarken(var14, var1.getRainLevel(var4), var1.getThunderLevel(var4));
+      float var16 = Math.min((Float)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, var4) / 16.0F, (float)var3);
+      float var17 = Mth.clampedLerp(var16 / 32.0F, 0.25F, 1.0F);
+      var17 = 1.0F - (float)Math.pow((double)var17, 0.25);
+      var5 = ARGB.srgbLerp(var17, var5, var14);
+      return var5;
+   }
+
+   private static int applyWeatherDarken(int var0, float var1, float var2) {
+      if (var1 > 0.0F) {
+         float var3 = 1.0F - var1 * 0.5F;
+         float var4 = 1.0F - var1 * 0.4F;
+         var0 = ARGB.scaleRGB(var0, var3, var3, var4);
       }
 
-      float var28 = var1.getThunderLevel(var4);
-      if (var28 > 0.0F) {
-         float var29 = 1.0F - var28 * 0.5F;
-         var7 *= var29;
-         var8 *= var29;
-         var9 *= var29;
+      if (var2 > 0.0F) {
+         var0 = ARGB.scaleRGB(var0, 1.0F - var2 * 0.5F);
       }
 
-      return ARGB.colorFromFloat(1.0F, var7, var8, var9);
+      return var0;
    }
 
    public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {

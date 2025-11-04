@@ -107,7 +107,7 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
          var25 /= 2.0;
       }
 
-      return Mth.clampedLerp(var18 / 512.0, var20 / 512.0, var42) / 128.0;
+      return Mth.clampedLerp(var42, var18 / 512.0, var20 / 512.0) / 128.0;
    }
 
    public double minValue() {

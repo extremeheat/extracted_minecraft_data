@@ -19,7 +19,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +36,7 @@ public class BookViewScreen extends Screen {
    private static final Component TITLE = Component.translatable("book.view.title");
    private static final Style PAGE_TEXT_STYLE;
    public static final BookAccess EMPTY_ACCESS;
-   public static final ResourceLocation BOOK_LOCATION;
+   public static final Identifier BOOK_LOCATION;
    protected static final int TEXT_WIDTH = 114;
    protected static final int TEXT_HEIGHT = 128;
    protected static final int IMAGE_WIDTH = 192;
@@ -279,7 +279,7 @@ public class BookViewScreen extends Screen {
    static {
       PAGE_TEXT_STYLE = Style.EMPTY.withoutShadow().withColor(-16777216);
       EMPTY_ACCESS = new BookAccess(List.of());
-      BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
+      BOOK_LOCATION = Identifier.withDefaultNamespace("textures/gui/book.png");
    }
 
    public static record BookAccess(List<Component> pages) {

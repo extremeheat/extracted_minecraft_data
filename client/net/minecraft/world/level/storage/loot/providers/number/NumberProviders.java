@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class NumberProviders {
    private static final Codec<NumberProvider> TYPED_CODEC;
@@ -22,7 +22,7 @@ public class NumberProviders {
    }
 
    private static LootNumberProviderType register(String var0, MapCodec<? extends NumberProvider> var1) {
-      return (LootNumberProviderType)Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootNumberProviderType(var1));
+      return (LootNumberProviderType)Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootNumberProviderType(var1));
    }
 
    static {

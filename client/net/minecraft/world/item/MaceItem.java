@@ -16,6 +16,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -136,7 +137,7 @@ public class MaceItem extends Item {
          boolean var4;
          boolean var5;
          boolean var10000;
-         label64: {
+         label82: {
             var3 = !var2.isSpectator();
             var4 = var2 != var0 && var2 != var1;
             var5 = !var0.isAlliedTo((Entity)var2);
@@ -144,7 +145,7 @@ public class MaceItem extends Item {
                if (var1 instanceof LivingEntity var7) {
                   if (var8.isTame() && var8.isOwnedBy(var7)) {
                      var10000 = true;
-                     break label64;
+                     break label82;
                   }
                }
             }
@@ -153,21 +154,35 @@ public class MaceItem extends Item {
          }
 
          boolean var6;
-         label56: {
+         label74: {
             var6 = !var10000;
-            if (var2 instanceof ArmorStand var10) {
-               if (var10.isMarker()) {
+            if (var2 instanceof ArmorStand var12) {
+               if (var12.isMarker()) {
                   var10000 = false;
-                  break label56;
+                  break label74;
                }
             }
 
             var10000 = true;
          }
 
-         boolean var9 = var10000;
-         boolean var11 = var1.distanceToSqr((Entity)var2) <= Math.pow(3.5, 2.0);
-         return var3 && var4 && var5 && var6 && var9 && var11;
+         boolean var11;
+         boolean var13;
+         label68: {
+            var11 = var10000;
+            var13 = var1.distanceToSqr((Entity)var2) <= Math.pow(3.5, 2.0);
+            if (var2 instanceof Player var10) {
+               if (var10.isCreative() && var10.getAbilities().flying) {
+                  var10000 = true;
+                  break label68;
+               }
+            }
+
+            var10000 = false;
+         }
+
+         boolean var9 = !var10000;
+         return var3 && var4 && var5 && var6 && var11 && var13 && var9;
       };
    }
 

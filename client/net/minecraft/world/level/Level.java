@@ -27,8 +27,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
@@ -43,6 +43,7 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
@@ -126,7 +127,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final RegistryAccess registryAccess;
    private final DamageSources damageSources;
    private final PalettedContainerFactory palettedContainerFactory;
-   private final EnvironmentAttributeSystem environmentAttributes;
    private long subTickCount;
 
    protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
@@ -142,7 +142,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.registryAccess = var3;
       this.palettedContainerFactory = PalettedContainerFactory.create(var3);
       this.damageSources = new DamageSources(var3);
-      this.environmentAttributes = new EnvironmentAttributeSystem(var4, var3, this.biomeManager);
    }
 
    public boolean isClientSide() {
@@ -339,15 +338,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return !this.dimensionType().hasFixedTime() && !this.isBrightOutside();
    }
 
-   public boolean isMoonVisible() {
-      if (!this.dimensionType().natural()) {
-         return false;
-      } else {
-         int var1 = (int)(this.getDayTime() % 24000L);
-         return var1 >= 12600 && var1 <= 23400;
-      }
-   }
-
    public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSound(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var3, var4, var5, var6);
    }
@@ -399,11 +389,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-   }
-
-   public float getSunAngle(float var1) {
-      float var2 = this.getTimeOfDay(var1);
-      return var2 * 6.2831855F;
    }
 
    public void addBlockEntityTicker(TickingBlockEntity var1) {
@@ -514,10 +499,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public void updateSkyBrightness() {
-      double var1 = 1.0 - (double)(this.getRainLevel(1.0F) * 5.0F) / 16.0;
-      double var3 = 1.0 - (double)(this.getThunderLevel(1.0F) * 5.0F) / 16.0;
-      double var5 = 0.5 + 2.0 * Mth.clamp((double)Mth.cos(this.getTimeOfDay(1.0F) * 6.2831855F), -0.25, 0.25);
-      this.skyDarken = (int)((1.0 - var5 * var1 * var3) * 11.0);
+      this.skyDarken = (int)(15.0F - (Float)this.environmentAttributes().getDimensionValue(EnvironmentAttributes.SKY_LIGHT_LEVEL));
    }
 
    public void setSpawnSettings(boolean var1) {
@@ -711,8 +693,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.rainLevel = var2;
    }
 
-   private boolean canHaveWeather() {
-      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling();
+   public boolean canHaveWeather() {
+      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling() && this.dimension() != END;
    }
 
    public boolean isThundering() {
@@ -755,7 +737,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);
       var2.setDetail("Chunk stats", var10002::gatherStats);
-      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().location().toString()));
+      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().identifier().toString()));
 
       try {
          this.levelData.fillCrashReportCategory(var2, this);
@@ -861,9 +843,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.damageSources;
    }
 
-   public EnvironmentAttributeSystem environmentAttributes() {
-      return this.environmentAttributes;
-   }
+   public abstract EnvironmentAttributeSystem environmentAttributes();
 
    public abstract PotionBrewing potionBrewing();
 
@@ -889,9 +869,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    static {
       RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
-      OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
-      NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
-      END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
+      OVERWORLD = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("overworld"));
+      NETHER = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_nether"));
+      END = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_end"));
       DEFAULT_EXPLOSION_BLOCK_PARTICLES = WeightedList.<ExplosionParticleInfo>builder().add(new ExplosionParticleInfo(ParticleTypes.POOF, 0.5F, 1.0F)).add(new ExplosionParticleInfo(ParticleTypes.SMOKE, 1.0F, 1.0F)).build();
    }
 

@@ -14,8 +14,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -139,7 +139,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.targetSelector.addGoal(8, new ResetUniversalAngerTargetGoal(this, true));
    }
 
-   public ResourceLocation getTexture() {
+   public Identifier getTexture() {
       WolfVariant var1 = (WolfVariant)this.getVariant().value();
       if (this.isTame()) {
          return var1.assetInfo().tame().texturePath();
@@ -318,7 +318,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
             if (this.shakeAnim > 0.4F) {
                float var1 = (float)this.getY();
-               int var2 = (int)(Mth.sin((this.shakeAnim - 0.4F) * 3.1415927F) * 7.0F);
+               int var2 = (int)(Mth.sin((double)((this.shakeAnim - 0.4F) * 3.1415927F)) * 7.0F);
                Vec3 var3 = this.getDeltaMovement();
 
                for(int var4 = 0; var4 < var2; ++var4) {

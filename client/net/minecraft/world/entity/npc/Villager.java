@@ -42,6 +42,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -77,7 +78,6 @@ import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -177,10 +177,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void registerBrainGoals(Brain<Villager> var1) {
       Holder var2 = this.getVillagerData().profession();
       if (this.isBaby()) {
-         var1.setSchedule(Schedule.VILLAGER_BABY);
+         var1.setSchedule(EnvironmentAttributes.BABY_VILLAGER_ACTIVITY);
          var1.addActivity(Activity.PLAY, VillagerGoalPackages.getPlayPackage(0.5F));
       } else {
-         var1.setSchedule(Schedule.VILLAGER_DEFAULT);
+         var1.setSchedule(EnvironmentAttributes.VILLAGER_ACTIVITY);
          var1.addActivityWithConditions(Activity.WORK, VillagerGoalPackages.getWorkPackage(var2, 0.5F), ImmutableSet.of(Pair.of(MemoryModuleType.JOB_SITE, MemoryStatus.VALUE_PRESENT)));
       }
 
@@ -195,7 +195,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       var1.setCoreActivities(ImmutableSet.of(Activity.CORE));
       var1.setDefaultActivity(Activity.IDLE);
       var1.setActiveActivityIfPossible(Activity.IDLE);
-      var1.updateActivityFromSchedule(this.level().getDayTime(), this.level().getGameTime());
+      var1.updateActivityFromSchedule(this.level().environmentAttributes(), this.level().getGameTime(), this.position());
    }
 
    protected void ageBoundaryReached() {

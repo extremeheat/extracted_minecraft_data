@@ -19,23 +19,23 @@ import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public record PalettedPermutations(List<ResourceLocation> textures, ResourceLocation paletteKey, Map<String, ResourceLocation> permutations, String separator) implements SpriteSource {
+public record PalettedPermutations(List<Identifier> textures, Identifier paletteKey, Map<String, Identifier> permutations, String separator) implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
    public static final String DEFAULT_SEPARATOR = "_";
-   public static final MapCodec<PalettedPermutations> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.list(ResourceLocation.CODEC).fieldOf("textures").forGetter(PalettedPermutations::textures), ResourceLocation.CODEC.fieldOf("palette_key").forGetter(PalettedPermutations::paletteKey), Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC).fieldOf("permutations").forGetter(PalettedPermutations::permutations), Codec.STRING.optionalFieldOf("separator", "_").forGetter(PalettedPermutations::separator)).apply(var0, PalettedPermutations::new));
+   public static final MapCodec<PalettedPermutations> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.list(Identifier.CODEC).fieldOf("textures").forGetter(PalettedPermutations::textures), Identifier.CODEC.fieldOf("palette_key").forGetter(PalettedPermutations::paletteKey), Codec.unboundedMap(Codec.STRING, Identifier.CODEC).fieldOf("permutations").forGetter(PalettedPermutations::permutations), Codec.STRING.optionalFieldOf("separator", "_").forGetter(PalettedPermutations::separator)).apply(var0, PalettedPermutations::new));
 
-   public PalettedPermutations(List<ResourceLocation> var1, ResourceLocation var2, Map<String, ResourceLocation> var3) {
+   public PalettedPermutations(List<Identifier> var1, Identifier var2, Map<String, Identifier> var3) {
       this(var1, var2, var3, "_");
    }
 
-   public PalettedPermutations(List<ResourceLocation> var1, ResourceLocation var2, Map<String, ResourceLocation> var3, String var4) {
+   public PalettedPermutations(List<Identifier> var1, Identifier var2, Map<String, Identifier> var3, String var4) {
       super();
       this.textures = var1;
       this.paletteKey = var2;
@@ -48,8 +48,8 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
       HashMap var4 = new HashMap();
       this.permutations.forEach((var3x, var4x) -> var4.put(var3x, Suppliers.memoize(() -> createPaletteMapping((int[])var3.get(), loadPaletteEntryFromImage(var1, var4x)))));
 
-      for(ResourceLocation var6 : this.textures) {
-         ResourceLocation var7 = TEXTURE_ID_CONVERTER.idToFile(var6);
+      for(Identifier var6 : this.textures) {
+         Identifier var7 = TEXTURE_ID_CONVERTER.idToFile(var6);
          Optional var8 = var1.getResource(var7);
          if (var8.isEmpty()) {
             LOGGER.warn("Unable to find texture {}", var7);
@@ -58,7 +58,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
 
             for(Map.Entry var11 : var4.entrySet()) {
                String var10001 = this.separator;
-               ResourceLocation var12 = var6.withSuffix(var10001 + (String)var11.getKey());
+               Identifier var12 = var6.withSuffix(var10001 + (String)var11.getKey());
                var2.add(var12, (SpriteSource.DiscardableLoader)(new PalettedSpriteSupplier(var9, (java.util.function.Supplier)var11.getValue(), var12)));
             }
          }
@@ -94,7 +94,7 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
       }
    }
 
-   private static int[] loadPaletteEntryFromImage(ResourceManager var0, ResourceLocation var1) {
+   private static int[] loadPaletteEntryFromImage(ResourceManager var0, Identifier var1) {
       Optional var2 = var0.getResource(TEXTURE_ID_CONVERTER.idToFile(var1));
       if (var2.isEmpty()) {
          LOGGER.error("Failed to load palette image {}", var1);
@@ -134,8 +134,8 @@ public record PalettedPermutations(List<ResourceLocation> textures, ResourceLoca
       return MAP_CODEC;
    }
 
-   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) implements SpriteSource.DiscardableLoader {
-      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, ResourceLocation var3) {
+   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, Identifier permutationLocation) implements SpriteSource.DiscardableLoader {
+      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, Identifier var3) {
          super();
          this.baseImage = var1;
          this.palette = var2;

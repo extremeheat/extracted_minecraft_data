@@ -69,8 +69,8 @@ public class AbstractPiglinModel<S extends HumanoidRenderState> extends Humanoid
       float var4 = 0.5235988F;
       float var5 = var1.ageInTicks * 0.1F + var2 * 0.5F;
       float var6 = 0.08F + var3 * 0.4F;
-      this.leftEar.zRot = -0.5235988F - Mth.cos(var5 * 1.2F) * var6;
-      this.rightEar.zRot = 0.5235988F + Mth.cos(var5) * var6;
+      this.leftEar.zRot = -0.5235988F - Mth.cos((double)(var5 * 1.2F)) * var6;
+      this.rightEar.zRot = 0.5235988F + Mth.cos((double)var5) * var6;
    }
 
    public void setAllVisible(boolean var1) {

@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 
 public class BiomeTags {
@@ -59,7 +59,6 @@ public class BiomeTags {
    public static final TagKey<Biome> WATER_ON_MAP_OUTLINES = create("water_on_map_outlines");
    public static final TagKey<Biome> PRODUCES_CORALS_FROM_BONEMEAL = create("produces_corals_from_bonemeal");
    public static final TagKey<Biome> WITHOUT_ZOMBIE_SIEGES = create("without_zombie_sieges");
-   public static final TagKey<Biome> WITHOUT_PATROL_SPAWNS = create("without_patrol_spawns");
    public static final TagKey<Biome> WITHOUT_WANDERING_TRADER_SPAWNS = create("without_wandering_trader_spawns");
    public static final TagKey<Biome> SPAWNS_COLD_VARIANT_FROGS = create("spawns_cold_variant_frogs");
    public static final TagKey<Biome> SPAWNS_WARM_VARIANT_FROGS = create("spawns_warm_variant_frogs");
@@ -73,12 +72,13 @@ public class BiomeTags {
    public static final TagKey<Biome> MORE_FREQUENT_DROWNED_SPAWNS = create("more_frequent_drowned_spawns");
    public static final TagKey<Biome> ALLOWS_SURFACE_SLIME_SPAWNS = create("allows_surface_slime_spawns");
    public static final TagKey<Biome> SPAWNS_SNOW_FOXES = create("spawns_snow_foxes");
+   public static final TagKey<Biome> SPAWNS_CORAL_VARIANT_ZOMBIE_NAUTILUS = create("spawns_coral_variant_zombie_nautilus");
 
    private BiomeTags() {
       super();
    }
 
    private static TagKey<Biome> create(String var0) {
-      return TagKey.<Biome>create(Registries.BIOME, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Biome>create(Registries.BIOME, Identifier.withDefaultNamespace(var0));
    }
 }

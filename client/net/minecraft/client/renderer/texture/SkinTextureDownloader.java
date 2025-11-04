@@ -15,11 +15,11 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import net.minecraft.FileUtil;
-import net.minecraft.Util;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.FileUtil;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public class SkinTextureDownloader {
@@ -38,7 +38,7 @@ public class SkinTextureDownloader {
       this.mainThreadExecutor = var3;
    }
 
-   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(ResourceLocation var1, Path var2, String var3, boolean var4) {
+   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(Identifier var1, Path var2, String var3, boolean var4) {
       ClientAsset.DownloadedTexture var5 = new ClientAsset.DownloadedTexture(var1, var3);
       return CompletableFuture.supplyAsync(() -> {
          NativeImage var4x;
@@ -117,7 +117,7 @@ public class SkinTextureDownloader {
 
    private CompletableFuture<ClientAsset.Texture> registerTextureInManager(ClientAsset.Texture var1, NativeImage var2) {
       return CompletableFuture.supplyAsync(() -> {
-         ResourceLocation var10002 = var1.texturePath();
+         Identifier var10002 = var1.texturePath();
          Objects.requireNonNull(var10002);
          DynamicTexture var3 = new DynamicTexture(var10002::toString, var2);
          this.textureManager.register(var1.texturePath(), var3);

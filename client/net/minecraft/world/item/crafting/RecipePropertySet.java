@@ -9,13 +9,13 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class RecipePropertySet {
-   public static final ResourceKey<? extends Registry<RecipePropertySet>> TYPE_KEY = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("recipe_property_set"));
+   public static final ResourceKey<? extends Registry<RecipePropertySet>> TYPE_KEY = ResourceKey.createRegistryKey(Identifier.withDefaultNamespace("recipe_property_set"));
    public static final ResourceKey<RecipePropertySet> SMITHING_BASE = registerVanilla("smithing_base");
    public static final ResourceKey<RecipePropertySet> SMITHING_TEMPLATE = registerVanilla("smithing_template");
    public static final ResourceKey<RecipePropertySet> SMITHING_ADDITION = registerVanilla("smithing_addition");
@@ -33,7 +33,7 @@ public class RecipePropertySet {
    }
 
    private static ResourceKey<RecipePropertySet> registerVanilla(String var0) {
-      return ResourceKey.create(TYPE_KEY, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(TYPE_KEY, Identifier.withDefaultNamespace(var0));
    }
 
    public boolean test(ItemStack var1) {

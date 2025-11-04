@@ -10,10 +10,10 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class SpinAttackEffectLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
-   public static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/trident_riptide.png");
+   public static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/entity/trident_riptide.png");
    private final SpinAttackEffectModel model;
 
    public SpinAttackEffectLayer(RenderLayerParent<AvatarRenderState, PlayerModel> var1, EntityModelSet var2) {

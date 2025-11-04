@@ -269,7 +269,7 @@ public class Camel extends AbstractHorse {
       this.addDeltaMovement(this.getLookAngle().multiply(1.0, 0.0, 1.0).normalize().scale((double)(22.2222F * var1) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor()).add(0.0, (double)(1.4285F * var1) * var3, 0.0));
       this.dashCooldown = 55;
       this.setDashing(true);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    public boolean isDashing() {
@@ -342,7 +342,7 @@ public class Camel extends AbstractHorse {
                this.doPlayerRide(var1);
             }
 
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
          }
       }
    }

@@ -158,7 +158,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    private void assignDirectionalMovement(Vec3 var1, double var2) {
       this.setDeltaMovement(var1.normalize().scale(var2));
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    protected void onDeflection(boolean var1) {

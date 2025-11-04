@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.FileUtil;
 import net.minecraft.client.renderer.ShaderDefines;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.StringUtil;
 import org.jspecify.annotations.Nullable;
 

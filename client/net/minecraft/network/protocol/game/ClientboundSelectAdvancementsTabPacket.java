@@ -4,25 +4,25 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket>codec(ClientboundSelectAdvancementsTabPacket::write, ClientboundSelectAdvancementsTabPacket::new);
-   private final @Nullable ResourceLocation tab;
+   private final @Nullable Identifier tab;
 
-   public ClientboundSelectAdvancementsTabPacket(@Nullable ResourceLocation var1) {
+   public ClientboundSelectAdvancementsTabPacket(@Nullable Identifier var1) {
       super();
       this.tab = var1;
    }
 
    private ClientboundSelectAdvancementsTabPacket(FriendlyByteBuf var1) {
       super();
-      this.tab = (ResourceLocation)var1.readNullable(FriendlyByteBuf::readResourceLocation);
+      this.tab = (Identifier)var1.readNullable(FriendlyByteBuf::readIdentifier);
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeNullable(this.tab, FriendlyByteBuf::writeResourceLocation);
+      var1.writeNullable(this.tab, FriendlyByteBuf::writeIdentifier);
    }
 
    public PacketType<ClientboundSelectAdvancementsTabPacket> type() {
@@ -33,7 +33,7 @@ public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGame
       var1.handleSelectAdvancementsTab(this);
    }
 
-   public @Nullable ResourceLocation getTab() {
+   public @Nullable Identifier getTab() {
       return this.tab;
    }
 }

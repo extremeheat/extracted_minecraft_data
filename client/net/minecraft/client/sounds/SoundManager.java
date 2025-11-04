@@ -23,7 +23,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -40,22 +40,22 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SoundManager extends SimplePreparableReloadListener<Preparations> {
-   public static final ResourceLocation EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("empty");
+   public static final Identifier EMPTY_SOUND_LOCATION = Identifier.withDefaultNamespace("empty");
    public static final Sound EMPTY_SOUND;
-   public static final ResourceLocation INTENTIONALLY_EMPTY_SOUND_LOCATION;
+   public static final Identifier INTENTIONALLY_EMPTY_SOUND_LOCATION;
    public static final WeighedSoundEvents INTENTIONALLY_EMPTY_SOUND_EVENT;
    public static final Sound INTENTIONALLY_EMPTY_SOUND;
    static final Logger LOGGER;
    private static final String SOUNDS_PATH = "sounds.json";
    private static final Gson GSON;
    private static final TypeToken<Map<String, SoundEventRegistration>> SOUND_EVENT_REGISTRATION_TYPE;
-   private final Map<ResourceLocation, WeighedSoundEvents> registry = Maps.newHashMap();
+   private final Map<Identifier, WeighedSoundEvents> registry = Maps.newHashMap();
    private final SoundEngine soundEngine;
-   private final Map<ResourceLocation, Resource> soundCache = new HashMap();
+   private final Map<Identifier, Resource> soundCache = new HashMap();
 
-   public SoundManager(Options var1, MusicManager var2) {
+   public SoundManager(Options var1) {
       super();
-      this.soundEngine = new SoundEngine(var2, this, var1, ResourceProvider.fromMap(this.soundCache));
+      this.soundEngine = new SoundEngine(this, var1, ResourceProvider.fromMap(this.soundCache));
    }
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -67,7 +67,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
       for(String var5 : var1.getNamespaces()) {
          try (Zone var6 = var2.zone(var5)) {
-            for(Resource var9 : var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"))) {
+            for(Resource var9 : var1.getResourceStack(Identifier.fromNamespaceAndPath(var5, "sounds.json"))) {
                var2.push(var9.sourcePackId());
 
                try {
@@ -79,7 +79,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
                      var2.popPush("register");
 
                      for(Map.Entry var13 : var11.entrySet()) {
-                        var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
+                        var3.handleRegistration(Identifier.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
                      }
 
                      var2.pop();
@@ -114,7 +114,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    protected void apply(Preparations var1, ResourceManager var2, ProfilerFiller var3) {
       var1.apply(this.registry, this.soundCache, this.soundEngine);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         for(ResourceLocation var5 : this.registry.keySet()) {
+         for(Identifier var5 : this.registry.keySet()) {
             WeighedSoundEvents var6 = (WeighedSoundEvents)this.registry.get(var5);
             if (!ComponentUtils.isTranslationResolvable(var6.getSubtitle()) && BuiltInRegistries.SOUND_EVENT.containsKey(var5)) {
                LOGGER.error("Missing subtitle {} for sound event: {}", var6.getSubtitle(), var5);
@@ -123,7 +123,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       }
 
       if (LOGGER.isDebugEnabled()) {
-         for(ResourceLocation var8 : this.registry.keySet()) {
+         for(Identifier var8 : this.registry.keySet()) {
             if (!BuiltInRegistries.SOUND_EVENT.containsKey(var8)) {
                LOGGER.debug("Not having sound event for: {}", var8);
             }
@@ -141,8 +141,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       return this.soundEngine.getListenerTransform();
    }
 
-   static boolean validateSoundResource(Sound var0, ResourceLocation var1, ResourceProvider var2) {
-      ResourceLocation var3 = var0.getPath();
+   static boolean validateSoundResource(Sound var0, Identifier var1, ResourceProvider var2) {
+      Identifier var3 = var0.getPath();
       if (var2.getResource(var3).isEmpty()) {
          LOGGER.warn("File {} does not exist, cannot add it to event {}", var3, var1);
          return false;
@@ -151,11 +151,11 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       }
    }
 
-   public @Nullable WeighedSoundEvents getSoundEvent(ResourceLocation var1) {
+   public @Nullable WeighedSoundEvents getSoundEvent(Identifier var1) {
       return (WeighedSoundEvents)this.registry.get(var1);
    }
 
-   public Collection<ResourceLocation> getAvailableSounds() {
+   public Collection<Identifier> getAvailableSounds() {
       return this.registry.keySet();
    }
 
@@ -199,16 +199,16 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.resume();
    }
 
-   public void updateSourceVolume(SoundSource var1) {
-      this.soundEngine.updateCategoryVolume(var1);
+   public void refreshCategoryVolume(SoundSource var1) {
+      this.soundEngine.refreshCategoryVolume(var1);
    }
 
    public void stop(SoundInstance var1) {
       this.soundEngine.stop(var1);
    }
 
-   public void setVolume(SoundInstance var1, float var2) {
-      this.soundEngine.setVolume(var1, var2);
+   public void updateCategoryVolume(SoundSource var1, float var2) {
+      this.soundEngine.updateCategoryVolume(var1, var2);
    }
 
    public boolean isActive(SoundInstance var1) {
@@ -223,7 +223,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.removeEventListener(var1);
    }
 
-   public void stop(@Nullable ResourceLocation var1, @Nullable SoundSource var2) {
+   public void stop(@Nullable Identifier var1, @Nullable SoundSource var2) {
       this.soundEngine.stop(var1, var2);
    }
 
@@ -242,7 +242,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
    static {
       EMPTY_SOUND = new Sound(EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
-      INTENTIONALLY_EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("intentionally_empty");
+      INTENTIONALLY_EMPTY_SOUND_LOCATION = Identifier.withDefaultNamespace("intentionally_empty");
       INTENTIONALLY_EMPTY_SOUND_EVENT = new WeighedSoundEvents(INTENTIONALLY_EMPTY_SOUND_LOCATION, (String)null);
       INTENTIONALLY_EMPTY_SOUND = new Sound(INTENTIONALLY_EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
       LOGGER = LogUtils.getLogger();
@@ -252,8 +252,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    }
 
    protected static class Preparations {
-      final Map<ResourceLocation, WeighedSoundEvents> registry = Maps.newHashMap();
-      private Map<ResourceLocation, Resource> soundCache = Map.of();
+      final Map<Identifier, WeighedSoundEvents> registry = Maps.newHashMap();
+      private Map<Identifier, Resource> soundCache = Map.of();
 
       protected Preparations() {
          super();
@@ -263,7 +263,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
          this.soundCache = Sound.SOUND_LISTER.listMatchingResources(var1);
       }
 
-      void handleRegistration(ResourceLocation var1, SoundEventRegistration var2) {
+      void handleRegistration(Identifier var1, SoundEventRegistration var2) {
          WeighedSoundEvents var3 = (WeighedSoundEvents)this.registry.get(var1);
          boolean var4 = var3 == null;
          if (var4 || var2.isReplace()) {
@@ -278,7 +278,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
          ResourceProvider var5 = ResourceProvider.fromMap(this.soundCache);
 
          for(final Sound var7 : var2.getSounds()) {
-            final ResourceLocation var8 = var7.getLocation();
+            final Identifier var8 = var7.getLocation();
             Object var9;
             switch (var7.getType()) {
                case FILE:
@@ -327,13 +327,13 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
       }
 
-      public void apply(Map<ResourceLocation, WeighedSoundEvents> var1, Map<ResourceLocation, Resource> var2, SoundEngine var3) {
+      public void apply(Map<Identifier, WeighedSoundEvents> var1, Map<Identifier, Resource> var2, SoundEngine var3) {
          var1.clear();
          var2.clear();
          var2.putAll(this.soundCache);
 
          for(Map.Entry var5 : this.registry.entrySet()) {
-            var1.put((ResourceLocation)var5.getKey(), (WeighedSoundEvents)var5.getValue());
+            var1.put((Identifier)var5.getKey(), (WeighedSoundEvents)var5.getValue());
             ((WeighedSoundEvents)var5.getValue()).preloadIfRequired(var3);
          }
 

@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.components;
 
 import java.util.UUID;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.BossEvent;
 
 public class LerpingBossEvent extends BossEvent {

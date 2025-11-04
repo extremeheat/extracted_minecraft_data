@@ -9,7 +9,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -72,7 +72,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jspecify.annotations.Nullable;
 
 public class Strider extends Animal implements ItemSteerable {
-   private static final ResourceLocation SUFFOCATING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("suffocating");
+   private static final Identifier SUFFOCATING_MODIFIER_ID = Identifier.withDefaultNamespace("suffocating");
    private static final AttributeModifier SUFFOCATING_MODIFIER;
    private static final float SUFFOCATE_STEERING_MODIFIER = 0.35F;
    private static final float STEERING_MODIFIER = 0.55F;
@@ -171,7 +171,7 @@ public class Strider extends Animal implements ItemSteerable {
       } else {
          float var4 = Math.min(0.25F, this.walkAnimation.speed());
          float var5 = this.walkAnimation.position();
-         float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
+         float var6 = 0.12F * Mth.cos((double)(var5 * 1.5F)) * 2.0F * var4;
          return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
       }
    }

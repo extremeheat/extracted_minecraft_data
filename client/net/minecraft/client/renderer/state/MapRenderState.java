@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class MapRenderState {
-   public @Nullable ResourceLocation texture;
+   public @Nullable Identifier texture;
    public final List<MapDecorationRenderState> decorations = new ArrayList();
 
    public MapRenderState() {

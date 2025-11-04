@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.entity.layers.DrownedOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.Drowned;
@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRenderState, DrownedModel> {
-   private static final ResourceLocation DROWNED_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/drowned.png");
+   private static final Identifier DROWNED_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/drowned.png");
 
    public DrownedRenderer(EntityRendererProvider.Context var1) {
       super(var1, new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_BABY)), ArmorModelSet.bake(ModelLayers.DROWNED_ARMOR, var1.getModelSet(), DrownedModel::new), ArmorModelSet.bake(ModelLayers.DROWNED_BABY_ARMOR, var1.getModelSet(), DrownedModel::new));
@@ -28,7 +28,7 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
       return new ZombieRenderState();
    }
 
-   public ResourceLocation getTextureLocation(ZombieRenderState var1) {
+   public Identifier getTextureLocation(ZombieRenderState var1) {
       return DROWNED_LOCATION;
    }
 
@@ -49,7 +49,7 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ZombieRenderState)var1);
    }
 

@@ -2,8 +2,8 @@ package net.minecraft.world.phys;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class Vec2 {
    public static final Vec2 ZERO = new Vec2(0.0F, 0.0F);

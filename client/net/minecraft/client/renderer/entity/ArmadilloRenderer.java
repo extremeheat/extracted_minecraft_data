@@ -5,17 +5,17 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.ArmadilloRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 
 public class ArmadilloRenderer extends AgeableMobRenderer<Armadillo, ArmadilloRenderState, ArmadilloModel> {
-   private static final ResourceLocation ARMADILLO_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/armadillo.png");
+   private static final Identifier ARMADILLO_LOCATION = Identifier.withDefaultNamespace("textures/entity/armadillo.png");
 
    public ArmadilloRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ArmadilloModel(var1.bakeLayer(ModelLayers.ARMADILLO)), new ArmadilloModel(var1.bakeLayer(ModelLayers.ARMADILLO_BABY)), 0.4F);
    }
 
-   public ResourceLocation getTextureLocation(ArmadilloRenderState var1) {
+   public Identifier getTextureLocation(ArmadilloRenderState var1) {
       return ARMADILLO_LOCATION;
    }
 
@@ -32,7 +32,7 @@ public class ArmadilloRenderer extends AgeableMobRenderer<Armadillo, ArmadilloRe
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ArmadilloRenderState)var1);
    }
 

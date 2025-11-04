@@ -38,7 +38,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -79,9 +78,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameType;
 import org.apache.commons.lang3.StringUtils;
@@ -89,17 +89,17 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsMainScreen extends RealmsScreen {
-   static final ResourceLocation INFO_SPRITE = ResourceLocation.withDefaultNamespace("icon/info");
-   static final ResourceLocation NEW_REALM_SPRITE = ResourceLocation.withDefaultNamespace("icon/new_realm");
-   static final ResourceLocation EXPIRED_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/expired");
-   static final ResourceLocation EXPIRES_SOON_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/expires_soon");
-   static final ResourceLocation OPEN_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/open");
-   static final ResourceLocation CLOSED_SPRITE = ResourceLocation.withDefaultNamespace("realm_status/closed");
-   private static final ResourceLocation INVITE_SPRITE = ResourceLocation.withDefaultNamespace("icon/invite");
-   private static final ResourceLocation NEWS_SPRITE = ResourceLocation.withDefaultNamespace("icon/news");
-   public static final ResourceLocation HARDCORE_MODE_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full");
+   static final Identifier INFO_SPRITE = Identifier.withDefaultNamespace("icon/info");
+   static final Identifier NEW_REALM_SPRITE = Identifier.withDefaultNamespace("icon/new_realm");
+   static final Identifier EXPIRED_SPRITE = Identifier.withDefaultNamespace("realm_status/expired");
+   static final Identifier EXPIRES_SOON_SPRITE = Identifier.withDefaultNamespace("realm_status/expires_soon");
+   static final Identifier OPEN_SPRITE = Identifier.withDefaultNamespace("realm_status/open");
+   static final Identifier CLOSED_SPRITE = Identifier.withDefaultNamespace("realm_status/closed");
+   private static final Identifier INVITE_SPRITE = Identifier.withDefaultNamespace("icon/invite");
+   private static final Identifier NEWS_SPRITE = Identifier.withDefaultNamespace("icon/news");
+   public static final Identifier HARDCORE_MODE_SPRITE = Identifier.withDefaultNamespace("hud/heart/hardcore_full");
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation NO_REALMS_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/realms/no_realms.png");
+   private static final Identifier NO_REALMS_LOCATION = Identifier.withDefaultNamespace("textures/gui/realms/no_realms.png");
    private static final Component TITLE = Component.translatable("menu.online");
    private static final Component LOADING_TEXT = Component.translatable("mco.selectServer.loading");
    static final Component SERVER_UNITIALIZED_TEXT = Component.translatable("mco.selectServer.uninitialized");
@@ -757,8 +757,8 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var6, var2, var3, 10, 28);
+      private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, Identifier var6, Supplier<Component> var7) {
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var6, var2, var3, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)var4, (double)var5) && var4 >= var2 && var4 <= var2 + 10 && var5 >= var3 && var5 <= var3 + 28) {
             var1.setTooltipForNextFrame((Component)var7.get(), var4, var5);
          }
@@ -839,7 +839,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
          if (var6) {
             var8 -= 10;
-            var2.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
+            var2.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
          }
 
          return var8;
@@ -973,7 +973,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
          int var10000 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int var6 = var10000 - 9 / 2;
@@ -1055,7 +1055,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int var7 = var10000 - 9 / 2;
@@ -1157,13 +1157,13 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    static class NotificationButton extends SpriteIconButton.CenteredIcon {
-      private static final ResourceLocation[] NOTIFICATION_ICONS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("notification/1"), ResourceLocation.withDefaultNamespace("notification/2"), ResourceLocation.withDefaultNamespace("notification/3"), ResourceLocation.withDefaultNamespace("notification/4"), ResourceLocation.withDefaultNamespace("notification/5"), ResourceLocation.withDefaultNamespace("notification/more")};
+      private static final Identifier[] NOTIFICATION_ICONS = new Identifier[]{Identifier.withDefaultNamespace("notification/1"), Identifier.withDefaultNamespace("notification/2"), Identifier.withDefaultNamespace("notification/3"), Identifier.withDefaultNamespace("notification/4"), Identifier.withDefaultNamespace("notification/5"), Identifier.withDefaultNamespace("notification/more")};
       private static final int UNKNOWN_COUNT = 2147483647;
       private static final int SIZE = 20;
       private static final int SPRITE_SIZE = 14;
       private int notificationCount;
 
-      public NotificationButton(Component var1, ResourceLocation var2, Button.OnPress var3, @Nullable Component var4) {
+      public NotificationButton(Component var1, Identifier var2, Button.OnPress var3, @Nullable Component var4) {
          super(20, 20, var1, 14, 14, new WidgetSprites(var2), var3, var4, (Button.CreateNarration)null);
       }
 
@@ -1184,12 +1184,12 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void drawNotificationCounter(GuiGraphics var1) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
       }
    }
 
    static class CrossButton extends ImageButton {
-      private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/cross_button"), ResourceLocation.withDefaultNamespace("widget/cross_button_highlighted"));
+      private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/cross_button"), Identifier.withDefaultNamespace("widget/cross_button_highlighted"));
 
       protected CrossButton(Button.OnPress var1, Component var2) {
          super(0, 0, 14, 14, SPRITES, var1);

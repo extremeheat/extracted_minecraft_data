@@ -15,7 +15,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -24,8 +24,8 @@ import org.jspecify.annotations.Nullable;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
-   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
-   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
+   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_forward"), Identifier.withDefaultNamespace("recipe_book/page_forward_highlighted"));
+   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/page_backward"), Identifier.withDefaultNamespace("recipe_book/page_backward_highlighted"));
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
    private @Nullable RecipeButton hoveredButton;
    private final OverlayRecipeComponent overlay;
@@ -125,7 +125,7 @@ public class RecipeBookPage {
    public void renderTooltip(GuiGraphics var1, int var2, int var3) {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack var4 = this.hoveredButton.getDisplayStack();
-         ResourceLocation var5 = (ResourceLocation)var4.get(DataComponents.TOOLTIP_STYLE);
+         Identifier var5 = (Identifier)var4.get(DataComponents.TOOLTIP_STYLE);
          var1.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(var4), var2, var3, var5);
       }
 

@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHookRenderState> {
-   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fishing_hook.png");
+   private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/fishing_hook.png");
    private static final RenderType RENDER_TYPE;
    private static final double VIEW_BOBBING_SCALE = 960.0;
 
@@ -77,8 +77,8 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
          return var1.getEyePosition(var3).add(var7);
       } else {
          float var5 = Mth.lerp(var3, var1.yBodyRotO, var1.yBodyRot) * 0.017453292F;
-         double var6 = (double)Mth.sin(var5);
-         double var8 = (double)Mth.cos(var5);
+         double var6 = (double)Mth.sin((double)var5);
+         double var8 = (double)Mth.cos((double)var5);
          float var10 = var1.getScale();
          double var11 = (double)var4 * 0.35 * (double)var10;
          double var13 = 0.8 * (double)var10;
@@ -120,7 +120,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
          var2.lineOriginOffset = Vec3.ZERO;
       } else {
          float var5 = var4.getAttackAnim(var3);
-         float var6 = Mth.sin(Mth.sqrt(var5) * 3.1415927F);
+         float var6 = Mth.sin((double)(Mth.sqrt(var5) * 3.1415927F));
          Vec3 var7 = this.getPlayerHandPos(var4, var6, var3);
          Vec3 var8 = var1.getPosition(var3).add(0.0, 0.25, 0.0);
          var2.lineOriginOffset = var7.subtract(var8);

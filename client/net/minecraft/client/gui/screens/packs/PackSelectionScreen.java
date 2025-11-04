@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -43,12 +42,13 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackDetector;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class PackSelectionScreen extends Screen {
    private static final Component DRAG_AND_DROP;
    private static final Component DIRECTORY_BUTTON_TOOLTIP;
    private static final int RELOAD_COOLDOWN = 20;
-   private static final ResourceLocation DEFAULT_ICON;
+   private static final Identifier DEFAULT_ICON;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final PackSelectionModel model;
    private @Nullable Watcher watcher;
@@ -75,7 +75,7 @@ public class PackSelectionScreen extends Screen {
    private @Nullable EditBox search;
    private final Path packDir;
    private @Nullable Button doneButton;
-   private final Map<String, ResourceLocation> packIcons = Maps.newHashMap();
+   private final Map<String, Identifier> packIcons = Maps.newHashMap();
 
    public PackSelectionScreen(PackRepository var1, Consumer<PackRepository> var2, Path var3, Component var4) {
       super(var4);
@@ -304,9 +304,9 @@ public class PackSelectionScreen extends Screen {
       return var0.stream().map(Path::getFileName).map(Path::toString);
    }
 
-   private ResourceLocation loadPackIcon(TextureManager var1, Pack var2) {
+   private Identifier loadPackIcon(TextureManager var1, Pack var2) {
       try {
-         ResourceLocation var9;
+         Identifier var9;
          try (PackResources var3 = var2.open()) {
             IoSupplier var4 = var3.getRootResource("pack.png");
             if (var4 == null) {
@@ -314,8 +314,8 @@ public class PackSelectionScreen extends Screen {
             }
 
             String var5 = var2.getId();
-            String var10000 = Util.sanitizeName(var5, ResourceLocation::validPathChar);
-            ResourceLocation var6 = ResourceLocation.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
+            String var10000 = Util.sanitizeName(var5, Identifier::validPathChar);
+            Identifier var6 = Identifier.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
             InputStream var7 = (InputStream)var4.get();
 
             try {
@@ -347,15 +347,15 @@ public class PackSelectionScreen extends Screen {
       }
    }
 
-   private ResourceLocation getPackIcon(Pack var1) {
-      return (ResourceLocation)this.packIcons.computeIfAbsent(var1.getId(), (var2) -> this.loadPackIcon(this.minecraft.getTextureManager(), var1));
+   private Identifier getPackIcon(Pack var1) {
+      return (Identifier)this.packIcons.computeIfAbsent(var1.getId(), (var2) -> this.loadPackIcon(this.minecraft.getTextureManager(), var1));
    }
 
    static {
       SEARCH = Component.translatable("gui.packSelection.search").withStyle(EditBox.SEARCH_HINT_STYLE);
       DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
       DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
-      DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
+      DEFAULT_ICON = Identifier.withDefaultNamespace("textures/misc/unknown_pack.png");
    }
 
    static class Watcher implements AutoCloseable {

@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 
 public class DialogTags {
@@ -13,6 +13,6 @@ public class DialogTags {
    }
 
    private static TagKey<Dialog> create(String var0) {
-      return TagKey.<Dialog>create(Registries.DIALOG, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Dialog>create(Registries.DIALOG, Identifier.withDefaultNamespace(var0));
    }
 }

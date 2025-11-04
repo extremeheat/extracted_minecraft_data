@@ -3,7 +3,7 @@ package net.minecraft.gametest.framework;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

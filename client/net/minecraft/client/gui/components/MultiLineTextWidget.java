@@ -2,12 +2,12 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import java.util.OptionalInt;
-import net.minecraft.Util;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.SingleKeyCache;
+import net.minecraft.util.Util;
 
 public class MultiLineTextWidget extends AbstractStringWidget {
    private OptionalInt maxWidth;

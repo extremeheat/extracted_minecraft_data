@@ -104,7 +104,7 @@ public class BrushableBlockEntity extends BlockEntity {
                var10001 = (ItemStack)var6.getFirst();
                break;
             default:
-               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var6.size());
+               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.identifier(), var6.size());
                var10001 = (ItemStack)var6.getFirst();
          }
 

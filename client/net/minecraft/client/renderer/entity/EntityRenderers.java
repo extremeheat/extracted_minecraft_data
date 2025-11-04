@@ -150,7 +150,7 @@ public class EntityRenderers {
       register(EntityType.MINECART, (var0) -> new MinecartRenderer(var0, ModelLayers.MINECART));
       register(EntityType.MOOSHROOM, MushroomCowRenderer::new);
       register(EntityType.MULE, (var0) -> new DonkeyRenderer(var0, DonkeyRenderer.Type.MULE));
-      register(EntityType.NAUTILUS, (var0) -> new NautilusRenderer(var0, NautilusRenderer.Type.NAUTILUS));
+      register(EntityType.NAUTILUS, NautilusRenderer::new);
       register(EntityType.OAK_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.OAK_BOAT));
       register(EntityType.OAK_CHEST_BOAT, (var0) -> new BoatRenderer(var0, ModelLayers.OAK_CHEST_BOAT));
       register(EntityType.OCELOT, OcelotRenderer::new);
@@ -213,7 +213,7 @@ public class EntityRenderers {
       register(EntityType.ZOGLIN, ZoglinRenderer::new);
       register(EntityType.ZOMBIE, ZombieRenderer::new);
       register(EntityType.ZOMBIE_HORSE, (var0) -> new UndeadHorseRenderer(var0, UndeadHorseRenderer.Type.ZOMBIE));
-      register(EntityType.ZOMBIE_NAUTILUS, (var0) -> new NautilusRenderer(var0, NautilusRenderer.Type.ZOMBIE_NAUTILUS));
+      register(EntityType.ZOMBIE_NAUTILUS, ZombieNautilusRenderer::new);
       register(EntityType.ZOMBIE_VILLAGER, ZombieVillagerRenderer::new);
       register(EntityType.ZOMBIFIED_PIGLIN, (var0) -> new ZombifiedPiglinRenderer(var0, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_ARMOR));
    }

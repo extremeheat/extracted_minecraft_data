@@ -22,7 +22,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogAction;
 import net.minecraft.server.dialog.Input;
@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 public abstract class DialogScreen<T extends Dialog> extends Screen {
    public static final Component DISCONNECT = Component.translatable("menu.custom_screen_info.disconnect");
    private static final int WARNING_BUTTON_SIZE = 20;
-   private static final WidgetSprites WARNING_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("dialog/warning_button"), ResourceLocation.withDefaultNamespace("dialog/warning_button_disabled"), ResourceLocation.withDefaultNamespace("dialog/warning_button_highlighted"));
+   private static final WidgetSprites WARNING_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("dialog/warning_button"), Identifier.withDefaultNamespace("dialog/warning_button_disabled"), Identifier.withDefaultNamespace("dialog/warning_button_highlighted"));
    private final T dialog;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final @Nullable Screen previousScreen;

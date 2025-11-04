@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
@@ -28,8 +28,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.ServerScoreboard;
@@ -273,10 +273,10 @@ public class EntitySelectorOptions {
                }
 
                if (var0.isTag()) {
-                  TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(var0.getReader()));
+                  TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, Identifier.read(var0.getReader()));
                   var0.addPredicate((var2x) -> var2x.getType().is(var3) != var2);
                } else {
-                  ResourceLocation var5 = ResourceLocation.read(var0.getReader());
+                  Identifier var5 = Identifier.read(var0.getReader());
                   EntityType var4 = (EntityType)BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
                      var0.getReader().setCursor(var1);
                      return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var5.toString());
@@ -377,7 +377,7 @@ public class EntitySelectorOptions {
 
             while(var1.canRead() && var1.peek() != '}') {
                var1.skipWhitespace();
-               ResourceLocation var3 = ResourceLocation.read(var1);
+               Identifier var3 = Identifier.read(var1);
                var1.skipWhitespace();
                var1.expect('=');
                var1.skipWhitespace();
@@ -435,7 +435,7 @@ public class EntitySelectorOptions {
                      ServerAdvancementManager var4 = var2x.level().getServer().getAdvancements();
 
                      for(Map.Entry var6 : var2.entrySet()) {
-                        AdvancementHolder var7 = var4.get((ResourceLocation)var6.getKey());
+                        AdvancementHolder var7 = var4.get((Identifier)var6.getKey());
                         if (var7 == null || !((Predicate)var6.getValue()).test(var3.getOrStartProgress(var7))) {
                            return false;
                         }
@@ -451,7 +451,7 @@ public class EntitySelectorOptions {
          }, (var0) -> !var0.hasAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
          register("predicate", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
-            ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, ResourceLocation.read(var0.getReader()));
+            ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, Identifier.read(var0.getReader()));
             var0.addPredicate((var2x) -> {
                Level var4 = var2x.level();
                if (var4 instanceof ServerLevel var3) {

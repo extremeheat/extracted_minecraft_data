@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
@@ -124,10 +124,10 @@ public interface ClickEvent {
       }
    }
 
-   public static record Custom(ResourceLocation id, Optional<Tag> payload) implements ClickEvent {
-      public static final MapCodec<Custom> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(Custom::id), ExtraCodecs.NBT.optionalFieldOf("payload").forGetter(Custom::payload)).apply(var0, Custom::new));
+   public static record Custom(Identifier id, Optional<Tag> payload) implements ClickEvent {
+      public static final MapCodec<Custom> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(Custom::id), ExtraCodecs.NBT.optionalFieldOf("payload").forGetter(Custom::payload)).apply(var0, Custom::new));
 
-      public Custom(ResourceLocation var1, Optional<Tag> var2) {
+      public Custom(Identifier var1, Optional<Tag> var2) {
          super();
          this.id = var1;
          this.payload = var2;

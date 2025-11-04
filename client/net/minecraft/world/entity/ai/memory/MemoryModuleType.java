@@ -13,7 +13,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -158,11 +158,11 @@ public class MemoryModuleType<U> {
    }
 
    private static <U> MemoryModuleType<U> register(String var0, Codec<U> var1) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType(Optional.of(var1)));
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.of(var1)));
    }
 
    private static <U> MemoryModuleType<U> register(String var0) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType(Optional.empty()));
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.empty()));
    }
 
    static {

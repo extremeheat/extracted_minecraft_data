@@ -3,8 +3,8 @@ package net.minecraft.util.random;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
-import net.minecraft.Util;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 
 public class WeightedRandom {
    private WeightedRandom() {

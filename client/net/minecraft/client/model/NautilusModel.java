@@ -17,8 +17,8 @@ public class NautilusModel extends EntityModel<NautilusRenderState> {
    private static final float SWIM_ANIMATION_SCALE_FACTOR = 3.0F;
    private static final float IDLE_SWIM_ANIMATION_SPEED = 0.2F;
    private static final float IDLE_SWIM_ANIMATION_SCALE = 5.0F;
-   private final ModelPart body;
-   private final ModelPart nautilus;
+   protected final ModelPart body;
+   protected final ModelPart nautilus;
    private final KeyframeAnimation swimAnimation;
 
    public NautilusModel(ModelPart var1) {

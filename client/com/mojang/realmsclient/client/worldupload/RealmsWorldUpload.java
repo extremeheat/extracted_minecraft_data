@@ -15,8 +15,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.User;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

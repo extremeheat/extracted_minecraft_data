@@ -2,7 +2,6 @@ package net.minecraft.client.gui;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.client.gui.font.ActiveArea;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Vector2f;
@@ -131,11 +131,16 @@ public interface ActiveTextCollector {
       }
 
       public Parameters withScissor(ScreenRectangle var1) {
-         return new Parameters(this.pose, this.opacity, var1);
+         return var1.equals(this.scissor) ? this : new Parameters(this.pose, this.opacity, var1);
       }
 
       public Parameters withScissor(int var1, int var2, int var3, int var4) {
-         return this.withScissor((new ScreenRectangle(var1, var3, var2 - var1, var4 - var3)).transformAxisAligned(this.pose));
+         ScreenRectangle var5 = (new ScreenRectangle(var1, var3, var2 - var1, var4 - var3)).transformAxisAligned(this.pose);
+         if (this.scissor != null) {
+            var5 = (ScreenRectangle)Objects.requireNonNullElse(this.scissor.intersection(var5), ScreenRectangle.empty());
+         }
+
+         return this.withScissor(var5);
       }
    }
 

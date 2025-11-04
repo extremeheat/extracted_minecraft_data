@@ -8,17 +8,17 @@ import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 
 public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> extends AbstractRecipeBookScreen<T> {
-   private final ResourceLocation texture;
-   private final ResourceLocation litProgressSprite;
-   private final ResourceLocation burnProgressSprite;
+   private final Identifier texture;
+   private final Identifier litProgressSprite;
+   private final Identifier burnProgressSprite;
 
-   public AbstractFurnaceScreen(T var1, Inventory var2, Component var3, Component var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7, List<RecipeBookComponent.TabInfo> var8) {
+   public AbstractFurnaceScreen(T var1, Inventory var2, Component var3, Component var4, Identifier var5, Identifier var6, Identifier var7, List<RecipeBookComponent.TabInfo> var8) {
       super(var1, new FurnaceRecipeBookComponent(var1, var4, var8), var2, var3);
       this.texture = var5;
       this.litProgressSprite = var6;

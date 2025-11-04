@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
@@ -22,10 +22,10 @@ import org.joml.Vector3f;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
    private final CopperGolemStatueModel model;
-   private final ResourceLocation texture;
+   private final Identifier texture;
    static final Map<CopperGolemStatueBlock.Pose, ModelLayerLocation> MODELS;
 
-   public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, ResourceLocation var2) {
+   public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, Identifier var2) {
       super();
       this.model = var1;
       this.texture = var2;
@@ -51,14 +51,14 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       MODELS = Map.of(CopperGolemStatueBlock.Pose.STANDING, ModelLayers.COPPER_GOLEM, CopperGolemStatueBlock.Pose.SITTING, ModelLayers.COPPER_GOLEM_SITTING, CopperGolemStatueBlock.Pose.STAR, ModelLayers.COPPER_GOLEM_STAR, CopperGolemStatueBlock.Pose.RUNNING, ModelLayers.COPPER_GOLEM_RUNNING);
    }
 
-   public static record Unbaked(ResourceLocation texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(var0, Unbaked::new));
 
       public Unbaked(WeatheringCopper.WeatherState var1, CopperGolemStatueBlock.Pose var2) {
          this(CopperGolemOxidationLevels.getOxidationLevel(var1).texture(), var2);
       }
 
-      public Unbaked(ResourceLocation var1, CopperGolemStatueBlock.Pose var2) {
+      public Unbaked(Identifier var1, CopperGolemStatueBlock.Pose var2) {
          super();
          this.texture = var1;
          this.pose = var2;

@@ -10,7 +10,6 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
-import net.minecraft.Util;
 import net.minecraft.client.ClientBootstrap;
 import net.minecraft.client.data.models.EquipmentAssetProvider;
 import net.minecraft.client.data.models.ModelProvider;
@@ -18,6 +17,7 @@ import net.minecraft.client.data.models.WaypointStyleProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.util.Util;
 
 public class Main {
    public Main() {

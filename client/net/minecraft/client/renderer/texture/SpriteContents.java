@@ -31,7 +31,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.metadata.animation.AnimationFrame;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putMat4f().putFloat().putFloat().putInt().get();
-   final ResourceLocation name;
+   final Identifier name;
    final int width;
    final int height;
    private final NativeImage originalImage;
@@ -49,11 +49,11 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private final List<MetadataSectionType.WithValue<?>> additionalMetadata;
    private final MipmapStrategy mipmapStrategy;
 
-   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3) {
+   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3) {
       this(var1, var2, var3, Optional.empty(), List.of(), MipmapStrategy.AUTO);
    }
 
-   public SpriteContents(ResourceLocation var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, MipmapStrategy var6) {
+   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, MipmapStrategy var6) {
       super();
       this.name = var1;
       this.width = var2.width();
@@ -151,7 +151,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return this.height;
    }
 
-   public ResourceLocation name() {
+   public Identifier name() {
       return this.name;
    }
 
@@ -304,7 +304,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       }
 
       public void drawToAtlas(RenderPass var1, GpuBufferSlice var2) {
-         GpuSampler var3 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
+         GpuSampler var3 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
          List var4 = this.animationInfo.frames;
          int var5 = ((FrameInfo)var4.get(this.frame)).index;
          float var6 = (float)this.subFrame / (float)((FrameInfo)this.animationInfo.frames.get(this.frame)).time;

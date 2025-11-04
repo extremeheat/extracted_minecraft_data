@@ -5,18 +5,18 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.phys.AABB;
 
 public class SnifferRenderer extends AgeableMobRenderer<Sniffer, SnifferRenderState, SnifferModel> {
-   private static final ResourceLocation SNIFFER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/sniffer/sniffer.png");
+   private static final Identifier SNIFFER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sniffer/sniffer.png");
 
    public SnifferRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SnifferModel(var1.bakeLayer(ModelLayers.SNIFFER)), new SnifferModel(var1.bakeLayer(ModelLayers.SNIFFER_BABY)), 1.1F);
    }
 
-   public ResourceLocation getTextureLocation(SnifferRenderState var1) {
+   public Identifier getTextureLocation(SnifferRenderState var1) {
       return SNIFFER_LOCATION;
    }
 
@@ -39,7 +39,7 @@ public class SnifferRenderer extends AgeableMobRenderer<Sniffer, SnifferRenderSt
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SnifferRenderState)var1);
    }
 

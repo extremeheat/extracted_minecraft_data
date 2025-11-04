@@ -7,10 +7,10 @@ import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.CamelRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class CamelHuskRenderer extends CamelRenderer {
-   private static final ResourceLocation CAMEL_HUSK_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/camel/camel_husk.png");
+   private static final Identifier CAMEL_HUSK_LOCATION = Identifier.withDefaultNamespace("textures/entity/camel/camel_husk.png");
 
    public CamelHuskRenderer(EntityRendererProvider.Context var1) {
       super(var1);
@@ -20,12 +20,12 @@ public class CamelHuskRenderer extends CamelRenderer {
       return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_HUSK_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_HUSK_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_HUSK_BABY_SADDLE)));
    }
 
-   public ResourceLocation getTextureLocation(CamelRenderState var1) {
+   public Identifier getTextureLocation(CamelRenderState var1) {
       return CAMEL_HUSK_LOCATION;
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CamelRenderState)var1);
    }
 }

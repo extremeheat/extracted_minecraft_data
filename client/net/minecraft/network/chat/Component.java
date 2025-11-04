@@ -20,7 +20,7 @@ import net.minecraft.network.chat.contents.SelectorContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.chat.contents.data.DataSource;
 import net.minecraft.network.chat.contents.objects.ObjectInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
@@ -212,7 +212,7 @@ public interface Component extends Message, FormattedText {
       return literal(var0.toString());
    }
 
-   static Component translationArg(ResourceLocation var0) {
+   static Component translationArg(Identifier var0) {
       return literal(var0.toString());
    }
 

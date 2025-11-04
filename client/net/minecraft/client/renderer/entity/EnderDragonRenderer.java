@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -31,10 +31,10 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
-   public static final ResourceLocation CRYSTAL_BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
-   private static final ResourceLocation DRAGON_EXPLODING_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon_exploding.png");
-   private static final ResourceLocation DRAGON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
-   private static final ResourceLocation DRAGON_EYES_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
+   public static final Identifier CRYSTAL_BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
+   private static final Identifier DRAGON_EXPLODING_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_exploding.png");
+   private static final Identifier DRAGON_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
+   private static final Identifier DRAGON_EYES_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
    private static final RenderType RENDER_TYPE;
    private static final RenderType DECAL;
    private static final RenderType EYES;
@@ -135,8 +135,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          float var9x = 0.0F;
 
          for(int var10x = 1; var10x <= 8; ++var10x) {
-            float var11 = Mth.sin((float)var10x * 6.2831855F / 8.0F) * 0.75F;
-            float var12 = Mth.cos((float)var10x * 6.2831855F / 8.0F) * 0.75F;
+            float var11 = Mth.sin((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
+            float var12 = Mth.cos((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
             float var13 = (float)var10x / 8.0F;
             var5x.addVertex(var4x, var7 * 0.2F, var8x * 0.2F, 0.0F).setColor(-16777216).setUv(var9x, var9).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
             var5x.addVertex(var4x, var7, var8x, var8).setColor(-1).setUv(var9x, var10).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);

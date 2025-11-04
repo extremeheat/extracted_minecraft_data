@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -120,10 +120,10 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return -1;
    }
 
-   public abstract ResourceLocation getTextureLocation(S var1);
+   public abstract Identifier getTextureLocation(S var1);
 
    protected @Nullable RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
-      ResourceLocation var5 = this.getTextureLocation(var1);
+      Identifier var5 = this.getTextureLocation(var1);
       if (var3) {
          return RenderTypes.itemEntityTranslucentCull(var5);
       } else if (var2) {

@@ -69,23 +69,23 @@ public class StriderModel extends EntityModel<StriderRenderState> {
       }
 
       float var4 = 1.5F;
-      this.body.zRot = 0.1F * Mth.sin(var2 * 1.5F) * 4.0F * var3;
+      this.body.zRot = 0.1F * Mth.sin((double)(var2 * 1.5F)) * 4.0F * var3;
       this.body.y = 2.0F;
       ModelPart var10000 = this.body;
-      var10000.y -= 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
-      this.leftLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F) * 2.0F * var3;
-      this.rightLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F + 3.1415927F) * 2.0F * var3;
-      this.leftLeg.zRot = 0.17453292F * Mth.cos(var2 * 1.5F * 0.5F) * var3;
-      this.rightLeg.zRot = 0.17453292F * Mth.cos(var2 * 1.5F * 0.5F + 3.1415927F) * var3;
-      this.leftLeg.y = 8.0F + 2.0F * Mth.sin(var2 * 1.5F * 0.5F + 3.1415927F) * 2.0F * var3;
-      this.rightLeg.y = 8.0F + 2.0F * Mth.sin(var2 * 1.5F * 0.5F) * 2.0F * var3;
+      var10000.y -= 2.0F * Mth.cos((double)(var2 * 1.5F)) * 2.0F * var3;
+      this.leftLeg.xRot = Mth.sin((double)(var2 * 1.5F * 0.5F)) * 2.0F * var3;
+      this.rightLeg.xRot = Mth.sin((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * 2.0F * var3;
+      this.leftLeg.zRot = 0.17453292F * Mth.cos((double)(var2 * 1.5F * 0.5F)) * var3;
+      this.rightLeg.zRot = 0.17453292F * Mth.cos((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * var3;
+      this.leftLeg.y = 8.0F + 2.0F * Mth.sin((double)(var2 * 1.5F * 0.5F + 3.1415927F)) * 2.0F * var3;
+      this.rightLeg.y = 8.0F + 2.0F * Mth.sin((double)(var2 * 1.5F * 0.5F)) * 2.0F * var3;
       this.rightBottomBristle.zRot = -1.2217305F;
       this.rightMiddleBristle.zRot = -1.134464F;
       this.rightTopBristle.zRot = -0.87266463F;
       this.leftTopBristle.zRot = 0.87266463F;
       this.leftMiddleBristle.zRot = 1.134464F;
       this.leftBottomBristle.zRot = 1.2217305F;
-      float var5 = Mth.cos(var2 * 1.5F + 3.1415927F) * var3;
+      float var5 = Mth.cos((double)(var2 * 1.5F + 3.1415927F)) * var3;
       var10000 = this.rightBottomBristle;
       var10000.zRot += var5 * 1.3F;
       var10000 = this.rightMiddleBristle;
@@ -101,16 +101,16 @@ public class StriderModel extends EntityModel<StriderRenderState> {
       float var6 = 1.0F;
       float var7 = 1.0F;
       var10000 = this.rightBottomBristle;
-      var10000.zRot += 0.05F * Mth.sin(var1.ageInTicks * 1.0F * -0.4F);
+      var10000.zRot += 0.05F * Mth.sin((double)(var1.ageInTicks * 1.0F * -0.4F));
       var10000 = this.rightMiddleBristle;
-      var10000.zRot += 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.2F);
+      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.2F));
       var10000 = this.rightTopBristle;
-      var10000.zRot += 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.4F);
+      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.4F));
       var10000 = this.leftTopBristle;
-      var10000.zRot += 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.4F);
+      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.4F));
       var10000 = this.leftMiddleBristle;
-      var10000.zRot += 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.2F);
+      var10000.zRot += 0.1F * Mth.sin((double)(var1.ageInTicks * 1.0F * 0.2F));
       var10000 = this.leftBottomBristle;
-      var10000.zRot += 0.05F * Mth.sin(var1.ageInTicks * 1.0F * -0.4F);
+      var10000.zRot += 0.05F * Mth.sin((double)(var1.ageInTicks * 1.0F * -0.4F));
    }
 }

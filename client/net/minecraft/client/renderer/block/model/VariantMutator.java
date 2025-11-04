@@ -2,13 +2,13 @@ package net.minecraft.client.renderer.block.model;
 
 import com.mojang.math.Quadrant;
 import java.util.function.UnaryOperator;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @FunctionalInterface
 public interface VariantMutator extends UnaryOperator<Variant> {
    VariantProperty<Quadrant> X_ROT = Variant::withXRot;
    VariantProperty<Quadrant> Y_ROT = Variant::withYRot;
-   VariantProperty<ResourceLocation> MODEL = Variant::withModel;
+   VariantProperty<Identifier> MODEL = Variant::withModel;
    VariantProperty<Boolean> UV_LOCK = Variant::withUvLock;
 
    default VariantMutator then(VariantMutator var1) {

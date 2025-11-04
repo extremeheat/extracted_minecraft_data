@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.RandomizableContainer;
@@ -231,7 +231,7 @@ public class EndCityPieces {
 
    public static class EndCityPiece extends TemplateStructurePiece {
       public EndCityPiece(StructureTemplateManager var1, String var2, BlockPos var3, Rotation var4, boolean var5) {
-         super(StructurePieceType.END_CITY_PIECE, 0, var1, makeResourceLocation(var2), var2, makeSettings(var5, var4), var3);
+         super(StructurePieceType.END_CITY_PIECE, 0, var1, makeIdentifier(var2), var2, makeSettings(var5, var4), var3);
       }
 
       public EndCityPiece(StructureTemplateManager var1, CompoundTag var2) {
@@ -243,12 +243,12 @@ public class EndCityPieces {
          return (new StructurePlaceSettings()).setIgnoreEntities(true).addProcessor(var2).setRotation(var1);
       }
 
-      protected ResourceLocation makeTemplateLocation() {
-         return makeResourceLocation(this.templateName);
+      protected Identifier makeTemplateLocation() {
+         return makeIdentifier(this.templateName);
       }
 
-      private static ResourceLocation makeResourceLocation(String var0) {
-         return ResourceLocation.withDefaultNamespace("end_city/" + var0);
+      private static Identifier makeIdentifier(String var0) {
+         return Identifier.withDefaultNamespace("end_city/" + var0);
       }
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {

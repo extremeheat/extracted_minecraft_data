@@ -310,8 +310,8 @@ public final class CompoundTag implements Tag {
       return this.getByteOr(var1, (byte)(var2 ? 1 : 0)) != 0;
    }
 
-   public void remove(String var1) {
-      this.tags.remove(var1);
+   public @Nullable Tag remove(String var1) {
+      return (Tag)this.tags.remove(var1);
    }
 
    public String toString() {

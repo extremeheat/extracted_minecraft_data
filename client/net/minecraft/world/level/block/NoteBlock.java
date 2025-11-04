@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -130,7 +130,7 @@ public class NoteBlock extends Block {
 
       Holder var10;
       if (var7.hasCustomSound()) {
-         ResourceLocation var9 = this.getCustomSoundId(var2, var3);
+         Identifier var9 = this.getCustomSoundId(var2, var3);
          if (var9 == null) {
             return false;
          }
@@ -144,7 +144,7 @@ public class NoteBlock extends Block {
       return true;
    }
 
-   private @Nullable ResourceLocation getCustomSoundId(Level var1, BlockPos var2) {
+   private @Nullable Identifier getCustomSoundId(Level var1, BlockPos var2) {
       BlockEntity var4 = var1.getBlockEntity(var2.above());
       if (var4 instanceof SkullBlockEntity var3) {
          return var3.getNoteBlockSound();

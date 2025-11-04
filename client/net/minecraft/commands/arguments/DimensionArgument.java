@@ -15,12 +15,12 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
-public class DimensionArgument implements ArgumentType<ResourceLocation> {
+public class DimensionArgument implements ArgumentType<Identifier> {
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_INVALID_VALUE;
 
@@ -28,12 +28,12 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
       super();
    }
 
-   public ResourceLocation parse(StringReader var1) throws CommandSyntaxException {
-      return ResourceLocation.read(var1);
+   public Identifier parse(StringReader var1) throws CommandSyntaxException {
+      return Identifier.read(var1);
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var1.getSource()).levels().stream().map(ResourceKey::location), var2) : Suggestions.empty();
+      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var1.getSource()).levels().stream().map(ResourceKey::identifier), var2) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {
@@ -45,7 +45,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
    }
 
    public static ServerLevel getDimension(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      ResourceLocation var2 = (ResourceLocation)var0.getArgument(var1, ResourceLocation.class);
+      Identifier var2 = (Identifier)var0.getArgument(var1, Identifier.class);
       ResourceKey var3 = ResourceKey.create(Registries.DIMENSION, var2);
       ServerLevel var4 = ((CommandSourceStack)var0.getSource()).getServer().getLevel(var3);
       if (var4 == null) {
@@ -61,7 +61,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
    }
 
    static {
-      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> var0.location().toString()).collect(Collectors.toList());
+      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> var0.identifier().toString()).collect(Collectors.toList());
       ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.dimension.invalid", var0));
    }
 }

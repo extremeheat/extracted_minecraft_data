@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.EnumSet;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.Vec3i;
@@ -12,6 +11,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -214,8 +214,8 @@ public class Vec3 implements Position {
    }
 
    public Vec3 xRot(float var1) {
-      float var2 = Mth.cos(var1);
-      float var3 = Mth.sin(var1);
+      float var2 = Mth.cos((double)var1);
+      float var3 = Mth.sin((double)var1);
       double var4 = this.x;
       double var6 = this.y * (double)var2 + this.z * (double)var3;
       double var8 = this.z * (double)var2 - this.y * (double)var3;
@@ -223,8 +223,8 @@ public class Vec3 implements Position {
    }
 
    public Vec3 yRot(float var1) {
-      float var2 = Mth.cos(var1);
-      float var3 = Mth.sin(var1);
+      float var2 = Mth.cos((double)var1);
+      float var3 = Mth.sin((double)var1);
       double var4 = this.x * (double)var2 + this.z * (double)var3;
       double var6 = this.y;
       double var8 = this.z * (double)var2 - this.x * (double)var3;
@@ -232,8 +232,8 @@ public class Vec3 implements Position {
    }
 
    public Vec3 zRot(float var1) {
-      float var2 = Mth.cos(var1);
-      float var3 = Mth.sin(var1);
+      float var2 = Mth.cos((double)var1);
+      float var3 = Mth.sin((double)var1);
       double var4 = this.x * (double)var2 + this.y * (double)var3;
       double var6 = this.y * (double)var2 - this.x * (double)var3;
       double var8 = this.z;
@@ -249,10 +249,10 @@ public class Vec3 implements Position {
    }
 
    public static Vec3 directionFromRotation(float var0, float var1) {
-      float var2 = Mth.cos(-var1 * 0.017453292F - 3.1415927F);
-      float var3 = Mth.sin(-var1 * 0.017453292F - 3.1415927F);
-      float var4 = -Mth.cos(-var0 * 0.017453292F);
-      float var5 = Mth.sin(-var0 * 0.017453292F);
+      float var2 = Mth.cos((double)(-var1 * 0.017453292F - 3.1415927F));
+      float var3 = Mth.sin((double)(-var1 * 0.017453292F - 3.1415927F));
+      float var4 = -Mth.cos((double)(-var0 * 0.017453292F));
+      float var5 = Mth.sin((double)(-var0 * 0.017453292F));
       return new Vec3((double)(var3 * var4), (double)var5, (double)(var2 * var4));
    }
 
@@ -306,12 +306,12 @@ public class Vec3 implements Position {
    }
 
    public static Vec3 applyLocalCoordinatesToRotation(Vec2 var0, Vec3 var1) {
-      float var2 = Mth.cos((var0.y + 90.0F) * 0.017453292F);
-      float var3 = Mth.sin((var0.y + 90.0F) * 0.017453292F);
-      float var4 = Mth.cos(-var0.x * 0.017453292F);
-      float var5 = Mth.sin(-var0.x * 0.017453292F);
-      float var6 = Mth.cos((-var0.x + 90.0F) * 0.017453292F);
-      float var7 = Mth.sin((-var0.x + 90.0F) * 0.017453292F);
+      float var2 = Mth.cos((double)((var0.y + 90.0F) * 0.017453292F));
+      float var3 = Mth.sin((double)((var0.y + 90.0F) * 0.017453292F));
+      float var4 = Mth.cos((double)(-var0.x * 0.017453292F));
+      float var5 = Mth.sin((double)(-var0.x * 0.017453292F));
+      float var6 = Mth.cos((double)((-var0.x + 90.0F) * 0.017453292F));
+      float var7 = Mth.sin((double)((-var0.x + 90.0F) * 0.017453292F));
       Vec3 var8 = new Vec3((double)(var2 * var4), (double)var5, (double)(var3 * var4));
       Vec3 var9 = new Vec3((double)(var2 * var6), (double)var7, (double)(var3 * var6));
       Vec3 var10 = var8.cross(var9).scale(-1.0);
@@ -323,6 +323,10 @@ public class Vec3 implements Position {
 
    public Vec3 addLocalCoordinates(Vec3 var1) {
       return applyLocalCoordinatesToRotation(this.rotation(), var1);
+   }
+
+   public boolean isFinite() {
+      return Double.isFinite(this.x) && Double.isFinite(this.y) && Double.isFinite(this.z);
    }
 
    static {

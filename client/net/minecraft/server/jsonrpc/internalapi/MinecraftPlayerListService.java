@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
 import net.minecraft.server.jsonrpc.methods.ClientInfo;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public interface MinecraftPlayerListService {

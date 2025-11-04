@@ -46,9 +46,9 @@ public class CreeperModel extends EntityModel<CreeperRenderState> {
       this.head.xRot = var1.xRot * 0.017453292F;
       float var2 = var1.walkAnimationSpeed;
       float var3 = var1.walkAnimationPos;
-      this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
-      this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
-      this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
-      this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
+      this.rightHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
+      this.leftHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
+      this.rightFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
+      this.leftFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
    }
 }

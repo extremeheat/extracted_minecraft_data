@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -51,10 +51,10 @@ public class SpecialModelWrapper<T> implements ItemModel {
       this.properties.applyToLayer(var8, var4);
    }
 
-   public static record Unbaked(ResourceLocation base, SpecialModelRenderer.Unbaked specialModel) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("base").forGetter(Unbaked::base), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier base, SpecialModelRenderer.Unbaked specialModel) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("base").forGetter(Unbaked::base), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(var0, Unbaked::new));
 
-      public Unbaked(ResourceLocation var1, SpecialModelRenderer.Unbaked var2) {
+      public Unbaked(Identifier var1, SpecialModelRenderer.Unbaked var2) {
          super();
          this.base = var1;
          this.specialModel = var2;

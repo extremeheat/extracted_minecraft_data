@@ -30,13 +30,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.StrictJsonParser;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
@@ -94,6 +95,7 @@ public class ServerStatsCounter extends StatsCounter {
 
    public void save() {
       try {
+         FileUtil.createDirectoriesSafe(this.file.getParent());
          BufferedWriter var1 = Files.newBufferedWriter(this.file, StandardCharsets.UTF_8);
 
          try {

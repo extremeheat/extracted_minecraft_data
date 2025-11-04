@@ -22,7 +22,7 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurationTab {
@@ -100,7 +100,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       return (var0.preference().equals(RegionSelectionPreference.MANUAL) && var0.region() != null ? Component.translatable(var0.region().translationKey) : Component.translatable(var0.preference().translationKey)).withStyle(ChatFormatting.GRAY);
    }
 
-   private static ResourceLocation getServiceQualityIcon(RegionSelection var0, Map<RealmsRegion, ServiceQuality> var1) {
+   private static Identifier getServiceQualityIcon(RegionSelection var0, Map<RealmsRegion, ServiceQuality> var1) {
       if (var0.region() != null && var1.containsKey(var0.region())) {
          ServiceQuality var2 = (ServiceQuality)var1.getOrDefault(var0.region(), ServiceQuality.UNKNOWN);
          return var2.getIcon();

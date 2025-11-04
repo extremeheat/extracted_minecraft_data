@@ -6,13 +6,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 
 public class RecipeBookTabButton extends StateSwitchingButton {
-   private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/tab"), ResourceLocation.withDefaultNamespace("recipe_book/tab_selected"));
+   private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/tab"), Identifier.withDefaultNamespace("recipe_book/tab_selected"));
    private final RecipeBookComponent.TabInfo tabInfo;
    private static final float ANIMATION_TIME = 15.0F;
    private float animationTime;
@@ -47,7 +47,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
             var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
          }
 
-         ResourceLocation var7 = this.sprites.get(true, this.isStateTriggered);
+         Identifier var7 = this.sprites.get(true, this.isStateTriggered);
          int var6 = this.getX();
          if (this.isStateTriggered) {
             var6 -= 2;

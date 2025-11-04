@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -13,13 +12,14 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -61,7 +61,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public class Shulker extends AbstractGolem implements Enemy {
-   private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
+   private static final Identifier COVERED_ARMOR_MODIFIER_ID = Identifier.withDefaultNamespace("covered");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER;
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID;
    protected static final EntityDataAccessor<Byte> DATA_PEEK_ID;
@@ -192,7 +192,7 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    private static float getPhysicalPeek(float var0) {
-      return 0.5F - Mth.sin((0.5F + var0) * 3.1415927F) * 0.5F;
+      return 0.5F - Mth.sin((double)((0.5F + var0) * 3.1415927F)) * 0.5F;
    }
 
    private boolean updatePeekAmount() {
@@ -294,7 +294,7 @@ public class Shulker extends AbstractGolem implements Enemy {
          BlockPos var8 = this.blockPosition();
          if (!var8.equals(var7)) {
             this.entityData.set(DATA_PEEK_ID, (byte)0);
-            this.hasImpulse = true;
+            this.needsSync = true;
             if (this.level().isClientSide() && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
                this.clientOldAttachPosition = var7;
                this.clientSideTeleportInterpolation = 6;

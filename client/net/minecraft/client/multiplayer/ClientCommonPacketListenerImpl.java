@@ -22,7 +22,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -69,9 +68,10 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
 import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.dialog.Dialog;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -86,7 +86,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final @Nullable Screen postDisconnectScreen;
    protected boolean isTransferring;
    private final List<DeferredPacket> deferredPackets = new ArrayList();
-   protected final Map<ResourceLocation, byte[]> serverCookies;
+   protected final Map<Identifier, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
    private ServerLinks serverLinks;
    protected final Map<UUID, PlayerInfo> seenPlayers;
@@ -472,7 +472,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          ClientCommonPacketListenerImpl.this.showDialog(var1, this, var2);
       }
 
-      public void sendCustomAction(ResourceLocation var1, Optional<Tag> var2) {
+      public void sendCustomAction(Identifier var1, Optional<Tag> var2) {
          ClientCommonPacketListenerImpl.this.send(new ServerboundCustomClickActionPacket(var1, var2));
       }
 

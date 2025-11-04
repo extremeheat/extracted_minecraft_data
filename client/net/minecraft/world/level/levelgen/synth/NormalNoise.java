@@ -7,11 +7,11 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 
 public class NormalNoise {
    private static final double INPUT_FACTOR = 1.0181268882175227;

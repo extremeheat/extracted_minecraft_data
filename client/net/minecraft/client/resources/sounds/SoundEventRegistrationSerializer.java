@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.FloatProvider;
@@ -40,7 +40,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
          for(int var4 = 0; var4 < var3.size(); ++var4) {
             JsonElement var5 = var3.get(var4);
             if (GsonHelper.isStringValue(var5)) {
-               ResourceLocation var6 = ResourceLocation.parse(GsonHelper.convertToString(var5, "sound"));
+               Identifier var6 = Identifier.parse(GsonHelper.convertToString(var5, "sound"));
                var2.add(new Sound(var6, DEFAULT_FLOAT, DEFAULT_FLOAT, 1, Sound.Type.FILE, false, false, 16));
             } else {
                var2.add(this.getSound(GsonHelper.convertToJsonObject(var5, "sound")));
@@ -52,7 +52,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
    }
 
    private Sound getSound(JsonObject var1) {
-      ResourceLocation var2 = ResourceLocation.parse(GsonHelper.getAsString(var1, "name"));
+      Identifier var2 = Identifier.parse(GsonHelper.getAsString(var1, "name"));
       Sound.Type var3 = this.getType(var1, Sound.Type.FILE);
       float var4 = GsonHelper.getAsFloat(var1, "volume", 1.0F);
       Validate.isTrue(var4 > 0.0F, "Invalid volume", new Object[0]);

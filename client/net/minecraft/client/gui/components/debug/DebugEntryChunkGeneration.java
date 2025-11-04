@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components.debug;
 import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.RandomState;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryChunkGeneration implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("chunk_generation");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("chunk_generation");
 
    public DebugEntryChunkGeneration() {
       super();

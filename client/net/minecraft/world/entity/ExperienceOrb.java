@@ -121,7 +121,7 @@ public class ExperienceOrb extends Entity {
             boolean var2 = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
             if (var2) {
                this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
-               this.hasImpulse = true;
+               this.needsSync = true;
             }
          }
 

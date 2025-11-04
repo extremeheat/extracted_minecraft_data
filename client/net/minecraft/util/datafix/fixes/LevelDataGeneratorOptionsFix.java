@@ -22,8 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.util.LenientJsonParser;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {

@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.login;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LoginPacketTypes {
    public static final PacketType<ClientboundCustomQueryPacket> CLIENTBOUND_CUSTOM_QUERY = createClientbound("custom_query");
@@ -21,10 +21,10 @@ public class LoginPacketTypes {
    }
 
    private static <T extends Packet<ClientLoginPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerLoginPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
    }
 }

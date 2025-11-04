@@ -25,7 +25,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.FormattedCharSequence;
@@ -47,7 +47,7 @@ public class ChatComponent {
    private static final int TIME_BEFORE_MESSAGE_DELETION = 60;
    private static final Component DELETED_CHAT_MESSAGE;
    public static final int MESSAGE_BOTTOM_TO_MESSAGE_TOP = 8;
-   public static final ResourceLocation QUEUE_EXPAND_ID;
+   public static final Identifier QUEUE_EXPAND_ID;
    private static final Style QUEUE_EXPAND_TEXT_STYLE;
    final Minecraft minecraft;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
@@ -91,7 +91,7 @@ public class ChatComponent {
 
    public void render(GuiGraphics var1, Font var2, int var3, int var4, int var5, boolean var6) {
       var1.pose().pushMatrix();
-      this.render(new DrawingGraphicsAccess(var1, var2, var4, var5), var1.guiHeight(), var3, var6);
+      this.render((ChatGraphicsAccess)(var6 ? new DrawingFocusedGraphicsAccess(var1, var2, var4, var5) : new DrawingBackgroundGraphicsAccess(var1)), var1.guiHeight(), var3, var6);
       var1.pose().popMatrix();
    }
 
@@ -440,7 +440,7 @@ public class ChatComponent {
 
    static {
       DELETED_CHAT_MESSAGE = Component.translatable("chat.deleted_marker").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
-      QUEUE_EXPAND_ID = ResourceLocation.withDefaultNamespace("internal/expand_chat_queue");
+      QUEUE_EXPAND_ID = Identifier.withDefaultNamespace("internal/expand_chat_queue");
       QUEUE_EXPAND_TEXT_STYLE = Style.EMPTY.withClickEvent(new ClickEvent.Custom(QUEUE_EXPAND_ID, Optional.empty())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.queue.tooltip")));
    }
 
@@ -524,7 +524,42 @@ public class ChatComponent {
       float calculate(GuiMessage.Line var1);
    }
 
-   static class DrawingGraphicsAccess implements ChatGraphicsAccess, Consumer<Style> {
+   static class DrawingBackgroundGraphicsAccess implements ChatGraphicsAccess {
+      private final GuiGraphics graphics;
+      private final ActiveTextCollector textRenderer;
+      private ActiveTextCollector.Parameters parameters;
+
+      public DrawingBackgroundGraphicsAccess(GuiGraphics var1) {
+         super();
+         this.graphics = var1;
+         this.textRenderer = var1.textRenderer(GuiGraphics.HoveredTextEffects.NONE, (Consumer)null);
+         this.parameters = this.textRenderer.defaultParameters();
+      }
+
+      public void updatePose(Consumer<Matrix3x2f> var1) {
+         var1.accept(this.graphics.pose());
+         this.parameters = this.parameters.withPose(new Matrix3x2f(this.graphics.pose()));
+      }
+
+      public void fill(int var1, int var2, int var3, int var4, int var5) {
+         this.graphics.fill(var1, var2, var3, var4, var5);
+      }
+
+      public boolean handleMessage(int var1, float var2, FormattedCharSequence var3) {
+         this.textRenderer.accept(TextAlignment.LEFT, 0, var1, this.parameters.withOpacity(var2), (FormattedCharSequence)var3);
+         return false;
+      }
+
+      public void handleTag(int var1, int var2, int var3, int var4, float var5, GuiMessageTag var6) {
+         int var7 = ARGB.color(var5, var6.indicatorColor());
+         this.graphics.fill(var1, var2, var3, var4, var7);
+      }
+
+      public void handleTagIcon(int var1, int var2, boolean var3, GuiMessageTag var4, GuiMessageTag.Icon var5) {
+      }
+   }
+
+   static class DrawingFocusedGraphicsAccess implements ChatGraphicsAccess, Consumer<Style> {
       private final GuiGraphics graphics;
       private final Font font;
       private final ActiveTextCollector textRenderer;
@@ -534,7 +569,7 @@ public class ChatComponent {
       private final Vector2f localMousePos = new Vector2f();
       private @Nullable Style hoveredStyle;
 
-      public DrawingGraphicsAccess(GuiGraphics var1, Font var2, int var3, int var4) {
+      public DrawingFocusedGraphicsAccess(GuiGraphics var1, Font var2, int var3, int var4) {
          super();
          this.graphics = var1;
          this.font = var2;

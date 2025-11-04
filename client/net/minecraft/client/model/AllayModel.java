@@ -54,17 +54,17 @@ public class AllayModel extends EntityModel<AllayRenderState> implements ArmedMo
       float var2 = var1.walkAnimationSpeed;
       float var3 = var1.walkAnimationPos;
       float var4 = var1.ageInTicks * 20.0F * 0.017453292F + var3;
-      float var5 = Mth.cos(var4) * 3.1415927F * 0.15F + var2;
+      float var5 = Mth.cos((double)var4) * 3.1415927F * 0.15F + var2;
       float var6 = var1.ageInTicks * 9.0F * 0.017453292F;
       float var7 = Math.min(var2 / 0.3F, 1.0F);
       float var8 = 1.0F - var7;
       float var9 = var1.holdingAnimationProgress;
       if (var1.isDancing) {
          float var10 = var1.ageInTicks * 8.0F * 0.017453292F + var2;
-         float var11 = Mth.cos(var10) * 16.0F * 0.017453292F;
+         float var11 = Mth.cos((double)var10) * 16.0F * 0.017453292F;
          float var12 = var1.spinningProgress;
-         float var13 = Mth.cos(var10) * 14.0F * 0.017453292F;
-         float var14 = Mth.cos(var10) * 30.0F * 0.017453292F;
+         float var13 = Mth.cos((double)var10) * 14.0F * 0.017453292F;
+         float var14 = Mth.cos((double)var10) * 30.0F * 0.017453292F;
          this.root.yRot = var1.isSpinning ? 12.566371F * var12 : this.root.yRot;
          this.root.zRot = var11 * (1.0F - var12);
          this.head.yRot = var14 * (1.0F - var12);
@@ -85,7 +85,7 @@ public class AllayModel extends EntityModel<AllayRenderState> implements ArmedMo
       this.right_arm.xRot = var15;
       this.left_arm.xRot = var15;
       float var16 = var8 * (1.0F - var9);
-      float var17 = 0.43633232F - Mth.cos(var6 + 4.712389F) * 3.1415927F * 0.075F * var16;
+      float var17 = 0.43633232F - Mth.cos((double)(var6 + 4.712389F)) * 3.1415927F * 0.075F * var16;
       this.left_arm.zRot = -var17;
       this.right_arm.zRot = var17;
       this.right_arm.yRot = 0.27925268F * var9;

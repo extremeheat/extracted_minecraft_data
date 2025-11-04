@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
@@ -137,7 +137,7 @@ public class RegistrySetBuilder {
    private <T> HolderLookup.RegistryLookup<T> createLazyFullPatchedRegistries(HolderOwner<T> var1, Cloner.Factory var2, ResourceKey<? extends Registry<? extends T>> var3, HolderLookup.Provider var4, HolderLookup.Provider var5, MutableObject<HolderLookup.Provider> var6) {
       Cloner var7 = var2.cloner(var3);
       if (var7 == null) {
-         throw new NullPointerException("No cloner for " + String.valueOf(var3.location()));
+         throw new NullPointerException("No cloner for " + String.valueOf(var3.identifier()));
       } else {
          HashMap var8 = new HashMap();
          HolderLookup.RegistryLookup var9 = var4.lookupOrThrow(var3);
@@ -268,14 +268,14 @@ public class RegistrySetBuilder {
       }
    }
 
-   static record BuildState(UniversalOwner owner, UniversalLookup lookup, Map<ResourceLocation, HolderGetter<?>> registries, Map<ResourceKey<?>, RegisteredValue<?>> registeredValues, List<RuntimeException> errors) {
+   static record BuildState(UniversalOwner owner, UniversalLookup lookup, Map<Identifier, HolderGetter<?>> registries, Map<ResourceKey<?>, RegisteredValue<?>> registeredValues, List<RuntimeException> errors) {
       final UniversalOwner owner;
       final UniversalLookup lookup;
-      final Map<ResourceLocation, HolderGetter<?>> registries;
+      final Map<Identifier, HolderGetter<?>> registries;
       final Map<ResourceKey<?>, RegisteredValue<?>> registeredValues;
       final List<RuntimeException> errors;
 
-      private BuildState(UniversalOwner var1, UniversalLookup var2, Map<ResourceLocation, HolderGetter<?>> var3, Map<ResourceKey<?>, RegisteredValue<?>> var4, List<RuntimeException> var5) {
+      private BuildState(UniversalOwner var1, UniversalLookup var2, Map<Identifier, HolderGetter<?>> var3, Map<ResourceKey<?>, RegisteredValue<?>> var4, List<RuntimeException> var5) {
          super();
          this.owner = var1;
          this.lookup = var2;
@@ -289,8 +289,8 @@ public class RegistrySetBuilder {
          ArrayList var3 = new ArrayList();
          UniversalLookup var4 = new UniversalLookup(var2);
          ImmutableMap.Builder var5 = ImmutableMap.builder();
-         var0.registries().forEach((var1x) -> var5.put(var1x.key().location(), RegistrySetBuilder.wrapContextLookup(var1x.value())));
-         var1.forEach((var2x) -> var5.put(var2x.location(), var4));
+         var0.registries().forEach((var1x) -> var5.put(var1x.key().identifier(), RegistrySetBuilder.wrapContextLookup(var1x.value())));
+         var1.forEach((var2x) -> var5.put(var2x.identifier(), var4));
          return new BuildState(var2, var4, var5.build(), new HashMap(), var3);
       }
 
@@ -308,7 +308,7 @@ public class RegistrySetBuilder {
             }
 
             public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> var1) {
-               return (HolderGetter)BuildState.this.registries.getOrDefault(var1.location(), BuildState.this.lookup);
+               return (HolderGetter)BuildState.this.registries.getOrDefault(var1.identifier(), BuildState.this.lookup);
             }
          };
       }

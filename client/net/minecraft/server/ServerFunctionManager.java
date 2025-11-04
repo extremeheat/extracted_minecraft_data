@@ -16,7 +16,7 @@ import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 
 public class ServerFunctionManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation TICK_FUNCTION_TAG = ResourceLocation.withDefaultNamespace("tick");
-   private static final ResourceLocation LOAD_FUNCTION_TAG = ResourceLocation.withDefaultNamespace("load");
+   private static final Identifier TICK_FUNCTION_TAG = Identifier.withDefaultNamespace("tick");
+   private static final Identifier LOAD_FUNCTION_TAG = Identifier.withDefaultNamespace("load");
    private final MinecraftServer server;
    private List<CommandFunction<CommandSourceStack>> ticking = ImmutableList.of();
    private boolean postReload;
@@ -54,7 +54,7 @@ public class ServerFunctionManager {
       }
    }
 
-   private void executeTagFunctions(Collection<CommandFunction<CommandSourceStack>> var1, ResourceLocation var2) {
+   private void executeTagFunctions(Collection<CommandFunction<CommandSourceStack>> var1, Identifier var2) {
       ProfilerFiller var10000 = Profiler.get();
       Objects.requireNonNull(var2);
       var10000.push(var2::toString);
@@ -96,19 +96,19 @@ public class ServerFunctionManager {
       return this.server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
    }
 
-   public Optional<CommandFunction<CommandSourceStack>> get(ResourceLocation var1) {
+   public Optional<CommandFunction<CommandSourceStack>> get(Identifier var1) {
       return this.library.getFunction(var1);
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
+   public List<CommandFunction<CommandSourceStack>> getTag(Identifier var1) {
       return this.library.getTag(var1);
    }
 
-   public Iterable<ResourceLocation> getFunctionNames() {
+   public Iterable<Identifier> getFunctionNames() {
       return this.library.getFunctions().keySet();
    }
 
-   public Iterable<ResourceLocation> getTagNames() {
+   public Iterable<Identifier> getTagNames() {
       return this.library.getAvailableTags();
    }
 }

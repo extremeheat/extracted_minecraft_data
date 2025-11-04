@@ -9,10 +9,10 @@ import com.mojang.realmsclient.gui.screens.RealmsParentalConsentScreen;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

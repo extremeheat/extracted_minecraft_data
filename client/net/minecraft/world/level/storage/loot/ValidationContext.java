@@ -92,7 +92,7 @@ public class ValidationContext {
       }
 
       public String description() {
-         String var10000 = String.valueOf(this.referenced.location());
+         String var10000 = String.valueOf(this.referenced.identifier());
          return "Reference to " + var10000 + " of type " + String.valueOf(this.referenced.registry()) + " was used, but references are not allowed";
       }
    }
@@ -104,7 +104,7 @@ public class ValidationContext {
       }
 
       public String description() {
-         String var10000 = String.valueOf(this.referenced.location());
+         String var10000 = String.valueOf(this.referenced.identifier());
          return var10000 + " of type " + String.valueOf(this.referenced.registry()) + " is recursively called";
       }
    }
@@ -116,7 +116,7 @@ public class ValidationContext {
       }
 
       public String description() {
-         String var10000 = String.valueOf(this.referenced.location());
+         String var10000 = String.valueOf(this.referenced.identifier());
          return "Missing element " + var10000 + " of type " + String.valueOf(this.referenced.registry());
       }
    }

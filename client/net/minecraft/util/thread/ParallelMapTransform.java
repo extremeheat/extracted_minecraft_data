@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class ParallelMapTransform {

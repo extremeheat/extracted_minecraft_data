@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.ArgumentUtils;
@@ -44,8 +43,8 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
@@ -147,6 +146,7 @@ import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.world.entity.Entity;
@@ -527,7 +527,7 @@ public class Commands {
             this.noPermissionSource = Commands.createCompilationContext(PermissionSet.NO_PERMISSIONS);
          }
 
-         public @Nullable ResourceLocation suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
+         public @Nullable Identifier suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
             SuggestionProvider var2 = var1.getCustomSuggestions();
             return var2 != null ? SuggestionProviders.getName(var2) : null;
          }

@@ -6,21 +6,21 @@ import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.SwingAnimationType;
 import net.minecraft.world.item.component.SwingAnimation;
 
 public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieRenderState, M extends ZombieModel<S>> extends HumanoidMobRenderer<T, S, M> {
-   private static final ResourceLocation ZOMBIE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/zombie.png");
+   private static final Identifier ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
 
    protected AbstractZombieRenderer(EntityRendererProvider.Context var1, M var2, M var3, ArmorModelSet<M> var4, ArmorModelSet<M> var5) {
       super(var1, var2, var3, 0.5F);
       this.addLayer(new HumanoidArmorLayer(this, var4, var5, var1.getEquipmentRenderer()));
    }
 
-   public ResourceLocation getTextureLocation(S var1) {
+   public Identifier getTextureLocation(S var1) {
       return ZOMBIE_LOCATION;
    }
 
@@ -45,7 +45,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieR
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ZombieRenderState)var1);
    }
 }

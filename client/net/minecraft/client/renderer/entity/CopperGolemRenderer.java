@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.BlockItem;
@@ -34,11 +34,11 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
       this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
    }
 
-   public ResourceLocation getTextureLocation(CopperGolemRenderState var1) {
+   public Identifier getTextureLocation(CopperGolemRenderState var1) {
       return CopperGolemOxidationLevels.getOxidationLevel(var1.weathering).texture();
    }
 
-   private static Function<CopperGolemRenderState, ResourceLocation> getEyeTextureLocationProvider() {
+   private static Function<CopperGolemRenderState, Identifier> getEyeTextureLocationProvider() {
       return (var0) -> CopperGolemOxidationLevels.getOxidationLevel(var0.weathering).eyeTexture();
    }
 
@@ -68,7 +68,7 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((CopperGolemRenderState)var1);
    }
 

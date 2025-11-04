@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public record PropertyValueList(List<Property.Value<?>> values) {

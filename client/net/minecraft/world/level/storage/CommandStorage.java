@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -23,7 +23,7 @@ public class CommandStorage {
       this.storage = var1;
    }
 
-   public CompoundTag get(ResourceLocation var1) {
+   public CompoundTag get(Identifier var1) {
       Container var2 = this.getContainer(var1.getNamespace());
       return var2 != null ? var2.get(var1.getPath()) : new CompoundTag();
    }
@@ -53,11 +53,11 @@ public class CommandStorage {
       }
    }
 
-   public void set(ResourceLocation var1, CompoundTag var2) {
+   public void set(Identifier var1, CompoundTag var2) {
       this.getOrCreateContainer(var1.getNamespace()).put(var1.getPath(), var2);
    }
 
-   public Stream<ResourceLocation> keys() {
+   public Stream<Identifier> keys() {
       return this.namespaces.entrySet().stream().flatMap((var0) -> ((Container)var0.getValue()).getKeys((String)var0.getKey()));
    }
 
@@ -97,8 +97,8 @@ public class CommandStorage {
          this.setDirty();
       }
 
-      public Stream<ResourceLocation> getKeys(String var1) {
-         return this.storage.keySet().stream().map((var1x) -> ResourceLocation.fromNamespaceAndPath(var1, var1x));
+      public Stream<Identifier> getKeys(String var1) {
+         return this.storage.keySet().stream().map((var1x) -> Identifier.fromNamespaceAndPath(var1, var1x));
       }
    }
 }

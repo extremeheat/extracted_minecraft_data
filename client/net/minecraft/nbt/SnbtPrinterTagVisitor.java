@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class SnbtPrinterTagVisitor implements TagVisitor {
    private static final Map<String, List<String>> KEY_ORDER = (Map)Util.make(Maps.newHashMap(), (var0) -> {

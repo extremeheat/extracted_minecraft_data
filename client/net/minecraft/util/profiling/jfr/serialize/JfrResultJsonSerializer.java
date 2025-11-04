@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.jfr.Percentiles;
 import net.minecraft.util.profiling.jfr.parse.JfrStatsResult;
 import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;

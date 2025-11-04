@@ -13,6 +13,7 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
@@ -20,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 public interface GpuDevice {
    CommandEncoder createCommandEncoder();
 
-   GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5);
+   GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5, OptionalDouble var6);
 
    GpuTexture createTexture(@Nullable Supplier<String> var1, @GpuTexture.Usage int var2, TextureFormat var3, int var4, int var5, int var6, int var7);
 

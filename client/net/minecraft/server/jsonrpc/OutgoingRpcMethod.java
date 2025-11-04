@@ -5,7 +5,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.jsonrpc.api.MethodInfo;
 import net.minecraft.server.jsonrpc.api.ParamInfo;
 import net.minecraft.server.jsonrpc.api.ResultInfo;
@@ -147,10 +147,10 @@ public interface OutgoingRpcMethod<Params, Result> {
       }
 
       public Holder.Reference<OutgoingRpcMethod<Params, Result>> register(String var1) {
-         return this.register(ResourceLocation.withDefaultNamespace("notification/" + var1));
+         return this.register(Identifier.withDefaultNamespace("notification/" + var1));
       }
 
-      private Holder.Reference<OutgoingRpcMethod<Params, Result>> register(ResourceLocation var1) {
+      private Holder.Reference<OutgoingRpcMethod<Params, Result>> register(Identifier var1) {
          return Registry.registerForHolder(BuiltInRegistries.OUTGOING_RPC_METHOD, var1, this.build());
       }
    }

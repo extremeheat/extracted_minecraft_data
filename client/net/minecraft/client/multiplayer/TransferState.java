@@ -2,10 +2,10 @@ package net.minecraft.client.multiplayer;
 
 import java.util.Map;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record TransferState(Map<ResourceLocation, byte[]> cookies, Map<UUID, PlayerInfo> seenPlayers, boolean seenInsecureChatWarning) {
-   public TransferState(Map<ResourceLocation, byte[]> var1, Map<UUID, PlayerInfo> var2, boolean var3) {
+public record TransferState(Map<Identifier, byte[]> cookies, Map<UUID, PlayerInfo> seenPlayers, boolean seenInsecureChatWarning) {
+   public TransferState(Map<Identifier, byte[]> var1, Map<UUID, PlayerInfo> var2, boolean var3) {
       super();
       this.cookies = var1;
       this.seenPlayers = var2;

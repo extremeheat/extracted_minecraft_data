@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 public interface EnchantmentTags {
@@ -43,6 +43,6 @@ public interface EnchantmentTags {
    TagKey<Enchantment> TRADES_TAIGA_SPECIAL = create("trades/taiga_special");
 
    private static TagKey<Enchantment> create(String var0) {
-      return TagKey.<Enchantment>create(Registries.ENCHANTMENT, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Enchantment>create(Registries.ENCHANTMENT, Identifier.withDefaultNamespace(var0));
    }
 }

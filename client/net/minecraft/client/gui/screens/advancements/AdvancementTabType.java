@@ -2,14 +2,14 @@ package net.minecraft.client.gui.screens.advancements;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
-   ABOVE(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_above_left_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_above_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_above_right_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_above_left"), ResourceLocation.withDefaultNamespace("advancements/tab_above_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_above_right")), 28, 32, 8),
-   BELOW(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_below_left_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_below_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_below_right_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_below_left"), ResourceLocation.withDefaultNamespace("advancements/tab_below_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_below_right")), 28, 32, 8),
-   LEFT(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_left_top_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_left_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_left_top"), ResourceLocation.withDefaultNamespace("advancements/tab_left_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom")), 32, 28, 5),
-   RIGHT(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_right_top_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_right_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_right_top"), ResourceLocation.withDefaultNamespace("advancements/tab_right_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom")), 32, 28, 5);
+   ABOVE(new Sprites(Identifier.withDefaultNamespace("advancements/tab_above_left_selected"), Identifier.withDefaultNamespace("advancements/tab_above_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_above_right_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_above_left"), Identifier.withDefaultNamespace("advancements/tab_above_middle"), Identifier.withDefaultNamespace("advancements/tab_above_right")), 28, 32, 8),
+   BELOW(new Sprites(Identifier.withDefaultNamespace("advancements/tab_below_left_selected"), Identifier.withDefaultNamespace("advancements/tab_below_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_below_right_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_below_left"), Identifier.withDefaultNamespace("advancements/tab_below_middle"), Identifier.withDefaultNamespace("advancements/tab_below_right")), 28, 32, 8),
+   LEFT(new Sprites(Identifier.withDefaultNamespace("advancements/tab_left_top_selected"), Identifier.withDefaultNamespace("advancements/tab_left_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_left_bottom_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_left_top"), Identifier.withDefaultNamespace("advancements/tab_left_middle"), Identifier.withDefaultNamespace("advancements/tab_left_bottom")), 32, 28, 5),
+   RIGHT(new Sprites(Identifier.withDefaultNamespace("advancements/tab_right_top_selected"), Identifier.withDefaultNamespace("advancements/tab_right_middle_selected"), Identifier.withDefaultNamespace("advancements/tab_right_bottom_selected")), new Sprites(Identifier.withDefaultNamespace("advancements/tab_right_top"), Identifier.withDefaultNamespace("advancements/tab_right_middle"), Identifier.withDefaultNamespace("advancements/tab_right_bottom")), 32, 28, 5);
 
    private final Sprites selectedSprites;
    private final Sprites unselectedSprites;
@@ -31,7 +31,7 @@ enum AdvancementTabType {
 
    public void draw(GuiGraphics var1, int var2, int var3, boolean var4, int var5) {
       Sprites var6 = var4 ? this.selectedSprites : this.unselectedSprites;
-      ResourceLocation var7;
+      Identifier var7;
       if (var5 == 0) {
          var7 = var6.first();
       } else if (var5 == this.max - 1) {
@@ -114,8 +114,8 @@ enum AdvancementTabType {
       return new AdvancementTabType[]{ABOVE, BELOW, LEFT, RIGHT};
    }
 
-   static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
-      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+   static record Sprites(Identifier first, Identifier middle, Identifier last) {
+      Sprites(Identifier var1, Identifier var2, Identifier var3) {
          super();
          this.first = var1;
          this.middle = var2;

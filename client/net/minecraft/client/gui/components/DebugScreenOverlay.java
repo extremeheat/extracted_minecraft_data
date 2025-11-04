@@ -43,7 +43,7 @@ import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkLoadStatusView;
@@ -172,17 +172,17 @@ public class DebugScreenOverlay {
                   var9.add(var1);
                }
 
-               public void addToGroup(ResourceLocation var1, Collection<String> var2) {
+               public void addToGroup(Identifier var1, Collection<String> var2) {
                   ((Collection)var8.computeIfAbsent(var1, (var0) -> new ArrayList())).addAll(var2);
                }
 
-               public void addToGroup(ResourceLocation var1, String var2) {
+               public void addToGroup(Identifier var1, String var2) {
                   ((Collection)var8.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
                }
             };
             Level var11 = this.getLevel();
 
-            for(ResourceLocation var13 : var3) {
+            for(Identifier var13 : var3) {
                DebugScreenEntry var14 = DebugScreenEntries.getEntry(var13);
                if (var14 != null) {
                   var14.display(var10, var11, this.getClientChunk(), this.getServerChunk());

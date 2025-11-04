@@ -16,6 +16,7 @@ import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -161,6 +162,10 @@ public class SkeletonHorse extends AbstractHorse {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       return (InteractionResult)(!this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2));
+   }
+
+   public boolean canUseSlot(EquipmentSlot var1) {
+      return true;
    }
 
    static {

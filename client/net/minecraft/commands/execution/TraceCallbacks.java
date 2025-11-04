@@ -1,6 +1,6 @@
 package net.minecraft.commands.execution;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface TraceCallbacks extends AutoCloseable {
    void onCommand(int var1, String var2);
@@ -9,7 +9,7 @@ public interface TraceCallbacks extends AutoCloseable {
 
    void onError(String var1);
 
-   void onCall(int var1, ResourceLocation var2, int var3);
+   void onCall(int var1, Identifier var2, int var3);
 
    void close();
 }

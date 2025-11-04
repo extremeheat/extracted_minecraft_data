@@ -19,15 +19,15 @@ import java.util.concurrent.Executor;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = ResourceLocation.withDefaultNamespace("");
-   private final Map<ResourceLocation, AbstractTexture> byPath = new HashMap();
+   public static final Identifier INTENTIONAL_MISSING_TEXTURE = Identifier.withDefaultNamespace("");
+   private final Map<Identifier, AbstractTexture> byPath = new HashMap();
    private final Set<TickableTexture> tickableTextures = new HashSet();
    private final ResourceManager resourceManager;
 
@@ -38,7 +38,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       this.register(MissingTextureAtlasSprite.getLocation(), new DynamicTexture(() -> "(intentionally-)Missing Texture", var2));
    }
 
-   public void registerAndLoad(ResourceLocation var1, ReloadableTexture var2) {
+   public void registerAndLoad(Identifier var1, ReloadableTexture var2) {
       try {
          var2.apply(this.loadContentsSafe(var1, var2));
       } catch (Throwable var6) {
@@ -52,7 +52,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       this.register(var1, var2);
    }
 
-   private TextureContents loadContentsSafe(ResourceLocation var1, ReloadableTexture var2) {
+   private TextureContents loadContentsSafe(Identifier var1, ReloadableTexture var2) {
       try {
          return loadContents(this.resourceManager, var1, var2);
       } catch (Exception var4) {
@@ -61,11 +61,11 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       }
    }
 
-   public void registerForNextReload(ResourceLocation var1) {
+   public void registerForNextReload(Identifier var1) {
       this.register(var1, new SimpleTexture(var1));
    }
 
-   public void register(ResourceLocation var1, AbstractTexture var2) {
+   public void register(Identifier var1, AbstractTexture var2) {
       AbstractTexture var3 = (AbstractTexture)this.byPath.put(var1, var2);
       if (var3 != var2) {
          if (var3 != null) {
@@ -80,7 +80,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
 
    }
 
-   private void safeClose(ResourceLocation var1, AbstractTexture var2) {
+   private void safeClose(Identifier var1, AbstractTexture var2) {
       this.tickableTextures.remove(var2);
 
       try {
@@ -91,7 +91,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
 
    }
 
-   public AbstractTexture getTexture(ResourceLocation var1) {
+   public AbstractTexture getTexture(Identifier var1) {
       AbstractTexture var2 = (AbstractTexture)this.byPath.get(var1);
       if (var2 != null) {
          return var2;
@@ -109,7 +109,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
 
    }
 
-   public void release(ResourceLocation var1) {
+   public void release(Identifier var1) {
       AbstractTexture var2 = (AbstractTexture)this.byPath.remove(var1);
       if (var2 != null) {
          this.safeClose(var1, var2);
@@ -164,7 +164,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       });
    }
 
-   private static TextureContents loadContents(ResourceManager var0, ResourceLocation var1, ReloadableTexture var2) throws IOException {
+   private static TextureContents loadContents(ResourceManager var0, Identifier var1, ReloadableTexture var2) throws IOException {
       try {
          return var2.loadContents(var0);
       } catch (FileNotFoundException var4) {
@@ -176,7 +176,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       }
    }
 
-   private static PendingReload scheduleLoad(ResourceManager var0, ResourceLocation var1, ReloadableTexture var2, Executor var3) {
+   private static PendingReload scheduleLoad(ResourceManager var0, Identifier var1, ReloadableTexture var2, Executor var3) {
       return new PendingReload(var2, CompletableFuture.supplyAsync(() -> {
          try {
             return loadContents(var0, var1, var2);

@@ -6,7 +6,7 @@ import com.mojang.serialization.JsonOps;
 import java.util.Locale;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.jsonrpc.api.MethodInfo;
 import net.minecraft.server.jsonrpc.api.ParamInfo;
 import net.minecraft.server.jsonrpc.api.ResultInfo;
@@ -185,11 +185,11 @@ public interface IncomingRpcMethod<Params, Result> {
       }
 
       public IncomingRpcMethod<?, ?> register(Registry<IncomingRpcMethod<?, ?>> var1, String var2) {
-         return this.register(var1, ResourceLocation.withDefaultNamespace(var2));
+         return this.register(var1, Identifier.withDefaultNamespace(var2));
       }
 
-      private IncomingRpcMethod<?, ?> register(Registry<IncomingRpcMethod<?, ?>> var1, ResourceLocation var2) {
-         return (IncomingRpcMethod)Registry.register(var1, (ResourceLocation)var2, this.build());
+      private IncomingRpcMethod<?, ?> register(Registry<IncomingRpcMethod<?, ?>> var1, Identifier var2) {
+         return (IncomingRpcMethod)Registry.register(var1, (Identifier)var2, this.build());
       }
    }
 

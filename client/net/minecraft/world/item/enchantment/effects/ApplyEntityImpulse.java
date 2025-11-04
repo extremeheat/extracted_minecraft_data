@@ -23,7 +23,7 @@ public record ApplyEntityImpulse(Vec3 direction, Vec3 coordinateScale, LevelBase
       Vec3 var7 = var6.addLocalCoordinates(this.direction).multiply(this.coordinateScale).scale((double)this.magnitude.calculate(var2));
       var4.addDeltaMovement(var7);
       var4.hurtMarked = true;
-      var4.hasImpulse = true;
+      var4.needsSync = true;
    }
 
    public MapCodec<ApplyEntityImpulse> codec() {

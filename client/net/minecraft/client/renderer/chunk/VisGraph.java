@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.Set;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Util;
 
 public class VisGraph {
    private static final int SIZE_IN_BITS = 4;

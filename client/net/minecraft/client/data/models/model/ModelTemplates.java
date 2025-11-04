@@ -2,7 +2,7 @@ package net.minecraft.client.data.models.model;
 
 import java.util.Optional;
 import java.util.stream.IntStream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ModelTemplates {
    public static final ModelTemplate CUBE;
@@ -191,19 +191,19 @@ public class ModelTemplates {
    }
 
    private static ModelTemplate create(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate createItem(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate createItem(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("item/" + var0)), Optional.of(var1), var2);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("item/" + var0)), Optional.of(var1), var2);
    }
 
    private static ModelTemplate create(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
+      return new ModelTemplate(Optional.of(Identifier.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
    }
 
    static {

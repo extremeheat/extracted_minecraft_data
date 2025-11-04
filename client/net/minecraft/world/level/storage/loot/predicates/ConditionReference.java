@@ -38,7 +38,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
    public boolean test(LootContext var1) {
       LootItemCondition var2 = (LootItemCondition)var1.getResolver().get(this.name).map(Holder.Reference::value).orElse((Object)null);
       if (var2 == null) {
-         LOGGER.warn("Tried using unknown condition table called {}", this.name.location());
+         LOGGER.warn("Tried using unknown condition table called {}", this.name.identifier());
          return false;
       } else {
          LootContext.VisitedEntry var3 = LootContext.createVisitedEntry(var2);

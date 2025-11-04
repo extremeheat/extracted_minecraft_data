@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.schemas.V1451_6;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;

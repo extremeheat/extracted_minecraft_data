@@ -27,7 +27,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
@@ -130,7 +130,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
             return null;
          } else {
             ArgumentTypeInfo.Template var6 = var5.deserializeFromNetwork(var0);
-            ResourceLocation var7 = (var1 & 16) != 0 ? var0.readResourceLocation() : null;
+            Identifier var7 = (var1 & 16) != 0 ? var0.readIdentifier() : null;
             return new ArgumentNodeStub(var8, var6, var7);
          }
       } else if (var2 == 1) {
@@ -174,7 +174,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
             break;
          case 1:
             ArgumentCommandNode var9 = (ArgumentCommandNode)var0;
-            ResourceLocation var12 = var1.suggestionId(var9);
+            Identifier var12 = var1.suggestionId(var9);
             var5 = new ArgumentNodeStub(var9.getName(), ArgumentTypeInfos.unpack(var9.getType()), var12);
             var3 |= 2;
             if (var12 != null) {
@@ -223,8 +223,8 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       }
    }
 
-   static record ArgumentNodeStub(String id, ArgumentTypeInfo.Template<?> argumentType, @Nullable ResourceLocation suggestionId) implements NodeStub {
-      ArgumentNodeStub(String var1, ArgumentTypeInfo.Template<?> var2, @Nullable ResourceLocation var3) {
+   static record ArgumentNodeStub(String id, ArgumentTypeInfo.Template<?> argumentType, @Nullable Identifier suggestionId) implements NodeStub {
+      ArgumentNodeStub(String var1, ArgumentTypeInfo.Template<?> var2, @Nullable Identifier var3) {
          super();
          this.id = var1;
          this.argumentType = var2;
@@ -240,7 +240,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
          var1.writeUtf(this.id);
          serializeCap(var1, this.argumentType);
          if (this.suggestionId != null) {
-            var1.writeResourceLocation(this.suggestionId);
+            var1.writeIdentifier(this.suggestionId);
          }
 
       }
@@ -354,13 +354,13 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
    public interface NodeBuilder<S> {
       ArgumentBuilder<S, ?> createLiteral(String var1);
 
-      ArgumentBuilder<S, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable ResourceLocation var3);
+      ArgumentBuilder<S, ?> createArgument(String var1, ArgumentType<?> var2, @Nullable Identifier var3);
 
       ArgumentBuilder<S, ?> configure(ArgumentBuilder<S, ?> var1, boolean var2, boolean var3);
    }
 
    public interface NodeInspector<S> {
-      @Nullable ResourceLocation suggestionId(ArgumentCommandNode<S, ?> var1);
+      @Nullable Identifier suggestionId(ArgumentCommandNode<S, ?> var1);
 
       boolean isExecutable(CommandNode<S> var1);
 

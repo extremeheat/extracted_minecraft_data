@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.util.FileSystemUtil;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public class VanillaPackResourcesBuilder {

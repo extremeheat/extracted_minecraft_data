@@ -1,8 +1,8 @@
 package com.mojang.math;
 
 import java.util.Arrays;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Util;
 import org.joml.Matrix3f;
 import org.joml.Matrix3fc;
 import org.joml.Vector3f;

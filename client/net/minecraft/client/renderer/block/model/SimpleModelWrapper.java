@@ -7,7 +7,7 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
@@ -18,7 +18,7 @@ public record SimpleModelWrapper(QuadCollection quads, boolean useAmbientOcclusi
       this.particleIcon = var3;
    }
 
-   public static SimpleModelWrapper bake(ModelBaker var0, ResourceLocation var1, ModelState var2) {
+   public static SimpleModelWrapper bake(ModelBaker var0, Identifier var1, ModelState var2) {
       ResolvedModel var3 = var0.getModel(var1);
       TextureSlots var4 = var3.getTopTextureSlots();
       boolean var5 = var3.getTopAmbientOcclusion();

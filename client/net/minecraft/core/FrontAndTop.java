@@ -1,7 +1,7 @@
 package net.minecraft.core;
 
-import net.minecraft.Util;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 
 public enum FrontAndTop implements StringRepresentable {
    DOWN_EAST("down_east", Direction.DOWN, Direction.EAST),

@@ -1,8 +1,8 @@
 package net.minecraft.references;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 public class Blocks {
@@ -18,6 +18,6 @@ public class Blocks {
    }
 
    private static ResourceKey<Block> createKey(String var0) {
-      return ResourceKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
    }
 }

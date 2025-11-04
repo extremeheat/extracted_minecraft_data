@@ -2,12 +2,12 @@ package net.minecraft.util.debug;
 
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class DebugSubscription<T> {

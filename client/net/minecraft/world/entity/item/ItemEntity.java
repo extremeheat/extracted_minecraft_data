@@ -157,11 +157,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
             ++this.age;
          }
 
-         this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
+         this.needsSync |= this.updateInWaterStateAndDoFluidPushing();
          if (!this.level().isClientSide()) {
             double var4 = this.getDeltaMovement().subtract(var1).lengthSqr();
             if (var4 > 0.01) {
-               this.hasImpulse = true;
+               this.needsSync = true;
             }
          }
 

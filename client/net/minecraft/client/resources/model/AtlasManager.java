@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -24,8 +24,8 @@ import net.minecraft.server.packs.resources.ResourceManager;
 public class AtlasManager implements PreparableReloadListener, MaterialSet, AutoCloseable {
    private static final List<AtlasConfig> KNOWN_ATLASES;
    public static final PreparableReloadListener.StateKey<PendingStitchResults> PENDING_STITCH;
-   private final Map<ResourceLocation, AtlasEntry> atlasByTexture = new HashMap();
-   private final Map<ResourceLocation, AtlasEntry> atlasById = new HashMap();
+   private final Map<Identifier, AtlasEntry> atlasByTexture = new HashMap();
+   private final Map<Identifier, AtlasEntry> atlasById = new HashMap();
    private Map<Material, TextureAtlasSprite> materialLookup = Map.of();
    private int maxMipmapLevels;
 
@@ -43,7 +43,7 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
       this.maxMipmapLevels = var2;
    }
 
-   public TextureAtlas getAtlasOrThrow(ResourceLocation var1) {
+   public TextureAtlas getAtlasOrThrow(Identifier var1) {
       AtlasEntry var2 = (AtlasEntry)this.atlasById.get(var1);
       if (var2 == null) {
          throw new IllegalArgumentException("Invalid atlas id: " + String.valueOf(var1));
@@ -52,7 +52,7 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
       }
    }
 
-   public void forEach(BiConsumer<ResourceLocation, TextureAtlas> var1) {
+   public void forEach(BiConsumer<Identifier, TextureAtlas> var1) {
       this.atlasById.forEach((var1x, var2) -> var1.accept(var1x, var2.atlas));
    }
 
@@ -72,7 +72,7 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
       if (var2 != null) {
          return var2;
       } else {
-         ResourceLocation var3 = var1.atlasLocation();
+         Identifier var3 = var1.atlasLocation();
          AtlasEntry var4 = (AtlasEntry)this.atlasByTexture.get(var3);
          if (var4 == null) {
             throw new IllegalArgumentException("Invalid atlas texture id: " + String.valueOf(var3));
@@ -114,7 +114,7 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
    }
 
    static {
-      KNOWN_ATLASES = List.of(new AtlasConfig(Sheets.ARMOR_TRIMS_SHEET, AtlasIds.ARMOR_TRIMS, false), new AtlasConfig(Sheets.BANNER_SHEET, AtlasIds.BANNER_PATTERNS, false), new AtlasConfig(Sheets.BED_SHEET, AtlasIds.BEDS, false), new AtlasConfig(TextureAtlas.LOCATION_BLOCKS, AtlasIds.BLOCKS, true), new AtlasConfig(Sheets.CHEST_SHEET, AtlasIds.CHESTS, false), new AtlasConfig(Sheets.DECORATED_POT_SHEET, AtlasIds.DECORATED_POT, false), new AtlasConfig(Sheets.GUI_SHEET, AtlasIds.GUI, false, Set.of(GuiMetadataSection.TYPE)), new AtlasConfig(Sheets.MAP_DECORATIONS_SHEET, AtlasIds.MAP_DECORATIONS, false), new AtlasConfig(Sheets.PAINTINGS_SHEET, AtlasIds.PAINTINGS, false), new AtlasConfig(TextureAtlas.LOCATION_PARTICLES, AtlasIds.PARTICLES, false), new AtlasConfig(Sheets.SHIELD_SHEET, AtlasIds.SHIELD_PATTERNS, false), new AtlasConfig(Sheets.SHULKER_SHEET, AtlasIds.SHULKER_BOXES, false), new AtlasConfig(Sheets.SIGN_SHEET, AtlasIds.SIGNS, false), new AtlasConfig(Sheets.CELESTIAL_SHEET, AtlasIds.CELESTIALS, false));
+      KNOWN_ATLASES = List.of(new AtlasConfig(Sheets.ARMOR_TRIMS_SHEET, AtlasIds.ARMOR_TRIMS, false), new AtlasConfig(Sheets.BANNER_SHEET, AtlasIds.BANNER_PATTERNS, false), new AtlasConfig(Sheets.BED_SHEET, AtlasIds.BEDS, false), new AtlasConfig(TextureAtlas.LOCATION_BLOCKS, AtlasIds.BLOCKS, true), new AtlasConfig(TextureAtlas.LOCATION_ITEMS, AtlasIds.ITEMS, false), new AtlasConfig(Sheets.CHEST_SHEET, AtlasIds.CHESTS, false), new AtlasConfig(Sheets.DECORATED_POT_SHEET, AtlasIds.DECORATED_POT, false), new AtlasConfig(Sheets.GUI_SHEET, AtlasIds.GUI, false, Set.of(GuiMetadataSection.TYPE)), new AtlasConfig(Sheets.MAP_DECORATIONS_SHEET, AtlasIds.MAP_DECORATIONS, false), new AtlasConfig(Sheets.PAINTINGS_SHEET, AtlasIds.PAINTINGS, false), new AtlasConfig(TextureAtlas.LOCATION_PARTICLES, AtlasIds.PARTICLES, false), new AtlasConfig(Sheets.SHIELD_SHEET, AtlasIds.SHIELD_PATTERNS, false), new AtlasConfig(Sheets.SHULKER_SHEET, AtlasIds.SHULKER_BOXES, false), new AtlasConfig(Sheets.SIGN_SHEET, AtlasIds.SIGNS, false), new AtlasConfig(Sheets.CELESTIAL_SHEET, AtlasIds.CELESTIALS, false));
       PENDING_STITCH = new PreparableReloadListener.StateKey<PendingStitchResults>();
    }
 
@@ -154,17 +154,17 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
       }
    }
 
-   public static record AtlasConfig(ResourceLocation textureId, ResourceLocation definitionLocation, boolean createMipmaps, Set<MetadataSectionType<?>> additionalMetadata) {
-      final ResourceLocation textureId;
-      final ResourceLocation definitionLocation;
+   public static record AtlasConfig(Identifier textureId, Identifier definitionLocation, boolean createMipmaps, Set<MetadataSectionType<?>> additionalMetadata) {
+      final Identifier textureId;
+      final Identifier definitionLocation;
       final boolean createMipmaps;
       final Set<MetadataSectionType<?>> additionalMetadata;
 
-      public AtlasConfig(ResourceLocation var1, ResourceLocation var2, boolean var3) {
+      public AtlasConfig(Identifier var1, Identifier var2, boolean var3) {
          this(var1, var2, var3, Set.of());
       }
 
-      public AtlasConfig(ResourceLocation var1, ResourceLocation var2, boolean var3, Set<MetadataSectionType<?>> var4) {
+      public AtlasConfig(Identifier var1, Identifier var2, boolean var3, Set<MetadataSectionType<?>> var4) {
          super();
          this.textureId = var1;
          this.definitionLocation = var2;
@@ -175,10 +175,10 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
 
    public static class PendingStitchResults {
       final List<PendingStitch> pendingStitches;
-      private final Map<ResourceLocation, CompletableFuture<SpriteLoader.Preparations>> stitchFuturesById;
+      private final Map<Identifier, CompletableFuture<SpriteLoader.Preparations>> stitchFuturesById;
       final CompletableFuture<?> allReadyToUpload;
 
-      PendingStitchResults(List<PendingStitch> var1, Map<ResourceLocation, CompletableFuture<SpriteLoader.Preparations>> var2, CompletableFuture<?> var3) {
+      PendingStitchResults(List<PendingStitch> var1, Map<Identifier, CompletableFuture<SpriteLoader.Preparations>> var2, CompletableFuture<?> var3) {
          super();
          this.pendingStitches = var1;
          this.stitchFuturesById = var2;
@@ -191,7 +191,7 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
          return var1;
       }
 
-      public CompletableFuture<SpriteLoader.Preparations> get(ResourceLocation var1) {
+      public CompletableFuture<SpriteLoader.Preparations> get(Identifier var1) {
          return (CompletableFuture)Objects.requireNonNull((CompletableFuture)this.stitchFuturesById.get(var1));
       }
    }

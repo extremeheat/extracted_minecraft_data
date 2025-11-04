@@ -1,8 +1,8 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponents;

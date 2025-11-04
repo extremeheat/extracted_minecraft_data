@@ -6,18 +6,18 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import org.jspecify.annotations.Nullable;
 
 public class TagEntry {
    private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> var0x.required)).apply(var0, TagEntry::new));
    public static final Codec<TagEntry> CODEC;
-   private final ResourceLocation id;
+   private final Identifier id;
    private final boolean tag;
    private final boolean required;
 
-   private TagEntry(ResourceLocation var1, boolean var2, boolean var3) {
+   private TagEntry(Identifier var1, boolean var2, boolean var3) {
       super();
       this.id = var1;
       this.tag = var2;
@@ -35,19 +35,19 @@ public class TagEntry {
       return new ExtraCodecs.TagOrElementLocation(this.id, this.tag);
    }
 
-   public static TagEntry element(ResourceLocation var0) {
+   public static TagEntry element(Identifier var0) {
       return new TagEntry(var0, false, true);
    }
 
-   public static TagEntry optionalElement(ResourceLocation var0) {
+   public static TagEntry optionalElement(Identifier var0) {
       return new TagEntry(var0, false, false);
    }
 
-   public static TagEntry tag(ResourceLocation var0) {
+   public static TagEntry tag(Identifier var0) {
       return new TagEntry(var0, true, true);
    }
 
-   public static TagEntry optionalTag(ResourceLocation var0) {
+   public static TagEntry optionalTag(Identifier var0) {
       return new TagEntry(var0, true, false);
    }
 
@@ -71,21 +71,21 @@ public class TagEntry {
       return true;
    }
 
-   public void visitRequiredDependencies(Consumer<ResourceLocation> var1) {
+   public void visitRequiredDependencies(Consumer<Identifier> var1) {
       if (this.tag && this.required) {
          var1.accept(this.id);
       }
 
    }
 
-   public void visitOptionalDependencies(Consumer<ResourceLocation> var1) {
+   public void visitOptionalDependencies(Consumer<Identifier> var1) {
       if (this.tag && !this.required) {
          var1.accept(this.id);
       }
 
    }
 
-   public boolean verifyIfPresent(Predicate<ResourceLocation> var1, Predicate<ResourceLocation> var2) {
+   public boolean verifyIfPresent(Predicate<Identifier> var1, Predicate<Identifier> var2) {
       return !this.required || (this.tag ? var2 : var1).test(this.id);
    }
 
@@ -108,8 +108,8 @@ public class TagEntry {
    }
 
    public interface Lookup<T> {
-      @Nullable T element(ResourceLocation var1, boolean var2);
+      @Nullable T element(Identifier var1, boolean var2);
 
-      @Nullable Collection<T> tag(ResourceLocation var1);
+      @Nullable Collection<T> tag(Identifier var1);
    }
 }

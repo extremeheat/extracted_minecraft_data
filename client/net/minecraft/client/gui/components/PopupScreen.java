@@ -11,11 +11,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class PopupScreen extends Screen {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("popup/background");
    private static final int SPACING = 12;
    private static final int BG_BORDER_WITH_SPACING = 18;
    private static final int BUTTON_SPACING = 6;
@@ -23,14 +23,14 @@ public class PopupScreen extends Screen {
    private static final int IMAGE_SIZE_Y = 64;
    private static final int POPUP_DEFAULT_WIDTH = 250;
    private final Screen backgroundScreen;
-   private final @Nullable ResourceLocation image;
+   private final @Nullable Identifier image;
    private final Component message;
    private final List<ButtonOption> buttons;
    private final @Nullable Runnable onClose;
    private final int contentWidth;
    private final LinearLayout layout = LinearLayout.vertical();
 
-   PopupScreen(Screen var1, int var2, @Nullable ResourceLocation var3, Component var4, Component var5, List<ButtonOption> var6, @Nullable Runnable var7) {
+   PopupScreen(Screen var1, int var2, @Nullable Identifier var3, Component var4, Component var5, List<ButtonOption> var6, @Nullable Runnable var7) {
       super(var4);
       this.backgroundScreen = var1;
       this.image = var3;
@@ -106,7 +106,7 @@ public class PopupScreen extends Screen {
       private final Component title;
       private Component message;
       private int width;
-      private @Nullable ResourceLocation image;
+      private @Nullable Identifier image;
       private final List<ButtonOption> buttons;
       private @Nullable Runnable onClose;
 
@@ -125,7 +125,7 @@ public class PopupScreen extends Screen {
          return this;
       }
 
-      public Builder setImage(ResourceLocation var1) {
+      public Builder setImage(Identifier var1) {
          this.image = var1;
          return this;
       }

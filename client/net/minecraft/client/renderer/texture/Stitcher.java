@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
@@ -218,7 +218,7 @@ public class Stitcher<T extends Stitcher.Entry> {
 
       int height();
 
-      ResourceLocation name();
+      Identifier name();
    }
 
    public interface SpriteLoader<T extends Entry> {

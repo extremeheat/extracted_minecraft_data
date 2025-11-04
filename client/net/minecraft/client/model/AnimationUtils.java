@@ -33,20 +33,20 @@ public class AnimationUtils {
    }
 
    public static void swingWeaponDown(ModelPart var0, ModelPart var1, HumanoidArm var2, float var3, float var4) {
-      float var5 = Mth.sin(var3 * 3.1415927F);
-      float var6 = Mth.sin((1.0F - (1.0F - var3) * (1.0F - var3)) * 3.1415927F);
+      float var5 = Mth.sin((double)(var3 * 3.1415927F));
+      float var6 = Mth.sin((double)((1.0F - (1.0F - var3) * (1.0F - var3)) * 3.1415927F));
       var0.zRot = 0.0F;
       var1.zRot = 0.0F;
       var0.yRot = 0.15707964F;
       var1.yRot = -0.15707964F;
       if (var2 == HumanoidArm.RIGHT) {
-         var0.xRot = -1.8849558F + Mth.cos(var4 * 0.09F) * 0.15F;
-         var1.xRot = -0.0F + Mth.cos(var4 * 0.19F) * 0.5F;
+         var0.xRot = -1.8849558F + Mth.cos((double)(var4 * 0.09F)) * 0.15F;
+         var1.xRot = -0.0F + Mth.cos((double)(var4 * 0.19F)) * 0.5F;
          var0.xRot += var5 * 2.2F - var6 * 0.4F;
          var1.xRot += var5 * 1.2F - var6 * 0.4F;
       } else {
-         var0.xRot = -0.0F + Mth.cos(var4 * 0.19F) * 0.5F;
-         var1.xRot = -1.8849558F + Mth.cos(var4 * 0.09F) * 0.15F;
+         var0.xRot = -0.0F + Mth.cos((double)(var4 * 0.19F)) * 0.5F;
+         var1.xRot = -1.8849558F + Mth.cos((double)(var4 * 0.09F)) * 0.15F;
          var0.xRot += var5 * 1.2F - var6 * 0.4F;
          var1.xRot += var5 * 2.2F - var6 * 0.4F;
       }
@@ -55,8 +55,8 @@ public class AnimationUtils {
    }
 
    public static void bobModelPart(ModelPart var0, float var1, float var2) {
-      var0.zRot += var2 * (Mth.cos(var1 * 0.09F) * 0.05F + 0.05F);
-      var0.xRot += var2 * Mth.sin(var1 * 0.067F) * 0.05F;
+      var0.zRot += var2 * (Mth.cos((double)(var1 * 0.09F)) * 0.05F + 0.05F);
+      var0.xRot += var2 * Mth.sin((double)(var1 * 0.067F)) * 0.05F;
    }
 
    public static void bobArms(ModelPart var0, ModelPart var1, float var2) {
@@ -69,8 +69,8 @@ public class AnimationUtils {
       if (var4) {
          float var5 = var3.attackTime;
          float var6 = -3.1415927F / (var2 ? 1.5F : 2.25F);
-         float var7 = Mth.sin(var5 * 3.1415927F);
-         float var8 = Mth.sin((1.0F - (1.0F - var5) * (1.0F - var5)) * 3.1415927F);
+         float var7 = Mth.sin((double)(var5 * 3.1415927F));
+         float var8 = Mth.sin((double)((1.0F - (1.0F - var5) * (1.0F - var5)) * 3.1415927F));
          var1.zRot = 0.0F;
          var1.yRot = -(0.1F - var7 * 0.6F);
          var1.xRot = var6;

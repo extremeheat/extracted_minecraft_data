@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.BuiltInMetadata;
 import net.minecraft.server.packs.FeatureFlagsMetadataSection;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -28,7 +28,7 @@ public class ServerPacksSource extends BuiltInPackSource {
    private static final PackLocationInfo VANILLA_PACK_INFO;
    private static final PackSelectionConfig VANILLA_SELECTION_CONFIG;
    private static final PackSelectionConfig FEATURE_SELECTION_CONFIG;
-   private static final ResourceLocation PACKS_DIR;
+   private static final Identifier PACKS_DIR;
 
    public ServerPacksSource(DirectoryValidator var1) {
       super(PackType.SERVER_DATA, createVanillaPackSource(), PACKS_DIR, var1);
@@ -74,6 +74,6 @@ public class ServerPacksSource extends BuiltInPackSource {
       VANILLA_PACK_INFO = new PackLocationInfo("vanilla", Component.translatable("dataPack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO));
       VANILLA_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.BOTTOM, false);
       FEATURE_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
-      PACKS_DIR = ResourceLocation.withDefaultNamespace("datapacks");
+      PACKS_DIR = Identifier.withDefaultNamespace("datapacks");
    }
 }

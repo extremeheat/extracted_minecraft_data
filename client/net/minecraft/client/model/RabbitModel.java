@@ -56,7 +56,7 @@ public class RabbitModel extends EntityModel<RabbitRenderState> {
       super.setupAnim(var1);
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      float var2 = Mth.sin(var1.jumpCompletion * 3.1415927F);
+      float var2 = Mth.sin((double)(var1.jumpCompletion * 3.1415927F));
       ModelPart var10000 = this.leftHaunch;
       var10000.xRot += var2 * 50.0F * 0.017453292F;
       var10000 = this.rightHaunch;

@@ -1,20 +1,20 @@
 package net.minecraft.util.context;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ContextKey<T> {
-   private final ResourceLocation name;
+   private final Identifier name;
 
-   public ContextKey(ResourceLocation var1) {
+   public ContextKey(Identifier var1) {
       super();
       this.name = var1;
    }
 
    public static <T> ContextKey<T> vanilla(String var0) {
-      return new ContextKey<T>(ResourceLocation.withDefaultNamespace(var0));
+      return new ContextKey<T>(Identifier.withDefaultNamespace(var0));
    }
 
-   public ResourceLocation name() {
+   public Identifier name() {
       return this.name;
    }
 

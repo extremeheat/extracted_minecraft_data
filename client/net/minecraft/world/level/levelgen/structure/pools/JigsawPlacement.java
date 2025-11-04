@@ -14,8 +14,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SequencedPriorityIterator;
@@ -53,7 +53,7 @@ public class JigsawPlacement {
       super();
    }
 
-   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<ResourceLocation> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, JigsawStructure.MaxDistance var7, PoolAliasLookup var8, DimensionPadding var9, LiquidSettings var10) {
+   public static Optional<Structure.GenerationStub> addPieces(Structure.GenerationContext var0, Holder<StructureTemplatePool> var1, Optional<Identifier> var2, int var3, BlockPos var4, boolean var5, Optional<Heightmap.Types> var6, JigsawStructure.MaxDistance var7, PoolAliasLookup var8, DimensionPadding var9, LiquidSettings var10) {
       RegistryAccess var11 = var0.registryAccess();
       ChunkGenerator var12 = var0.chunkGenerator();
       StructureTemplateManager var13 = var0.structureTemplateManager();
@@ -68,10 +68,10 @@ public class JigsawPlacement {
       } else {
          BlockPos var20;
          if (var2.isPresent()) {
-            ResourceLocation var21 = (ResourceLocation)var2.get();
+            Identifier var21 = (Identifier)var2.get();
             Optional var22 = getRandomNamedJigsaw(var19, var21, var4, var17, var13, var15);
             if (var22.isEmpty()) {
-               LOGGER.error("No starting jigsaw {} found in start pool {}", var21, var1.unwrapKey().map((var0x) -> var0x.location().toString()).orElse("<unregistered>"));
+               LOGGER.error("No starting jigsaw {} found in start pool {}", var21, var1.unwrapKey().map((var0x) -> var0x.identifier().toString()).orElse("<unregistered>"));
                return Optional.empty();
             }
 
@@ -119,7 +119,7 @@ public class JigsawPlacement {
       }
    }
 
-   private static Optional<BlockPos> getRandomNamedJigsaw(StructurePoolElement var0, ResourceLocation var1, BlockPos var2, Rotation var3, StructureTemplateManager var4, WorldgenRandom var5) {
+   private static Optional<BlockPos> getRandomNamedJigsaw(StructurePoolElement var0, Identifier var1, BlockPos var2, Rotation var3, StructureTemplateManager var4, WorldgenRandom var5) {
       for(StructureTemplate.JigsawBlockInfo var8 : var0.getShuffledJigsawBlocks(var4, var2, var3, var5)) {
          if (var1.equals(var8.name())) {
             return Optional.of(var8.info().pos());
@@ -140,7 +140,7 @@ public class JigsawPlacement {
 
    }
 
-   public static boolean generateJigsaw(ServerLevel var0, Holder<StructureTemplatePool> var1, ResourceLocation var2, int var3, BlockPos var4, boolean var5) {
+   public static boolean generateJigsaw(ServerLevel var0, Holder<StructureTemplatePool> var1, Identifier var2, int var3, BlockPos var4, boolean var5) {
       ChunkGenerator var6 = var0.getChunkSource().getGenerator();
       StructureTemplateManager var7 = var0.getStructureManager();
       StructureManager var8 = var0.structureManager();
@@ -216,15 +216,15 @@ public class JigsawPlacement {
             ResourceKey var25 = var7.lookup(var18.pool());
             Optional var26 = this.pools.get(var25);
             if (var26.isEmpty()) {
-               JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.location());
+               JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.identifier());
             } else {
                Holder var27 = (Holder)var26.get();
                if (((StructureTemplatePool)var27.value()).size() == 0 && !var27.is(Pools.EMPTY)) {
-                  JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.location());
+                  JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.identifier());
                } else {
                   Holder var28 = ((StructureTemplatePool)var27.value()).getFallback();
                   if (((StructureTemplatePool)var28.value()).size() == 0 && !var28.is(Pools.EMPTY)) {
-                     JigsawPlacement.LOGGER.warn("Empty or non-existent fallback pool: {}", var28.unwrapKey().map((var0) -> var0.location().toString()).orElse("<unregistered>"));
+                     JigsawPlacement.LOGGER.warn("Empty or non-existent fallback pool: {}", var28.unwrapKey().map((var0) -> var0.identifier().toString()).orElse("<unregistered>"));
                   } else {
                      boolean var30 = var15.isInside(var22);
                      MutableObject var29;

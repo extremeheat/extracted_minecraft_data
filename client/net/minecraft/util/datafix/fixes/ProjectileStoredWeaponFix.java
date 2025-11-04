@@ -9,7 +9,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class ProjectileStoredWeaponFix extends DataFix {

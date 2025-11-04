@@ -5,10 +5,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.security.SignatureException;
 import java.util.UUID;
-import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public record SignedMessageLink(int index, UUID sender, UUID sessionId) {

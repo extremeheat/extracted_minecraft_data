@@ -1,7 +1,7 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public class LogTestReporter implements TestReporter {

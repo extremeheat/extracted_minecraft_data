@@ -9,8 +9,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
@@ -70,7 +70,7 @@ public record MaterialAssetGroup(AssetInfo base, Map<ResourceKey<EquipmentAsset>
 
       public AssetInfo(String var1) {
          super();
-         if (!ResourceLocation.isValidPath(var1)) {
+         if (!Identifier.isValidPath(var1)) {
             throw new IllegalArgumentException("Invalid string to use as a resource path element: " + var1);
          } else {
             this.suffix = var1;

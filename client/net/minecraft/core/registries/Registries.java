@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriterionTrigger;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.criterion.EntitySubPredicate;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -15,8 +15,8 @@ import net.minecraft.gametest.framework.GameTestInstance;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.numbers.NumberFormatType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.action.Action;
 import net.minecraft.server.dialog.body.DialogBody;
@@ -44,6 +44,7 @@ import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
+import net.minecraft.world.entity.animal.ZombieNautilusVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
@@ -51,7 +52,6 @@ import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -135,9 +135,10 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraft.world.level.storage.loot.providers.nbt.LootNbtProviderType;
 import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
 import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
+import net.minecraft.world.timeline.Timeline;
 
 public class Registries {
-   public static final ResourceLocation ROOT_REGISTRY_NAME = ResourceLocation.withDefaultNamespace("root");
+   public static final Identifier ROOT_REGISTRY_NAME = Identifier.withDefaultNamespace("root");
    public static final ResourceKey<Registry<Activity>> ACTIVITY = createRegistryKey("activity");
    public static final ResourceKey<Registry<Attribute>> ATTRIBUTE = createRegistryKey("attribute");
    public static final ResourceKey<Registry<MapCodec<? extends BiomeSource>>> BIOME_SOURCE = createRegistryKey("worldgen/biome_source");
@@ -152,7 +153,7 @@ public class Registries {
    public static final ResourceKey<Registry<ArgumentTypeInfo<?, ?>>> COMMAND_ARGUMENT_TYPE = createRegistryKey("command_argument_type");
    public static final ResourceKey<Registry<ConsumeEffect.Type<?>>> CONSUME_EFFECT_TYPE = createRegistryKey("consume_effect_type");
    public static final ResourceKey<Registry<CreativeModeTab>> CREATIVE_MODE_TAB = createRegistryKey("creative_mode_tab");
-   public static final ResourceKey<Registry<ResourceLocation>> CUSTOM_STAT = createRegistryKey("custom_stat");
+   public static final ResourceKey<Registry<Identifier>> CUSTOM_STAT = createRegistryKey("custom_stat");
    public static final ResourceKey<Registry<DataComponentPredicate.Type<?>>> DATA_COMPONENT_PREDICATE_TYPE = createRegistryKey("data_component_predicate_type");
    public static final ResourceKey<Registry<DataComponentType<?>>> DATA_COMPONENT_TYPE = createRegistryKey("data_component_type");
    public static final ResourceKey<Registry<GameRule<?>>> GAME_RULE = createRegistryKey("game_rule");
@@ -209,7 +210,6 @@ public class Registries {
    public static final ResourceKey<Registry<RootPlacerType<?>>> ROOT_PLACER_TYPE = createRegistryKey("worldgen/root_placer_type");
    public static final ResourceKey<Registry<RuleBlockEntityModifierType<?>>> RULE_BLOCK_ENTITY_MODIFIER = createRegistryKey("rule_block_entity_modifier");
    public static final ResourceKey<Registry<RuleTestType<?>>> RULE_TEST = createRegistryKey("rule_test");
-   public static final ResourceKey<Registry<Schedule>> SCHEDULE = createRegistryKey("schedule");
    public static final ResourceKey<Registry<SensorType<?>>> SENSOR_TYPE = createRegistryKey("sensor_type");
    public static final ResourceKey<Registry<SlotDisplay.Type<?>>> SLOT_DISPLAY = createRegistryKey("slot_display");
    public static final ResourceKey<Registry<SoundEvent>> SOUND_EVENT = createRegistryKey("sound_event");
@@ -238,6 +238,7 @@ public class Registries {
    public static final ResourceKey<Registry<CatVariant>> CAT_VARIANT = createRegistryKey("cat_variant");
    public static final ResourceKey<Registry<ChatType>> CHAT_TYPE = createRegistryKey("chat_type");
    public static final ResourceKey<Registry<ChickenVariant>> CHICKEN_VARIANT = createRegistryKey("chicken_variant");
+   public static final ResourceKey<Registry<ZombieNautilusVariant>> ZOMBIE_NAUTILUS_VARIANT = createRegistryKey("zombie_nautilus_variant");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
    public static final ResourceKey<Registry<ConfiguredFeature<?, ?>>> CONFIGURED_FEATURE = createRegistryKey("worldgen/configured_feature");
    public static final ResourceKey<Registry<CowVariant>> COW_VARIANT = createRegistryKey("cow_variant");
@@ -263,6 +264,7 @@ public class Registries {
    public static final ResourceKey<Registry<StructureTemplatePool>> TEMPLATE_POOL = createRegistryKey("worldgen/template_pool");
    public static final ResourceKey<Registry<TestEnvironmentDefinition>> TEST_ENVIRONMENT = createRegistryKey("test_environment");
    public static final ResourceKey<Registry<GameTestInstance>> TEST_INSTANCE = createRegistryKey("test_instance");
+   public static final ResourceKey<Registry<Timeline>> TIMELINE = createRegistryKey("timeline");
    public static final ResourceKey<Registry<TrialSpawnerConfig>> TRIAL_SPAWNER_CONFIG = createRegistryKey("trial_spawner");
    public static final ResourceKey<Registry<CriterionTrigger<?>>> TRIGGER_TYPE = createRegistryKey("trigger_type");
    public static final ResourceKey<Registry<TrimMaterial>> TRIM_MATERIAL = createRegistryKey("trim_material");
@@ -283,22 +285,22 @@ public class Registries {
    }
 
    public static ResourceKey<Level> levelStemToLevel(ResourceKey<LevelStem> var0) {
-      return ResourceKey.create(DIMENSION, var0.location());
+      return ResourceKey.create(DIMENSION, var0.identifier());
    }
 
    public static ResourceKey<LevelStem> levelToLevelStem(ResourceKey<Level> var0) {
-      return ResourceKey.create(LEVEL_STEM, var0.location());
+      return ResourceKey.create(LEVEL_STEM, var0.identifier());
    }
 
    private static <T> ResourceKey<Registry<T>> createRegistryKey(String var0) {
-      return ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.createRegistryKey(Identifier.withDefaultNamespace(var0));
    }
 
    public static String elementsDirPath(ResourceKey<? extends Registry<?>> var0) {
-      return var0.location().getPath();
+      return var0.identifier().getPath();
    }
 
    public static String tagsDirPath(ResourceKey<? extends Registry<?>> var0) {
-      return "tags/" + var0.location().getPath();
+      return "tags/" + var0.identifier().getPath();
    }
 }

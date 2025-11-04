@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -61,8 +60,9 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageException;
@@ -74,14 +74,14 @@ import org.slf4j.Logger;
 
 public class WorldSelectionList extends ObjectSelectionList<Entry> {
    public static final DateTimeFormatter DATE_FORMAT;
-   static final ResourceLocation ERROR_HIGHLIGHTED_SPRITE;
-   static final ResourceLocation ERROR_SPRITE;
-   static final ResourceLocation MARKED_JOIN_HIGHLIGHTED_SPRITE;
-   static final ResourceLocation MARKED_JOIN_SPRITE;
-   static final ResourceLocation WARNING_HIGHLIGHTED_SPRITE;
-   static final ResourceLocation WARNING_SPRITE;
-   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE;
-   static final ResourceLocation JOIN_SPRITE;
+   static final Identifier ERROR_HIGHLIGHTED_SPRITE;
+   static final Identifier ERROR_SPRITE;
+   static final Identifier MARKED_JOIN_HIGHLIGHTED_SPRITE;
+   static final Identifier MARKED_JOIN_SPRITE;
+   static final Identifier WARNING_HIGHLIGHTED_SPRITE;
+   static final Identifier WARNING_SPRITE;
+   static final Identifier JOIN_HIGHLIGHTED_SPRITE;
+   static final Identifier JOIN_SPRITE;
    static final Logger LOGGER;
    static final Component FROM_NEWER_TOOLTIP_1;
    static final Component FROM_NEWER_TOOLTIP_2;
@@ -285,14 +285,14 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
 
    static {
       DATE_FORMAT = Util.localizedDateFormatter(FormatStyle.SHORT);
-      ERROR_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error_highlighted");
-      ERROR_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error");
-      MARKED_JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join_highlighted");
-      MARKED_JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join");
-      WARNING_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning_highlighted");
-      WARNING_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning");
-      JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join_highlighted");
-      JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join");
+      ERROR_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("world_list/error_highlighted");
+      ERROR_SPRITE = Identifier.withDefaultNamespace("world_list/error");
+      MARKED_JOIN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("world_list/marked_join_highlighted");
+      MARKED_JOIN_SPRITE = Identifier.withDefaultNamespace("world_list/marked_join");
+      WARNING_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("world_list/warning_highlighted");
+      WARNING_SPRITE = Identifier.withDefaultNamespace("world_list/warning");
+      JOIN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("world_list/join_highlighted");
+      JOIN_SPRITE = Identifier.withDefaultNamespace("world_list/join");
       LOGGER = LogUtils.getLogger();
       FROM_NEWER_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
       FROM_NEWER_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);
@@ -450,40 +450,40 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             int var7 = var2 - this.getContentX();
             int var8 = var3 - this.getContentY();
             boolean var9 = this.mouseOverIcon(var7, var8, 32);
-            ResourceLocation var10 = var9 ? WorldSelectionList.JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.JOIN_SPRITE;
-            ResourceLocation var11 = var9 ? WorldSelectionList.WARNING_HIGHLIGHTED_SPRITE : WorldSelectionList.WARNING_SPRITE;
-            ResourceLocation var12 = var9 ? WorldSelectionList.ERROR_HIGHLIGHTED_SPRITE : WorldSelectionList.ERROR_SPRITE;
-            ResourceLocation var13 = var9 ? WorldSelectionList.MARKED_JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.MARKED_JOIN_SPRITE;
+            Identifier var10 = var9 ? WorldSelectionList.JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.JOIN_SPRITE;
+            Identifier var11 = var9 ? WorldSelectionList.WARNING_HIGHLIGHTED_SPRITE : WorldSelectionList.WARNING_SPRITE;
+            Identifier var12 = var9 ? WorldSelectionList.ERROR_HIGHLIGHTED_SPRITE : WorldSelectionList.ERROR_SPRITE;
+            Identifier var13 = var9 ? WorldSelectionList.MARKED_JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.MARKED_JOIN_SPRITE;
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary || this.summary instanceof LevelSummary.CorruptedLevelSummary) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, this.getContentX(), this.getContentY(), 32, 32);
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var13, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var13, this.getContentX(), this.getContentY(), 32, 32);
                return;
             }
 
             if (this.summary.isLocked()) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, this.getContentX(), this.getContentY(), 32, 32);
                if (var9) {
                   var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175), var2, var3);
                }
             } else if (this.summary.requiresManualConversion()) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, this.getContentX(), this.getContentY(), 32, 32);
                if (var9) {
                   var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.WORLD_REQUIRES_CONVERSION, 175), var2, var3);
                }
             } else if (!this.summary.isCompatible()) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, this.getContentX(), this.getContentY(), 32, 32);
                if (var9) {
                   var1.setTooltipForNextFrame(this.minecraft.font.split(WorldSelectionList.INCOMPATIBLE_VERSION_TOOLTIP, 175), var2, var3);
                }
             } else if (this.summary.shouldBackup()) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var13, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var13, this.getContentX(), this.getContentY(), 32, 32);
                if (this.summary.isDowngrade()) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, this.getContentX(), this.getContentY(), 32, 32);
                   if (var9) {
                      var1.setTooltipForNextFrame((List)ImmutableList.of(WorldSelectionList.FROM_NEWER_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.FROM_NEWER_TOOLTIP_2.getVisualOrderText()), var2, var3);
                   }
                } else if (!SharedConstants.getCurrentVersion().stable()) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var11, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var11, this.getContentX(), this.getContentY(), 32, 32);
                   if (var9) {
                      var1.setTooltipForNextFrame((List)ImmutableList.of(WorldSelectionList.SNAPSHOT_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.SNAPSHOT_TOOLTIP_2.getVisualOrderText()), var2, var3);
                   }
@@ -493,7 +493,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
                   WorldSelectionList.this.handleCursor(var1);
                }
             } else {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var10, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var10, this.getContentX(), this.getContentY(), 32, 32);
                if (var9) {
                   WorldSelectionList.this.handleCursor(var1);
                }

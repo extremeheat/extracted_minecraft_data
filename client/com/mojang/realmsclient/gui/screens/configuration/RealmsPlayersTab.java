@@ -28,7 +28,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
 class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
@@ -113,9 +113,9 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
       private static final Component NORMAL_USER_TEXT = Component.translatable("mco.configure.world.invites.normal.tooltip");
       private static final Component OP_TEXT = Component.translatable("mco.configure.world.invites.ops.tooltip");
       private static final Component REMOVE_TEXT = Component.translatable("mco.configure.world.invites.remove.tooltip");
-      private static final ResourceLocation MAKE_OP_SPRITE = ResourceLocation.withDefaultNamespace("player_list/make_operator");
-      private static final ResourceLocation REMOVE_OP_SPRITE = ResourceLocation.withDefaultNamespace("player_list/remove_operator");
-      private static final ResourceLocation REMOVE_PLAYER_SPRITE = ResourceLocation.withDefaultNamespace("player_list/remove_player");
+      private static final Identifier MAKE_OP_SPRITE = Identifier.withDefaultNamespace("player_list/make_operator");
+      private static final Identifier REMOVE_OP_SPRITE = Identifier.withDefaultNamespace("player_list/remove_operator");
+      private static final Identifier REMOVE_PLAYER_SPRITE = Identifier.withDefaultNamespace("player_list/remove_player");
       private static final int ICON_WIDTH = 8;
       private static final int ICON_HEIGHT = 7;
       private final PlayerInfo playerInfo;
@@ -127,9 +127,9 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          super();
          this.playerInfo = var2;
          int var3 = RealmsPlayersTab.this.serverData.players.indexOf(this.playerInfo);
-         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> this.op(var3), false).sprite((ResourceLocation)MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT))).build();
-         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> this.deop(var3), false).sprite((ResourceLocation)REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)OP_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT))).build();
-         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> this.uninvite(var3), false).sprite((ResourceLocation)REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)REMOVE_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get())).build();
+         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> this.op(var3), false).sprite((Identifier)MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT))).build();
+         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> this.deop(var3), false).sprite((Identifier)REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)OP_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT))).build();
+         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> this.uninvite(var3), false).sprite((Identifier)REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayersTab.this.configurationScreen.getFont().width((FormattedText)REMOVE_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.name), (Component)var1x.get())).build();
          this.updateOpButtons();
       }
 

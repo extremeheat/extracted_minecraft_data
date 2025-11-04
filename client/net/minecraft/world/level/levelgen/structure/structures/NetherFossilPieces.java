@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
@@ -23,7 +23,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class NetherFossilPieces {
-   private static final ResourceLocation[] FOSSILS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("nether_fossils/fossil_1"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_2"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_3"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_4"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_5"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_6"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_7"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_8"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_9"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_10"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_11"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_12"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_13"), ResourceLocation.withDefaultNamespace("nether_fossils/fossil_14")};
+   private static final Identifier[] FOSSILS = new Identifier[]{Identifier.withDefaultNamespace("nether_fossils/fossil_1"), Identifier.withDefaultNamespace("nether_fossils/fossil_2"), Identifier.withDefaultNamespace("nether_fossils/fossil_3"), Identifier.withDefaultNamespace("nether_fossils/fossil_4"), Identifier.withDefaultNamespace("nether_fossils/fossil_5"), Identifier.withDefaultNamespace("nether_fossils/fossil_6"), Identifier.withDefaultNamespace("nether_fossils/fossil_7"), Identifier.withDefaultNamespace("nether_fossils/fossil_8"), Identifier.withDefaultNamespace("nether_fossils/fossil_9"), Identifier.withDefaultNamespace("nether_fossils/fossil_10"), Identifier.withDefaultNamespace("nether_fossils/fossil_11"), Identifier.withDefaultNamespace("nether_fossils/fossil_12"), Identifier.withDefaultNamespace("nether_fossils/fossil_13"), Identifier.withDefaultNamespace("nether_fossils/fossil_14")};
 
    public NetherFossilPieces() {
       super();
@@ -31,11 +31,11 @@ public class NetherFossilPieces {
 
    public static void addPieces(StructureTemplateManager var0, StructurePieceAccessor var1, RandomSource var2, BlockPos var3) {
       Rotation var4 = Rotation.getRandom(var2);
-      var1.addPiece(new NetherFossilPiece(var0, (ResourceLocation)Util.getRandom(FOSSILS, var2), var3, var4));
+      var1.addPiece(new NetherFossilPiece(var0, (Identifier)Util.getRandom(FOSSILS, var2), var3, var4));
    }
 
    public static class NetherFossilPiece extends TemplateStructurePiece {
-      public NetherFossilPiece(StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4) {
+      public NetherFossilPiece(StructureTemplateManager var1, Identifier var2, BlockPos var3, Rotation var4) {
          super(StructurePieceType.NETHER_FOSSIL, 0, var1, var2, var2.toString(), makeSettings(var4), var3);
       }
 

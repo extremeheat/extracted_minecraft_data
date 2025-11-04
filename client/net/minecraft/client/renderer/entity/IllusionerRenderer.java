@@ -10,14 +10,14 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllusionerRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRenderState> {
-   private static final ResourceLocation ILLUSIONER = ResourceLocation.withDefaultNamespace("textures/entity/illager/illusioner.png");
+   private static final Identifier ILLUSIONER = Identifier.withDefaultNamespace("textures/entity/illager/illusioner.png");
 
    public IllusionerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.ILLUSIONER)), 0.5F);
@@ -32,7 +32,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
       ((IllagerModel)this.model).getHat().visible = true;
    }
 
-   public ResourceLocation getTextureLocation(IllusionerRenderState var1) {
+   public Identifier getTextureLocation(IllusionerRenderState var1) {
       return ILLUSIONER;
    }
 
@@ -53,7 +53,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
 
          for(int var6 = 0; var6 < var5.length; ++var6) {
             var2.pushPose();
-            var2.translate(var5[var6].x + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.5F) * 0.025, var5[var6].y + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.75F) * 0.0125, var5[var6].z + (double)Mth.cos((float)var6 + var1.ageInTicks * 0.7F) * 0.025);
+            var2.translate(var5[var6].x + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.5F)) * 0.025, var5[var6].y + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.75F)) * 0.0125, var5[var6].z + (double)Mth.cos((double)((float)var6 + var1.ageInTicks * 0.7F)) * 0.025);
             super.submit(var1, var2, var3, var4);
             var2.popPose();
          }
@@ -77,7 +77,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner, IllusionerRe
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((IllusionerRenderState)var1);
    }
 

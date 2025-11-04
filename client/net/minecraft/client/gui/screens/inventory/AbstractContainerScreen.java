@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.ItemSlotMouseAction;
@@ -16,8 +15,9 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -27,9 +27,9 @@ import org.joml.Vector2i;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
-   public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
-   private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
-   private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
+   public static final Identifier INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/inventory.png");
+   private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
+   private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
    protected static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final float SNAPBACK_SPEED = 100.0F;
@@ -178,14 +178,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void renderSlotHighlightBack(GuiGraphics var1) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
 
    private void renderSlotHighlightFront(GuiGraphics var1) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
@@ -194,7 +194,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
          ItemStack var4 = this.hoveredSlot.getItem();
          if (this.menu.getCarried().isEmpty() || this.showTooltipWithItemInHand(var4)) {
-            var1.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(var4), var4.getTooltipImage(), var2, var3, (ResourceLocation)var4.get(DataComponents.TOOLTIP_STYLE));
+            var1.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(var4), var4.getTooltipImage(), var2, var3, (Identifier)var4.get(DataComponents.TOOLTIP_STYLE));
          }
 
       }
@@ -254,9 +254,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
 
       if (var5.isEmpty() && var2.isActive()) {
-         ResourceLocation var13 = var2.getNoItemIcon();
+         Identifier var13 = var2.getNoItemIcon();
          if (var13 != null) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var13, var3, var4, 16, 16);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var13, var3, var4, 16, 16);
             var7 = true;
          }
       }

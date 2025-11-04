@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 public final class BlockTags {
@@ -215,6 +215,6 @@ public final class BlockTags {
    }
 
    private static TagKey<Block> create(String var0) {
-      return TagKey.<Block>create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Block>create(Registries.BLOCK, Identifier.withDefaultNamespace(var0));
    }
 }

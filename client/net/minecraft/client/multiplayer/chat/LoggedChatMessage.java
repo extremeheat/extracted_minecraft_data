@@ -10,11 +10,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 
 public interface LoggedChatMessage extends LoggedChatEvent {
    static Player player(GameProfile var0, PlayerChatMessage var1, ChatTrustLevel var2) {

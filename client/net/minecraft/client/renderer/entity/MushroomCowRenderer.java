@@ -2,20 +2,20 @@ package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.model.CowModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.MushroomCowMushroomLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.MushroomCowRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.animal.MushroomCow;
 
 public class MushroomCowRenderer extends AgeableMobRenderer<MushroomCow, MushroomCowRenderState, CowModel> {
-   private static final Map<MushroomCow.Variant, ResourceLocation> TEXTURES = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put(MushroomCow.Variant.BROWN, ResourceLocation.withDefaultNamespace("textures/entity/cow/brown_mooshroom.png"));
-      var0.put(MushroomCow.Variant.RED, ResourceLocation.withDefaultNamespace("textures/entity/cow/red_mooshroom.png"));
+   private static final Map<MushroomCow.Variant, Identifier> TEXTURES = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+      var0.put(MushroomCow.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/cow/brown_mooshroom.png"));
+      var0.put(MushroomCow.Variant.RED, Identifier.withDefaultNamespace("textures/entity/cow/red_mooshroom.png"));
    });
 
    public MushroomCowRenderer(EntityRendererProvider.Context var1) {
@@ -23,8 +23,8 @@ public class MushroomCowRenderer extends AgeableMobRenderer<MushroomCow, Mushroo
       this.addLayer(new MushroomCowMushroomLayer(this, var1.getBlockRenderDispatcher()));
    }
 
-   public ResourceLocation getTextureLocation(MushroomCowRenderState var1) {
-      return (ResourceLocation)TEXTURES.get(var1.variant);
+   public Identifier getTextureLocation(MushroomCowRenderState var1) {
+      return (Identifier)TEXTURES.get(var1.variant);
    }
 
    public MushroomCowRenderState createRenderState() {
@@ -37,7 +37,7 @@ public class MushroomCowRenderer extends AgeableMobRenderer<MushroomCow, Mushroo
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((MushroomCowRenderState)var1);
    }
 

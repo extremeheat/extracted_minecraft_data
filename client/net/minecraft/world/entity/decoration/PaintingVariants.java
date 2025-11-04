@@ -5,8 +5,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class PaintingVariants {
    public static final ResourceKey<PaintingVariant> KEBAB = create("kebab");
@@ -124,10 +124,10 @@ public class PaintingVariants {
    }
 
    private static void register(BootstrapContext<PaintingVariant> var0, ResourceKey<PaintingVariant> var1, int var2, int var3, boolean var4) {
-      var0.register(var1, new PaintingVariant(var2, var3, var1.location(), Optional.of(Component.translatable(var1.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW)), var4 ? Optional.of(Component.translatable(var1.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY)) : Optional.empty()));
+      var0.register(var1, new PaintingVariant(var2, var3, var1.identifier(), Optional.of(Component.translatable(var1.identifier().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW)), var4 ? Optional.of(Component.translatable(var1.identifier().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY)) : Optional.empty()));
    }
 
    private static ResourceKey<PaintingVariant> create(String var0) {
-      return ResourceKey.create(Registries.PAINTING_VARIANT, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.PAINTING_VARIANT, Identifier.withDefaultNamespace(var0));
    }
 }

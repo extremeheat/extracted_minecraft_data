@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
@@ -77,10 +77,10 @@ public enum Direction implements StringRepresentable {
    public static Direction[] orderedByNearest(Entity var0) {
       float var1 = var0.getViewXRot(1.0F) * 0.017453292F;
       float var2 = -var0.getViewYRot(1.0F) * 0.017453292F;
-      float var3 = Mth.sin(var1);
-      float var4 = Mth.cos(var1);
-      float var5 = Mth.sin(var2);
-      float var6 = Mth.cos(var2);
+      float var3 = Mth.sin((double)var1);
+      float var4 = Mth.cos((double)var1);
+      float var5 = Mth.sin((double)var2);
+      float var6 = Mth.cos((double)var2);
       boolean var7 = var5 > 0.0F;
       boolean var8 = var3 < 0.0F;
       boolean var9 = var6 > 0.0F;
@@ -445,8 +445,8 @@ public enum Direction implements StringRepresentable {
 
    public boolean isFacingAngle(float var1) {
       float var2 = var1 * 0.017453292F;
-      float var3 = -Mth.sin(var2);
-      float var4 = Mth.cos(var2);
+      float var3 = -Mth.sin((double)var2);
+      float var4 = Mth.cos((double)var2);
       return (float)this.normal.getX() * var3 + (float)this.normal.getZ() * var4 > 0.0F;
    }
 

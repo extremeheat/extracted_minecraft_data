@@ -24,7 +24,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
-import net.minecraft.FileUtil;
 import org.apache.commons.io.IOUtils;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;

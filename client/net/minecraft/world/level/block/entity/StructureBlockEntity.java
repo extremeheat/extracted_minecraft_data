@@ -5,20 +5,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -56,7 +56,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    private static final boolean DEFAULT_SHOW_BOUNDING_BOX = true;
    private static final float DEFAULT_INTEGRITY = 1.0F;
    private static final long DEFAULT_SEED = 0L;
-   private @Nullable ResourceLocation structureName;
+   private @Nullable Identifier structureName;
    private String author = "";
    private String metaData = "";
    private BlockPos structurePos;
@@ -177,10 +177,10 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
    }
 
    public void setStructureName(@Nullable String var1) {
-      this.setStructureName(StringUtil.isNullOrEmpty(var1) ? null : ResourceLocation.tryParse(var1));
+      this.setStructureName(StringUtil.isNullOrEmpty(var1) ? null : Identifier.tryParse(var1));
    }
 
-   public void setStructureName(@Nullable ResourceLocation var1) {
+   public void setStructureName(@Nullable Identifier var1) {
       this.structureName = var1;
    }
 
@@ -342,13 +342,13 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       return false;
    }
 
-   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6, List<Block> var7) {
+   public static boolean saveStructure(ServerLevel var0, Identifier var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6, List<Block> var7) {
       StructureTemplateManager var8 = var0.getStructureManager();
 
       StructureTemplate var9;
       try {
          var9 = var8.getOrCreate(var1);
-      } catch (ResourceLocationException var12) {
+      } catch (IdentifierException var12) {
          return false;
       }
 
@@ -357,7 +357,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       if (var6) {
          try {
             return var8.save(var1);
-         } catch (ResourceLocationException var11) {
+         } catch (IdentifierException var11) {
             return false;
          }
       } else {
@@ -444,7 +444,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
          try {
             return var2.get(this.structureName).isPresent();
-         } catch (ResourceLocationException var4) {
+         } catch (IdentifierException var4) {
             return false;
          }
       } else {

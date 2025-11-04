@@ -16,7 +16,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ColorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.HexColorArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.WaypointArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
@@ -38,7 +38,7 @@ public class WaypointCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("list").executes((var0x) -> listWaypoints((CommandSourceStack)var0x.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ColorArgument.getColor(var0x, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), HexColorArgument.getHexColor(var0x, "color")))))).then(Commands.literal("reset").executes((var0x) -> resetWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("style").then(Commands.literal("reset").executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), WaypointStyleAssets.DEFAULT)))).then(Commands.literal("set").then(Commands.argument("style", ResourceLocationArgument.id()).executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ResourceKey.create(WaypointStyleAssets.ROOT_ID, ResourceLocationArgument.getId(var0x, "style"))))))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("list").executes((var0x) -> listWaypoints((CommandSourceStack)var0x.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ColorArgument.getColor(var0x, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), HexColorArgument.getHexColor(var0x, "color")))))).then(Commands.literal("reset").executes((var0x) -> resetWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("style").then(Commands.literal("reset").executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), WaypointStyleAssets.DEFAULT)))).then(Commands.literal("set").then(Commands.argument("style", IdentifierArgument.id()).executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ResourceKey.create(WaypointStyleAssets.ROOT_ID, IdentifierArgument.getId(var0x, "style"))))))))));
    }
 
    private static int setWaypointStyle(CommandSourceStack var0, WaypointTransmitter var1, ResourceKey<WaypointStyleAsset> var2) {
@@ -68,7 +68,7 @@ public class WaypointCommand {
    private static int listWaypoints(CommandSourceStack var0) {
       ServerLevel var1 = var0.getLevel();
       Set var2 = var1.getWaypointManager().transmitters();
-      String var3 = var1.dimension().location().toString();
+      String var3 = var1.dimension().identifier().toString();
       if (var2.isEmpty()) {
          var0.sendSuccess(() -> Component.translatable("commands.waypoint.list.empty", var3), false);
          return 0;

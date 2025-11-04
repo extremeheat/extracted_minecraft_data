@@ -6,8 +6,8 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.TerrainProvider;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
@@ -71,7 +71,7 @@ public class NoiseRouterData {
    }
 
    private static ResourceKey<DensityFunction> createKey(String var0) {
-      return ResourceKey.create(Registries.DENSITY_FUNCTION, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.DENSITY_FUNCTION, Identifier.withDefaultNamespace(var0));
    }
 
    public static Holder<? extends DensityFunction> bootstrap(BootstrapContext<DensityFunction> var0) {

@@ -34,7 +34,7 @@ public class PufferfishSmallModel extends EntityModel<EntityRenderState> {
 
    public void setupAnim(EntityRenderState var1) {
       super.setupAnim(var1);
-      this.rightFin.zRot = -0.2F + 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
-      this.leftFin.zRot = 0.2F - 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
+      this.rightFin.zRot = -0.2F + 0.4F * Mth.sin((double)(var1.ageInTicks * 0.2F));
+      this.leftFin.zRot = 0.2F - 0.4F * Mth.sin((double)(var1.ageInTicks * 0.2F));
    }
 }

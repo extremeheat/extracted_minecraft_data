@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public final class Scope {

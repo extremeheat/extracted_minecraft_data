@@ -1,9 +1,9 @@
 package net.minecraft.client.model.geom;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record ModelLayerLocation(ResourceLocation model, String layer) {
-   public ModelLayerLocation(ResourceLocation var1, String var2) {
+public record ModelLayerLocation(Identifier model, String layer) {
+   public ModelLayerLocation(Identifier var1, String var2) {
       super();
       this.model = var1;
       this.layer = var2;

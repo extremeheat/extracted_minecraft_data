@@ -31,7 +31,7 @@ public class SetWorldSpawnCommand {
       float var6 = var4.x;
       LevelData.RespawnData var7 = LevelData.RespawnData.of(var3.dimension(), var1, var5, var6);
       var3.setRespawnData(var7);
-      var0.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", var1.getX(), var1.getY(), var1.getZ(), var7.yaw(), var7.pitch(), var3.dimension().location().toString()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.setworldspawn.success", var1.getX(), var1.getY(), var1.getZ(), var7.yaw(), var7.pitch(), var3.dimension().identifier().toString()), true);
       return 1;
    }
 }

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.Arrays;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import org.jspecify.annotations.Nullable;
 

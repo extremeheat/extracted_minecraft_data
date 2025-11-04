@@ -124,7 +124,7 @@ public class Sheep extends Animal implements Shearable {
    public float getHeadEatAngleScale(float var1) {
       if (this.eatAnimationTick > 4 && this.eatAnimationTick <= 36) {
          float var2 = ((float)(this.eatAnimationTick - 4) - var1) / 32.0F;
-         return 0.62831855F + 0.21991149F * Mth.sin(var2 * 28.7F);
+         return 0.62831855F + 0.21991149F * Mth.sin((double)(var2 * 28.7F));
       } else {
          return this.eatAnimationTick > 0 ? 0.62831855F : this.getXRot(var1) * 0.017453292F;
       }

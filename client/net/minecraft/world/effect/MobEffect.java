@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
@@ -17,11 +16,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -134,7 +134,7 @@ public class MobEffect implements FeatureElement {
       return this.color;
    }
 
-   public MobEffect addAttributeModifier(Holder<Attribute> var1, ResourceLocation var2, double var3, AttributeModifier.Operation var5) {
+   public MobEffect addAttributeModifier(Holder<Attribute> var1, Identifier var2, double var3, AttributeModifier.Operation var5) {
       this.attributeModifiers.put(var1, new AttributeTemplate(var2, var3, var5));
       return this;
    }
@@ -203,8 +203,8 @@ public class MobEffect implements FeatureElement {
       AMBIENT_ALPHA = Mth.floor(38.25F);
    }
 
-   static record AttributeTemplate(ResourceLocation id, double amount, AttributeModifier.Operation operation) {
-      AttributeTemplate(ResourceLocation var1, double var2, AttributeModifier.Operation var4) {
+   static record AttributeTemplate(Identifier id, double amount, AttributeModifier.Operation operation) {
+      AttributeTemplate(Identifier var1, double var2, AttributeModifier.Operation var4) {
          super();
          this.id = var1;
          this.amount = var2;

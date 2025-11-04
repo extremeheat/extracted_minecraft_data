@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -11,9 +11,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 
 public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventoryMenu> {
-   private static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
-   private static final ResourceLocation CHEST_SLOTS_SPRITE = ResourceLocation.withDefaultNamespace("container/horse/chest_slots");
-   private static final ResourceLocation HORSE_INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
+   private static final Identifier SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot");
+   private static final Identifier CHEST_SLOTS_SPRITE = Identifier.withDefaultNamespace("container/horse/chest_slots");
+   private static final Identifier HORSE_INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/horse.png");
    private final AbstractHorse horse;
    private final int inventoryColumns;
    private float xMouse;
@@ -46,7 +46,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    }
 
    private void drawSlot(GuiGraphics var1, int var2, int var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_SPRITE, var2, var3, 18, 18);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_SPRITE, var2, var3, 18, 18);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

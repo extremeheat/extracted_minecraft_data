@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import net.minecraft.Util;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class SimpleReloadInstance<S> implements ReloadInstance {

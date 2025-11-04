@@ -272,7 +272,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    private static void storeEffect(ValueOutput var0, String var1, @Nullable Holder<MobEffect> var2) {
       if (var2 != null) {
-         var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.location().toString()));
+         var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.identifier().toString()));
       }
 
    }

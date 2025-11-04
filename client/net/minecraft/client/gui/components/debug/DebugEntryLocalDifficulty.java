@@ -21,10 +21,10 @@ public class DebugEntryLocalDifficulty implements DebugScreenEntry {
       if (var6 != null && var4 != null && var2 instanceof ServerLevel var7) {
          BlockPos var8 = var6.blockPosition();
          if (var7.isInsideBuildHeight(var8.getY())) {
-            float var9 = var7.getMoonBrightness();
+            float var9 = var7.getMoonBrightness(var8);
             long var10 = var4.getInhabitedTime();
             DifficultyInstance var12 = new DifficultyInstance(var7.getDifficulty(), var7.getDayTime(), var10, var9);
-            var1.addLine(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f (Day %d)", var12.getEffectiveDifficulty(), var12.getSpecialMultiplier(), var7.getDayCount()));
+            var1.addLine(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f", var12.getEffectiveDifficulty(), var12.getSpecialMultiplier()));
          }
 
       }

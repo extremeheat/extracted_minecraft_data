@@ -9,15 +9,15 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HappyGhastRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.HappyGhast;
 import net.minecraft.world.phys.AABB;
 
 public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhastRenderState, HappyGhastModel> {
-   private static final ResourceLocation GHAST_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast.png");
-   private static final ResourceLocation GHAST_BABY_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast_baby.png");
-   private static final ResourceLocation GHAST_ROPES = ResourceLocation.withDefaultNamespace("textures/entity/ghast/happy_ghast_ropes.png");
+   private static final Identifier GHAST_LOCATION = Identifier.withDefaultNamespace("textures/entity/ghast/happy_ghast.png");
+   private static final Identifier GHAST_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/ghast/happy_ghast_baby.png");
+   private static final Identifier GHAST_ROPES = Identifier.withDefaultNamespace("textures/entity/ghast/happy_ghast_ropes.png");
 
    public HappyGhastRenderer(EntityRendererProvider.Context var1) {
       super(var1, new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST)), new HappyGhastModel(var1.bakeLayer(ModelLayers.HAPPY_GHAST_BABY)), 2.0F);
@@ -25,7 +25,7 @@ public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhas
       this.addLayer(new RopesLayer(this, var1.getModelSet(), GHAST_ROPES));
    }
 
-   public ResourceLocation getTextureLocation(HappyGhastRenderState var1) {
+   public Identifier getTextureLocation(HappyGhastRenderState var1) {
       return var1.isBaby ? GHAST_BABY_LOCATION : GHAST_LOCATION;
    }
 
@@ -47,7 +47,7 @@ public class HappyGhastRenderer extends AgeableMobRenderer<HappyGhast, HappyGhas
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((HappyGhastRenderState)var1);
    }
 

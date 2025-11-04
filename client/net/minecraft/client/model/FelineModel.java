@@ -91,20 +91,20 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
          float var3 = var1.walkAnimationSpeed;
          float var4 = var1.walkAnimationPos;
          if (var1.isSprinting) {
-            this.leftHindLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
-            this.rightHindLeg.xRot = Mth.cos(var4 * 0.6662F + 0.3F) * var3;
-            this.leftFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F + 0.3F) * var3;
-            this.rightFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
-            this.tail2.xRot = 1.7278761F + 0.31415927F * Mth.cos(var4) * var3;
+            this.leftHindLeg.xRot = Mth.cos((double)(var4 * 0.6662F)) * var3;
+            this.rightHindLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 0.3F)) * var3;
+            this.leftFrontLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 3.1415927F + 0.3F)) * var3;
+            this.rightFrontLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 3.1415927F)) * var3;
+            this.tail2.xRot = 1.7278761F + 0.31415927F * Mth.cos((double)var4) * var3;
          } else {
-            this.leftHindLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
-            this.rightHindLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
-            this.leftFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
-            this.rightFrontLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
+            this.leftHindLeg.xRot = Mth.cos((double)(var4 * 0.6662F)) * var3;
+            this.rightHindLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 3.1415927F)) * var3;
+            this.leftFrontLeg.xRot = Mth.cos((double)(var4 * 0.6662F + 3.1415927F)) * var3;
+            this.rightFrontLeg.xRot = Mth.cos((double)(var4 * 0.6662F)) * var3;
             if (!var1.isCrouching) {
-               this.tail2.xRot = 1.7278761F + 0.7853982F * Mth.cos(var4) * var3;
+               this.tail2.xRot = 1.7278761F + 0.7853982F * Mth.cos((double)var4) * var3;
             } else {
-               this.tail2.xRot = 1.7278761F + 0.47123894F * Mth.cos(var4) * var3;
+               this.tail2.xRot = 1.7278761F + 0.47123894F * Mth.cos((double)var4) * var3;
             }
          }
       }

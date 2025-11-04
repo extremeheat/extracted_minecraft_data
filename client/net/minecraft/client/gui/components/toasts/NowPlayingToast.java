@@ -9,13 +9,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import org.jspecify.annotations.Nullable;
 
 public class NowPlayingToast implements Toast {
-   private static final ResourceLocation NOW_PLAYING_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/now_playing");
-   private static final ResourceLocation MUSIC_NOTES_SPRITE = ResourceLocation.parse("icon/music_notes");
+   private static final Identifier NOW_PLAYING_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("toast/now_playing");
+   private static final Identifier MUSIC_NOTES_SPRITE = Identifier.parse("icon/music_notes");
    private static final int PADDING = 7;
    private static final int MUSIC_NOTES_SIZE = 16;
    private static final int HEIGHT = 30;
@@ -41,9 +41,9 @@ public class NowPlayingToast implements Toast {
    public static void renderToast(Minecraft var0, GuiGraphics var1, Font var2) {
       currentSong = var0.getMusicManager().getCurrentMusicTranslationKey();
       if (currentSong != null) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, var2), 30);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, var2), 30);
          boolean var3 = true;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
          Component var10002 = getNowPlayingString(currentSong);
          Objects.requireNonNull(var2);
          var1.drawString(var2, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);

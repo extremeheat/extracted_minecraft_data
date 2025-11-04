@@ -9,17 +9,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
 import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
-import net.minecraft.util.parsing.packrat.commands.ResourceLocationParseRule;
+import net.minecraft.util.parsing.packrat.commands.IdentifierParseRule;
 import net.minecraft.util.parsing.packrat.commands.ResourceLookupRule;
 import net.minecraft.util.parsing.packrat.commands.StringReaderTerms;
 import net.minecraft.util.parsing.packrat.commands.TagParseRule;
@@ -45,7 +45,7 @@ public class ComponentPredicateParser {
       Atom var13 = Atom.of("id");
       Atom var14 = Atom.of("tag");
       Dictionary var15 = new Dictionary();
-      NamedRule var16 = var15.put(var13, ResourceLocationParseRule.INSTANCE);
+      NamedRule var16 = var15.put(var13, IdentifierParseRule.INSTANCE);
       NamedRule var17 = var15.put(var1, Term.alternative(Term.sequence(var15.named(var2), StringReaderTerms.character('['), Term.cut(), Term.optional(var15.named(var6)), StringReaderTerms.character(']')), var15.named(var2)), (var2x) -> {
          ImmutableList.Builder var3 = ImmutableList.builder();
          Optional var10000 = (Optional)var2x.getOrThrow(var2);
@@ -97,81 +97,81 @@ public class ComponentPredicateParser {
    }
 
    static class ElementLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
-      ElementLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
+      ElementLookupRule(NamedRule<StringReader, Identifier> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      protected T validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+      protected T validateElement(ImmutableStringReader var1, Identifier var2) throws Exception {
          return (T)((Context)this.context).forElementType(var1, var2);
       }
 
-      public Stream<ResourceLocation> possibleResources() {
+      public Stream<Identifier> possibleResources() {
          return ((Context)this.context).listElementTypes();
       }
    }
 
    static class TagLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
-      TagLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
+      TagLookupRule(NamedRule<StringReader, Identifier> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      protected T validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+      protected T validateElement(ImmutableStringReader var1, Identifier var2) throws Exception {
          return (T)((Context)this.context).forTagType(var1, var2);
       }
 
-      public Stream<ResourceLocation> possibleResources() {
+      public Stream<Identifier> possibleResources() {
          return ((Context)this.context).listTagTypes();
       }
    }
 
    static class ComponentLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, C> {
-      ComponentLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
+      ComponentLookupRule(NamedRule<StringReader, Identifier> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      protected C validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+      protected C validateElement(ImmutableStringReader var1, Identifier var2) throws Exception {
          return (C)((Context)this.context).lookupComponentType(var1, var2);
       }
 
-      public Stream<ResourceLocation> possibleResources() {
+      public Stream<Identifier> possibleResources() {
          return ((Context)this.context).listComponentTypes();
       }
    }
 
    static class PredicateLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, P> {
-      PredicateLookupRule(NamedRule<StringReader, ResourceLocation> var1, Context<T, C, P> var2) {
+      PredicateLookupRule(NamedRule<StringReader, Identifier> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      protected P validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+      protected P validateElement(ImmutableStringReader var1, Identifier var2) throws Exception {
          return (P)((Context)this.context).lookupPredicateType(var1, var2);
       }
 
-      public Stream<ResourceLocation> possibleResources() {
+      public Stream<Identifier> possibleResources() {
          return ((Context)this.context).listPredicateTypes();
       }
    }
 
    public interface Context<T, C, P> {
-      T forElementType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException;
+      T forElementType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException;
 
-      Stream<ResourceLocation> listElementTypes();
+      Stream<Identifier> listElementTypes();
 
-      T forTagType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException;
+      T forTagType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException;
 
-      Stream<ResourceLocation> listTagTypes();
+      Stream<Identifier> listTagTypes();
 
-      C lookupComponentType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException;
+      C lookupComponentType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException;
 
-      Stream<ResourceLocation> listComponentTypes();
+      Stream<Identifier> listComponentTypes();
 
       T createComponentTest(ImmutableStringReader var1, C var2, Dynamic<?> var3) throws CommandSyntaxException;
 
       T createComponentTest(ImmutableStringReader var1, C var2);
 
-      P lookupPredicateType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException;
+      P lookupPredicateType(ImmutableStringReader var1, Identifier var2) throws CommandSyntaxException;
 
-      Stream<ResourceLocation> listPredicateTypes();
+      Stream<Identifier> listPredicateTypes();
 
       T createPredicateTest(ImmutableStringReader var1, P var2, Dynamic<?> var3) throws CommandSyntaxException;
 

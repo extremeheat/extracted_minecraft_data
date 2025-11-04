@@ -5,15 +5,15 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundSeenAdvancementsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSeenAdvancementsPacket>codec(ServerboundSeenAdvancementsPacket::write, ServerboundSeenAdvancementsPacket::new);
    private final Action action;
-   private final @Nullable ResourceLocation tab;
+   private final @Nullable Identifier tab;
 
-   public ServerboundSeenAdvancementsPacket(Action var1, @Nullable ResourceLocation var2) {
+   public ServerboundSeenAdvancementsPacket(Action var1, @Nullable Identifier var2) {
       super();
       this.action = var1;
       this.tab = var2;
@@ -24,14 +24,14 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
    }
 
    public static ServerboundSeenAdvancementsPacket closedScreen() {
-      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.CLOSED_SCREEN, (ResourceLocation)null);
+      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.CLOSED_SCREEN, (Identifier)null);
    }
 
    private ServerboundSeenAdvancementsPacket(FriendlyByteBuf var1) {
       super();
       this.action = (Action)var1.readEnum(Action.class);
       if (this.action == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         this.tab = var1.readResourceLocation();
+         this.tab = var1.readIdentifier();
       } else {
          this.tab = null;
       }
@@ -41,7 +41,7 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
    private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.action);
       if (this.action == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         var1.writeResourceLocation(this.tab);
+         var1.writeIdentifier(this.tab);
       }
 
    }
@@ -58,7 +58,7 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
       return this.action;
    }
 
-   public @Nullable ResourceLocation getTab() {
+   public @Nullable Identifier getTab() {
       return this.tab;
    }
 

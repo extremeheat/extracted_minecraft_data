@@ -25,9 +25,9 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -132,7 +132,7 @@ public class ItemParser {
 
       private void readItem() throws CommandSyntaxException {
          int var1 = this.reader.getCursor();
-         ResourceLocation var2 = ResourceLocation.read(this.reader);
+         Identifier var2 = Identifier.read(this.reader);
          this.visitor.visitItem((Holder)ItemParser.this.items.get(ResourceKey.create(Registries.ITEM, var2)).orElseThrow(() -> {
             this.reader.setCursor(var1);
             return ItemParser.ERROR_UNKNOWN_ITEM.createWithContext(this.reader, var2);
@@ -194,7 +194,7 @@ public class ItemParser {
             throw ItemParser.ERROR_EXPECTED_COMPONENT.createWithContext(var0);
          } else {
             int var1 = var0.getCursor();
-            ResourceLocation var2 = ResourceLocation.read(var0);
+            Identifier var2 = Identifier.read(var0);
             DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(var2);
             if (var3 != null && !var3.isTransient()) {
                return var3;
@@ -241,7 +241,7 @@ public class ItemParser {
       }
 
       private CompletableFuture<Suggestions> suggestItem(SuggestionsBuilder var1) {
-         return SharedSuggestionProvider.suggestResource(ItemParser.this.items.listElementIds().map(ResourceKey::location), var1);
+         return SharedSuggestionProvider.suggestResource(ItemParser.this.items.listElementIds().map(ResourceKey::identifier), var1);
       }
 
       private CompletableFuture<Suggestions> suggestComponentAssignmentOrRemoval(SuggestionsBuilder var1) {
@@ -255,10 +255,10 @@ public class ItemParser {
 
       private CompletableFuture<Suggestions> suggestComponent(SuggestionsBuilder var1, String var2) {
          String var3 = var1.getRemaining().toLowerCase(Locale.ROOT);
-         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var3, (var0) -> ((ResourceKey)var0.getKey()).location(), (var2x) -> {
+         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var3, (var0) -> ((ResourceKey)var0.getKey()).identifier(), (var2x) -> {
             DataComponentType var3 = (DataComponentType)var2x.getValue();
             if (var3.codec() != null) {
-               ResourceLocation var4 = ((ResourceKey)var2x.getKey()).location();
+               Identifier var4 = ((ResourceKey)var2x.getKey()).identifier();
                String var10001 = String.valueOf(var4);
                var1.suggest(var10001 + var2);
             }

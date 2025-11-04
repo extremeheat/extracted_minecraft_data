@@ -7,7 +7,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
@@ -43,7 +43,7 @@ public final class StructureStart {
          return INVALID_START;
       } else {
          Registry var5 = var0.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-         Structure var6 = (Structure)var5.getValue(ResourceLocation.parse(var4));
+         Structure var6 = (Structure)var5.getValue(Identifier.parse(var4));
          if (var6 == null) {
             LOGGER.error("Unknown stucture id: {}", var4);
             return null;

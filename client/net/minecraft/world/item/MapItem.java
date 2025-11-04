@@ -223,7 +223,7 @@ public class MapItem extends Item {
                   if (isBiomeWatery(var6, var15, var16)) {
                      var19 = MapColor.COLOR_ORANGE;
                      if (var17 > 7 && var16 % 2 == 0) {
-                        switch ((var15 + (int)(Mth.sin((float)var16 + 0.0F) * 7.0F)) / 8 % 5) {
+                        switch ((var15 + (int)(Mth.sin((double)((float)var16 + 0.0F)) * 7.0F)) / 8 % 5) {
                            case 0:
                            case 4:
                               var18 = MapColor.Brightness.LOW;

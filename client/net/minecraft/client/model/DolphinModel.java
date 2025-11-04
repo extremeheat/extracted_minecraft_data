@@ -45,9 +45,9 @@ public class DolphinModel extends EntityModel<DolphinRenderState> {
       this.body.yRot = var1.yRot * 0.017453292F;
       if (var1.isMoving) {
          ModelPart var10000 = this.body;
-         var10000.xRot += -0.05F - 0.05F * Mth.cos(var1.ageInTicks * 0.3F);
-         this.tail.xRot = -0.1F * Mth.cos(var1.ageInTicks * 0.3F);
-         this.tailFin.xRot = -0.2F * Mth.cos(var1.ageInTicks * 0.3F);
+         var10000.xRot += -0.05F - 0.05F * Mth.cos((double)(var1.ageInTicks * 0.3F));
+         this.tail.xRot = -0.1F * Mth.cos((double)(var1.ageInTicks * 0.3F));
+         this.tailFin.xRot = -0.2F * Mth.cos((double)(var1.ageInTicks * 0.3F));
       }
 
    }

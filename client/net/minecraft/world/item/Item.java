@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -28,8 +27,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -37,6 +36,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -99,8 +99,8 @@ public class Item implements FeatureElement, ItemLike {
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> STREAM_CODEC;
    private static final Logger LOGGER;
    public static final Map<Block, Item> BY_BLOCK;
-   public static final ResourceLocation BASE_ATTACK_DAMAGE_ID;
-   public static final ResourceLocation BASE_ATTACK_SPEED_ID;
+   public static final Identifier BASE_ATTACK_DAMAGE_ID;
+   public static final Identifier BASE_ATTACK_SPEED_ID;
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
@@ -382,26 +382,26 @@ public class Item implements FeatureElement, ItemLike {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
-      BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
-      BASE_ATTACK_SPEED_ID = ResourceLocation.withDefaultNamespace("base_attack_speed");
+      BASE_ATTACK_DAMAGE_ID = Identifier.withDefaultNamespace("base_attack_damage");
+      BASE_ATTACK_SPEED_ID = Identifier.withDefaultNamespace("base_attack_speed");
    }
 
    public static class Properties {
-      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.location());
-      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.location());
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.identifier());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.identifier());
       private final DataComponentMap.Builder components;
       @Nullable Item craftingRemainingItem;
       FeatureFlagSet requiredFeatures;
       private @Nullable ResourceKey<Item> id;
       private DependantName<Item, String> descriptionId;
-      private final DependantName<Item, ResourceLocation> model;
+      private final DependantName<Item, Identifier> model;
 
       public Properties() {
          super();
          this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.descriptionId = ITEM_DESCRIPTION_ID;
-         this.model = ResourceKey::location;
+         this.model = ResourceKey::identifier;
       }
 
       public Properties food(FoodProperties var1) {
@@ -494,7 +494,7 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Properties spear(ToolMaterial var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-         return this.durability(var1.durability()).repairable(var1.repairItems()).enchantable(var1.enchantmentValue()).component(DataComponents.DAMAGE_TYPE, new EitherHolder(DamageTypes.SPEAR)).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(2.0F, 4.5F, 0.25F, 10, (int)(var4 * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(var5 * 20.0F), var6), KineticWeapon.Condition.ofAttackerSpeed((int)(var7 * 20.0F), var8), KineticWeapon.Condition.ofRelativeSpeed((int)(var9 * 20.0F), var10), 0.38F, var3, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(2.0F, 4.5F, 0.25F, true, false, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(var2 * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + var1.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / var2) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
+         return this.durability(var1.durability()).repairable(var1.repairItems()).enchantable(var1.enchantmentValue()).component(DataComponents.DAMAGE_TYPE, new EitherHolder(DamageTypes.SPEAR)).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(2.0F, 4.5F, 0.125F, 10, (int)(var4 * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(var5 * 20.0F), var6), KineticWeapon.Condition.ofAttackerSpeed((int)(var7 * 20.0F), var8), KineticWeapon.Condition.ofRelativeSpeed((int)(var9 * 20.0F), var10), 0.38F, var3, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(2.0F, 4.5F, 0.25F, true, false, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(var2 * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + var1.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / var2) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
       }
 
       public Properties spawnEgg(EntityType<?> var1) {
@@ -552,7 +552,7 @@ public class Item implements FeatureElement, ItemLike {
          return this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
-      public ResourceLocation effectiveModel() {
+      public Identifier effectiveModel() {
          return this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
@@ -565,7 +565,7 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
       }
 
-      DataComponentMap buildAndValidateComponents(Component var1, ResourceLocation var2) {
+      DataComponentMap buildAndValidateComponents(Component var1, Identifier var2) {
          DataComponentMap var3 = this.components.set(DataComponents.ITEM_NAME, var1).set(DataComponents.ITEM_MODEL, var2).build();
          if (var3.has(DataComponents.DAMAGE) && (Integer)var3.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
             throw new IllegalStateException("Item cannot have both durability and be stackable");

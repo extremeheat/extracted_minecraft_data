@@ -10,8 +10,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BannerPatternTags;
 import net.minecraft.tags.DamageTypeTags;
@@ -1305,6 +1305,7 @@ public class Items {
    public static final Item IRON_HORSE_ARMOR;
    public static final Item GOLDEN_HORSE_ARMOR;
    public static final Item DIAMOND_HORSE_ARMOR;
+   public static final Item NETHERITE_HORSE_ARMOR;
    public static final Item LEATHER_HORSE_ARMOR;
    public static final Item LEAD;
    public static final Item NAME_TAG;
@@ -1553,11 +1554,11 @@ public class Items {
    }
 
    private static ResourceKey<Item> vanillaItemId(String var0) {
-      return ResourceKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace(var0));
    }
 
    private static ResourceKey<Item> blockIdToItemId(ResourceKey<Block> var0) {
-      return ResourceKey.create(Registries.ITEM, var0.location());
+      return ResourceKey.create(Registries.ITEM, var0.identifier());
    }
 
    public static Item registerBlock(Block var0) {
@@ -1977,7 +1978,7 @@ public class Items {
       CRIMSON_FENCE = registerBlock(Blocks.CRIMSON_FENCE);
       WARPED_FENCE = registerBlock(Blocks.WARPED_FENCE);
       PUMPKIN = registerBlock(Blocks.PUMPKIN);
-      CARVED_PUMPKIN = registerBlock(Blocks.CARVED_PUMPKIN, (UnaryOperator)((var0) -> Waypoint.addHideAttribute(var0).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(ResourceLocation.withDefaultNamespace("misc/pumpkinblur")).build())));
+      CARVED_PUMPKIN = registerBlock(Blocks.CARVED_PUMPKIN, (UnaryOperator)((var0) -> Waypoint.addHideAttribute(var0).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(Identifier.withDefaultNamespace("misc/pumpkinblur")).build())));
       JACK_O_LANTERN = registerBlock(Blocks.JACK_O_LANTERN);
       NETHERRACK = registerBlock(Blocks.NETHERRACK);
       SOUL_SAND = registerBlock(Blocks.SOUL_SAND);
@@ -2865,6 +2866,7 @@ public class Items {
       IRON_HORSE_ARMOR = registerItem("iron_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.IRON));
       GOLDEN_HORSE_ARMOR = registerItem("golden_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.GOLD));
       DIAMOND_HORSE_ARMOR = registerItem("diamond_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.DIAMOND));
+      NETHERITE_HORSE_ARMOR = registerItem("netherite_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.NETHERITE));
       LEATHER_HORSE_ARMOR = registerItem("leather_horse_armor", (new Item.Properties()).horseArmor(ArmorMaterials.LEATHER));
       LEAD = registerItem("lead", LeadItem::new);
       NAME_TAG = registerItem("name_tag", NameTagItem::new);

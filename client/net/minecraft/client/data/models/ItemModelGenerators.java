@@ -35,8 +35,8 @@ import net.minecraft.client.renderer.item.properties.select.TrimMaterialProperty
 import net.minecraft.client.renderer.special.ShieldSpecialRenderer;
 import net.minecraft.client.renderer.special.TridentSpecialRenderer;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
@@ -50,19 +50,19 @@ import net.minecraft.world.item.equipment.trim.TrimMaterials;
 
 public class ItemModelGenerators {
    private static final ItemTintSource BLANK_LAYER = ItemModelUtils.constantTint(-1);
-   public static final ResourceLocation TRIM_PREFIX_HELMET = prefixForSlotTrim("helmet");
-   public static final ResourceLocation TRIM_PREFIX_CHESTPLATE = prefixForSlotTrim("chestplate");
-   public static final ResourceLocation TRIM_PREFIX_LEGGINGS = prefixForSlotTrim("leggings");
-   public static final ResourceLocation TRIM_PREFIX_BOOTS = prefixForSlotTrim("boots");
+   public static final Identifier TRIM_PREFIX_HELMET = prefixForSlotTrim("helmet");
+   public static final Identifier TRIM_PREFIX_CHESTPLATE = prefixForSlotTrim("chestplate");
+   public static final Identifier TRIM_PREFIX_LEGGINGS = prefixForSlotTrim("leggings");
+   public static final Identifier TRIM_PREFIX_BOOTS = prefixForSlotTrim("boots");
    public static final List<TrimMaterialData> TRIM_MATERIAL_MODELS;
    private final ItemModelOutput itemModelOutput;
-   private final BiConsumer<ResourceLocation, ModelInstance> modelOutput;
+   private final BiConsumer<Identifier, ModelInstance> modelOutput;
 
-   public static ResourceLocation prefixForSlotTrim(String var0) {
-      return ResourceLocation.withDefaultNamespace("trims/items/" + var0 + "_trim");
+   public static Identifier prefixForSlotTrim(String var0) {
+      return Identifier.withDefaultNamespace("trims/items/" + var0 + "_trim");
    }
 
-   public ItemModelGenerators(ItemModelOutput var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
+   public ItemModelGenerators(ItemModelOutput var1, BiConsumer<Identifier, ModelInstance> var2) {
       super();
       this.itemModelOutput = var1;
       this.modelOutput = var2;
@@ -72,7 +72,7 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.plainModel(ModelLocationUtils.getModelLocation(var1)));
    }
 
-   private ResourceLocation createFlatItemModel(Item var1, ModelTemplate var2) {
+   private Identifier createFlatItemModel(Item var1, ModelTemplate var2) {
       return var2.create(ModelLocationUtils.getModelLocation(var1), TextureMapping.layer0(var1), this.modelOutput);
    }
 
@@ -80,11 +80,11 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.plainModel(this.createFlatItemModel(var1, var2)));
    }
 
-   private ResourceLocation createFlatItemModel(Item var1, String var2, ModelTemplate var3) {
+   private Identifier createFlatItemModel(Item var1, String var2, ModelTemplate var3) {
       return var3.create(ModelLocationUtils.getModelLocation(var1, var2), TextureMapping.layer0(TextureMapping.getItemTexture(var1, var2)), this.modelOutput);
    }
 
-   private ResourceLocation createFlatItemModel(Item var1, Item var2, ModelTemplate var3) {
+   private Identifier createFlatItemModel(Item var1, Item var2, ModelTemplate var3) {
       return var3.create(ModelLocationUtils.getModelLocation(var1), TextureMapping.layer0(var2), this.modelOutput);
    }
 
@@ -97,7 +97,7 @@ public class ItemModelGenerators {
    }
 
    private void generateItemWithTintedOverlay(Item var1, String var2, ItemTintSource var3) {
-      ResourceLocation var4 = this.generateLayeredItem(var1, TextureMapping.getItemTexture(var1), TextureMapping.getItemTexture(var1, var2));
+      Identifier var4 = this.generateLayeredItem(var1, TextureMapping.getItemTexture(var1), TextureMapping.getItemTexture(var1, var2));
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var4, BLANK_LAYER, var3));
    }
 
@@ -139,28 +139,28 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.inOverworld(ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.DAYTIME), 64.0F, var2), ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.RANDOM), 64.0F, var2)));
    }
 
-   private ResourceLocation generateLayeredItem(Item var1, ResourceLocation var2, ResourceLocation var3) {
+   private Identifier generateLayeredItem(Item var1, Identifier var2, Identifier var3) {
       return ModelTemplates.TWO_LAYERED_ITEM.create(var1, TextureMapping.layered(var2, var3), this.modelOutput);
    }
 
-   private ResourceLocation generateLayeredItem(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+   private Identifier generateLayeredItem(Identifier var1, Identifier var2, Identifier var3) {
       return ModelTemplates.TWO_LAYERED_ITEM.create(var1, TextureMapping.layered(var2, var3), this.modelOutput);
    }
 
-   private void generateLayeredItem(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4) {
+   private void generateLayeredItem(Identifier var1, Identifier var2, Identifier var3, Identifier var4) {
       ModelTemplates.THREE_LAYERED_ITEM.create(var1, TextureMapping.layered(var2, var3, var4), this.modelOutput);
    }
 
-   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, ResourceLocation var3, boolean var4) {
-      ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1);
-      ResourceLocation var6 = TextureMapping.getItemTexture(var1);
-      ResourceLocation var7 = TextureMapping.getItemTexture(var1, "_overlay");
+   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, Identifier var3, boolean var4) {
+      Identifier var5 = ModelLocationUtils.getModelLocation(var1);
+      Identifier var6 = TextureMapping.getItemTexture(var1);
+      Identifier var7 = TextureMapping.getItemTexture(var1, "_overlay");
       ArrayList var8 = new ArrayList(TRIM_MATERIAL_MODELS.size());
 
       for(TrimMaterialData var10 : TRIM_MATERIAL_MODELS) {
-         ResourceLocation var11 = var5.withSuffix("_" + var10.assets().base().suffix() + "_trim");
+         Identifier var11 = var5.withSuffix("_" + var10.assets().base().suffix() + "_trim");
          String var10001 = var10.assets().assetId(var2).suffix();
-         ResourceLocation var12 = var3.withSuffix("_" + var10001);
+         Identifier var12 = var3.withSuffix("_" + var10001);
          ItemModel.Unbaked var13;
          if (var4) {
             this.generateLayeredItem(var11, var6, var7, var12);
@@ -187,15 +187,15 @@ public class ItemModelGenerators {
 
    private void generateBundleModels(Item var1) {
       ItemModel.Unbaked var2 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM));
-      ResourceLocation var3 = this.generateBundleCoverModel(var1, ModelTemplates.BUNDLE_OPEN_BACK_INVENTORY, "_open_back");
-      ResourceLocation var4 = this.generateBundleCoverModel(var1, ModelTemplates.BUNDLE_OPEN_FRONT_INVENTORY, "_open_front");
+      Identifier var3 = this.generateBundleCoverModel(var1, ModelTemplates.BUNDLE_OPEN_BACK_INVENTORY, "_open_back");
+      Identifier var4 = this.generateBundleCoverModel(var1, ModelTemplates.BUNDLE_OPEN_FRONT_INVENTORY, "_open_front");
       ItemModel.Unbaked var5 = ItemModelUtils.composite(ItemModelUtils.plainModel(var3), new BundleSelectedItemSpecialRenderer.Unbaked(), ItemModelUtils.plainModel(var4));
       ItemModel.Unbaked var6 = ItemModelUtils.conditional(new BundleHasSelectedItem(), var5, var2);
       this.itemModelOutput.accept(var1, ItemModelUtils.select(new DisplayContext(), var2, ItemModelUtils.when(ItemDisplayContext.GUI, var6)));
    }
 
-   private ResourceLocation generateBundleCoverModel(Item var1, ModelTemplate var2, String var3) {
-      ResourceLocation var4 = TextureMapping.getItemTexture(var1, var3);
+   private Identifier generateBundleCoverModel(Item var1, ModelTemplate var2, String var3) {
+      Identifier var4 = TextureMapping.getItemTexture(var1, var3);
       return var2.create(var1, TextureMapping.layer0(var4), this.modelOutput);
    }
 
@@ -277,30 +277,30 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, createFlatModelDispatch(var2, var3), new ClientItem.Properties(true, false, 1.9F));
    }
 
-   private void addPotionTint(Item var1, ResourceLocation var2) {
+   private void addPotionTint(Item var1, Identifier var2) {
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var2, new Potion()));
    }
 
    private void generatePotion(Item var1) {
-      ResourceLocation var2 = this.generateLayeredItem(var1, ModelLocationUtils.decorateItemModelLocation("potion_overlay"), ModelLocationUtils.getModelLocation(var1));
+      Identifier var2 = this.generateLayeredItem(var1, ModelLocationUtils.decorateItemModelLocation("potion_overlay"), ModelLocationUtils.getModelLocation(var1));
       this.addPotionTint(var1, var2);
    }
 
    private void generateTippedArrow(Item var1) {
-      ResourceLocation var2 = this.generateLayeredItem(var1, ModelLocationUtils.getModelLocation(var1, "_head"), ModelLocationUtils.getModelLocation(var1, "_base"));
+      Identifier var2 = this.generateLayeredItem(var1, ModelLocationUtils.getModelLocation(var1, "_head"), ModelLocationUtils.getModelLocation(var1, "_base"));
       this.addPotionTint(var1, var2);
    }
 
    private void generateDyedItem(Item var1, int var2) {
-      ResourceLocation var3 = this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM);
+      Identifier var3 = this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM);
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var3, new Dye(var2)));
    }
 
    private void generateTwoLayerDyedItem(Item var1) {
-      ResourceLocation var2 = TextureMapping.getItemTexture(var1);
-      ResourceLocation var3 = TextureMapping.getItemTexture(var1, "_overlay");
-      ResourceLocation var4 = ModelTemplates.FLAT_ITEM.create(var1, TextureMapping.layer0(var2), this.modelOutput);
-      ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1, "_dyed");
+      Identifier var2 = TextureMapping.getItemTexture(var1);
+      Identifier var3 = TextureMapping.getItemTexture(var1, "_overlay");
+      Identifier var4 = ModelTemplates.FLAT_ITEM.create(var1, TextureMapping.layer0(var2), this.modelOutput);
+      Identifier var5 = ModelLocationUtils.getModelLocation(var1, "_dyed");
       ModelTemplates.TWO_LAYERED_ITEM.create(var5, TextureMapping.layered(var2, var3), this.modelOutput);
       this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.DYED_COLOR), ItemModelUtils.tintedModel(var5, BLANK_LAYER, new Dye(0)), ItemModelUtils.plainModel(var4)));
    }
@@ -492,6 +492,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.NETHERITE_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.NETHERITE_NAUTILUS_ARMOR, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.NETHERITE_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHER_BRICK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.RESIN_BRICK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHER_STAR, ModelTemplates.FLAT_ITEM);

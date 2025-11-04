@@ -52,7 +52,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
    }
 
    public static boolean xmasTextures() {
-      return SpecialDates.isExtendedChrismas();
+      return SpecialDates.isExtendedChristmas();
    }
 
    public ChestRenderState createRenderState() {

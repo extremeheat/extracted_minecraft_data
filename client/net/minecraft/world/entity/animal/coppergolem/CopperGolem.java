@@ -268,7 +268,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    private boolean canTurnToStatue(Level var1) {
-      return var1.getBlockState(this.blockPosition()).is(Blocks.AIR) && var1.random.nextFloat() <= 0.0058F;
+      return var1.getBlockState(this.blockPosition()).isAir() && var1.random.nextFloat() <= 0.0058F;
    }
 
    private void turnToStatue(ServerLevel var1) {

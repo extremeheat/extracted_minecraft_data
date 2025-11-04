@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class AdvancementTree {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<ResourceLocation, AdvancementNode> nodes = new Object2ObjectOpenHashMap();
+   private final Map<Identifier, AdvancementNode> nodes = new Object2ObjectOpenHashMap();
    private final Set<AdvancementNode> roots = new ObjectLinkedOpenHashSet();
    private final Set<AdvancementNode> tasks = new ObjectLinkedOpenHashSet();
    private @Nullable Listener listener;
@@ -45,8 +45,8 @@ public class AdvancementTree {
 
    }
 
-   public void remove(Set<ResourceLocation> var1) {
-      for(ResourceLocation var3 : var1) {
+   public void remove(Set<Identifier> var1) {
+      for(Identifier var3 : var1) {
          AdvancementNode var4 = (AdvancementNode)this.nodes.get(var3);
          if (var4 == null) {
             LOGGER.warn("Told to remove advancement {} but I don't know what that is", var3);
@@ -118,7 +118,7 @@ public class AdvancementTree {
       return this.nodes.values();
    }
 
-   public @Nullable AdvancementNode get(ResourceLocation var1) {
+   public @Nullable AdvancementNode get(Identifier var1) {
       return (AdvancementNode)this.nodes.get(var1);
    }
 

@@ -2,13 +2,10 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -378,39 +375,29 @@ public class ItemBlockRenderTypes {
    public static RenderType getMovingBlockRenderType(BlockState var0) {
       Block var1 = var0.getBlock();
       if (var1 instanceof LeavesBlock) {
-         return cutoutLeaves ? RenderTypes.cutout() : RenderTypes.solid();
+         return cutoutLeaves ? RenderTypes.cutoutMovingBlock() : RenderTypes.solidMovingBlock();
       } else {
          ChunkSectionLayer var2 = (ChunkSectionLayer)TYPE_BY_BLOCK.get(var1);
          if (var2 != null) {
             RenderType var10000;
             switch (var2) {
-               case SOLID -> var10000 = RenderTypes.solid();
-               case CUTOUT -> var10000 = RenderTypes.cutout();
+               case SOLID -> var10000 = RenderTypes.solidMovingBlock();
+               case CUTOUT -> var10000 = RenderTypes.cutoutMovingBlock();
                case TRANSLUCENT -> var10000 = RenderTypes.translucentMovingBlock();
-               case TRIPWIRE -> var10000 = RenderTypes.tripwire();
+               case TRIPWIRE -> var10000 = RenderTypes.tripwireMovingBlock();
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
             return var10000;
          } else {
-            return RenderTypes.solid();
+            return RenderTypes.solidMovingBlock();
          }
       }
    }
 
    public static RenderType getRenderType(BlockState var0) {
       ChunkSectionLayer var1 = getChunkRenderType(var0);
-      return var1 == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentItemSheet() : Sheets.cutoutBlockSheet();
-   }
-
-   public static RenderType getRenderType(ItemStack var0) {
-      Item var1 = var0.getItem();
-      if (var1 instanceof BlockItem var2) {
-         Block var3 = var2.getBlock();
-         return getRenderType(var3.defaultBlockState());
-      } else {
-         return Sheets.translucentItemSheet();
-      }
+      return var1 == ChunkSectionLayer.TRANSLUCENT ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockSheet();
    }
 
    public static ChunkSectionLayer getRenderLayer(FluidState var0) {

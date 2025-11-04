@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.function.IntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,6 +12,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 
 public enum Rotation implements StringRepresentable {
    NONE(0, "none", OctahedralGroup.IDENTITY),

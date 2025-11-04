@@ -1,7 +1,7 @@
 package net.minecraft.client.multiplayer;
 
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class ChunkBatchSizeCalculator {
    private static final int MAX_OLD_SAMPLES_WEIGHT = 49;

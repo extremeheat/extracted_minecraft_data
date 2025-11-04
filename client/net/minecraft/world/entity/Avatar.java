@@ -19,7 +19,7 @@ public class Avatar extends LivingEntity {
    public static final float SWIMMING_BB_HEIGHT = 0.6F;
    protected static final EntityDimensions STANDING_DIMENSIONS;
    protected static final Map<Pose, EntityDimensions> POSES;
-   protected static final EntityDataAccessor<Byte> DATA_PLAYER_MAIN_HAND;
+   protected static final EntityDataAccessor<HumanoidArm> DATA_PLAYER_MAIN_HAND;
    protected static final EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
 
    protected Avatar(EntityType<? extends LivingEntity> var1, Level var2) {
@@ -28,16 +28,16 @@ public class Avatar extends LivingEntity {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_PLAYER_MAIN_HAND, (byte)DEFAULT_MAIN_HAND.getId());
+      var1.define(DATA_PLAYER_MAIN_HAND, DEFAULT_MAIN_HAND);
       var1.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
    }
 
    public HumanoidArm getMainArm() {
-      return (Byte)this.entityData.get(DATA_PLAYER_MAIN_HAND) == 0 ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
+      return (HumanoidArm)this.entityData.get(DATA_PLAYER_MAIN_HAND);
    }
 
    public void setMainArm(HumanoidArm var1) {
-      this.entityData.set(DATA_PLAYER_MAIN_HAND, (byte)(var1 == HumanoidArm.LEFT ? 0 : 1));
+      this.entityData.set(DATA_PLAYER_MAIN_HAND, var1);
    }
 
    public boolean isModelPartShown(PlayerModelPart var1) {
@@ -53,7 +53,7 @@ public class Avatar extends LivingEntity {
       DEFAULT_VEHICLE_ATTACHMENT = new Vec3(0.0, 0.6, 0.0);
       STANDING_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.8F).withEyeHeight(1.62F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT));
       POSES = ImmutableMap.builder().put(Pose.STANDING, STANDING_DIMENSIONS).put(Pose.SLEEPING, SLEEPING_DIMENSIONS).put(Pose.FALL_FLYING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SWIMMING, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.SPIN_ATTACK, EntityDimensions.scalable(0.6F, 0.6F).withEyeHeight(0.4F)).put(Pose.CROUCHING, EntityDimensions.scalable(0.6F, 1.5F).withEyeHeight(1.27F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, DEFAULT_VEHICLE_ATTACHMENT))).put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F).withEyeHeight(1.62F)).build();
-      DATA_PLAYER_MAIN_HAND = SynchedEntityData.<Byte>defineId(Avatar.class, EntityDataSerializers.BYTE);
+      DATA_PLAYER_MAIN_HAND = SynchedEntityData.<HumanoidArm>defineId(Avatar.class, EntityDataSerializers.HUMANOID_ARM);
       DATA_PLAYER_MODE_CUSTOMISATION = SynchedEntityData.<Byte>defineId(Avatar.class, EntityDataSerializers.BYTE);
    }
 }

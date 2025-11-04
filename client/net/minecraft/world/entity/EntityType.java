@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -24,13 +23,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Bee;
@@ -374,19 +374,19 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    private static ResourceKey<EntityType<?>> vanillaEntityId(String var0) {
-      return ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(var0));
    }
 
    private static <T extends Entity> EntityType<T> register(String var0, Builder<T> var1) {
       return register(vanillaEntityId(var0), var1);
    }
 
-   public static ResourceLocation getKey(EntityType<?> var0) {
+   public static Identifier getKey(EntityType<?> var0) {
       return BuiltInRegistries.ENTITY_TYPE.getKey(var0);
    }
 
    public static Optional<EntityType<?>> byString(String var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse(var0));
    }
 
    public EntityType(EntityFactory<T> var1, MobCategory var2, boolean var3, boolean var4, boolean var5, boolean var6, ImmutableSet<Block> var7, EntityDimensions var8, float var9, int var10, int var11, String var12, Optional<ResourceKey<LootTable>> var13, FeatureFlagSet var14, boolean var15) {
@@ -912,8 +912,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private Builder(EntityFactory<T> var1, MobCategory var2) {
          super();
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
-         this.lootTable = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("entities/")));
-         this.descriptionId = (var0) -> Util.makeDescriptionId("entity", var0.location());
+         this.lootTable = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.identifier().withPrefix("entities/")));
+         this.descriptionId = (var0) -> Util.makeDescriptionId("entity", var0.identifier());
          this.allowedInPeaceful = true;
          this.factory = var1;
          this.category = var2;
@@ -1033,7 +1033,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
       public EntityType<T> build(ResourceKey<EntityType<?>> var1) {
          if (this.serialize) {
-            Util.fetchChoiceType(References.ENTITY_TREE, var1.location().toString());
+            Util.fetchChoiceType(References.ENTITY_TREE, var1.identifier().toString());
          }
 
          return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(var1), this.lootTable.get(var1), this.requiredFeatures, this.allowedInPeaceful);

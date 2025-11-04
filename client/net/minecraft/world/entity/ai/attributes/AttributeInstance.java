@@ -14,14 +14,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class AttributeInstance {
    private final Holder<Attribute> attribute;
-   private final Map<AttributeModifier.Operation, Map<ResourceLocation, AttributeModifier>> modifiersByOperation = Maps.newEnumMap(AttributeModifier.Operation.class);
-   private final Map<ResourceLocation, AttributeModifier> modifierById = new Object2ObjectArrayMap();
-   private final Map<ResourceLocation, AttributeModifier> permanentModifiers = new Object2ObjectArrayMap();
+   private final Map<AttributeModifier.Operation, Map<Identifier, AttributeModifier>> modifiersByOperation = Maps.newEnumMap(AttributeModifier.Operation.class);
+   private final Map<Identifier, AttributeModifier> modifierById = new Object2ObjectArrayMap();
+   private final Map<Identifier, AttributeModifier> permanentModifiers = new Object2ObjectArrayMap();
    private double baseValue;
    private boolean dirty = true;
    private double cachedValue;
@@ -50,7 +50,7 @@ public class AttributeInstance {
    }
 
    @VisibleForTesting
-   Map<ResourceLocation, AttributeModifier> getModifiers(AttributeModifier.Operation var1) {
+   Map<Identifier, AttributeModifier> getModifiers(AttributeModifier.Operation var1) {
       return (Map)this.modifiersByOperation.computeIfAbsent(var1, (var0) -> new Object2ObjectOpenHashMap());
    }
 
@@ -62,11 +62,11 @@ public class AttributeInstance {
       return ImmutableSet.copyOf(this.permanentModifiers.values());
    }
 
-   public @Nullable AttributeModifier getModifier(ResourceLocation var1) {
+   public @Nullable AttributeModifier getModifier(Identifier var1) {
       return (AttributeModifier)this.modifierById.get(var1);
    }
 
-   public boolean hasModifier(ResourceLocation var1) {
+   public boolean hasModifier(Identifier var1) {
       return this.modifierById.get(var1) != null;
    }
 
@@ -119,7 +119,7 @@ public class AttributeInstance {
       this.removeModifier(var1.id());
    }
 
-   public boolean removeModifier(ResourceLocation var1) {
+   public boolean removeModifier(Identifier var1) {
       AttributeModifier var2 = (AttributeModifier)this.modifierById.remove(var1);
       if (var2 == null) {
          return false;

@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import net.minecraft.Util;
 import org.jspecify.annotations.Nullable;
 
 public class SortedArraySet<T> extends AbstractSet<T> {

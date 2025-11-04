@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class ModelLayers {
@@ -81,6 +81,7 @@ public class ModelLayers {
    public static final ModelLayerLocation COPPER_GOLEM_RUNNING = register("copper_golem_running");
    public static final ModelLayerLocation COPPER_GOLEM_SITTING = register("copper_golem_sitting");
    public static final ModelLayerLocation COPPER_GOLEM_STAR = register("copper_golem_star");
+   public static final ModelLayerLocation ZOMBIE_NAUTILUS_CORAL = register("zombie_nautilus_coral");
    public static final ModelLayerLocation COW = register("cow");
    public static final ModelLayerLocation COW_BABY = register("cow_baby");
    public static final ModelLayerLocation CREAKING = register("creaking");
@@ -331,7 +332,7 @@ public class ModelLayers {
    }
 
    private static ModelLayerLocation createLocation(String var0, String var1) {
-      return new ModelLayerLocation(ResourceLocation.withDefaultNamespace(var0), var1);
+      return new ModelLayerLocation(Identifier.withDefaultNamespace(var0), var1);
    }
 
    private static ArmorModelSet<ModelLayerLocation> registerArmorSet(String var0) {

@@ -7,7 +7,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -16,8 +15,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -35,7 +32,7 @@ public class RenderType {
       super();
       this.name = var1;
       this.state = var2;
-      this.outline = var2.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? var2.textures.values().stream().findFirst().map((var1x) -> (RenderType)RenderTypes.OUTLINE.apply(var1x, var2.pipeline.isCull())) : Optional.empty();
+      this.outline = var2.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? var2.textures.values().stream().findFirst().map((var1x) -> (RenderType)RenderTypes.OUTLINE.apply(var1x.location(), var2.pipeline.isCull())) : Optional.empty();
    }
 
    static RenderType create(String var0, RenderSetup var1) {
@@ -86,16 +83,9 @@ public class RenderType {
             RenderSystem.bindDefaultUniforms(var13);
             var13.setUniform("DynamicTransforms", var4);
             var13.setVertexBuffer(0, var7);
-            if (this.state.useOverlay) {
-               var13.bindTexture("Sampler1", Minecraft.getInstance().gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-            }
-
-            if (this.state.useLightmap) {
-               var13.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-            }
 
             for(Map.Entry var16 : var5.entrySet()) {
-               var13.bindTexture((String)var16.getKey(), ((AbstractTexture)var16.getValue()).getTextureView(), ((AbstractTexture)var16.getValue()).getSampler());
+               var13.bindTexture((String)var16.getKey(), ((RenderSetup.TextureAndSampler)var16.getValue()).textureView(), ((RenderSetup.TextureAndSampler)var16.getValue()).sampler());
             }
 
             var13.setIndexBuffer(var8, var9);

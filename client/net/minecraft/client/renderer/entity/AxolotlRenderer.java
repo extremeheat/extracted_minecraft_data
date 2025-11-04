@@ -3,19 +3,19 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.model.AxolotlModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.AxolotlRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 
 public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderState, AxolotlModel> {
-   private static final Map<Axolotl.Variant, ResourceLocation> TEXTURE_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+   private static final Map<Axolotl.Variant, Identifier> TEXTURE_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       for(Axolotl.Variant var4 : Axolotl.Variant.values()) {
-         var0.put(var4, ResourceLocation.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", var4.getName())));
+         var0.put(var4, Identifier.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", var4.getName())));
       }
 
    });
@@ -24,8 +24,8 @@ public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderSt
       super(var1, new AxolotlModel(var1.bakeLayer(ModelLayers.AXOLOTL)), new AxolotlModel(var1.bakeLayer(ModelLayers.AXOLOTL_BABY)), 0.5F);
    }
 
-   public ResourceLocation getTextureLocation(AxolotlRenderState var1) {
-      return (ResourceLocation)TEXTURE_BY_TYPE.get(var1.variant);
+   public Identifier getTextureLocation(AxolotlRenderState var1) {
+      return (Identifier)TEXTURE_BY_TYPE.get(var1.variant);
    }
 
    public AxolotlRenderState createRenderState() {
@@ -42,7 +42,7 @@ public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderSt
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((AxolotlRenderState)var1);
    }
 

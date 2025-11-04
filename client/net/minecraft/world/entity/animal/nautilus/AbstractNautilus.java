@@ -150,8 +150,8 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       float var4 = 0.0F;
       float var5 = 0.0F;
       if (var1.zza != 0.0F) {
-         float var6 = Mth.cos(var1.getXRot() * 0.017453292F);
-         float var7 = -Mth.sin(var1.getXRot() * 0.017453292F);
+         float var6 = Mth.cos((double)(var1.getXRot() * 0.017453292F));
+         float var7 = -Mth.sin((double)(var1.getXRot() * 0.017453292F));
          if (var1.zza < 0.0F) {
             var6 *= -0.5F;
             var7 *= -0.5F;
@@ -304,7 +304,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       this.addDeltaMovement(var2.getLookAngle().scale((double)((this.isInWater() ? 1.2F : 0.5F) * var1) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor()));
       this.dashCooldown = 40;
       this.setDashing(true);
-      this.hasImpulse = true;
+      this.needsSync = true;
    }
 
    public void handleStartJump(int var1) {
@@ -337,6 +337,11 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
 
    protected @Nullable SoundEvent getDashReadySound() {
       return null;
+   }
+
+   public InteractionResult interact(Player var1, InteractionHand var2) {
+      this.setPersistenceRequired();
+      return super.interact(var1, var2);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
@@ -384,10 +389,6 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       }
 
       this.playEatingSound();
-   }
-
-   public boolean requiresCustomPersistence() {
-      return super.requiresCustomPersistence() || this.isTame();
    }
 
    public boolean removeWhenFarAway(double var1) {

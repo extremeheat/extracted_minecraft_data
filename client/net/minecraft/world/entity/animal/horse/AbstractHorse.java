@@ -755,10 +755,10 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
       double var3 = (double)this.getJumpPower(var1);
       Vec3 var5 = this.getDeltaMovement();
       this.setDeltaMovement(var5.x, var3, var5.z);
-      this.hasImpulse = true;
+      this.needsSync = true;
       if (var2.z > 0.0) {
-         float var6 = Mth.sin(this.getYRot() * 0.017453292F);
-         float var7 = Mth.cos(this.getYRot() * 0.017453292F);
+         float var6 = Mth.sin((double)(this.getYRot() * 0.017453292F));
+         float var7 = Mth.cos((double)(this.getYRot() * 0.017453292F));
          this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * var6 * var1), 0.0, (double)(0.4F * var7 * var1)));
       }
 

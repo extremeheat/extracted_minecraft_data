@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 

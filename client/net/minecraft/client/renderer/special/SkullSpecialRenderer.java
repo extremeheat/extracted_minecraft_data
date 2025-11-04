@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.SkullBlock;
 import org.joml.Vector3f;
@@ -46,14 +46,14 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       this.model.root().getExtentsForGui(var2, var1);
    }
 
-   public static record Unbaked(SkullBlock.Type kind, Optional<ResourceLocation> textureOverride, float animation) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(Unbaked::kind), ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(Unbaked::textureOverride), Codec.FLOAT.optionalFieldOf("animation", 0.0F).forGetter(Unbaked::animation)).apply(var0, Unbaked::new));
+   public static record Unbaked(SkullBlock.Type kind, Optional<Identifier> textureOverride, float animation) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(Unbaked::kind), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::textureOverride), Codec.FLOAT.optionalFieldOf("animation", 0.0F).forGetter(Unbaked::animation)).apply(var0, Unbaked::new));
 
       public Unbaked(SkullBlock.Type var1) {
          this(var1, Optional.empty(), 0.0F);
       }
 
-      public Unbaked(SkullBlock.Type var1, Optional<ResourceLocation> var2, float var3) {
+      public Unbaked(SkullBlock.Type var1, Optional<Identifier> var2, float var3) {
          super();
          this.kind = var1;
          this.textureOverride = var2;
@@ -66,7 +66,7 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
 
       public @Nullable SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
          SkullModelBase var2 = SkullBlockRenderer.createModel(var1.entityModelSet(), this.kind);
-         ResourceLocation var3 = (ResourceLocation)this.textureOverride.map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/entity/" + var0x + ".png"))).orElse((Object)null);
+         Identifier var3 = (Identifier)this.textureOverride.map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/entity/" + var0x + ".png"))).orElse((Object)null);
          if (var2 == null) {
             return null;
          } else {

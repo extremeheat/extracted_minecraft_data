@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -13,7 +13,7 @@ public class CyclingSlotBackground {
    private static final int ICON_SIZE = 16;
    private static final int ICON_TRANSITION_TICK_DURATION = 4;
    private final int slotIndex;
-   private List<ResourceLocation> icons = List.of();
+   private List<Identifier> icons = List.of();
    private int tick;
    private int iconIndex;
 
@@ -22,7 +22,7 @@ public class CyclingSlotBackground {
       this.slotIndex = var1;
    }
 
-   public void tick(List<ResourceLocation> var1) {
+   public void tick(List<Identifier> var1) {
       if (!this.icons.equals(var1)) {
          this.icons = var1;
          this.iconIndex = 0;
@@ -41,15 +41,15 @@ public class CyclingSlotBackground {
          float var8 = var7 ? this.getIconTransitionTransparency(var3) : 1.0F;
          if (var8 < 1.0F) {
             int var9 = Math.floorMod(this.iconIndex - 1, this.icons.size());
-            this.renderIcon(var6, (ResourceLocation)this.icons.get(var9), 1.0F - var8, var2, var4, var5);
+            this.renderIcon(var6, (Identifier)this.icons.get(var9), 1.0F - var8, var2, var4, var5);
          }
 
-         this.renderIcon(var6, (ResourceLocation)this.icons.get(this.iconIndex), var8, var2, var4, var5);
+         this.renderIcon(var6, (Identifier)this.icons.get(this.iconIndex), var8, var2, var4, var5);
       }
    }
 
-   private void renderIcon(Slot var1, ResourceLocation var2, float var3, GuiGraphics var4, int var5, int var6) {
-      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var2, var5 + var1.x, var6 + var1.y, 16, 16, ARGB.white(var3));
+   private void renderIcon(Slot var1, Identifier var2, float var3, GuiGraphics var4, int var5, int var6) {
+      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var2, var5 + var1.x, var6 + var1.y, 16, 16, ARGB.white(var3));
    }
 
    private float getIconTransitionTransparency(float var1) {

@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.critereon.DamageSourcePredicate;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.EnchantmentPredicate;
-import net.minecraft.advancements.critereon.EntityEquipmentPredicate;
-import net.minecraft.advancements.critereon.EntityFlagsPredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.SheepPredicate;
+import net.minecraft.advancements.criterion.DamageSourcePredicate;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.EntityEquipmentPredicate;
+import net.minecraft.advancements.criterion.EntityFlagsPredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.SheepPredicate;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentExactPredicate;
@@ -87,13 +87,13 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
             if (var5.isPresent()) {
                Map var6 = (Map)this.map.remove(var4);
                if (var4.isEnabled(this.required) && (var6 == null || !var6.containsKey(var5.get()))) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5.get(), var3.key().location()));
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5.get(), var3.key().identifier()));
                }
 
                if (var6 != null) {
                   var6.forEach((var3x, var4x) -> {
                      if (!var2.add(var3x)) {
-                        throw new IllegalStateException(String.format(Locale.ROOT, "Duplicate loottable '%s' for '%s'", var3x, var3.key().location()));
+                        throw new IllegalStateException(String.format(Locale.ROOT, "Duplicate loottable '%s' for '%s'", var3x, var3.key().identifier()));
                      } else {
                         var1.accept(var3x, var4x);
                      }
@@ -102,7 +102,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
             } else {
                Map var7 = (Map)this.map.remove(var4);
                if (var7 != null) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var7.keySet().stream().map((var0) -> var0.location().toString()).collect(Collectors.joining(",")), var3.key().location()));
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var7.keySet().stream().map((var0) -> var0.identifier().toString()).collect(Collectors.joining(",")), var3.key().identifier()));
                }
             }
 

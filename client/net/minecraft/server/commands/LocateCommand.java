@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -32,6 +31,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.biome.Biome;
@@ -114,7 +114,7 @@ public class LocateCommand {
    }
 
    public static int showLocateResult(CommandSourceStack var0, ResourceOrTagKeyArgument.Result<?> var1, BlockPos var2, Pair<BlockPos, ? extends Holder<?>> var3, String var4, boolean var5, Duration var6) {
-      String var7 = (String)var1.unwrap().map((var0x) -> var0x.location().toString(), (var1x) -> {
+      String var7 = (String)var1.unwrap().map((var0x) -> var0x.identifier().toString(), (var1x) -> {
          String var10000 = String.valueOf(var1x.location());
          return "#" + var10000 + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")";
       });

@@ -33,7 +33,7 @@ public class BellModel extends Model<State> {
       float var2 = 0.0F;
       float var3 = 0.0F;
       if (var1.shakeDirection != null) {
-         float var4 = Mth.sin(var1.ticks / 3.1415927F) / (4.0F + var1.ticks / 3.0F);
+         float var4 = Mth.sin((double)(var1.ticks / 3.1415927F)) / (4.0F + var1.ticks / 3.0F);
          switch (var1.shakeDirection) {
             case NORTH -> var2 = -var4;
             case SOUTH -> var2 = var4;

@@ -6,18 +6,18 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Pillager;
 
 public class PillagerRenderer extends IllagerRenderer<Pillager, IllagerRenderState> {
-   private static final ResourceLocation PILLAGER = ResourceLocation.withDefaultNamespace("textures/entity/illager/pillager.png");
+   private static final Identifier PILLAGER = Identifier.withDefaultNamespace("textures/entity/illager/pillager.png");
 
    public PillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.PILLAGER)), 0.5F);
       this.addLayer(new ItemInHandLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(IllagerRenderState var1) {
+   public Identifier getTextureLocation(IllagerRenderState var1) {
       return PILLAGER;
    }
 
@@ -26,7 +26,7 @@ public class PillagerRenderer extends IllagerRenderer<Pillager, IllagerRenderSta
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((IllagerRenderState)var1);
    }
 

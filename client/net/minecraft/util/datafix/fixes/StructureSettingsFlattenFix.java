@@ -8,7 +8,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class StructureSettingsFlattenFix extends DataFix {
    public StructureSettingsFlattenFix(Schema var1) {

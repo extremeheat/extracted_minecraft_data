@@ -221,7 +221,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addMushroomFieldVegetation(var3);
       BiomeDefaultFeatures.addNearWaterVegetation(var3);
-      return baseBiome(0.9F, 1.0F).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
+      return baseBiome(0.9F, 1.0F).setAttribute(EnvironmentAttributes.INCREASED_FIRE_BURNOUT, true).setAttribute(EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN, false).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
    }
 
    public static Biome savanna(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3) {

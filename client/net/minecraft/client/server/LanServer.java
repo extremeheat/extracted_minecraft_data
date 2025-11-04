@@ -1,6 +1,6 @@
 package net.minecraft.client.server;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class LanServer {
    private final String motd;

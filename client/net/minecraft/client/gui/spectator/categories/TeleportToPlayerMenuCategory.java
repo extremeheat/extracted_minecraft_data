@@ -13,12 +13,12 @@ import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
-   private static final ResourceLocation TELEPORT_TO_PLAYER_SPRITE = ResourceLocation.withDefaultNamespace("spectator/teleport_to_player");
+   private static final Identifier TELEPORT_TO_PLAYER_SPRITE = Identifier.withDefaultNamespace("spectator/teleport_to_player");
    private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((var0) -> var0.getProfile().id());
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.teleport.prompt");
@@ -50,7 +50,7 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    }
 
    public void renderIcon(GuiGraphics var1, float var2, float var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
    }
 
    public boolean isEnabled() {

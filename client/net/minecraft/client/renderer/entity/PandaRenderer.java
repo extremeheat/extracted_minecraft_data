@@ -11,21 +11,21 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PandaRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Panda;
 import org.joml.Quaternionfc;
 
 public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, PandaModel> {
-   private static final Map<Panda.Gene, ResourceLocation> TEXTURES;
+   private static final Map<Panda.Gene, Identifier> TEXTURES;
 
    public PandaRenderer(EntityRendererProvider.Context var1) {
       super(var1, new PandaModel(var1.bakeLayer(ModelLayers.PANDA)), new PandaModel(var1.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
       this.addLayer(new PandaHoldsItemLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(PandaRenderState var1) {
-      return (ResourceLocation)TEXTURES.getOrDefault(var1.variant, (ResourceLocation)TEXTURES.get(Panda.Gene.NORMAL));
+   public Identifier getTextureLocation(PandaRenderState var1) {
+      return (Identifier)TEXTURES.getOrDefault(var1.variant, (Identifier)TEXTURES.get(Panda.Gene.NORMAL));
    }
 
    public PandaRenderState createRenderState() {
@@ -114,7 +114,7 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PandaRenderState)var1);
    }
 
@@ -124,6 +124,6 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
    }
 
    static {
-      TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, ResourceLocation.withDefaultNamespace("textures/entity/panda/panda.png"), Panda.Gene.LAZY, ResourceLocation.withDefaultNamespace("textures/entity/panda/lazy_panda.png"), Panda.Gene.WORRIED, ResourceLocation.withDefaultNamespace("textures/entity/panda/worried_panda.png"), Panda.Gene.PLAYFUL, ResourceLocation.withDefaultNamespace("textures/entity/panda/playful_panda.png"), Panda.Gene.BROWN, ResourceLocation.withDefaultNamespace("textures/entity/panda/brown_panda.png"), Panda.Gene.WEAK, ResourceLocation.withDefaultNamespace("textures/entity/panda/weak_panda.png"), Panda.Gene.AGGRESSIVE, ResourceLocation.withDefaultNamespace("textures/entity/panda/aggressive_panda.png")));
+      TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/lazy_panda.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/worried_panda.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/playful_panda.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/brown_panda.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/weak_panda.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/aggressive_panda.png")));
    }
 }

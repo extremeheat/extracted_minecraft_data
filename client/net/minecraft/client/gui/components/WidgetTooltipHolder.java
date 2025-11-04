@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.time.Duration;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -9,6 +8,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class WidgetTooltipHolder {

@@ -21,6 +21,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySelector;
@@ -570,7 +571,7 @@ public class Cat extends TamableAnimal {
 
       public void stop() {
          this.cat.setLying(false);
-         if (this.ownerPlayer.getSleepTimer() >= 100 && this.isMorning() && (double)this.cat.level().getRandom().nextFloat() < 0.7) {
+         if (this.ownerPlayer.getSleepTimer() >= 100 && this.cat.level().getRandom().nextFloat() < (Float)this.cat.level().environmentAttributes().getValue(EnvironmentAttributes.CAT_WAKING_UP_GIFT_CHANCE, this.cat.position())) {
             this.giveMorningGift();
          }
 
@@ -579,18 +580,13 @@ public class Cat extends TamableAnimal {
          this.cat.getNavigation().stop();
       }
 
-      private boolean isMorning() {
-         long var1 = this.cat.level().getDayTime() % 24000L;
-         return var1 >= 23667L || var1 < 362L;
-      }
-
       private void giveMorningGift() {
          RandomSource var1 = this.cat.getRandom();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
          var2.set(this.cat.isLeashed() ? this.cat.getLeashHolder().blockPosition() : this.cat.blockPosition());
          this.cat.randomTeleport((double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false);
          var2.set(this.cat.blockPosition());
-         this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (var2x, var3) -> var2x.addFreshEntity(new ItemEntity(var2x, (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F), (double)var2.getY(), (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F), var3)));
+         this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (var2x, var3) -> var2x.addFreshEntity(new ItemEntity(var2x, (double)var2.getX() - (double)Mth.sin((double)(this.cat.yBodyRot * 0.017453292F)), (double)var2.getY(), (double)var2.getZ() + (double)Mth.cos((double)(this.cat.yBodyRot * 0.017453292F)), var3)));
       }
 
       public void tick() {

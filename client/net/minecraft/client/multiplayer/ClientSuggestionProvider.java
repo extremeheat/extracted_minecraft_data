@@ -21,8 +21,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
@@ -75,7 +75,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.connection.scoreboard().getTeamNames();
    }
 
-   public Stream<ResourceLocation> getAvailableSounds() {
+   public Stream<Identifier> getAvailableSounds() {
       return this.minecraft.getSoundManager().getAvailableSounds().stream();
    }
 

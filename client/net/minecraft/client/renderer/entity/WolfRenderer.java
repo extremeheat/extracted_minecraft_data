@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.entity.layers.WolfCollarLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
@@ -23,7 +23,7 @@ public class WolfRenderer extends AgeableMobRenderer<Wolf, WolfRenderState, Wolf
       return var2 == 1.0F ? -1 : ARGB.colorFromFloat(1.0F, var2, var2, var2);
    }
 
-   public ResourceLocation getTextureLocation(WolfRenderState var1) {
+   public Identifier getTextureLocation(WolfRenderState var1) {
       return var1.texture;
    }
 

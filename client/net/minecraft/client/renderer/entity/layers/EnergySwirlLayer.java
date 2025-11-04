@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public abstract class EnergySwirlLayer<S extends EntityRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
    public EnergySwirlLayer(RenderLayerParent<S, M> var1) {
@@ -28,7 +28,7 @@ public abstract class EnergySwirlLayer<S extends EntityRenderState, M extends En
 
    protected abstract float xOffset(float var1);
 
-   protected abstract ResourceLocation getTextureLocation();
+   protected abstract Identifier getTextureLocation();
 
    protected abstract M model();
 }

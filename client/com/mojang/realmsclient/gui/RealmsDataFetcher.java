@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class RealmsDataFetcher {
    public final DataFetcher dataFetcher;

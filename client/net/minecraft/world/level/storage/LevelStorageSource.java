@@ -36,9 +36,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.FileUtil;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -52,13 +50,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.nbt.visitors.SkipFields;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.util.DirectoryLock;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.MemoryReserve;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -323,7 +323,7 @@ public class LevelStorageSource {
    }
 
    private static FeatureFlagSet parseFeatureFlagsFromSummary(Dynamic<?> var0) {
-      Set var1 = (Set)var0.get("enabled_features").asStream().flatMap((var0x) -> var0x.asString().result().map(ResourceLocation::tryParse).stream()).collect(Collectors.toSet());
+      Set var1 = (Set)var0.get("enabled_features").asStream().flatMap((var0x) -> var0x.asString().result().map(Identifier::tryParse).stream()).collect(Collectors.toSet());
       return FeatureFlags.REGISTRY.fromNames(var1, (var0x) -> {
       });
    }

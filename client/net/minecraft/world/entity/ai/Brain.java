@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -36,7 +38,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.entity.schedule.Schedule;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -48,11 +50,11 @@ public class Brain<E extends LivingEntity> {
    private final Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories = Maps.newHashMap();
    private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = Maps.newLinkedHashMap();
    private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
-   private Schedule schedule;
-   private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements;
-   private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped;
-   private Set<Activity> coreActivities;
-   private final Set<Activity> activeActivities;
+   private @Nullable EnvironmentAttribute<Activity> schedule;
+   private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements = Maps.newHashMap();
+   private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped = Maps.newHashMap();
+   private Set<Activity> coreActivities = Sets.newHashSet();
+   private final Set<Activity> activeActivities = Sets.newHashSet();
    private Activity defaultActivity;
    private long lastScheduleUpdate;
 
@@ -100,11 +102,6 @@ public class Brain<E extends LivingEntity> {
 
    public Brain(Collection<? extends MemoryModuleType<?>> var1, Collection<? extends SensorType<? extends Sensor<? super E>>> var2, ImmutableList<MemoryValue<?>> var3, Supplier<Codec<Brain<E>>> var4) {
       super();
-      this.schedule = Schedule.EMPTY;
-      this.activityRequirements = Maps.newHashMap();
-      this.activityMemoriesToEraseWhenStopped = Maps.newHashMap();
-      this.coreActivities = Sets.newHashSet();
-      this.activeActivities = Sets.newHashSet();
       this.defaultActivity = Activity.IDLE;
       this.lastScheduleUpdate = -9999L;
       this.codec = var4;
@@ -214,11 +211,7 @@ public class Brain<E extends LivingEntity> {
       }
    }
 
-   public Schedule getSchedule() {
-      return this.schedule;
-   }
-
-   public void setSchedule(Schedule var1) {
+   public void setSchedule(EnvironmentAttribute<Activity> var1) {
       this.schedule = var1;
    }
 
@@ -298,10 +291,10 @@ public class Brain<E extends LivingEntity> {
 
    }
 
-   public void updateActivityFromSchedule(long var1, long var3) {
-      if (var3 - this.lastScheduleUpdate > 20L) {
-         this.lastScheduleUpdate = var3;
-         Activity var5 = this.getSchedule().getActivityAt((int)(var1 % 24000L));
+   public void updateActivityFromSchedule(EnvironmentAttributeSystem var1, long var2, Vec3 var4) {
+      if (var2 - this.lastScheduleUpdate > 20L) {
+         this.lastScheduleUpdate = var2;
+         Activity var5 = this.schedule != null ? (Activity)var1.getValue(this.schedule, var4) : Activity.IDLE;
          if (!this.activeActivities.contains(var5)) {
             this.setActiveActivityIfPossible(var5);
          }

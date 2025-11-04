@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
-import net.minecraft.FileUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -38,11 +37,12 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -101,7 +101,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public Component getTestName() {
-      return (Component)this.test().map((var0) -> Component.literal(var0.location().toString())).orElse(INVALID_TEST_NAME);
+      return (Component)this.test().map((var0) -> Component.literal(var0.identifier().toString())).orElse(INVALID_TEST_NAME);
    }
 
    private Optional<Holder.Reference<GameTestInstance>> getTestHolder() {
@@ -217,13 +217,13 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       this.set(this.data.withStatus(TestInstanceBlockEntity.Status.CLEARED));
    }
 
-   public Optional<ResourceLocation> saveTest(Consumer<Component> var1) {
+   public Optional<Identifier> saveTest(Consumer<Component> var1) {
       Optional var2 = this.getTestHolder();
       Optional var3;
       if (var2.isPresent()) {
          var3 = Optional.of(((GameTestInstance)((Holder.Reference)var2.get()).value()).structure());
       } else {
-         var3 = this.test().map(ResourceKey::location);
+         var3 = this.test().map(ResourceKey::identifier);
       }
 
       if (var3.isEmpty()) {
@@ -234,7 +234,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          Level var5 = this.level;
          if (var5 instanceof ServerLevel) {
             ServerLevel var4 = (ServerLevel)var5;
-            StructureBlockEntity.saveStructure(var4, (ResourceLocation)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
+            StructureBlockEntity.saveStructure(var4, (Identifier)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
          }
 
          return var3;
@@ -247,14 +247,14 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          Level var4 = this.level;
          if (var4 instanceof ServerLevel) {
             ServerLevel var3 = (ServerLevel)var4;
-            return export(var3, (ResourceLocation)var2.get(), var1);
+            return export(var3, (Identifier)var2.get(), var1);
          }
       }
 
       return false;
    }
 
-   public static boolean export(ServerLevel var0, ResourceLocation var1, Consumer<Component> var2) {
+   public static boolean export(ServerLevel var0, Identifier var1, Consumer<Component> var2) {
       Path var3 = StructureUtils.testStructuresDir;
       Path var4 = var0.getStructureManager().createAndValidatePathToGeneratedStructure(var1, ".nbt");
       Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var1.getPath(), var3.resolve(var1.getNamespace()).resolve("structure"));

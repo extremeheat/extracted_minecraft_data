@@ -5,7 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset, RenderPipeline guiPipeline) {
    public GlyphRenderTypes(RenderType var1, RenderType var2, RenderType var3, RenderPipeline var4) {
@@ -16,11 +16,11 @@ public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderT
       this.guiPipeline = var4;
    }
 
-   public static GlyphRenderTypes createForIntensityTexture(ResourceLocation var0) {
+   public static GlyphRenderTypes createForIntensityTexture(Identifier var0) {
       return new GlyphRenderTypes(RenderTypes.textIntensity(var0), RenderTypes.textIntensitySeeThrough(var0), RenderTypes.textIntensityPolygonOffset(var0), RenderPipelines.GUI_TEXT_INTENSITY);
    }
 
-   public static GlyphRenderTypes createForColorTexture(ResourceLocation var0) {
+   public static GlyphRenderTypes createForColorTexture(Identifier var0) {
       return new GlyphRenderTypes(RenderTypes.text(var0), RenderTypes.textSeeThrough(var0), RenderTypes.textPolygonOffset(var0), RenderPipelines.GUI_TEXT);
    }
 

@@ -7,8 +7,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.BlockUtil;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -18,7 +16,9 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -219,6 +219,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       this.checkBelowWorld();
+      this.computeSpeed();
       this.handlePortal();
       this.behavior.tick();
       this.updateInWaterStateAndDoFluidPushing();
@@ -467,7 +468,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       Vec3 var10 = (new Vec3(var6, 0.0, var8)).normalize();
-      Vec3 var11 = (new Vec3((double)Mth.cos(this.getYRot() * 0.017453292F), 0.0, (double)Mth.sin(this.getYRot() * 0.017453292F))).normalize();
+      Vec3 var11 = (new Vec3((double)Mth.cos((double)(this.getYRot() * 0.017453292F)), 0.0, (double)Mth.sin((double)(this.getYRot() * 0.017453292F)))).normalize();
       double var12 = Math.abs(var10.dot(var11));
       if (!(var12 < 0.800000011920929) || useExperimentalMovement(this.level())) {
          Vec3 var14 = this.getDeltaMovement();

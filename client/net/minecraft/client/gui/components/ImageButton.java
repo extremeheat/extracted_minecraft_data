@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ImageButton extends Button {
    protected final WidgetSprites sprites;
@@ -23,7 +23,7 @@ public class ImageButton extends Button {
    }
 
    public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+      Identifier var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
       var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5, this.getX(), this.getY(), this.width, this.height);
    }
 }

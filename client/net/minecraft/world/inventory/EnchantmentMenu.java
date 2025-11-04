@@ -2,20 +2,20 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EnchantingTableBlock;
 
 public class EnchantmentMenu extends AbstractContainerMenu {
-   static final ResourceLocation EMPTY_SLOT_LAPIS_LAZULI = ResourceLocation.withDefaultNamespace("container/slot/lapis_lazuli");
+   static final Identifier EMPTY_SLOT_LAPIS_LAZULI = Identifier.withDefaultNamespace("container/slot/lapis_lazuli");
    private final Container enchantSlots;
    private final ContainerLevelAccess access;
    private final RandomSource random;
@@ -66,7 +66,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return var1.is(Items.LAPIS_LAZULI);
          }
 
-         public ResourceLocation getNoItemIcon() {
+         public Identifier getNoItemIcon() {
             return EnchantmentMenu.EMPTY_SLOT_LAPIS_LAZULI;
          }
       });

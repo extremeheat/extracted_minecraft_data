@@ -2,12 +2,12 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import java.util.Set;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -74,7 +74,7 @@ public class BlockEntityType<T extends BlockEntity> {
    private final Set<Block> validBlocks;
    private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder;
 
-   public static @Nullable ResourceLocation getKey(BlockEntityType<?> var0) {
+   public static @Nullable Identifier getKey(BlockEntityType<?> var0) {
       return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var0);
    }
 

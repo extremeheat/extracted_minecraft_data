@@ -7,8 +7,8 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -76,7 +76,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       private int experience;
       private final ImmutableList.Builder<ResourceKey<LootTable>> loot = ImmutableList.builder();
       private final ImmutableList.Builder<ResourceKey<Recipe<?>>> recipes = ImmutableList.builder();
-      private Optional<ResourceLocation> function = Optional.empty();
+      private Optional<Identifier> function = Optional.empty();
 
       public Builder() {
          super();
@@ -109,11 +109,11 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          return this;
       }
 
-      public static Builder function(ResourceLocation var0) {
+      public static Builder function(Identifier var0) {
          return (new Builder()).runs(var0);
       }
 
-      public Builder runs(ResourceLocation var1) {
+      public Builder runs(Identifier var1) {
          this.function = Optional.of(var1);
          return this;
       }

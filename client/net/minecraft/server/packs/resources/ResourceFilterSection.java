@@ -4,14 +4,14 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
-import net.minecraft.util.ResourceLocationPattern;
+import net.minecraft.util.IdentifierPattern;
 
 public class ResourceFilterSection {
-   private static final Codec<ResourceFilterSection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(ResourceLocationPattern.CODEC).fieldOf("block").forGetter((var0x) -> var0x.blockList)).apply(var0, ResourceFilterSection::new));
+   private static final Codec<ResourceFilterSection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(IdentifierPattern.CODEC).fieldOf("block").forGetter((var0x) -> var0x.blockList)).apply(var0, ResourceFilterSection::new));
    public static final MetadataSectionType<ResourceFilterSection> TYPE;
-   private final List<ResourceLocationPattern> blockList;
+   private final List<IdentifierPattern> blockList;
 
-   public ResourceFilterSection(List<ResourceLocationPattern> var1) {
+   public ResourceFilterSection(List<IdentifierPattern> var1) {
       super();
       this.blockList = List.copyOf(var1);
    }

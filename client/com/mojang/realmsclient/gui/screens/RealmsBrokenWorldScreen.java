@@ -27,14 +27,14 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsBrokenWorldScreen extends RealmsScreen {
-   private static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
+   private static final Identifier SLOT_FRAME_SPRITE = Identifier.withDefaultNamespace("widget/slot_frame");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_BUTTON_WIDTH = 80;
    private final Screen lastScreen;
@@ -177,7 +177,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private void drawSlotFrame(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6, String var7, int var8, long var9, @Nullable String var11, boolean var12) {
-      ResourceLocation var13;
+      Identifier var13;
       if (var12) {
          var13 = RealmsWorldSlotButton.EMPTY_SLOT_LOCATION;
       } else if (var11 != null && var9 != -1L) {
@@ -193,13 +193,13 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       }
 
       if (var6) {
-         float var14 = 0.9F + 0.1F * Mth.cos((float)this.animTick * 0.2F);
+         float var14 = 0.9F + 0.1F * Mth.cos((double)((float)this.animTick * 0.2F));
          var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       } else {
          int var15 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
          var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
       }
 
       var1.drawCenteredString(this.font, (String)var7, var2 + 40, var3 + 66, -1);

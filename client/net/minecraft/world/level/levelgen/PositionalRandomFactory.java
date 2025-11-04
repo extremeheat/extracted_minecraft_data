@@ -2,7 +2,7 @@ package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 
 public interface PositionalRandomFactory {
@@ -10,7 +10,7 @@ public interface PositionalRandomFactory {
       return this.at(var1.getX(), var1.getY(), var1.getZ());
    }
 
-   default RandomSource fromHashOf(ResourceLocation var1) {
+   default RandomSource fromHashOf(Identifier var1) {
       return this.fromHashOf(var1.toString());
    }
 

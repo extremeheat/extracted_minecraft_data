@@ -36,7 +36,7 @@ public class AxisAlignedLinearPosTest extends PosRuleTest {
       float var8 = (float)Math.abs((var2.getZ() - var3.getZ()) * var5.getStepZ());
       int var9 = (int)(var6 + var7 + var8);
       float var10 = var4.nextFloat();
-      return var10 <= Mth.clampedLerp(this.minChance, this.maxChance, Mth.inverseLerp((float)var9, (float)this.minDist, (float)this.maxDist));
+      return var10 <= Mth.clampedLerp(Mth.inverseLerp((float)var9, (float)this.minDist, (float)this.maxDist), this.minChance, this.maxChance);
    }
 
    protected PosRuleTestType<?> getType() {

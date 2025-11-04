@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stat;
@@ -195,7 +195,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return InteractionResult.SUCCESS;
    }
 
-   protected Stat<ResourceLocation> getOpenChestStat() {
+   protected Stat<Identifier> getOpenChestStat() {
       return Stats.CUSTOM.get(Stats.OPEN_CHEST);
    }
 

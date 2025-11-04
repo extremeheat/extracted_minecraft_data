@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.jspecify.annotations.Nullable;
@@ -31,7 +31,7 @@ public class CompositePackResources implements PackResources {
       return this.primaryPackResources.getRootResource(var1);
    }
 
-   public @Nullable IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
       for(PackResources var4 : this.packResourcesStack) {
          IoSupplier var5 = var4.getResource(var1, var2);
          if (var5 != null) {

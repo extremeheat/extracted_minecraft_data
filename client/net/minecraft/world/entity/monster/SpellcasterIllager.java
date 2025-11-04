@@ -85,9 +85,9 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          float var2 = (float)var1.spellColor[0];
          float var3 = (float)var1.spellColor[1];
          float var4 = (float)var1.spellColor[2];
-         float var5 = this.yBodyRot * 0.017453292F + Mth.cos((float)this.tickCount * 0.6662F) * 0.25F;
-         float var6 = Mth.cos(var5);
-         float var7 = Mth.sin(var5);
+         float var5 = this.yBodyRot * 0.017453292F + Mth.cos((double)((float)this.tickCount * 0.6662F)) * 0.25F;
+         float var6 = Mth.cos((double)var5);
+         float var7 = Mth.sin((double)var5);
          double var8 = 0.6 * (double)this.getScale();
          double var10 = 1.8 * (double)this.getScale();
          this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4), this.getX() + (double)var6 * var8, this.getY() + var10, this.getZ() + (double)var7 * var8, 0.0, 0.0, 0.0);

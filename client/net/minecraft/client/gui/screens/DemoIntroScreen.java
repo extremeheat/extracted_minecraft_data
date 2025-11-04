@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,11 +10,12 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 
 public class DemoIntroScreen extends Screen {
-   private static final ResourceLocation DEMO_BACKGROUND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/demo_background.png");
+   private static final Identifier DEMO_BACKGROUND_LOCATION = Identifier.withDefaultNamespace("textures/gui/demo_background.png");
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
    private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final int TEXT_COLOR = -14737633;

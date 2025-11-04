@@ -117,7 +117,7 @@ public class ServerEntity {
          }
       }
 
-      if (this.tickCount % this.updateInterval == 0 || this.entity.hasImpulse || this.entity.getEntityData().isDirty()) {
+      if (this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) {
          byte var25 = Mth.packDegrees(this.entity.getYRot());
          byte var27 = Mth.packDegrees(this.entity.getXRot());
          boolean var28 = Math.abs(var25 - this.lastSentYRot) >= 1 || Math.abs(var27 - this.lastSentXRot) >= 1;
@@ -177,7 +177,7 @@ public class ServerEntity {
                   var12 = true;
                }
 
-               if (this.entity.hasImpulse || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
+               if (this.entity.needsSync || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
                   Vec3 var20 = this.entity.getDeltaMovement();
                   double var21 = var20.distanceToSqr(this.lastSentMovement);
                   if (var21 > 1.0E-7 || var21 > 0.0 && var20.lengthSqr() == 0.0) {
@@ -216,7 +216,7 @@ public class ServerEntity {
             this.lastSentYHeadRot = var30;
          }
 
-         this.entity.hasImpulse = false;
+         this.entity.needsSync = false;
       }
 
       ++this.tickCount;

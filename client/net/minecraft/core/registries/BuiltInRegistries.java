@@ -8,11 +8,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.CriterionTrigger;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
-import net.minecraft.advancements.critereon.EntitySubPredicates;
+import net.minecraft.advancements.criterion.EntitySubPredicate;
+import net.minecraft.advancements.criterion.EntitySubPredicates;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.DefaultedMappedRegistry;
@@ -34,8 +33,8 @@ import net.minecraft.gametest.framework.GameTestInstance;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.chat.numbers.NumberFormatType;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogTypes;
@@ -58,6 +57,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.valueproviders.FloatProviderType;
@@ -78,7 +78,6 @@ import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnConditions;
 import net.minecraft.world.inventory.MenuType;
@@ -165,7 +164,7 @@ import org.slf4j.Logger;
 
 public class BuiltInRegistries {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<ResourceLocation, Supplier<?>> LOADERS = Maps.newLinkedHashMap();
+   private static final Map<Identifier, Supplier<?>> LOADERS = Maps.newLinkedHashMap();
    private static final WritableRegistry<WritableRegistry<?>> WRITABLE_REGISTRY;
    public static final DefaultedRegistry<GameEvent> GAME_EVENT;
    public static final Registry<SoundEvent> SOUND_EVENT;
@@ -178,7 +177,7 @@ public class BuiltInRegistries {
    public static final Registry<Potion> POTION;
    public static final Registry<ParticleType<?>> PARTICLE_TYPE;
    public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE;
-   public static final Registry<ResourceLocation> CUSTOM_STAT;
+   public static final Registry<Identifier> CUSTOM_STAT;
    public static final DefaultedRegistry<ChunkStatus> CHUNK_STATUS;
    public static final Registry<RuleTestType<?>> RULE_TEST;
    public static final Registry<RuleBlockEntityModifierType<?>> RULE_BLOCK_ENTITY_MODIFIER;
@@ -195,7 +194,6 @@ public class BuiltInRegistries {
    public static final Registry<PoiType> POINT_OF_INTEREST_TYPE;
    public static final DefaultedRegistry<MemoryModuleType<?>> MEMORY_MODULE_TYPE;
    public static final DefaultedRegistry<SensorType<?>> SENSOR_TYPE;
-   public static final Registry<Schedule> SCHEDULE;
    public static final Registry<Activity> ACTIVITY;
    public static final Registry<LootPoolEntryType> LOOT_POOL_ENTRY_TYPE;
    public static final Registry<LootItemFunctionType<?>> LOOT_FUNCTION_TYPE;
@@ -286,8 +284,8 @@ public class BuiltInRegistries {
    }
 
    private static <T, R extends WritableRegistry<T>> R internalRegister(ResourceKey<? extends Registry<T>> var0, R var1, RegistryBootstrap<T> var2) {
-      Bootstrap.checkBootstrapCalled(() -> "registry " + String.valueOf(var0.location()));
-      ResourceLocation var3 = var0.location();
+      Bootstrap.checkBootstrapCalled(() -> "registry " + String.valueOf(var0.identifier()));
+      Identifier var3 = var0.identifier();
       LOADERS.put(var3, (Supplier)() -> var2.run(var1));
       WRITABLE_REGISTRY.register(var0, var1, RegistrationInfo.BUILT_IN);
       return (R)var1;
@@ -321,12 +319,12 @@ public class BuiltInRegistries {
    private static <T extends Registry<?>> void validate(Registry<T> var0) {
       var0.forEach((var1) -> {
          if (var1.keySet().isEmpty()) {
-            ResourceLocation var10000 = var0.getKey(var1);
+            Identifier var10000 = var0.getKey(var1);
             Util.logAndPauseIfInIde("Registry '" + String.valueOf(var10000) + "' was empty after loading");
          }
 
          if (var1 instanceof DefaultedRegistry) {
-            ResourceLocation var2 = ((DefaultedRegistry)var1).getDefaultKey();
+            Identifier var2 = ((DefaultedRegistry)var1).getDefaultKey();
             Objects.requireNonNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2));
          }
 
@@ -371,7 +369,6 @@ public class BuiltInRegistries {
       POINT_OF_INTEREST_TYPE = registerSimple(Registries.POINT_OF_INTEREST_TYPE, PoiTypes::bootstrap);
       MEMORY_MODULE_TYPE = registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> MemoryModuleType.DUMMY);
       SENSOR_TYPE = registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> SensorType.DUMMY);
-      SCHEDULE = registerSimple(Registries.SCHEDULE, (var0) -> Schedule.EMPTY);
       ACTIVITY = registerSimple(Registries.ACTIVITY, (var0) -> Activity.IDLE);
       LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, (var0) -> LootPoolEntries.EMPTY);
       LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, (var0) -> LootItemFunctions.SET_COUNT);

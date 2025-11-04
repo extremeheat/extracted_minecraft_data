@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ShulkerRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.DyeColor;
@@ -18,8 +18,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, ShulkerModel> {
-   private static final ResourceLocation DEFAULT_TEXTURE_LOCATION;
-   private static final ResourceLocation[] TEXTURE_LOCATION;
+   private static final Identifier DEFAULT_TEXTURE_LOCATION;
+   private static final Identifier[] TEXTURE_LOCATION;
 
    public ShulkerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ShulkerModel(var1.bakeLayer(ModelLayers.SHULKER)), 0.0F);
@@ -46,7 +46,7 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
       }
    }
 
-   public ResourceLocation getTextureLocation(ShulkerRenderState var1) {
+   public Identifier getTextureLocation(ShulkerRenderState var1) {
       return getTextureLocation(var1.color);
    }
 
@@ -64,7 +64,7 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
       var2.attachFace = var1.getAttachFace();
    }
 
-   public static ResourceLocation getTextureLocation(@Nullable DyeColor var0) {
+   public static Identifier getTextureLocation(@Nullable DyeColor var0) {
       return var0 == null ? DEFAULT_TEXTURE_LOCATION : TEXTURE_LOCATION[var0.getId()];
    }
 
@@ -80,6 +80,6 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
 
    static {
       DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png"));
-      TEXTURE_LOCATION = (ResourceLocation[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> var0.texture().withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).toArray((var0) -> new ResourceLocation[var0]);
+      TEXTURE_LOCATION = (Identifier[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> var0.texture().withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).toArray((var0) -> new Identifier[var0]);
    }
 }

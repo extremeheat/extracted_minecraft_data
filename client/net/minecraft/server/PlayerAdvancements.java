@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
-import net.minecraft.FileUtil;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -38,10 +37,11 @@ import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.advancements.AdvancementVisibilityEvaluator;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -344,7 +344,7 @@ public class PlayerAdvancements {
       this.progress.put(var1, var2);
    }
 
-   private void updateTreeVisibility(AdvancementNode var1, Set<AdvancementHolder> var2, Set<ResourceLocation> var3) {
+   private void updateTreeVisibility(AdvancementNode var1, Set<AdvancementHolder> var2, Set<Identifier> var3) {
       AdvancementVisibilityEvaluator.evaluateVisibility(var1, (var1x) -> this.getOrStartProgress(var1x.holder()).isDone(), (var3x, var4) -> {
          AdvancementHolder var5 = var3x.holder();
          if (var4) {
@@ -361,20 +361,20 @@ public class PlayerAdvancements {
       });
    }
 
-   static record Data(Map<ResourceLocation, AdvancementProgress> map) {
+   static record Data(Map<Identifier, AdvancementProgress> map) {
       public static final Codec<Data> CODEC;
 
-      Data(Map<ResourceLocation, AdvancementProgress> var1) {
+      Data(Map<Identifier, AdvancementProgress> var1) {
          super();
          this.map = var1;
       }
 
-      public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {
-         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((var1x) -> var1.accept((ResourceLocation)var1x.getKey(), (AdvancementProgress)var1x.getValue()));
+      public void forEach(BiConsumer<Identifier, AdvancementProgress> var1) {
+         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((var1x) -> var1.accept((Identifier)var1x.getKey(), (AdvancementProgress)var1x.getValue()));
       }
 
       static {
-         CODEC = Codec.unboundedMap(ResourceLocation.CODEC, AdvancementProgress.CODEC).xmap(Data::new, Data::map);
+         CODEC = Codec.unboundedMap(Identifier.CODEC, AdvancementProgress.CODEC).xmap(Data::new, Data::map);
       }
    }
 }

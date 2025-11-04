@@ -5,13 +5,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -57,12 +57,12 @@ public class WoodlandMansionPieces {
          super(StructurePieceType.WOODLAND_MANSION_PIECE, var2, var1, (var1x) -> makeSettings((Mirror)var2.read("Mi", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow()));
       }
 
-      protected ResourceLocation makeTemplateLocation() {
+      protected Identifier makeTemplateLocation() {
          return makeLocation(this.templateName);
       }
 
-      private static ResourceLocation makeLocation(String var0) {
-         return ResourceLocation.withDefaultNamespace("woodland_mansion/" + var0);
+      private static Identifier makeLocation(String var0) {
+         return Identifier.withDefaultNamespace("woodland_mansion/" + var0);
       }
 
       private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1) {

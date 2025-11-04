@@ -53,7 +53,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
             if (this.dragon.hasLineOfSight(this.attackTarget)) {
                ++this.fireballCharge;
                Vec3 var29 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
-               Vec3 var7 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
+               Vec3 var7 = (new Vec3((double)Mth.sin((double)(this.dragon.getYRot() * 0.017453292F)), 0.0, (double)(-Mth.cos((double)(this.dragon.getYRot() * 0.017453292F))))).normalize();
                float var30 = (float)var7.dot(var29);
                float var9 = (float)(Math.acos((double)var30) * 57.2957763671875);
                var9 += 0.5F;

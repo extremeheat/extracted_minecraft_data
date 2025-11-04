@@ -17,7 +17,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -64,10 +63,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.ResultField;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -293,11 +293,11 @@ public class GuiGraphics {
       this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
    }
 
-   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
-      this.blitSprite(var1, (ResourceLocation)var2, var3, var4, var5, var6, -1);
+   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6) {
+      this.blitSprite(var1, (Identifier)var2, var3, var4, var5, var6, -1);
    }
 
-   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7) {
+   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, float var7) {
       this.blitSprite(var1, var2, var3, var4, var5, var6, ARGB.white(var7));
    }
 
@@ -305,7 +305,7 @@ public class GuiGraphics {
       return ((GuiMetadataSection)var0.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)).scaling();
    }
 
-   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7) {
+   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7) {
       TextureAtlasSprite var8 = this.guiSprites.getSprite(var2);
       GuiSpriteScaling var9 = getSpriteScaling(var8);
       Objects.requireNonNull(var9);
@@ -330,11 +330,11 @@ public class GuiGraphics {
 
    }
 
-   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
-      this.blitSprite(var1, (ResourceLocation)var2, var3, var4, var5, var6, var7, var8, var9, var10, -1);
+   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
+      this.blitSprite(var1, (Identifier)var2, var3, var4, var5, var6, var7, var8, var9, var10, -1);
    }
 
-   public void blitSprite(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
+   public void blitSprite(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
       TextureAtlasSprite var12 = this.guiSprites.getSprite(var2);
       GuiSpriteScaling var13 = getSpriteScaling(var12);
       if (var13 instanceof GuiSpriteScaling.Stretch) {
@@ -415,27 +415,27 @@ public class GuiGraphics {
       }
    }
 
-   public void blit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11) {
+   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11) {
       this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10, var11);
    }
 
-   public void blit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10) {
+   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10) {
       this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10);
    }
 
-   public void blit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12) {
+   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12) {
       this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, -1);
    }
 
-   public void blit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
+   public void blit(RenderPipeline var1, Identifier var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
       this.innerBlit(var1, var2, var3, var3 + var7, var4, var4 + var8, (var5 + 0.0F) / (float)var11, (var5 + (float)var9) / (float)var11, (var6 + 0.0F) / (float)var12, (var6 + (float)var10) / (float)var12, var13);
    }
 
-   public void blit(ResourceLocation var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, float var9) {
+   public void blit(Identifier var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, float var9) {
       this.innerBlit(RenderPipelines.GUI_TEXTURED, var1, var2, var4, var3, var5, var6, var7, var8, var9, -1);
    }
 
-   private void innerBlit(RenderPipeline var1, ResourceLocation var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
+   private void innerBlit(RenderPipeline var1, Identifier var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10, int var11) {
       AbstractTexture var12 = this.minecraft.getTextureManager().getTexture(var2);
       this.submitBlit(var1, var12.getTextureView(), var12.getSampler(), var3, var5, var4, var6, var7, var8, var9, var10, var11);
    }
@@ -509,48 +509,48 @@ public class GuiGraphics {
    }
 
    public void setTooltipForNextFrame(Font var1, ItemStack var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, (ResourceLocation)var2.get(DataComponents.TOOLTIP_STYLE));
+      this.setTooltipForNextFrame(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, (Identifier)var2.get(DataComponents.TOOLTIP_STYLE));
    }
 
    public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      this.setTooltipForNextFrame(var1, var2, var3, var4, var5, (ResourceLocation)null);
+      this.setTooltipForNextFrame(var1, var2, var3, var4, var5, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable ResourceLocation var6) {
+   public void setTooltipForNextFrame(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable Identifier var6) {
       List var7 = (List)var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
       var3.ifPresent((var1x) -> var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
       this.setTooltipForNextFrameInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6, false);
    }
 
    public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, var2, var3, var4, (ResourceLocation)null);
+      this.setTooltipForNextFrame(var1, var2, var3, var4, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4, @Nullable ResourceLocation var5) {
+   public void setTooltipForNextFrame(Font var1, Component var2, int var3, int var4, @Nullable Identifier var5) {
       this.setTooltipForNextFrame(var1, List.of(var2.getVisualOrderText()), var3, var4, var5);
    }
 
    public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4) {
-      this.setComponentTooltipForNextFrame(var1, var2, var3, var4, (ResourceLocation)null);
+      this.setComponentTooltipForNextFrame(var1, var2, var3, var4, (Identifier)null);
    }
 
-   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4, @Nullable ResourceLocation var5) {
+   public void setComponentTooltipForNextFrame(Font var1, List<Component> var2, int var3, int var4, @Nullable Identifier var5) {
       this.setTooltipForNextFrameInternal(var1, var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
    }
 
    public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
-      this.setTooltipForNextFrame(var1, (List)var2, var3, var4, (ResourceLocation)null);
+      this.setTooltipForNextFrame(var1, (List)var2, var3, var4, (Identifier)null);
    }
 
-   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4, @Nullable ResourceLocation var5) {
+   public void setTooltipForNextFrame(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4, @Nullable Identifier var5) {
       this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE, var5, false);
    }
 
    public void setTooltipForNextFrame(Font var1, List<FormattedCharSequence> var2, ClientTooltipPositioner var3, int var4, int var5, boolean var6) {
-      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, (ResourceLocation)null, var6);
+      this.setTooltipForNextFrameInternal(var1, (List)var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, (Identifier)null, var6);
    }
 
-   private void setTooltipForNextFrameInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6, boolean var7) {
+   private void setTooltipForNextFrameInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable Identifier var6, boolean var7) {
       if (!var2.isEmpty()) {
          if (this.deferredTooltip == null || var7) {
             this.deferredTooltip = () -> this.renderTooltip(var1, var2, var3, var4, var5, var6);
@@ -559,7 +559,7 @@ public class GuiGraphics {
       }
    }
 
-   public void renderTooltip(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6) {
+   public void renderTooltip(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable Identifier var6) {
       int var7 = 0;
       int var8 = var2.size() == 1 ? -2 : 0;
 
@@ -743,11 +743,11 @@ public class GuiGraphics {
       this.guiRenderState.submitPicturesInPictureState(new GuiEntityRenderState(var1, var3, var4, var5, var6, var7, var8, var9, var2, this.scissorStack.peek()));
    }
 
-   public void submitSkinRenderState(PlayerModel var1, ResourceLocation var2, float var3, float var4, float var5, float var6, int var7, int var8, int var9, int var10) {
+   public void submitSkinRenderState(PlayerModel var1, Identifier var2, float var3, float var4, float var5, float var6, int var7, int var8, int var9, int var10) {
       this.guiRenderState.submitPicturesInPictureState(new GuiSkinRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var10, var3, this.scissorStack.peek()));
    }
 
-   public void submitBookModelRenderState(BookModel var1, ResourceLocation var2, float var3, float var4, float var5, int var6, int var7, int var8, int var9) {
+   public void submitBookModelRenderState(BookModel var1, Identifier var2, float var3, float var4, float var5, int var6, int var7, int var8, int var9) {
       this.guiRenderState.submitPicturesInPictureState(new GuiBookModelRenderState(var1, var2, var4, var5, var6, var7, var8, var9, var3, this.scissorStack.peek()));
    }
 

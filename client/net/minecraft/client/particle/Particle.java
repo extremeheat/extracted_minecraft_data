@@ -233,7 +233,7 @@ public abstract class Particle {
             return this.startAlpha;
          } else {
             float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
-            return Mth.clampedLerp(this.startAlpha, this.endAlpha, var4);
+            return Mth.clampedLerp(var4, this.startAlpha, this.endAlpha);
          }
       }
    }

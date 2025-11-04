@@ -78,7 +78,7 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       float var4 = var1.walkAnimationSpeed;
       float var5 = var1.walkAnimationPos;
       if (var4 > 0.2F) {
-         var3 += Mth.cos(var5 * 0.8F) * 0.15F * var4;
+         var3 += Mth.cos((double)(var5 * 0.8F)) * 0.15F * var4;
       }
 
       float var6 = var1.eatAnimation;
@@ -89,10 +89,10 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.headParts.xRot = 0.5235988F + var3;
       this.headParts.yRot = var2 * 0.017453292F;
       float var11 = var1.isInWater ? 0.2F : 1.0F;
-      float var12 = Mth.cos(var11 * var5 * 0.6662F + 3.1415927F);
+      float var12 = Mth.cos((double)(var11 * var5 * 0.6662F + 3.1415927F));
       float var13 = var12 * 0.8F * var4;
-      float var14 = (1.0F - Math.max(var7, var6)) * (0.5235988F + var3 + var9 * Mth.sin(var1.ageInTicks) * 0.05F);
-      this.headParts.xRot = var7 * (0.2617994F + var3) + var6 * (2.1816616F + Mth.sin(var1.ageInTicks) * 0.05F) + var14;
+      float var14 = (1.0F - Math.max(var7, var6)) * (0.5235988F + var3 + var9 * Mth.sin((double)var1.ageInTicks) * 0.05F);
+      this.headParts.xRot = var7 * (0.2617994F + var3) + var6 * (2.1816616F + Mth.sin((double)var1.ageInTicks) * 0.05F) + var14;
       this.headParts.yRot = var7 * var2 * 0.017453292F + (1.0F - Math.max(var7, var6)) * this.headParts.yRot;
       float var15 = var1.ageScale;
       ModelPart var10000 = this.headParts;
@@ -100,7 +100,7 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.headParts.z = Mth.lerp(var7, this.headParts.z, -4.0F * var15);
       this.body.xRot = var7 * -0.7853982F + var8 * this.body.xRot;
       float var16 = 0.2617994F * var7;
-      float var17 = Mth.cos(var1.ageInTicks * 0.6F + 3.1415927F);
+      float var17 = Mth.cos((double)(var1.ageInTicks * 0.6F + 3.1415927F));
       var10000 = this.leftFrontLeg;
       var10000.y -= 12.0F * var15 * var7;
       var10000 = this.leftFrontLeg;
@@ -119,7 +119,7 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       var10000 = this.tail;
       var10000.z += var4 * 2.0F * var15;
       if (var10) {
-         this.tail.yRot = Mth.cos(var1.ageInTicks * 0.7F);
+         this.tail.yRot = Mth.cos((double)(var1.ageInTicks * 0.7F));
       } else {
          this.tail.yRot = 0.0F;
       }

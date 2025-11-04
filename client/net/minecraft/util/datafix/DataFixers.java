@@ -24,7 +24,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.AbstractArrowPickupFix;
 import net.minecraft.util.datafix.fixes.AddFieldFix;
 import net.minecraft.util.datafix.fixes.AddFlagIfNotPresentFix;

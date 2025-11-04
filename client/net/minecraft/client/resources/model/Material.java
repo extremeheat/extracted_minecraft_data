@@ -7,30 +7,30 @@ import java.util.function.Function;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class Material {
    public static final Comparator<Material> COMPARATOR = Comparator.comparing(Material::atlasLocation).thenComparing(Material::texture);
-   private final ResourceLocation atlasLocation;
-   private final ResourceLocation texture;
+   private final Identifier atlasLocation;
+   private final Identifier texture;
    private @Nullable RenderType renderType;
 
-   public Material(ResourceLocation var1, ResourceLocation var2) {
+   public Material(Identifier var1, Identifier var2) {
       super();
       this.atlasLocation = var1;
       this.texture = var2;
    }
 
-   public ResourceLocation atlasLocation() {
+   public Identifier atlasLocation() {
       return this.atlasLocation;
    }
 
-   public ResourceLocation texture() {
+   public Identifier texture() {
       return this.texture;
    }
 
-   public RenderType renderType(Function<ResourceLocation, RenderType> var1) {
+   public RenderType renderType(Function<Identifier, RenderType> var1) {
       if (this.renderType == null) {
          this.renderType = (RenderType)var1.apply(this.atlasLocation);
       }
@@ -38,11 +38,11 @@ public class Material {
       return this.renderType;
    }
 
-   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<ResourceLocation, RenderType> var3) {
+   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<Identifier, RenderType> var3) {
       return var1.get(this).wrap(var2.getBuffer(this.renderType(var3)));
    }
 
-   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<ResourceLocation, RenderType> var3, boolean var4, boolean var5) {
+   public VertexConsumer buffer(MaterialSet var1, MultiBufferSource var2, Function<Identifier, RenderType> var3, boolean var4, boolean var5) {
       return var1.get(this).wrap(ItemRenderer.getFoilBuffer(var2, this.renderType(var3), var4, var5));
    }
 

@@ -6,8 +6,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -82,7 +82,7 @@ public class TrialSpawnerConfigs {
    }
 
    static ResourceKey<TrialSpawnerConfig> registryKey(String var0) {
-      return ResourceKey.create(Registries.TRIAL_SPAWNER_CONFIG, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.TRIAL_SPAWNER_CONFIG, Identifier.withDefaultNamespace(var0));
    }
 
    private static TrialSpawnerConfig.Builder trialChamberMeleeOminous() {

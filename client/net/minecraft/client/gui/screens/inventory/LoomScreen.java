@@ -15,7 +15,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,16 +30,16 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jspecify.annotations.Nullable;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
-   private static final ResourceLocation BANNER_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/banner");
-   private static final ResourceLocation DYE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/dye");
-   private static final ResourceLocation PATTERN_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/banner_pattern");
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/scroller");
-   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/scroller_disabled");
-   private static final ResourceLocation PATTERN_SELECTED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern_selected");
-   private static final ResourceLocation PATTERN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern_highlighted");
-   private static final ResourceLocation PATTERN_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/pattern");
-   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/loom/error");
-   private static final ResourceLocation BG_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/loom.png");
+   private static final Identifier BANNER_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/banner");
+   private static final Identifier DYE_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/dye");
+   private static final Identifier PATTERN_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/banner_pattern");
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/loom/scroller");
+   private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/loom/scroller_disabled");
+   private static final Identifier PATTERN_SELECTED_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern_selected");
+   private static final Identifier PATTERN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern_highlighted");
+   private static final Identifier PATTERN_SPRITE = Identifier.withDefaultNamespace("container/loom/pattern");
+   private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/loom/error");
+   private static final Identifier BG_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/loom.png");
    private static final int PATTERN_COLUMNS = 4;
    private static final int PATTERN_ROWS = 4;
    private static final int SCROLLER_WIDTH = 12;
@@ -95,27 +95,27 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       Slot var9 = ((LoomMenu)this.menu).getPatternSlot();
       Slot var10 = ((LoomMenu)this.menu).getResultSlot();
       if (!var7.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
       }
 
       if (!var8.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DYE_SLOT_SPRITE, var5 + var8.x, var6 + var8.y, 16, 16);
       }
 
       if (!var9.hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PATTERN_SLOT_SPRITE, var5 + var9.x, var6 + var9.y, 16, 16);
       }
 
       int var11 = (int)(41.0F * this.scrollOffs);
-      ResourceLocation var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var12, var5 + 119, var6 + 13 + var11, 12, 15);
+      Identifier var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var5 + 119, var6 + 13 + var11, 12, 15);
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
          DyeColor var13 = ((BannerItem)var10.getItem().getItem()).getColor();
          int var14 = var5 + 141;
          int var15 = var6 + 8;
          var1.submitBannerPatternRenderState(this.flag, var13, this.resultBannerPatterns, var14, var15, var14 + 20, var15 + 40);
       } else if (this.hasMaxPatterns) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
       }
 
       if (this.displayPatterns) {
@@ -136,7 +136,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                int var21 = var27 + var16 * 14;
                Holder var22 = (Holder)var28.get(var19);
                boolean var23 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
-               ResourceLocation var24;
+               Identifier var24;
                if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
                   var24 = PATTERN_SELECTED_SPRITE;
                } else if (var23) {
@@ -148,7 +148,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   var24 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var24, var20, var21, 14, 14);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var24, var20, var21, 14, 14);
                TextureAtlasSprite var29 = var1.getSprite(Sheets.getBannerMaterial(var22));
                this.renderBannerOnButton(var1, var20, var21, var29);
             }

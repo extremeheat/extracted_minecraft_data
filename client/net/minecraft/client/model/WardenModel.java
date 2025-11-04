@@ -121,8 +121,8 @@ public class WardenModel extends EntityModel<WardenRenderState> {
 
    private void animateIdlePose(float var1) {
       float var2 = var1 * 0.1F;
-      float var3 = Mth.cos(var2);
-      float var4 = Mth.sin(var2);
+      float var3 = Mth.cos((double)var2);
+      float var4 = Mth.sin((double)var2);
       ModelPart var10000 = this.head;
       var10000.zRot += 0.06F * var3;
       var10000 = this.head;
@@ -136,17 +136,17 @@ public class WardenModel extends EntityModel<WardenRenderState> {
    private void animateWalk(float var1, float var2) {
       float var3 = Math.min(0.5F, 3.0F * var2);
       float var4 = var1 * 0.8662F;
-      float var5 = Mth.cos(var4);
-      float var6 = Mth.sin(var4);
+      float var5 = Mth.cos((double)var4);
+      float var6 = Mth.sin((double)var4);
       float var7 = Math.min(0.35F, var3);
       ModelPart var10000 = this.head;
       var10000.zRot += 0.3F * var6 * var3;
       var10000 = this.head;
-      var10000.xRot += 1.2F * Mth.cos(var4 + 1.5707964F) * var7;
+      var10000.xRot += 1.2F * Mth.cos((double)(var4 + 1.5707964F)) * var7;
       this.body.zRot = 0.1F * var6 * var3;
       this.body.xRot = 1.0F * var5 * var7;
       this.leftLeg.xRot = 1.0F * var5 * var3;
-      this.rightLeg.xRot = 1.0F * Mth.cos(var4 + 3.1415927F) * var3;
+      this.rightLeg.xRot = 1.0F * Mth.cos((double)(var4 + 3.1415927F)) * var3;
       this.leftArm.xRot = -(0.8F * var5 * var3);
       this.leftArm.zRot = 0.0F;
       this.rightArm.xRot = -(0.8F * var6 * var3);

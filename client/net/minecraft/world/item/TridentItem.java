@@ -86,9 +86,9 @@ public class TridentItem extends Item implements ProjectileItem {
                if (var7 > 0.0F) {
                   float var16 = var5.getYRot();
                   float var10 = var5.getXRot();
-                  float var11 = -Mth.sin(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
-                  float var12 = -Mth.sin(var10 * 0.017453292F);
-                  float var13 = Mth.cos(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
+                  float var11 = -Mth.sin((double)(var16 * 0.017453292F)) * Mth.cos((double)(var10 * 0.017453292F));
+                  float var12 = -Mth.sin((double)(var10 * 0.017453292F));
+                  float var13 = Mth.cos((double)(var16 * 0.017453292F)) * Mth.cos((double)(var10 * 0.017453292F));
                   float var14 = Mth.sqrt(var11 * var11 + var12 * var12 + var13 * var13);
                   var11 *= var7 / var14;
                   var12 *= var7 / var14;

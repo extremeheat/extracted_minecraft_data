@@ -6,27 +6,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @FunctionalInterface
 public interface ResourceProvider {
    ResourceProvider EMPTY = (var0) -> Optional.empty();
 
-   Optional<Resource> getResource(ResourceLocation var1);
+   Optional<Resource> getResource(Identifier var1);
 
-   default Resource getResourceOrThrow(ResourceLocation var1) throws FileNotFoundException {
+   default Resource getResourceOrThrow(Identifier var1) throws FileNotFoundException {
       return (Resource)this.getResource(var1).orElseThrow(() -> new FileNotFoundException(var1.toString()));
    }
 
-   default InputStream open(ResourceLocation var1) throws IOException {
+   default InputStream open(Identifier var1) throws IOException {
       return this.getResourceOrThrow(var1).open();
    }
 
-   default BufferedReader openAsReader(ResourceLocation var1) throws IOException {
+   default BufferedReader openAsReader(Identifier var1) throws IOException {
       return this.getResourceOrThrow(var1).openAsReader();
    }
 
-   static ResourceProvider fromMap(Map<ResourceLocation, Resource> var0) {
+   static ResourceProvider fromMap(Map<Identifier, Resource> var0) {
       return (var1) -> Optional.ofNullable((Resource)var0.get(var1));
    }
 }

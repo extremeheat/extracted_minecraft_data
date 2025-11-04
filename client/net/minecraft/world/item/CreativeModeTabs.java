@@ -17,9 +17,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.tags.TagKey;
@@ -42,8 +42,8 @@ import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import org.jspecify.annotations.Nullable;
 
 public class CreativeModeTabs {
-   private static final ResourceLocation INVENTORY_BACKGROUND = CreativeModeTab.createTextureLocation("inventory");
-   private static final ResourceLocation SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
+   private static final Identifier INVENTORY_BACKGROUND = CreativeModeTab.createTextureLocation("inventory");
+   private static final Identifier SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
    private static final ResourceKey<CreativeModeTab> BUILDING_BLOCKS = createKey("building_blocks");
    private static final ResourceKey<CreativeModeTab> COLORED_BLOCKS = createKey("colored_blocks");
    private static final ResourceKey<CreativeModeTab> NATURAL_BLOCKS = createKey("natural_blocks");
@@ -66,7 +66,7 @@ public class CreativeModeTabs {
    }
 
    private static ResourceKey<CreativeModeTab> createKey(String var0) {
-      return ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.withDefaultNamespace(var0));
    }
 
    public static CreativeModeTab bootstrap(Registry<CreativeModeTab> var0) {
@@ -1161,8 +1161,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.DRAGON_HEAD);
          var1.accept((ItemLike)Items.DRAGON_EGG);
          var1.accept((ItemLike)Items.END_PORTAL_FRAME);
-         var1.accept((ItemLike)Items.ENDER_EYE);
          var1.accept((ItemLike)Items.VAULT);
+         var1.accept((ItemLike)Items.ENDER_EYE);
          var1.accept((ItemLike)Items.COPPER_GOLEM_STATUE);
          var1.accept((ItemLike)Items.EXPOSED_COPPER_GOLEM_STATUE);
          var1.accept((ItemLike)Items.WEATHERED_COPPER_GOLEM_STATUE);
@@ -1469,6 +1469,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.IRON_HORSE_ARMOR);
          var1.accept((ItemLike)Items.GOLDEN_HORSE_ARMOR);
          var1.accept((ItemLike)Items.DIAMOND_HORSE_ARMOR);
+         var1.accept((ItemLike)Items.NETHERITE_HORSE_ARMOR);
          var1.accept((ItemLike)Items.WOLF_ARMOR);
          var1.accept((ItemLike)Items.COPPER_NAUTILUS_ARMOR);
          var1.accept((ItemLike)Items.IRON_NAUTILUS_ARMOR);

@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -45,7 +45,7 @@ public class LootContext {
       return (T)this.params.contextMap().getOptional(var1);
    }
 
-   public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
+   public void addDynamicDrops(Identifier var1, Consumer<ItemStack> var2) {
       this.params.addDynamicDrops(var1, var2);
    }
 
@@ -115,7 +115,7 @@ public class LootContext {
          return this.params.getLevel();
       }
 
-      public LootContext create(Optional<ResourceLocation> var1) {
+      public LootContext create(Optional<Identifier> var1) {
          ServerLevel var2 = this.getLevel();
          MinecraftServer var3 = var2.getServer();
          Optional var10000 = Optional.ofNullable(this.random).or(() -> {

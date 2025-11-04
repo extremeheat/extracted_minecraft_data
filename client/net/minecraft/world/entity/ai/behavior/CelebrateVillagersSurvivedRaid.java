@@ -3,11 +3,11 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -38,7 +38,7 @@ public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
 
    protected void stop(ServerLevel var1, Villager var2, long var3) {
       this.currentRaid = null;
-      var2.getBrain().updateActivityFromSchedule(var1.getDayTime(), var1.getGameTime());
+      var2.getBrain().updateActivityFromSchedule(var1.environmentAttributes(), var1.getGameTime(), var2.position());
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {

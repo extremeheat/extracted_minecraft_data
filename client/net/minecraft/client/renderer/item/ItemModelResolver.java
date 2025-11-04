@@ -5,7 +5,7 @@ import java.util.function.Function;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,8 +15,8 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class ItemModelResolver {
-   private final Function<ResourceLocation, ItemModel> modelGetter;
-   private final Function<ResourceLocation, ClientItem.Properties> clientProperties;
+   private final Function<Identifier, ItemModel> modelGetter;
+   private final Function<Identifier, ClientItem.Properties> clientProperties;
 
    public ItemModelResolver(ModelManager var1) {
       super();
@@ -44,7 +44,7 @@ public class ItemModelResolver {
    }
 
    public void appendItemLayers(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, @Nullable Level var4, @Nullable ItemOwner var5, int var6) {
-      ResourceLocation var7 = (ResourceLocation)var2.get(DataComponents.ITEM_MODEL);
+      Identifier var7 = (Identifier)var2.get(DataComponents.ITEM_MODEL);
       if (var7 != null) {
          var1.setOversizedInGui(((ClientItem.Properties)this.clientProperties.apply(var7)).oversizedInGui());
          ItemModel var10000 = (ItemModel)this.modelGetter.apply(var7);
@@ -61,12 +61,12 @@ public class ItemModelResolver {
    }
 
    public boolean shouldPlaySwapAnimation(ItemStack var1) {
-      ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
+      Identifier var2 = (Identifier)var1.get(DataComponents.ITEM_MODEL);
       return var2 == null ? true : ((ClientItem.Properties)this.clientProperties.apply(var2)).handAnimationOnSwap();
    }
 
    public float swapAnimationScale(ItemStack var1) {
-      ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
+      Identifier var2 = (Identifier)var1.get(DataComponents.ITEM_MODEL);
       return var2 == null ? 1.0F : ((ClientItem.Properties)this.clientProperties.apply(var2)).swapAnimationScale();
    }
 }

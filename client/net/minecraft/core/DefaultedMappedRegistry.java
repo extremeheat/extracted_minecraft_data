@@ -2,23 +2,23 @@ package net.minecraft.core;
 
 import com.mojang.serialization.Lifecycle;
 import java.util.Optional;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
 public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements DefaultedRegistry<T> {
-   private final ResourceLocation defaultKey;
+   private final Identifier defaultKey;
    private Holder.Reference<T> defaultValue;
 
    public DefaultedMappedRegistry(String var1, ResourceKey<? extends Registry<T>> var2, Lifecycle var3, boolean var4) {
       super(var2, var3, var4);
-      this.defaultKey = ResourceLocation.parse(var1);
+      this.defaultKey = Identifier.parse(var1);
    }
 
    public Holder.Reference<T> register(ResourceKey<T> var1, T var2, RegistrationInfo var3) {
       Holder.Reference var4 = super.register(var1, var2, var3);
-      if (this.defaultKey.equals(var1.location())) {
+      if (this.defaultKey.equals(var1.identifier())) {
          this.defaultValue = var4;
       }
 
@@ -30,17 +30,17 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
       return var2 == -1 ? super.getId(this.defaultValue.value()) : var2;
    }
 
-   public ResourceLocation getKey(T var1) {
-      ResourceLocation var2 = super.getKey(var1);
+   public Identifier getKey(T var1) {
+      Identifier var2 = super.getKey(var1);
       return var2 == null ? this.defaultKey : var2;
    }
 
-   public T getValue(@Nullable ResourceLocation var1) {
+   public T getValue(@Nullable Identifier var1) {
       Object var2 = super.getValue(var1);
       return (T)(var2 == null ? this.defaultValue.value() : var2);
    }
 
-   public Optional<T> getOptional(@Nullable ResourceLocation var1) {
+   public Optional<T> getOptional(@Nullable Identifier var1) {
       return Optional.ofNullable(super.getValue(var1));
    }
 
@@ -57,7 +57,7 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
       return super.getRandom(var1).or(() -> Optional.of(this.defaultValue));
    }
 
-   public ResourceLocation getDefaultKey() {
+   public Identifier getDefaultKey() {
       return this.defaultKey;
    }
 }

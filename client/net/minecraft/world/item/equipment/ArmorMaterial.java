@@ -2,8 +2,8 @@ package net.minecraft.world.item.equipment;
 
 import java.util.Map;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -29,7 +29,7 @@ public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int
       int var2 = (Integer)this.defense.getOrDefault(var1, 0);
       ItemAttributeModifiers.Builder var3 = ItemAttributeModifiers.builder();
       EquipmentSlotGroup var4 = EquipmentSlotGroup.bySlot(var1.getSlot());
-      ResourceLocation var5 = ResourceLocation.withDefaultNamespace("armor." + var1.getName());
+      Identifier var5 = Identifier.withDefaultNamespace("armor." + var1.getName());
       var3.add(Attributes.ARMOR, new AttributeModifier(var5, (double)var2, AttributeModifier.Operation.ADD_VALUE), var4);
       var3.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, (double)this.toughness, AttributeModifier.Operation.ADD_VALUE), var4);
       if (this.knockbackResistance > 0.0F) {

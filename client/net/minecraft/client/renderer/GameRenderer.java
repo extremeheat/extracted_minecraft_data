@@ -25,7 +25,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -65,11 +64,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
@@ -106,7 +106,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
-   private static final ResourceLocation BLUR_POST_CHAIN_ID = ResourceLocation.withDefaultNamespace("blur");
+   private static final Identifier BLUR_POST_CHAIN_ID = Identifier.withDefaultNamespace("blur");
    public static final int MAX_BLUR_RADIUS = 10;
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final float PROJECTION_Z_NEAR = 0.05F;
@@ -131,8 +131,8 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private long lastActiveTime = Util.getMillis();
    private final LightTexture lightTexture;
    private final OverlayTexture overlayTexture = new OverlayTexture();
-   private boolean panoramicMode;
-   protected final CubeMap cubeMap = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
+   private @Nullable PanoramicScreenshotParameters panoramicScreenshotParameters;
+   protected final CubeMap cubeMap = new CubeMap(Identifier.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected final PanoramaRenderer panorama;
    private final CrossFrameResourcePool resourcePool;
    private final FogRenderer fogRenderer;
@@ -141,7 +141,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    private final LevelRenderState levelRenderState;
    private final SubmitNodeStorage submitNodeStorage;
    private final FeatureRenderDispatcher featureRenderDispatcher;
-   private @Nullable ResourceLocation postEffectId;
+   private @Nullable Identifier postEffectId;
    private boolean effectActive;
    private final Camera mainCamera;
    private final Lighting lighting;
@@ -203,12 +203,16 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       this.renderBlockOutline = var1;
    }
 
-   public void setPanoramicMode(boolean var1) {
-      this.panoramicMode = var1;
+   public void setPanoramicScreenshotParameters(@Nullable PanoramicScreenshotParameters var1) {
+      this.panoramicScreenshotParameters = var1;
+   }
+
+   public @Nullable PanoramicScreenshotParameters getPanoramicScreenshotParameters() {
+      return this.panoramicScreenshotParameters;
    }
 
    public boolean isPanoramicMode() {
-      return this.panoramicMode;
+      return this.panoramicScreenshotParameters != null;
    }
 
    public void clearPostEffect() {
@@ -233,20 +237,20 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             break;
          case 0:
             Creeper var4 = (Creeper)var1;
-            this.setPostEffect(ResourceLocation.withDefaultNamespace("creeper"));
+            this.setPostEffect(Identifier.withDefaultNamespace("creeper"));
             break;
          case 1:
             Spider var5 = (Spider)var1;
-            this.setPostEffect(ResourceLocation.withDefaultNamespace("spider"));
+            this.setPostEffect(Identifier.withDefaultNamespace("spider"));
             break;
          case 2:
             EnderMan var6 = (EnderMan)var1;
-            this.setPostEffect(ResourceLocation.withDefaultNamespace("invert"));
+            this.setPostEffect(Identifier.withDefaultNamespace("invert"));
       }
 
    }
 
-   private void setPostEffect(ResourceLocation var1) {
+   private void setPostEffect(Identifier var1) {
       this.postEffectId = var1;
       this.effectActive = true;
    }
@@ -262,7 +266,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    public void preloadUiShader(ResourceProvider var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       ShaderSource var3 = (var1x, var2x) -> {
-         ResourceLocation var3 = var2x.idConverter().idToFile(var1x);
+         Identifier var3 = var2x.idConverter().idToFile(var1x);
 
          try {
             BufferedReader var4 = var1.getResourceOrThrow(var3).openAsReader();
@@ -338,7 +342,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       }
    }
 
-   public @Nullable ResourceLocation currentPostEffect() {
+   public @Nullable Identifier currentPostEffect() {
       return this.postEffectId;
    }
 
@@ -419,7 +423,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    }
 
    private float getFov(Camera var1, float var2, boolean var3) {
-      if (this.panoramicMode) {
+      if (this.isPanoramicMode()) {
          return 90.0F;
       } else {
          float var4 = 70.0F;
@@ -461,7 +465,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          }
 
          var7 /= (float)var3.hurtDuration;
-         var7 = Mth.sin(var7 * var7 * var7 * var7 * 3.1415927F);
+         var7 = Mth.sin((double)(var7 * var7 * var7 * var7 * 3.1415927F));
          float var10 = var3.getHurtDir();
          var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var10));
          float var6 = (float)((double)(-var7) * 14.0 * (Double)this.minecraft.options.damageTiltStrength().get());
@@ -477,14 +481,14 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          ClientAvatarState var7 = var3.avatarState();
          float var5 = var7.getBackwardsInterpolatedWalkDistance(var2);
          float var6 = var7.getInterpolatedBob(var2);
-         var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
-         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
+         var1.translate(Mth.sin((double)(var5 * 3.1415927F)) * var6 * 0.5F, -Math.abs(Mth.cos((double)(var5 * 3.1415927F)) * var6), 0.0F);
+         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(Mth.sin((double)(var5 * 3.1415927F)) * var6 * 3.0F));
+         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Math.abs(Mth.cos((double)(var5 * 3.1415927F - 0.2F)) * var6) * 5.0F));
       }
    }
 
    private void renderItemInHand(float var1, boolean var2, Matrix4f var3) {
-      if (!this.panoramicMode) {
+      if (!this.isPanoramicMode()) {
          this.featureRenderDispatcher.renderAllFeatures();
          this.renderBuffers.bufferSource().endBatch();
          PoseStack var4 = new PoseStack();
@@ -517,7 +521,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
    public static float getNightVisionScale(LivingEntity var0, float var1) {
       MobEffectInstance var2 = var0.getEffect(MobEffects.NIGHT_VISION);
-      return !var2.endsWithin(200) ? 1.0F : 0.7F + Mth.sin(((float)var2.getDuration() - var1) * 3.1415927F * 0.2F) * 0.3F;
+      return !var2.endsWithin(200) ? 1.0F : 0.7F + Mth.sin((double)(((float)var2.getDuration() - var1) * 3.1415927F * 0.2F)) * 0.3F;
    }
 
    public void render(DeltaTracker var1, boolean var2) {
@@ -761,7 +765,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
    public void renderLevel(DeltaTracker var1) {
       float var2 = var1.getGameTimeDeltaPartialTick(true);
       LocalPlayer var3 = this.minecraft.player;
-      this.lightTexture.updateLightTexture(var2);
+      this.lightTexture.updateLightTexture(1.0F);
       this.pick(var2);
       ProfilerFiller var4 = Profiler.get();
       boolean var5 = this.shouldRenderBlockOutline();
@@ -900,7 +904,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
 
    public void setLevel(@Nullable ClientLevel var1) {
       if (var1 != null) {
-         this.lighting.updateLevel(var1.effects().constantAmbientLight());
+         this.lighting.updateLevel(var1.dimensionType().cardinalLightType());
       }
 
    }

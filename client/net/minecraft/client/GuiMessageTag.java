@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable Component text, @Nullable String logTag) {
@@ -60,13 +60,13 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
    }
 
    public static enum Icon {
-      CHAT_MODIFIED(ResourceLocation.withDefaultNamespace("icon/chat_modified"), 9, 9);
+      CHAT_MODIFIED(Identifier.withDefaultNamespace("icon/chat_modified"), 9, 9);
 
-      public final ResourceLocation sprite;
+      public final Identifier sprite;
       public final int width;
       public final int height;
 
-      private Icon(final ResourceLocation var3, final int var4, final int var5) {
+      private Icon(final Identifier var3, final int var4, final int var5) {
          this.sprite = var3;
          this.width = var4;
          this.height = var5;

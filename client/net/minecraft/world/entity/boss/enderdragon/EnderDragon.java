@@ -126,8 +126,8 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public boolean isFlapping() {
-      float var1 = Mth.cos(this.flapTime * 6.2831855F);
-      float var2 = Mth.cos(this.oFlapTime * 6.2831855F);
+      float var1 = Mth.cos((double)(this.flapTime * 6.2831855F));
+      float var2 = Mth.cos((double)(this.oFlapTime * 6.2831855F));
       return var2 <= -0.3F && var1 >= -0.3F;
    }
 
@@ -213,7 +213,7 @@ public class EnderDragon extends Mob implements Enemy {
                   this.setDeltaMovement(this.getDeltaMovement().add(0.0, var8 * 0.01, 0.0));
                   this.setYRot(Mth.wrapDegrees(this.getYRot()));
                   Vec3 var17 = var5.subtract(this.getX(), this.getY(), this.getZ()).normalize();
-                  Vec3 var18 = (new Vec3((double)Mth.sin(this.getYRot() * 0.017453292F), this.getDeltaMovement().y, (double)(-Mth.cos(this.getYRot() * 0.017453292F)))).normalize();
+                  Vec3 var18 = (new Vec3((double)Mth.sin((double)(this.getYRot() * 0.017453292F)), this.getDeltaMovement().y, (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))))).normalize();
                   float var19 = Math.max(((float)var18.dot(var17) + 0.5F) / 1.5F, 0.0F);
                   if (Math.abs(var6) > 9.999999747378752E-6 || Math.abs(var10) > 9.999999747378752E-6) {
                      float var20 = Mth.clamp(Mth.wrapDegrees(180.0F - (float)Mth.atan2(var6, var10) * 57.295776F - this.getYRot()), -50.0F, 50.0F);
@@ -252,11 +252,11 @@ public class EnderDragon extends Mob implements Enemy {
             }
 
             float var35 = (float)(this.flightHistory.get(5).y() - this.flightHistory.get(10).y()) * 10.0F * 0.017453292F;
-            float var36 = Mth.cos(var35);
-            float var37 = Mth.sin(var35);
+            float var36 = Mth.cos((double)var35);
+            float var37 = Mth.sin((double)var35);
             float var7 = this.getYRot() * 0.017453292F;
-            float var38 = Mth.sin(var7);
-            float var9 = Mth.cos(var7);
+            float var38 = Mth.sin((double)var7);
+            float var9 = Mth.cos((double)var7);
             this.tickPart(this.body, (double)(var38 * 0.5F), 0.0, (double)(-var9 * 0.5F));
             this.tickPart(this.wing1, (double)(var9 * 4.5F), 2.0, (double)(var38 * 4.5F));
             this.tickPart(this.wing2, (double)(var9 * -4.5F), 2.0, (double)(var38 * -4.5F));
@@ -271,8 +271,8 @@ public class EnderDragon extends Mob implements Enemy {
                }
             }
 
-            float var40 = Mth.sin(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
-            float var41 = Mth.cos(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
+            float var40 = Mth.sin((double)(this.getYRot() * 0.017453292F - this.yRotA * 0.01F));
+            float var41 = Mth.cos((double)(this.getYRot() * 0.017453292F - this.yRotA * 0.01F));
             float var42 = this.getHeadYOffset();
             this.tickPart(this.head, (double)(var40 * 6.5F * var36), (double)(var42 + var37 * 6.5F), (double)(-var41 * 6.5F * var36));
             this.tickPart(this.neck, (double)(var40 * 5.5F * var36), (double)(var42 + var37 * 5.5F), (double)(-var41 * 5.5F * var36));
@@ -294,8 +294,8 @@ public class EnderDragon extends Mob implements Enemy {
 
                DragonFlightHistory.Sample var16 = this.flightHistory.get(12 + var43 * 2);
                float var48 = this.getYRot() * 0.017453292F + this.rotWrap((double)(var16.yRot() - var13.yRot())) * 0.017453292F;
-               float var49 = Mth.sin(var48);
-               float var50 = Mth.cos(var48);
+               float var49 = Mth.sin((double)var48);
+               float var50 = Mth.cos((double)var48);
                float var52 = 1.5F;
                float var53 = (float)(var43 + 1) * 2.0F;
                this.tickPart(var46, (double)(-(var38 * 1.5F + var49 * var53) * var36), var16.y() - var13.y() - (double)((var53 + 1.5F) * var37) + 1.5, (double)((var9 * 1.5F + var50 * var53) * var36));
@@ -548,17 +548,17 @@ public class EnderDragon extends Mob implements Enemy {
             int var4;
             int var5;
             if (var1 < 12) {
-               var4 = Mth.floor(60.0F * Mth.cos(2.0F * (-3.1415927F + 0.2617994F * (float)var1)));
-               var5 = Mth.floor(60.0F * Mth.sin(2.0F * (-3.1415927F + 0.2617994F * (float)var1)));
+               var4 = Mth.floor(60.0F * Mth.cos((double)(2.0F * (-3.1415927F + 0.2617994F * (float)var1))));
+               var5 = Mth.floor(60.0F * Mth.sin((double)(2.0F * (-3.1415927F + 0.2617994F * (float)var1))));
             } else if (var1 < 20) {
                int var3 = var1 - 12;
-               var4 = Mth.floor(40.0F * Mth.cos(2.0F * (-3.1415927F + 0.3926991F * (float)var3)));
-               var5 = Mth.floor(40.0F * Mth.sin(2.0F * (-3.1415927F + 0.3926991F * (float)var3)));
+               var4 = Mth.floor(40.0F * Mth.cos((double)(2.0F * (-3.1415927F + 0.3926991F * (float)var3))));
+               var5 = Mth.floor(40.0F * Mth.sin((double)(2.0F * (-3.1415927F + 0.3926991F * (float)var3))));
                var2 += 10;
             } else {
                int var7 = var1 - 20;
-               var4 = Mth.floor(20.0F * Mth.cos(2.0F * (-3.1415927F + 0.7853982F * (float)var7)));
-               var5 = Mth.floor(20.0F * Mth.sin(2.0F * (-3.1415927F + 0.7853982F * (float)var7)));
+               var4 = Mth.floor(20.0F * Mth.cos((double)(2.0F * (-3.1415927F + 0.7853982F * (float)var7))));
+               var5 = Mth.floor(20.0F * Mth.sin((double)(2.0F * (-3.1415927F + 0.7853982F * (float)var7))));
             }
 
             int var6 = Math.max(73, this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(var4, 0, var5)).getY() + var2);

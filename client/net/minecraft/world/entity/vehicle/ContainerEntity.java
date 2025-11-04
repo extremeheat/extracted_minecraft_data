@@ -57,7 +57,7 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    default void addChestVehicleSaveData(ValueOutput var1) {
       if (this.getContainerLootTable() != null) {
-         var1.putString("LootTable", this.getContainerLootTable().location().toString());
+         var1.putString("LootTable", this.getContainerLootTable().identifier().toString());
          if (this.getContainerLootTableSeed() != 0L) {
             var1.putLong("LootTableSeed", this.getContainerLootTableSeed());
          }

@@ -1,7 +1,6 @@
 package net.minecraft.world.item.equipment.trim;
 
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -10,8 +9,9 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ProvidesTrimMaterial;
 
@@ -52,11 +52,11 @@ public class TrimMaterials {
    }
 
    private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Style var2, MaterialAssetGroup var3) {
-      MutableComponent var4 = Component.translatable(Util.makeDescriptionId("trim_material", var1.location())).withStyle(var2);
+      MutableComponent var4 = Component.translatable(Util.makeDescriptionId("trim_material", var1.identifier())).withStyle(var2);
       var0.register(var1, new TrimMaterial(var3, var4));
    }
 
    private static ResourceKey<TrimMaterial> registryKey(String var0) {
-      return ResourceKey.create(Registries.TRIM_MATERIAL, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.TRIM_MATERIAL, Identifier.withDefaultNamespace(var0));
    }
 }

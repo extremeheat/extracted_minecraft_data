@@ -26,15 +26,15 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.item.equipment.trim.TrimPatterns;
 
 public class AtlasProvider implements DataProvider {
-   private static final ResourceLocation TRIM_PALETTE_KEY = ResourceLocation.withDefaultNamespace("trims/color_palettes/trim_palette");
-   private static final Map<String, ResourceLocation> TRIM_PALETTE_VALUES = (Map)extractAllMaterialAssets().collect(Collectors.toMap(MaterialAssetGroup.AssetInfo::suffix, (var0) -> ResourceLocation.withDefaultNamespace("trims/color_palettes/" + var0.suffix())));
+   private static final Identifier TRIM_PALETTE_KEY = Identifier.withDefaultNamespace("trims/color_palettes/trim_palette");
+   private static final Map<String, Identifier> TRIM_PALETTE_VALUES = (Map)extractAllMaterialAssets().collect(Collectors.toMap(MaterialAssetGroup.AssetInfo::suffix, (var0) -> Identifier.withDefaultNamespace("trims/color_palettes/" + var0.suffix())));
    private static final List<ResourceKey<TrimPattern>> VANILLA_PATTERNS;
    private static final List<EquipmentClientInfo.LayerType> HUMANOID_LAYERS;
    private final PackOutput.PathProvider pathProvider;
@@ -44,11 +44,11 @@ public class AtlasProvider implements DataProvider {
       this.pathProvider = var1.createPathProvider(PackOutput.Target.RESOURCE_PACK, "atlases");
    }
 
-   private static List<ResourceLocation> patternTextures() {
+   private static List<Identifier> patternTextures() {
       ArrayList var0 = new ArrayList(VANILLA_PATTERNS.size() * HUMANOID_LAYERS.size());
 
       for(ResourceKey var2 : VANILLA_PATTERNS) {
-         ResourceLocation var3 = TrimPatterns.defaultAssetId(var2);
+         Identifier var3 = TrimPatterns.defaultAssetId(var2);
 
          for(EquipmentClientInfo.LayerType var5 : HUMANOID_LAYERS) {
             var0.add(var3.withPath((UnaryOperator)((var1) -> {
@@ -86,7 +86,11 @@ public class AtlasProvider implements DataProvider {
    }
 
    private static List<SpriteSource> blocksList() {
-      return List.of(forMapper(Sheets.BLOCKS_MAPPER), forMapper(Sheets.ITEMS_MAPPER), forMapper(ConduitRenderer.MAPPER), forMaterial(BellRenderer.BELL_RESOURCE_LOCATION), forMaterial(Sheets.DECORATED_POT_SIDE), forMaterial(EnchantTableRenderer.BOOK_LOCATION), new PalettedPermutations(List.of(ItemModelGenerators.TRIM_PREFIX_HELMET, ItemModelGenerators.TRIM_PREFIX_CHESTPLATE, ItemModelGenerators.TRIM_PREFIX_LEGGINGS, ItemModelGenerators.TRIM_PREFIX_BOOTS), TRIM_PALETTE_KEY, TRIM_PALETTE_VALUES));
+      return List.of(forMapper(Sheets.BLOCKS_MAPPER), forMapper(ConduitRenderer.MAPPER), forMaterial(BellRenderer.BELL_RESOURCE_LOCATION), forMaterial(Sheets.DECORATED_POT_SIDE), forMaterial(EnchantTableRenderer.BOOK_LOCATION));
+   }
+
+   private static List<SpriteSource> itemsList() {
+      return List.of(forMapper(Sheets.ITEMS_MAPPER), new PalettedPermutations(List.of(ItemModelGenerators.TRIM_PREFIX_HELMET, ItemModelGenerators.TRIM_PREFIX_CHESTPLATE, ItemModelGenerators.TRIM_PREFIX_LEGGINGS, ItemModelGenerators.TRIM_PREFIX_BOOTS), TRIM_PALETTE_KEY, TRIM_PALETTE_VALUES));
    }
 
    private static List<SpriteSource> bannerPatterns() {
@@ -102,10 +106,10 @@ public class AtlasProvider implements DataProvider {
    }
 
    public CompletableFuture<?> run(CachedOutput var1) {
-      return CompletableFuture.allOf(this.storeAtlas(var1, AtlasIds.ARMOR_TRIMS, armorTrims()), this.storeAtlas(var1, AtlasIds.BANNER_PATTERNS, bannerPatterns()), this.storeAtlas(var1, AtlasIds.BEDS, simpleMapper(Sheets.BED_MAPPER)), this.storeAtlas(var1, AtlasIds.BLOCKS, blocksList()), this.storeAtlas(var1, AtlasIds.CHESTS, simpleMapper(Sheets.CHEST_MAPPER)), this.storeAtlas(var1, AtlasIds.DECORATED_POT, simpleMapper(Sheets.DECORATED_POT_MAPPER)), this.storeAtlas(var1, AtlasIds.GUI, guiSprites()), this.storeAtlas(var1, AtlasIds.MAP_DECORATIONS, noPrefixMapper("map/decorations")), this.storeAtlas(var1, AtlasIds.PAINTINGS, noPrefixMapper("painting")), this.storeAtlas(var1, AtlasIds.PARTICLES, noPrefixMapper("particle")), this.storeAtlas(var1, AtlasIds.SHIELD_PATTERNS, shieldPatterns()), this.storeAtlas(var1, AtlasIds.SHULKER_BOXES, simpleMapper(Sheets.SHULKER_MAPPER)), this.storeAtlas(var1, AtlasIds.SIGNS, simpleMapper(Sheets.SIGN_MAPPER)), this.storeAtlas(var1, AtlasIds.CELESTIALS, noPrefixMapper("environment/celestial")));
+      return CompletableFuture.allOf(this.storeAtlas(var1, AtlasIds.ARMOR_TRIMS, armorTrims()), this.storeAtlas(var1, AtlasIds.BANNER_PATTERNS, bannerPatterns()), this.storeAtlas(var1, AtlasIds.BEDS, simpleMapper(Sheets.BED_MAPPER)), this.storeAtlas(var1, AtlasIds.BLOCKS, blocksList()), this.storeAtlas(var1, AtlasIds.ITEMS, itemsList()), this.storeAtlas(var1, AtlasIds.CHESTS, simpleMapper(Sheets.CHEST_MAPPER)), this.storeAtlas(var1, AtlasIds.DECORATED_POT, simpleMapper(Sheets.DECORATED_POT_MAPPER)), this.storeAtlas(var1, AtlasIds.GUI, guiSprites()), this.storeAtlas(var1, AtlasIds.MAP_DECORATIONS, noPrefixMapper("map/decorations")), this.storeAtlas(var1, AtlasIds.PAINTINGS, noPrefixMapper("painting")), this.storeAtlas(var1, AtlasIds.PARTICLES, noPrefixMapper("particle")), this.storeAtlas(var1, AtlasIds.SHIELD_PATTERNS, shieldPatterns()), this.storeAtlas(var1, AtlasIds.SHULKER_BOXES, simpleMapper(Sheets.SHULKER_MAPPER)), this.storeAtlas(var1, AtlasIds.SIGNS, simpleMapper(Sheets.SIGN_MAPPER)), this.storeAtlas(var1, AtlasIds.CELESTIALS, noPrefixMapper("environment/celestial")));
    }
 
-   private CompletableFuture<?> storeAtlas(CachedOutput var1, ResourceLocation var2, List<SpriteSource> var3) {
+   private CompletableFuture<?> storeAtlas(CachedOutput var1, Identifier var2, List<SpriteSource> var3) {
       return DataProvider.saveStable(var1, SpriteSources.FILE_CODEC, var3, this.pathProvider.json(var2));
    }
 

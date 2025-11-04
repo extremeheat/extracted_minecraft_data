@@ -9,13 +9,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
-import net.minecraft.advancements.critereon.BlockPredicate;
-import net.minecraft.advancements.critereon.DataComponentMatchers;
-import net.minecraft.advancements.critereon.EnchantmentPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.LocationPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.advancements.criterion.BlockPredicate;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.LocationPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -319,7 +319,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                if (var2.add(var4x)) {
                   LootTable.Builder var5 = (LootTable.Builder)this.map.remove(var4x);
                   if (var5 == null) {
-                     throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var4x.location(), BuiltInRegistries.BLOCK.getKey(var4)));
+                     throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var4x.identifier(), BuiltInRegistries.BLOCK.getKey(var4)));
                   }
 
                   var1.accept(var4x, var5);

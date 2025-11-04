@@ -9,21 +9,21 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import net.minecraft.Util;
 import net.minecraft.client.resources.sounds.Sound;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.util.Util;
 
 public class SoundBufferLibrary {
    private final ResourceProvider resourceManager;
-   private final Map<ResourceLocation, CompletableFuture<SoundBuffer>> cache = Maps.newHashMap();
+   private final Map<Identifier, CompletableFuture<SoundBuffer>> cache = Maps.newHashMap();
 
    public SoundBufferLibrary(ResourceProvider var1) {
       super();
       this.resourceManager = var1;
    }
 
-   public CompletableFuture<SoundBuffer> getCompleteBuffer(ResourceLocation var1) {
+   public CompletableFuture<SoundBuffer> getCompleteBuffer(Identifier var1) {
       return (CompletableFuture)this.cache.computeIfAbsent(var1, (var1x) -> CompletableFuture.supplyAsync(() -> {
             try {
                InputStream var2 = this.resourceManager.open(var1x);
@@ -69,7 +69,7 @@ public class SoundBufferLibrary {
          }, Util.nonCriticalIoPool()));
    }
 
-   public CompletableFuture<AudioStream> getStream(ResourceLocation var1, boolean var2) {
+   public CompletableFuture<AudioStream> getStream(Identifier var1, boolean var2) {
       return CompletableFuture.supplyAsync(() -> {
          try {
             InputStream var3 = this.resourceManager.open(var1);

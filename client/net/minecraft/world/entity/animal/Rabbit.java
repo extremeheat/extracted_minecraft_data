@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.function.IntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
@@ -17,7 +16,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -29,6 +28,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -82,10 +82,10 @@ public class Rabbit extends Animal {
    public static final double ATTACK_SPEED_MOD = 1.4;
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID;
    private static final int DEFAULT_MORE_CARROT_TICKS = 0;
-   private static final ResourceLocation KILLER_BUNNY;
+   private static final Identifier KILLER_BUNNY;
    private static final int DEFAULT_ATTACK_POWER = 3;
    private static final int EVIL_ATTACK_POWER_INCREMENT = 5;
-   private static final ResourceLocation EVIL_ATTACK_POWER_MODIFIER;
+   private static final Identifier EVIL_ATTACK_POWER_MODIFIER;
    private static final int EVIL_ARMOR_VALUE = 8;
    private static final int MORE_CARROTS_DELAY = 40;
    private int jumpTicks;
@@ -435,8 +435,8 @@ public class Rabbit extends Animal {
 
    static {
       DATA_TYPE_ID = SynchedEntityData.<Integer>defineId(Rabbit.class, EntityDataSerializers.INT);
-      KILLER_BUNNY = ResourceLocation.withDefaultNamespace("killer_bunny");
-      EVIL_ATTACK_POWER_MODIFIER = ResourceLocation.withDefaultNamespace("evil");
+      KILLER_BUNNY = Identifier.withDefaultNamespace("killer_bunny");
+      EVIL_ATTACK_POWER_MODIFIER = Identifier.withDefaultNamespace("evil");
    }
 
    public static enum Variant implements StringRepresentable {

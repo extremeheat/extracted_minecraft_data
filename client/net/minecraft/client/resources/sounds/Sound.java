@@ -3,14 +3,14 @@ package net.minecraft.client.resources.sounds;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.Weighted;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.SampledFloat;
 import org.jspecify.annotations.Nullable;
 
 public class Sound implements Weighted<Sound> {
    public static final FileToIdConverter SOUND_LISTER = new FileToIdConverter("sounds", ".ogg");
-   private final ResourceLocation location;
+   private final Identifier location;
    private final SampledFloat volume;
    private final SampledFloat pitch;
    private final int weight;
@@ -19,7 +19,7 @@ public class Sound implements Weighted<Sound> {
    private final boolean preload;
    private final int attenuationDistance;
 
-   public Sound(ResourceLocation var1, SampledFloat var2, SampledFloat var3, int var4, Type var5, boolean var6, boolean var7, int var8) {
+   public Sound(Identifier var1, SampledFloat var2, SampledFloat var3, int var4, Type var5, boolean var6, boolean var7, int var8) {
       super();
       this.location = var1;
       this.volume = var2;
@@ -31,11 +31,11 @@ public class Sound implements Weighted<Sound> {
       this.attenuationDistance = var8;
    }
 
-   public ResourceLocation getLocation() {
+   public Identifier getLocation() {
       return this.location;
    }
 
-   public ResourceLocation getPath() {
+   public Identifier getPath() {
       return SOUND_LISTER.idToFile(this.location);
    }
 

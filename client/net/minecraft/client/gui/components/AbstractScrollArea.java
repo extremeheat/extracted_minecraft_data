@@ -5,14 +5,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractScrollArea extends AbstractWidget {
    public static final int SCROLLBAR_WIDTH = 6;
    private double scrollAmount;
-   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("widget/scroller");
-   private static final ResourceLocation SCROLLER_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("widget/scroller_background");
+   private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("widget/scroller");
+   private static final Identifier SCROLLER_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("widget/scroller_background");
    private boolean scrolling;
 
    public AbstractScrollArea(int var1, int var2, int var3, int var4, Component var5) {
@@ -97,8 +97,8 @@ public abstract class AbstractScrollArea extends AbstractWidget {
          int var4 = this.scrollBarX();
          int var5 = this.scrollerHeight();
          int var6 = this.scrollBarY();
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_BACKGROUND_SPRITE, var4, this.getY(), 6, this.getHeight());
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SCROLLER_SPRITE, var4, var6, 6, var5);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_BACKGROUND_SPRITE, var4, this.getY(), 6, this.getHeight());
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_SPRITE, var4, var6, 6, var5);
          if (this.isOverScrollbar((double)var2, (double)var3)) {
             var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          }

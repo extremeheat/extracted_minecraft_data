@@ -73,7 +73,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
    }
 
    protected void createRoom(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, Aquifer var5, double var6, double var8, double var10, float var12, double var13, CarvingMask var15, WorldCarver.CarveSkipChecker var16) {
-      double var17 = 1.5 + (double)(Mth.sin(1.5707964F) * var12);
+      double var17 = 1.5 + (double)(Mth.sin(1.5707963705062866) * var12);
       double var19 = var17 * var13;
       this.carveEllipsoid(var1, var2, var3, var4, var5, var6 + 1.0, var8, var10, var17, var19, var15, var16);
    }
@@ -86,12 +86,12 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       float var31 = 0.0F;
 
       for(int var32 = var21; var32 < var22; ++var32) {
-         double var33 = 1.5 + (double)(Mth.sin(3.1415927F * (float)var32 / (float)var22) * var18);
+         double var33 = 1.5 + (double)(Mth.sin((double)(3.1415927F * (float)var32 / (float)var22)) * var18);
          double var35 = var33 * var23;
-         float var37 = Mth.cos(var20);
-         var8 += (double)(Mth.cos(var19) * var37);
-         var10 += (double)Mth.sin(var20);
-         var12 += (double)(Mth.sin(var19) * var37);
+         float var37 = Mth.cos((double)var20);
+         var8 += (double)(Mth.cos((double)var19) * var37);
+         var10 += (double)Mth.sin((double)var20);
+         var12 += (double)(Mth.sin((double)var19) * var37);
          var20 *= var29 ? 0.92F : 0.7F;
          var20 += var31 * 0.1F;
          var19 += var30 * 0.1F;

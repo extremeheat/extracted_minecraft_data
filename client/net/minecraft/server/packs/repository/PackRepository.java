@@ -14,8 +14,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.util.Util;
 import net.minecraft.world.flag.FeatureFlagSet;
 import org.jspecify.annotations.Nullable;
 

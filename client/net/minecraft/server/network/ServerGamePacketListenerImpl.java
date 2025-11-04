@@ -31,7 +31,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.CommandSigningContext;
@@ -141,8 +140,8 @@ import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.level.ServerLevel;
@@ -154,6 +153,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.TickThrottler;
+import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -550,7 +550,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
       if (var1.getAction() == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         ResourceLocation var2 = (ResourceLocation)Objects.requireNonNull(var1.getTab());
+         Identifier var2 = (Identifier)Objects.requireNonNull(var1.getTab());
          AdvancementHolder var3 = this.server.getAdvancements().get(var2);
          if (var3 != null) {
             this.player.getAdvancements().setSelectedTab(var3);
@@ -1855,7 +1855,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   if (var5 instanceof RecipeBookMenu) {
                      RecipeBookMenu var4 = (RecipeBookMenu)var5;
                      if (var3.value().placementInfo().isImpossibleToPlace()) {
-                        LOGGER.debug("Player {} tried to place impossible recipe {}", this.player, var3.id().location());
+                        LOGGER.debug("Player {} tried to place impossible recipe {}", this.player, var3.id().identifier());
                         return;
                      }
 

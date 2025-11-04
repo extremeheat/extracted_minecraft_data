@@ -21,7 +21,7 @@ import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.MacroFunction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.timers.FunctionCallback;
 import net.minecraft.world.level.timers.FunctionTagCallback;
 import net.minecraft.world.level.timers.TimerQueue;
@@ -40,12 +40,12 @@ public class ScheduleCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("schedule").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("function").then(Commands.argument("function", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("time", TimeArgument.time()).executes((var0x) -> schedule((CommandSourceStack)var0x.getSource(), FunctionArgument.getFunctionOrTag(var0x, "function"), IntegerArgumentType.getInteger(var0x, "time"), true))).then(Commands.literal("append").executes((var0x) -> schedule((CommandSourceStack)var0x.getSource(), FunctionArgument.getFunctionOrTag(var0x, "function"), IntegerArgumentType.getInteger(var0x, "time"), false)))).then(Commands.literal("replace").executes((var0x) -> schedule((CommandSourceStack)var0x.getSource(), FunctionArgument.getFunctionOrTag(var0x, "function"), IntegerArgumentType.getInteger(var0x, "time"), true))))))).then(Commands.literal("clear").then(Commands.argument("function", StringArgumentType.greedyString()).suggests(SUGGEST_SCHEDULE).executes((var0x) -> remove((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "function"))))));
    }
 
-   private static int schedule(CommandSourceStack var0, Pair<ResourceLocation, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> var1, int var2, boolean var3) throws CommandSyntaxException {
+   private static int schedule(CommandSourceStack var0, Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> var1, int var2, boolean var3) throws CommandSyntaxException {
       if (var2 == 0) {
          throw ERROR_SAME_TICK.create();
       } else {
          long var4 = var0.getLevel().getGameTime() + (long)var2;
-         ResourceLocation var6 = (ResourceLocation)var1.getFirst();
+         Identifier var6 = (Identifier)var1.getFirst();
          TimerQueue var7 = var0.getServer().getWorldData().overworldData().getScheduledEvents();
          Optional var8 = ((Either)var1.getSecond()).left();
          if (var8.isPresent()) {

@@ -4,9 +4,9 @@ import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Transformation;
 import java.util.EnumMap;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.BlockMath;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Util;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 

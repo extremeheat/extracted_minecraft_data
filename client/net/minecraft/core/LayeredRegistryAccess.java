@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Util;
 
 public class LayeredRegistryAccess<T> {
    private final List<T> keys;

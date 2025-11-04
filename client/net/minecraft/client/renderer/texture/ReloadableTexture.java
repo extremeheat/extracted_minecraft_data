@@ -8,18 +8,18 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.io.IOException;
 import java.util.Objects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public abstract class ReloadableTexture extends AbstractTexture {
-   private final ResourceLocation resourceId;
+   private final Identifier resourceId;
 
-   public ReloadableTexture(ResourceLocation var1) {
+   public ReloadableTexture(Identifier var1) {
       super();
       this.resourceId = var1;
    }
 
-   public ResourceLocation resourceId() {
+   public Identifier resourceId() {
       return this.resourceId;
    }
 
@@ -28,7 +28,7 @@ public abstract class ReloadableTexture extends AbstractTexture {
       boolean var3 = var1.blur();
       AddressMode var4 = var2 ? AddressMode.CLAMP_TO_EDGE : AddressMode.REPEAT;
       FilterMode var5 = var3 ? FilterMode.LINEAR : FilterMode.NEAREST;
-      this.sampler = RenderSystem.getSamplerCache().getSampler(var4, var4, var5, var5);
+      this.sampler = RenderSystem.getSamplerCache().getSampler(var4, var4, var5, var5, false);
 
       try (NativeImage var6 = var1.image()) {
          this.doLoad(var6);
@@ -39,7 +39,7 @@ public abstract class ReloadableTexture extends AbstractTexture {
    protected void doLoad(NativeImage var1) {
       GpuDevice var2 = RenderSystem.getDevice();
       this.close();
-      ResourceLocation var10002 = this.resourceId;
+      Identifier var10002 = this.resourceId;
       Objects.requireNonNull(var10002);
       this.texture = var2.createTexture(var10002::toString, 5, TextureFormat.RGBA8, var1.getWidth(), var1.getHeight(), 1, 1);
       this.textureView = var2.createTextureView(this.texture);

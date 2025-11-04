@@ -14,13 +14,13 @@ import java.util.Map;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
-public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparableReloadListener<Map<ResourceLocation, T>> {
+public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparableReloadListener<Map<Identifier, T>> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final DynamicOps<JsonElement> ops;
    private final Codec<T> codec;
@@ -41,20 +41,20 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
       this.lister = var3;
    }
 
-   protected Map<ResourceLocation, T> prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected Map<Identifier, T> prepare(ResourceManager var1, ProfilerFiller var2) {
       HashMap var3 = new HashMap();
       scanDirectory(var1, this.lister, this.ops, this.codec, var3);
       return var3;
    }
 
-   public static <T> void scanDirectory(ResourceManager var0, ResourceKey<? extends Registry<T>> var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<ResourceLocation, T> var4) {
+   public static <T> void scanDirectory(ResourceManager var0, ResourceKey<? extends Registry<T>> var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<Identifier, T> var4) {
       scanDirectory(var0, FileToIdConverter.registry(var1), var2, var3, var4);
    }
 
-   public static <T> void scanDirectory(ResourceManager var0, FileToIdConverter var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<ResourceLocation, T> var4) {
+   public static <T> void scanDirectory(ResourceManager var0, FileToIdConverter var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<Identifier, T> var4) {
       for(Map.Entry var6 : var1.listMatchingResources(var0).entrySet()) {
-         ResourceLocation var7 = (ResourceLocation)var6.getKey();
-         ResourceLocation var8 = var1.fileToId(var7);
+         Identifier var7 = (Identifier)var6.getKey();
+         Identifier var8 = var1.fileToId(var7);
 
          try {
             BufferedReader var9 = ((Resource)var6.getValue()).openAsReader();

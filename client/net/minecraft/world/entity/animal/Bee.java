@@ -32,6 +32,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -324,15 +325,11 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    boolean wantsToEnterHive() {
       if (this.stayOutOfHiveCountdown <= 0 && !this.beePollinateGoal.isPollinating() && !this.hasStung() && this.getTarget() == null) {
-         boolean var1 = this.isTiredOfLookingForNectar() || isNightOrRaining(this.level()) || this.hasNectar();
+         boolean var1 = this.hasNectar() || this.isTiredOfLookingForNectar() || (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.BEES_STAY_IN_HIVE, this.position());
          return var1 && !this.isHiveNearFire();
       } else {
          return false;
       }
-   }
-
-   public static boolean isNightOrRaining(Level var0) {
-      return var0.dimensionType().hasSkyLight() && var0.dimension() != Level.END && (var0.isDarkOutside() || var0.isRaining());
    }
 
    public void setStayOutOfHiveCountdown(int var1) {

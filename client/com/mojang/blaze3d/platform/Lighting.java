@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -36,11 +37,10 @@ public class Lighting implements AutoCloseable {
       this.updateBuffer(Lighting.Entry.PLAYER_SKIN, var4.transformDirection(INVENTORY_DIFFUSE_LIGHT_0, new Vector3f()), var4.transformDirection(INVENTORY_DIFFUSE_LIGHT_1, new Vector3f()));
    }
 
-   public void updateLevel(boolean var1) {
-      if (var1) {
-         this.updateBuffer(Lighting.Entry.LEVEL, NETHER_DIFFUSE_LIGHT_0, NETHER_DIFFUSE_LIGHT_1);
-      } else {
-         this.updateBuffer(Lighting.Entry.LEVEL, DIFFUSE_LIGHT_0, DIFFUSE_LIGHT_1);
+   public void updateLevel(DimensionType.CardinalLightType var1) {
+      switch (var1) {
+         case DEFAULT -> this.updateBuffer(Lighting.Entry.LEVEL, DIFFUSE_LIGHT_0, DIFFUSE_LIGHT_1);
+         case NETHER -> this.updateBuffer(Lighting.Entry.LEVEL, NETHER_DIFFUSE_LIGHT_0, NETHER_DIFFUSE_LIGHT_1);
       }
 
    }

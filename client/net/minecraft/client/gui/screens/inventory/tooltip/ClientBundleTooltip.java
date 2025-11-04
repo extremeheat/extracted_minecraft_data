@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
@@ -15,12 +15,12 @@ import org.apache.commons.lang3.math.Fraction;
 import org.jspecify.annotations.Nullable;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
-   private static final ResourceLocation PROGRESSBAR_BORDER_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_border");
-   private static final ResourceLocation PROGRESSBAR_FILL_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_fill");
-   private static final ResourceLocation PROGRESSBAR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_full");
-   private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_highlight_back");
-   private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_highlight_front");
-   private static final ResourceLocation SLOT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_background");
+   private static final Identifier PROGRESSBAR_BORDER_SPRITE = Identifier.withDefaultNamespace("container/bundle/bundle_progressbar_border");
+   private static final Identifier PROGRESSBAR_FILL_SPRITE = Identifier.withDefaultNamespace("container/bundle/bundle_progressbar_fill");
+   private static final Identifier PROGRESSBAR_FULL_SPRITE = Identifier.withDefaultNamespace("container/bundle/bundle_progressbar_full");
+   private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/bundle/slot_highlight_back");
+   private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/bundle/slot_highlight_front");
+   private static final Identifier SLOT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("container/bundle/slot_background");
    private static final int SLOT_MARGIN = 4;
    private static final int SLOT_SIZE = 24;
    private static final int GRID_WIDTH = 96;
@@ -135,15 +135,15 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       boolean var9 = var8 == this.contents.getSelectedItem();
       ItemStack var10 = (ItemStack)var4.get(var8);
       if (var9) {
-         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_BACK_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_BACK_SPRITE, var2, var3, 24, 24);
       } else {
-         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
       }
 
       var7.renderItem(var10, var2 + 4, var3 + 4, var5);
       var7.renderItemDecorations(var6, var10, var2 + 4, var3 + 4);
       if (var9) {
-         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SLOT_HIGHLIGHT_FRONT_SPRITE, var2, var3, 24, 24);
+         var7.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, var2, var3, 24, 24);
       }
 
    }
@@ -159,14 +159,14 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          int var8 = var1.width(var7.getVisualOrderText());
          int var9 = var3 + var5 / 2 - 12;
          ClientTooltipComponent var10 = ClientTooltipComponent.create(var7.getVisualOrderText());
-         var2.renderTooltip(var1, List.of(var10), var9 - var8 / 2, var4 - 15, DefaultTooltipPositioner.INSTANCE, (ResourceLocation)var6.get(DataComponents.TOOLTIP_STYLE));
+         var2.renderTooltip(var1, List.of(var10), var9 - var8 / 2, var4 - 15, DefaultTooltipPositioner.INSTANCE, (Identifier)var6.get(DataComponents.TOOLTIP_STYLE));
       }
 
    }
 
    private void drawProgressbar(int var1, int var2, Font var3, GuiGraphics var4) {
-      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
-      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
+      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
+      var4.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
       Component var5 = this.getProgressBarFillText();
       if (var5 != null) {
          var4.drawCenteredString(var3, (Component)var5, var1 + 48, var2 + 3, -1);
@@ -188,7 +188,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return Mth.clamp(Mth.mulAndTruncate(this.contents.weight(), 94), 0, 94);
    }
 
-   private ResourceLocation getProgressBarTexture() {
+   private Identifier getProgressBarTexture() {
       return this.contents.weight().compareTo(Fraction.ONE) >= 0 ? PROGRESSBAR_FULL_SPRITE : PROGRESSBAR_FILL_SPRITE;
    }
 

@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -30,7 +30,7 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class ScreenEffectRenderer {
-   private static final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/underwater.png");
+   private static final Identifier UNDERWATER_LOCATION = Identifier.withDefaultNamespace("textures/misc/underwater.png");
    private final Minecraft minecraft;
    private final MaterialSet materials;
    private final MultiBufferSource bufferSource;
@@ -98,12 +98,12 @@ public class ScreenEffectRenderer {
          float var11 = this.itemActivationOffX * 0.3F * var10;
          float var12 = this.itemActivationOffY * 0.3F;
          var1.pushPose();
-         var1.translate(var11 * Mth.abs(Mth.sin(var9 * 2.0F)), var12 * Mth.abs(Mth.sin(var9 * 2.0F)), -10.0F + 9.0F * Mth.sin(var9));
+         var1.translate(var11 * Mth.abs(Mth.sin((double)(var9 * 2.0F))), var12 * Mth.abs(Mth.sin((double)(var9 * 2.0F))), -10.0F + 9.0F * Mth.sin((double)var9));
          float var13 = 0.8F;
          var1.scale(0.8F, 0.8F, 0.8F);
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var9))));
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
-         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
+         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin((double)var9))));
+         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(6.0F * Mth.cos((double)(var5 * 8.0F))));
+         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.0F * Mth.cos((double)(var5 * 8.0F))));
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
          ItemStackRenderState var14 = new ItemStackRenderState();
          this.minecraft.getItemModelResolver().updateForTopItem(var14, this.itemActivationItem, ItemDisplayContext.FIXED, this.minecraft.level, (ItemOwner)null, 0);

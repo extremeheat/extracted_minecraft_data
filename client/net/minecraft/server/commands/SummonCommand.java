@@ -49,7 +49,7 @@ public class SummonCommand {
          throw ERROR_FAILED_PEACEFUL.create();
       } else {
          CompoundTag var6 = var3.copy();
-         var6.putString("id", var1.key().location().toString());
+         var6.putString("id", var1.key().identifier().toString());
          ServerLevel var7 = var0.getLevel();
          Entity var8 = EntityType.loadEntityRecursive((CompoundTag)var6, var7, EntitySpawnReason.COMMAND, (var1x) -> {
             var1x.snapTo(var2.x, var2.y, var2.z, var1x.getYRot(), var1x.getXRot());

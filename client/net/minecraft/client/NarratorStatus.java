@@ -1,5 +1,6 @@
 package net.minecraft.client;
 
+import com.mojang.serialization.Codec;
 import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ByIdMap;
@@ -11,6 +12,7 @@ public enum NarratorStatus {
    SYSTEM(3, "options.narrator.system");
 
    private static final IntFunction<NarratorStatus> BY_ID = ByIdMap.<NarratorStatus>continuous(NarratorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final Codec<NarratorStatus> LEGACY_CODEC = Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId);
    private final int id;
    private final Component name;
 

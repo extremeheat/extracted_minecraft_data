@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -22,14 +23,16 @@ import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public class LanguageSelectScreen extends OptionsSubScreen {
    private static final Component WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withColor(-4539718);
    private static final int FOOTER_HEIGHT = 53;
    private static final Component SEARCH_HINT;
    private static final int SEARCH_BOX_HEIGHT = 15;
-   private LanguageSelectionList languageSelectionList;
    final LanguageManager languageManager;
+   private @Nullable LanguageSelectionList languageSelectionList;
+   private @Nullable EditBox search;
 
    public LanguageSelectScreen(Screen var1, Options var2, LanguageManager var3) {
       super(var1, var2, Component.translatable("options.language.title"));
@@ -41,13 +44,26 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.title, this.font));
-      EditBox var2 = (EditBox)var1.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
-      var2.setHint(SEARCH_HINT);
-      var2.setResponder((var1x) -> this.languageSelectionList.filterEntries(var1x));
-      this.setInitialFocus(var2);
+      this.search = (EditBox)var1.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
+      this.search.setHint(SEARCH_HINT);
+      this.search.setResponder((var1x) -> {
+         if (this.languageSelectionList != null) {
+            this.languageSelectionList.filterEntries(var1x);
+         }
+
+      });
       HeaderAndFooterLayout var10000 = this.layout;
       Objects.requireNonNull(this.font);
       var10000.setHeaderHeight((int)(12.0 + 9.0 + 15.0));
+   }
+
+   protected void setInitialFocus() {
+      if (this.search != null) {
+         this.setInitialFocus(this.search);
+      } else {
+         super.setInitialFocus();
+      }
+
    }
 
    protected void addContents() {
@@ -68,15 +84,23 @@ public class LanguageSelectScreen extends OptionsSubScreen {
 
    protected void repositionElements() {
       super.repositionElements();
-      this.languageSelectionList.updateSize(this.width, this.layout);
+      if (this.languageSelectionList != null) {
+         this.languageSelectionList.updateSize(this.width, this.layout);
+      }
+
    }
 
    void onDone() {
-      LanguageSelectionList.Entry var1 = (LanguageSelectionList.Entry)this.languageSelectionList.getSelected();
-      if (var1 != null && !var1.code.equals(this.languageManager.getSelected())) {
-         this.languageManager.setSelected(var1.code);
-         this.options.languageCode = var1.code;
-         this.minecraft.reloadResourcePacks();
+      if (this.languageSelectionList != null) {
+         AbstractSelectionList.Entry var2 = this.languageSelectionList.getSelected();
+         if (var2 instanceof LanguageSelectionList.Entry) {
+            LanguageSelectionList.Entry var1 = (LanguageSelectionList.Entry)var2;
+            if (!var1.code.equals(this.languageManager.getSelected())) {
+               this.languageManager.setSelected(var1.code);
+               this.options.languageCode = var1.code;
+               this.minecraft.reloadResourcePacks();
+            }
+         }
       }
 
       this.minecraft.setScreen(this.lastScreen);

@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class NbtOps implements DynamicOps<Tag> {
@@ -32,6 +33,14 @@ public class NbtOps implements DynamicOps<Tag> {
 
    public Tag empty() {
       return EndTag.INSTANCE;
+   }
+
+   public Tag emptyList() {
+      return new ListTag();
+   }
+
+   public Tag emptyMap() {
+      return new CompoundTag();
    }
 
    public <U> U convertTo(DynamicOps<U> var1, Tag var2) {
@@ -275,40 +284,47 @@ public class NbtOps implements DynamicOps<Tag> {
       if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
          return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var1), var1);
       } else {
-         CompoundTag var10000;
-         if (var1 instanceof CompoundTag) {
-            CompoundTag var4 = (CompoundTag)var1;
-            var10000 = var4.shallowCopy();
+         Iterator var3 = var2.entries().iterator();
+         if (!var3.hasNext()) {
+            return var1 == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(var1);
          } else {
-            var10000 = new CompoundTag();
-         }
-
-         CompoundTag var3 = var10000;
-         ArrayList var5 = new ArrayList();
-         var2.entries().forEach((var2x) -> {
-            Tag var3x = (Tag)var2x.getFirst();
-            if (var3x instanceof StringTag var5x) {
-               StringTag var10000 = var5x;
-
-               try {
-                  var8 = var10000.value();
-               } catch (Throwable var7) {
-                  throw new MatchException(var7.toString(), var7);
-               }
-
-               String var6 = var8;
-               var3.put(var6, (Tag)var2x.getSecond());
+            CompoundTag var10000;
+            if (var1 instanceof CompoundTag) {
+               CompoundTag var5 = (CompoundTag)var1;
+               var10000 = var5.shallowCopy();
             } else {
-               var5.add(var3x);
+               var10000 = new CompoundTag();
             }
-         });
-         return !var5.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + String.valueOf(var5), var3) : DataResult.success(var3);
+
+            CompoundTag var4 = var10000;
+            ArrayList var6 = new ArrayList();
+            var3.forEachRemaining((var2x) -> {
+               Tag var3 = (Tag)var2x.getFirst();
+               if (var3 instanceof StringTag var5) {
+                  StringTag var10000 = var5;
+
+                  try {
+                     var8 = var10000.value();
+                  } catch (Throwable var7) {
+                     throw new MatchException(var7.toString(), var7);
+                  }
+
+                  String var6x = var8;
+                  var4.put(var6x, (Tag)var2x.getSecond());
+               } else {
+                  var6.add(var3);
+               }
+            });
+            return !var6.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + String.valueOf(var6), var4) : DataResult.success(var4);
+         }
       }
    }
 
    public DataResult<Tag> mergeToMap(Tag var1, Map<Tag, Tag> var2) {
       if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
          return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var1), var1);
+      } else if (var2.isEmpty()) {
+         return var1 == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(var1);
       } else {
          CompoundTag var10000;
          if (var1 instanceof CompoundTag) {
@@ -714,6 +730,16 @@ public class NbtOps implements DynamicOps<Tag> {
    // $FF: synthetic method
    public Object convertTo(final DynamicOps var1, final Object var2) {
       return this.convertTo(var1, (Tag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object emptyList() {
+      return this.emptyList();
+   }
+
+   // $FF: synthetic method
+   public Object emptyMap() {
+      return this.emptyMap();
    }
 
    // $FF: synthetic method

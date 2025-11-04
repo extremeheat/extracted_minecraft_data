@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceMetadata;
@@ -82,5 +82,5 @@ public interface SpriteResourceLoader {
       };
    }
 
-   @Nullable SpriteContents loadSprite(ResourceLocation var1, Resource var2);
+   @Nullable SpriteContents loadSprite(Identifier var1, Resource var2);
 }

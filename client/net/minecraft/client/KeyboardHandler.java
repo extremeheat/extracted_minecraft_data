@@ -15,7 +15,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -39,13 +38,14 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.commands.GameModeCommand;
 import net.minecraft.server.commands.VersionCommand;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -297,7 +297,7 @@ public class KeyboardHandler {
 
          if (var2.keyDebugCopyLocation.matches(var1) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
             this.debugFeedbackTranslated("debug.copy_location.message");
-            this.setClipboard(String.format(Locale.ROOT, "/execute in %s run tp @s %.2f %.2f %.2f %.2f %.2f", this.minecraft.player.level().dimension().location(), this.minecraft.player.getX(), this.minecraft.player.getY(), this.minecraft.player.getZ(), this.minecraft.player.getYRot(), this.minecraft.player.getXRot()));
+            this.setClipboard(String.format(Locale.ROOT, "/execute in %s run tp @s %.2f %.2f %.2f %.2f %.2f", this.minecraft.player.level().dimension().identifier(), this.minecraft.player.getX(), this.minecraft.player.getY(), this.minecraft.player.getZ(), this.minecraft.player.getYRot(), this.minecraft.player.getXRot()));
             var3 = true;
          }
 
@@ -353,7 +353,7 @@ public class KeyboardHandler {
                break;
             case ENTITY:
                Entity var4 = ((EntityHitResult)var3).getEntity();
-               ResourceLocation var5 = BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType());
+               Identifier var5 = BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType());
                if (var1) {
                   if (var2) {
                      this.minecraft.player.connection.getDebugQueryHandler().queryEntityTag(var4.getId(), (var3x) -> {
@@ -388,7 +388,7 @@ public class KeyboardHandler {
       this.setClipboard(var5);
    }
 
-   private void copyCreateEntityCommand(ResourceLocation var1, Vec3 var2, @Nullable CompoundTag var3) {
+   private void copyCreateEntityCommand(Identifier var1, Vec3 var2, @Nullable CompoundTag var3) {
       String var4;
       if (var3 != null) {
          var3.remove("UUID");

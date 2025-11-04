@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsRegistry;

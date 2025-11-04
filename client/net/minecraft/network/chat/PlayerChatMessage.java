@@ -10,9 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask) {

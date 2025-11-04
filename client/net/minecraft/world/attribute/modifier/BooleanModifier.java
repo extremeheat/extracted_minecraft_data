@@ -2,6 +2,7 @@ package net.minecraft.world.attribute.modifier;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.LerpFunction;
 
 public enum BooleanModifier implements AttributeModifier<Boolean, Boolean> {
    AND,
@@ -31,6 +32,10 @@ public enum BooleanModifier implements AttributeModifier<Boolean, Boolean> {
 
    public Codec<Boolean> argumentCodec(EnvironmentAttribute<Boolean> var1) {
       return Codec.BOOL;
+   }
+
+   public LerpFunction<Boolean> argumentKeyframeLerp(EnvironmentAttribute<Boolean> var1) {
+      return LerpFunction.<Boolean>ofConstant();
    }
 
    // $FF: synthetic method

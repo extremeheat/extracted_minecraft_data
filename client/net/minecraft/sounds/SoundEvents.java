@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 
@@ -1795,31 +1795,31 @@ public class SoundEvents {
       super();
    }
 
-   private static Holder<SoundEvent> register(ResourceLocation var0, ResourceLocation var1, float var2) {
+   private static Holder<SoundEvent> register(Identifier var0, Identifier var1, float var2) {
       return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, var0, SoundEvent.createFixedRangeEvent(var1, var2));
    }
 
    private static SoundEvent register(String var0) {
-      return register(ResourceLocation.withDefaultNamespace(var0));
+      return register(Identifier.withDefaultNamespace(var0));
    }
 
-   private static SoundEvent register(ResourceLocation var0) {
+   private static SoundEvent register(Identifier var0) {
       return register(var0, var0);
    }
 
    private static Holder.Reference<SoundEvent> registerForHolder(String var0) {
-      return registerForHolder(ResourceLocation.withDefaultNamespace(var0));
+      return registerForHolder(Identifier.withDefaultNamespace(var0));
    }
 
-   private static Holder.Reference<SoundEvent> registerForHolder(ResourceLocation var0) {
+   private static Holder.Reference<SoundEvent> registerForHolder(Identifier var0) {
       return registerForHolder(var0, var0);
    }
 
-   private static SoundEvent register(ResourceLocation var0, ResourceLocation var1) {
-      return (SoundEvent)Registry.register(BuiltInRegistries.SOUND_EVENT, (ResourceLocation)var0, SoundEvent.createVariableRangeEvent(var1));
+   private static SoundEvent register(Identifier var0, Identifier var1) {
+      return (SoundEvent)Registry.register(BuiltInRegistries.SOUND_EVENT, (Identifier)var0, SoundEvent.createVariableRangeEvent(var1));
    }
 
-   private static Holder.Reference<SoundEvent> registerForHolder(ResourceLocation var0, ResourceLocation var1) {
+   private static Holder.Reference<SoundEvent> registerForHolder(Identifier var0, Identifier var1) {
       return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, var0, SoundEvent.createVariableRangeEvent(var1));
    }
 

@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.datafixers.util.Either;
 import java.util.Optional;
 import java.util.UUID;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -18,6 +17,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SpawnUtil;
+import net.minecraft.util.Util;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -123,7 +124,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                Optional var12 = var3.getCreakingProtector();
                if (var12.isPresent()) {
                   Creaking var14 = (Creaking)var12.get();
-                  if (!CreakingHeartBlock.isNaturalNight(var0) && !var14.isPersistenceRequired() || var3.distanceToCreaking() > 34.0 || var14.playerIsStuckInYou()) {
+                  if (!(Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.CREAKING_ACTIVE, var1) && !var14.isPersistenceRequired() || var3.distanceToCreaking() > 34.0 || var14.playerIsStuckInYou()) {
                      var3.removeProtector((DamageSource)null);
                   }
                }
@@ -137,8 +138,8 @@ public class CreakingHeartBlockEntity extends BlockEntity {
       if (!CreakingHeartBlock.hasRequiredLogs(var1, var0, var2) && var3.creakingInfo == null) {
          return (BlockState)var1.setValue(CreakingHeartBlock.STATE, CreakingHeartState.UPROOTED);
       } else {
-         boolean var4 = CreakingHeartBlock.isNaturalNight(var0);
-         return (BlockState)var1.setValue(CreakingHeartBlock.STATE, var4 ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT);
+         CreakingHeartState var4 = (Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.CREAKING_ACTIVE, var2) ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT;
+         return (BlockState)var1.setValue(CreakingHeartBlock.STATE, var4);
       }
    }
 

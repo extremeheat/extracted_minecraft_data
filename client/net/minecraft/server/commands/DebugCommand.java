@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Locale;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -34,10 +33,11 @@ import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.ProfileResults;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -202,7 +202,7 @@ public class DebugCommand {
 
       }
 
-      public void onCall(int var1, ResourceLocation var2, int var3) {
+      public void onCall(int var1, Identifier var2, int var3) {
          this.newLine();
          this.indentAndSave(var1);
          this.output.print("[F] ");

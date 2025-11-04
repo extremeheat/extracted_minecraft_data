@@ -1,7 +1,7 @@
 package net.minecraft.core.component.predicates;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.advancements.criterion.NbtPredicate;
 import net.minecraft.core.component.DataComponentGetter;
 
 public record CustomDataPredicate(NbtPredicate value) implements DataComponentPredicate {

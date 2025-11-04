@@ -64,13 +64,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
-import net.minecraft.FileUtil;
 import net.minecraft.Optionull;
 import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
-import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.Font;
@@ -134,6 +132,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.PanoramicScreenshotParameters;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.ShaderManager;
@@ -189,7 +188,7 @@ import net.minecraft.network.chat.contents.KeybindResolver;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -213,12 +212,14 @@ import net.minecraft.sounds.Musics;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DialogTags;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.TimeSource;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.profiling.ContinuousProfiler;
 import net.minecraft.util.profiling.EmptyProfileResults;
@@ -254,6 +255,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.io.FileUtils;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
@@ -262,10 +264,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    static Minecraft instance;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TICKS_PER_UPDATE = 10;
-   public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
-   public static final ResourceLocation UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
-   public static final ResourceLocation ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
-   private static final ResourceLocation REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
+   public static final Identifier DEFAULT_FONT = Identifier.withDefaultNamespace("default");
+   public static final Identifier UNIFORM_FONT = Identifier.withDefaultNamespace("uniform");
+   public static final Identifier ALT_FONT = Identifier.withDefaultNamespace("alt");
+   private static final Identifier REGIONAL_COMPLIANCIES = Identifier.withDefaultNamespace("regional_compliancies.json");
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK;
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE;
    private static final Component SAVING_LEVEL;
@@ -505,7 +507,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.levelSource = new LevelStorageSource(var3.resolve("saves"), var3.resolve("backups"), this.directoryValidator, this.fixerUpper);
       this.commandHistory = new CommandHistory(var3);
       this.musicManager = new MusicManager(this);
-      this.soundManager = new SoundManager(this.options, this.musicManager);
+      this.soundManager = new SoundManager(this.options);
       this.resourceManager.registerReloadListener(this.soundManager);
       this.splashManager = new SplashManager(this.user);
       this.resourceManager.registerReloadListener(this.splashManager);
@@ -1033,7 +1035,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          String var2 = var1.getDescriptionId();
          String var3 = Component.translatable(var2).getString();
          if (var3.toLowerCase(Locale.ROOT).equals(var1.getDescriptionId())) {
-            LOGGER.debug("Missing translation for: {} {} {}", new Object[]{var0.key().location(), var2, var1});
+            LOGGER.debug("Missing translation for: {} {} {}", new Object[]{var0.key().identifier(), var2, var1});
          }
 
       });
@@ -2617,7 +2619,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       MutableComponent var13;
       try {
-         this.gameRenderer.setPanoramicMode(true);
+         this.gameRenderer.setPanoramicScreenshotParameters(new PanoramicScreenshotParameters(new Vector3f(this.gameRenderer.getMainCamera().forwardVector())));
          this.window.setWidth(4096);
          this.window.setHeight(4096);
          var7.resize(4096, 4096);
@@ -2679,7 +2681,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.window.setWidth(var5);
          this.window.setHeight(var6);
          var7.resize(var5, var6);
-         this.gameRenderer.setPanoramicMode(false);
+         this.gameRenderer.setPanoramicScreenshotParameters((PanoramicScreenshotParameters)null);
       }
 
       return var13;

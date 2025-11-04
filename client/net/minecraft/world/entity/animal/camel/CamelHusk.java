@@ -7,9 +7,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
@@ -32,12 +33,9 @@ public class CamelHusk extends Camel {
       return this.getFirstPassenger() instanceof Mob;
    }
 
-   protected void addPassenger(Entity var1) {
-      if (var1 instanceof Player) {
-         this.setPersistenceRequired();
-      }
-
-      super.addPassenger(var1);
+   public InteractionResult interact(Player var1, InteractionHand var2) {
+      this.setPersistenceRequired();
+      return super.interact(var1, var2);
    }
 
    public boolean canBeLeashed() {

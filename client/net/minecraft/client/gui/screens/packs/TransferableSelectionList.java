@@ -19,18 +19,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.PackCompatibility;
 
 public class TransferableSelectionList extends ObjectSelectionList<Entry> {
-   static final ResourceLocation SELECT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/select_highlighted");
-   static final ResourceLocation SELECT_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/select");
-   static final ResourceLocation UNSELECT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/unselect_highlighted");
-   static final ResourceLocation UNSELECT_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/unselect");
-   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_up_highlighted");
-   static final ResourceLocation MOVE_UP_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_up");
-   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_down_highlighted");
-   static final ResourceLocation MOVE_DOWN_SPRITE = ResourceLocation.withDefaultNamespace("transferable_list/move_down");
+   static final Identifier SELECT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/select_highlighted");
+   static final Identifier SELECT_SPRITE = Identifier.withDefaultNamespace("transferable_list/select");
+   static final Identifier UNSELECT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/unselect_highlighted");
+   static final Identifier UNSELECT_SPRITE = Identifier.withDefaultNamespace("transferable_list/unselect");
+   static final Identifier MOVE_UP_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_up_highlighted");
+   static final Identifier MOVE_UP_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_up");
+   static final Identifier MOVE_DOWN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_down_highlighted");
+   static final Identifier MOVE_DOWN_SPRITE = Identifier.withDefaultNamespace("transferable_list/move_down");
    static final Component INCOMPATIBLE_TITLE = Component.translatable("pack.incompatible");
    static final Component INCOMPATIBLE_CONFIRM_TITLE = Component.translatable("pack.incompatible.confirm.title");
    private static final int ENTRY_PADDING = 2;
@@ -140,36 +140,36 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
 
             if (this.pack.canSelect()) {
                if (this.mouseOverIcon(var11, var12, 32)) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   TransferableSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.SELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.SELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             } else {
                if (this.pack.canUnselect()) {
                   if (this.mouseOverLeftHalf(var11, var12, 32)) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                      TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.UNSELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.UNSELECT_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
 
                if (this.pack.canMoveUp()) {
                   if (this.mouseOverTopRightQuarter(var11, var12, 32)) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                      TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
 
                if (this.pack.canMoveDown()) {
                   if (this.mouseOverBottomRightQuarter(var11, var12, 32)) {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                      TransferableSelectionList.this.handleCursor(var1);
                   } else {
-                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)TransferableSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                     var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TransferableSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   }
                }
             }

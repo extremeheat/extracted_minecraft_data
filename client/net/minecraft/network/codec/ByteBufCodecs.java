@@ -41,9 +41,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.Utf8String;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.VarLong;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LenientJsonParser;
@@ -940,7 +940,7 @@ public interface ByteBufCodecs {
             int var2 = VarInt.read(var1) - 1;
             if (var2 == -1) {
                Registry var5 = var1.registryAccess().lookupOrThrow(var0);
-               return (HolderSet)var5.get(TagKey.create(var0, (ResourceLocation)ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
+               return (HolderSet)var5.get(TagKey.create(var0, (Identifier)Identifier.STREAM_CODEC.decode(var1))).orElseThrow();
             } else {
                ArrayList var3 = new ArrayList(Math.min(var2, 65536));
 
@@ -956,7 +956,7 @@ public interface ByteBufCodecs {
             Optional var3 = var2.unwrapKey();
             if (var3.isPresent()) {
                VarInt.write(var1, 0);
-               ResourceLocation.STREAM_CODEC.encode(var1, ((TagKey)var3.get()).location());
+               Identifier.STREAM_CODEC.encode(var1, ((TagKey)var3.get()).location());
             } else {
                VarInt.write(var1, var2.size() + 1);
 

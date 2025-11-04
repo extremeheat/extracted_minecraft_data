@@ -5,17 +5,17 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GoatRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.goat.Goat;
 
 public class GoatRenderer extends AgeableMobRenderer<Goat, GoatRenderState, GoatModel> {
-   private static final ResourceLocation GOAT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/goat/goat.png");
+   private static final Identifier GOAT_LOCATION = Identifier.withDefaultNamespace("textures/entity/goat/goat.png");
 
    public GoatRenderer(EntityRendererProvider.Context var1) {
       super(var1, new GoatModel(var1.bakeLayer(ModelLayers.GOAT)), new GoatModel(var1.bakeLayer(ModelLayers.GOAT_BABY)), 0.7F);
    }
 
-   public ResourceLocation getTextureLocation(GoatRenderState var1) {
+   public Identifier getTextureLocation(GoatRenderState var1) {
       return GOAT_LOCATION;
    }
 
@@ -31,7 +31,7 @@ public class GoatRenderer extends AgeableMobRenderer<Goat, GoatRenderState, Goat
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((GoatRenderState)var1);
    }
 

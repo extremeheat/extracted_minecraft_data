@@ -34,6 +34,6 @@ public class TropicalFishModelB extends EntityModel<TropicalFishRenderState> {
    public void setupAnim(TropicalFishRenderState var1) {
       super.setupAnim(var1);
       float var2 = var1.isInWater ? 1.0F : 1.5F;
-      this.tail.yRot = -var2 * 0.45F * Mth.sin(0.6F * var1.ageInTicks);
+      this.tail.yRot = -var2 * 0.45F * Mth.sin((double)(0.6F * var1.ageInTicks));
    }
 }

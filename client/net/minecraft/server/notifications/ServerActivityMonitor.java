@@ -3,7 +3,7 @@ package net.minecraft.server.notifications;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class ServerActivityMonitor {
    private final long minimumMillisBetweenNotifications;

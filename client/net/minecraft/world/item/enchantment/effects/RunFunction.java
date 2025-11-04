@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
@@ -16,11 +16,11 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public record RunFunction(ResourceLocation function) implements EnchantmentEntityEffect {
+public record RunFunction(Identifier function) implements EnchantmentEntityEffect {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new));
+   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new));
 
-   public RunFunction(ResourceLocation var1) {
+   public RunFunction(Identifier var1) {
       super();
       this.function = var1;
    }

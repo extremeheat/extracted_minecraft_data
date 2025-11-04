@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
@@ -23,8 +23,8 @@ public class AtlasGlyphProvider {
    final TextureAtlas atlas;
    final GlyphRenderTypes renderTypes;
    private final GlyphSource missingWrapper;
-   private final Map<ResourceLocation, GlyphSource> wrapperCache = new HashMap();
-   private final Function<ResourceLocation, GlyphSource> spriteResolver;
+   private final Map<Identifier, GlyphSource> wrapperCache = new HashMap();
+   private final Function<Identifier, GlyphSource> spriteResolver;
 
    public AtlasGlyphProvider(TextureAtlas var1) {
       super();
@@ -38,7 +38,7 @@ public class AtlasGlyphProvider {
       };
    }
 
-   public GlyphSource sourceForSprite(ResourceLocation var1) {
+   public GlyphSource sourceForSprite(Identifier var1) {
       return (GlyphSource)this.wrapperCache.computeIfAbsent(var1, this.spriteResolver);
    }
 

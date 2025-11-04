@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
 public interface EntityTypeTags {
@@ -53,6 +53,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> CAN_FLOAT_WHILE_RIDDEN = create("can_float_while_ridden");
 
    private static TagKey<EntityType<?>> create(String var0) {
-      return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(var0));
    }
 }

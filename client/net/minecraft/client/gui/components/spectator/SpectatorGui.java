@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.spectator;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
@@ -10,14 +9,15 @@ import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class SpectatorGui implements SpectatorMenuListener {
-   private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
-   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
+   private static final Identifier HOTBAR_SPRITE = Identifier.withDefaultNamespace("hud/hotbar");
+   private static final Identifier HOTBAR_SELECTION_SPRITE = Identifier.withDefaultNamespace("hud/hotbar_selection");
    private static final long FADE_OUT_DELAY = 5000L;
    private static final long FADE_OUT_TIME = 2000L;
    private final Minecraft minecraft;
@@ -60,9 +60,9 @@ public class SpectatorGui implements SpectatorMenuListener {
 
    protected void renderPage(GuiGraphics var1, float var2, int var3, int var4, SpectatorPage var5) {
       int var6 = ARGB.white(var2);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
       if (var5.getSelectedSlot() >= 0) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
       }
 
       for(int var7 = 0; var7 < 9; ++var7) {

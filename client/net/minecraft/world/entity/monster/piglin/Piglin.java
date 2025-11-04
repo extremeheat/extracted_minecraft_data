@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -64,7 +64,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING_CROSSBOW;
    private static final EntityDataAccessor<Boolean> DATA_IS_DANCING;
-   private static final ResourceLocation SPEED_MODIFIER_BABY_ID;
+   private static final Identifier SPEED_MODIFIER_BABY_ID;
    private static final AttributeModifier SPEED_MODIFIER_BABY;
    private static final int MAX_HEALTH = 16;
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.35F;
@@ -397,7 +397,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
       DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
       DATA_IS_DANCING = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-      SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
+      SPEED_MODIFIER_BABY_ID = Identifier.withDefaultNamespace("baby");
       SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       BABY_DIMENSIONS = EntityType.PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY, SensorType.PIGLIN_SPECIFIC_SENSOR);

@@ -3,7 +3,7 @@ package net.minecraft.client.resources;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
 import java.io.InputStream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class LegacyStuffWrapper {
@@ -13,7 +13,7 @@ public class LegacyStuffWrapper {
 
    /** @deprecated */
    @Deprecated
-   public static int[] getPixels(ResourceManager var0, ResourceLocation var1) throws IOException {
+   public static int[] getPixels(ResourceManager var0, Identifier var1) throws IOException {
       InputStream var2 = var0.open(var1);
 
       int[] var4;

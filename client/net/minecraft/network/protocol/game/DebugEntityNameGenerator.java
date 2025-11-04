@@ -1,9 +1,9 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.UUID;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 

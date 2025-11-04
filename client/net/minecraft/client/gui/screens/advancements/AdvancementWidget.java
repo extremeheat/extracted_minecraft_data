@@ -18,13 +18,13 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public class AdvancementWidget {
-   private static final ResourceLocation TITLE_BOX_SPRITE = ResourceLocation.withDefaultNamespace("advancements/title_box");
+   private static final Identifier TITLE_BOX_SPRITE = Identifier.withDefaultNamespace("advancements/title_box");
    private static final int HEIGHT = 26;
    private static final int BOX_X = 0;
    private static final int BOX_WIDTH = 200;
@@ -167,7 +167,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -253,7 +253,7 @@ public class AdvancementWidget {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), var23, var9, this.width, var8);
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       int var25 = var23 + 5;
       if (var13) {
          this.drawMultilineText(var1, this.titleLines, var25, var9 + 9, -1);

@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class GlyphStitcher implements AutoCloseable {
    private final TextureManager textureManager;
-   private final ResourceLocation texturePrefix;
+   private final Identifier texturePrefix;
    private final List<FontTexture> textures = new ArrayList();
 
-   public GlyphStitcher(TextureManager var1, ResourceLocation var2) {
+   public GlyphStitcher(TextureManager var1, Identifier var2) {
       super();
       this.textureManager = var1;
       this.texturePrefix = var2;
@@ -44,7 +44,7 @@ public class GlyphStitcher implements AutoCloseable {
       }
 
       int var8 = this.textures.size();
-      ResourceLocation var9 = this.textureName(var8);
+      Identifier var9 = this.textureName(var8);
       boolean var10 = var2.isColored();
       GlyphRenderTypes var6 = var10 ? GlyphRenderTypes.createForColorTexture(var9) : GlyphRenderTypes.createForIntensityTexture(var9);
       Objects.requireNonNull(var9);
@@ -54,7 +54,7 @@ public class GlyphStitcher implements AutoCloseable {
       return var7.add(var1, var2);
    }
 
-   private ResourceLocation textureName(int var1) {
+   private Identifier textureName(int var1) {
       return this.texturePrefix.withSuffix("/" + var1);
    }
 }

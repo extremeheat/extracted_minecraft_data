@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -30,13 +29,14 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFixedCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -514,7 +514,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
          });
       }
 
-      public Enchantment build(ResourceLocation var1) {
+      public Enchantment build(Identifier var1) {
          return new Enchantment(Component.translatable(Util.makeDescriptionId("enchantment", var1)), this.definition, this.exclusiveSet, this.effectMapBuilder.build());
       }
    }

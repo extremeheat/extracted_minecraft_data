@@ -2,7 +2,7 @@ package com.mojang.blaze3d.shaders;
 
 import com.mojang.blaze3d.DontObfuscate;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 @DontObfuscate
@@ -19,7 +19,7 @@ public enum ShaderType {
       this.extension = var4;
    }
 
-   public static @Nullable ShaderType byLocation(ResourceLocation var0) {
+   public static @Nullable ShaderType byLocation(Identifier var0) {
       for(ShaderType var4 : TYPES) {
          if (var0.getPath().endsWith(var4.extension)) {
             return var4;

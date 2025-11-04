@@ -16,8 +16,8 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
@@ -55,7 +55,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.idEdit.setMaxLength(128);
       Optional var5 = this.blockEntity.test();
       if (var5.isPresent()) {
-         this.idEdit.setValue(((ResourceKey)var5.get()).location().toString());
+         this.idEdit.setValue(((ResourceKey)var5.get()).identifier().toString());
       }
 
       this.idEdit.setResponder((var1x) -> this.updateTestInfo(false));
@@ -103,7 +103,7 @@ public class TestInstanceBlockEditScreen extends Screen {
    }
 
    private void updateSaveState() {
-      boolean var1 = this.rotationButton.getValue() == Rotation.NONE && ResourceLocation.tryParse(this.idEdit.getValue()) != null;
+      boolean var1 = this.rotationButton.getValue() == Rotation.NONE && Identifier.tryParse(this.idEdit.getValue()) != null;
       this.saveButton.active = var1;
       if (this.exportButton != null) {
          this.exportButton.active = var1;
@@ -169,7 +169,7 @@ public class TestInstanceBlockEditScreen extends Screen {
    }
 
    private boolean sendToServer(ServerboundTestInstanceBlockActionPacket.Action var1) {
-      Optional var2 = Optional.ofNullable(ResourceLocation.tryParse(this.idEdit.getValue()));
+      Optional var2 = Optional.ofNullable(Identifier.tryParse(this.idEdit.getValue()));
       Optional var3 = var2.map((var0) -> ResourceKey.create(Registries.TEST_INSTANCE, var0));
       Vec3i var4 = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
       boolean var5 = !(Boolean)this.includeEntitiesButton.getValue();

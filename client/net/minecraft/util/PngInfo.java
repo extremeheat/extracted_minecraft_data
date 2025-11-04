@@ -49,7 +49,9 @@ public record PngInfo(int width, int height) {
    public static void validateHeader(ByteBuffer var0) throws IOException {
       ByteOrder var1 = var0.order();
       var0.order(ByteOrder.BIG_ENDIAN);
-      if (var0.getLong(0) != -8552249625308161526L) {
+      if (var0.limit() < 16) {
+         throw new IOException("PNG header missing");
+      } else if (var0.getLong(0) != -8552249625308161526L) {
          throw new IOException("Bad PNG Signature");
       } else if (var0.getInt(8) != 13) {
          throw new IOException("Bad length for IHDR chunk!");

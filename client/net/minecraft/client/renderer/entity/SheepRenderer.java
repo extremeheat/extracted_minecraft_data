@@ -7,11 +7,11 @@ import net.minecraft.client.renderer.entity.layers.SheepWoolUndercoatLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 
 public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, SheepModel> {
-   private static final ResourceLocation SHEEP_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/sheep/sheep.png");
+   private static final Identifier SHEEP_LOCATION = Identifier.withDefaultNamespace("textures/entity/sheep/sheep.png");
 
    public SheepRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SheepModel(var1.bakeLayer(ModelLayers.SHEEP)), new SheepModel(var1.bakeLayer(ModelLayers.SHEEP_BABY)), 0.7F);
@@ -19,7 +19,7 @@ public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, S
       this.addLayer(new SheepWoolLayer(this, var1.getModelSet()));
    }
 
-   public ResourceLocation getTextureLocation(SheepRenderState var1) {
+   public Identifier getTextureLocation(SheepRenderState var1) {
       return SHEEP_LOCATION;
    }
 
@@ -37,7 +37,7 @@ public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, S
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SheepRenderState)var1);
    }
 

@@ -103,7 +103,7 @@ public class DisplayInfo {
       var1.writeInt(var2);
       Optional var10000 = this.background.map(ClientAsset::id);
       Objects.requireNonNull(var1);
-      var10000.ifPresent(var1::writeResourceLocation);
+      var10000.ifPresent(var1::writeIdentifier);
       var1.writeFloat(this.x);
       var1.writeFloat(this.y);
    }
@@ -114,7 +114,7 @@ public class DisplayInfo {
       ItemStack var3 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
       AdvancementType var4 = (AdvancementType)var0.readEnum(AdvancementType.class);
       int var5 = var0.readInt();
-      Optional var6 = (var5 & 1) != 0 ? Optional.of(new ClientAsset.ResourceTexture(var0.readResourceLocation())) : Optional.empty();
+      Optional var6 = (var5 & 1) != 0 ? Optional.of(new ClientAsset.ResourceTexture(var0.readIdentifier())) : Optional.empty();
       boolean var7 = (var5 & 2) != 0;
       boolean var8 = (var5 & 4) != 0;
       DisplayInfo var9 = new DisplayInfo(var3, var1, var2, var6, var4, var7, false, var8);

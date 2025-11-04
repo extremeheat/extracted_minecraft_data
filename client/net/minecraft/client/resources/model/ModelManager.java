@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
@@ -37,10 +36,11 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.level.block.Block;
@@ -49,10 +49,11 @@ import net.minecraft.world.level.material.FluidState;
 import org.slf4j.Logger;
 
 public class ModelManager implements PreparableReloadListener {
+   public static final Identifier BLOCK_OR_ITEM = Identifier.withDefaultNamespace("block_or_item");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter MODEL_LISTER = FileToIdConverter.json("models");
-   private Map<ResourceLocation, ItemModel> bakedItemStackModels = Map.of();
-   private Map<ResourceLocation, ClientItem.Properties> itemProperties = Map.of();
+   private Map<Identifier, ItemModel> bakedItemStackModels = Map.of();
+   private Map<Identifier, ClientItem.Properties> itemProperties = Map.of();
    private final AtlasManager atlasManager;
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final BlockModelShaper blockModelShaper;
@@ -77,11 +78,11 @@ public class ModelManager implements PreparableReloadListener {
       return this.missingModels.block();
    }
 
-   public ItemModel getItemModel(ResourceLocation var1) {
+   public ItemModel getItemModel(Identifier var1) {
       return (ItemModel)this.bakedItemStackModels.getOrDefault(var1, this.missingModels.item());
    }
 
-   public ClientItem.Properties getItemProperties(ResourceLocation var1) {
+   public ClientItem.Properties getItemProperties(Identifier var1) {
       return (ClientItem.Properties)this.itemProperties.getOrDefault(var1, ClientItem.Properties.DEFAULT);
    }
 
@@ -98,30 +99,33 @@ public class ModelManager implements PreparableReloadListener {
       CompletableFuture var10 = ClientItemInfoLoader.scheduleLoad(var5, var2);
       CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var3x) -> discoverModelDependencies((Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ClientItemInfoLoader.LoadedClientInfos)var10.join()), var2);
       CompletableFuture var12 = var9.thenApplyAsync((var1x) -> buildModelGroups(this.blockColors, var1x), var2);
-      CompletableFuture var13 = ((AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH)).get(AtlasIds.BLOCKS);
-      CompletableFuture var10000 = CompletableFuture.allOf(var13, var11, var12, var9, var10, var6, var7, var8).thenComposeAsync((var10x) -> {
-         SpriteLoader.Preparations var11x = (SpriteLoader.Preparations)var13.join();
-         ResolvedModels var12x = (ResolvedModels)var11.join();
-         Object2IntMap var13x = (Object2IntMap)var12.join();
-         Sets.SetView var14 = Sets.difference(((Map)var8.join()).keySet(), var12x.models.keySet());
-         if (!var14.isEmpty()) {
-            LOGGER.debug("Unreferenced models: \n{}", var14.stream().sorted().map((var0) -> "\t" + String.valueOf(var0) + "\n").collect(Collectors.joining()));
+      AtlasManager.PendingStitchResults var13 = (AtlasManager.PendingStitchResults)var1.get(AtlasManager.PENDING_STITCH);
+      CompletableFuture var14 = var13.get(AtlasIds.BLOCKS);
+      CompletableFuture var15 = var13.get(AtlasIds.ITEMS);
+      CompletableFuture var10000 = CompletableFuture.allOf(var14, var15, var11, var12, var9, var10, var6, var7, var8).thenComposeAsync((var11x) -> {
+         SpriteLoader.Preparations var12x = (SpriteLoader.Preparations)var14.join();
+         SpriteLoader.Preparations var13 = (SpriteLoader.Preparations)var15.join();
+         ResolvedModels var14x = (ResolvedModels)var11.join();
+         Object2IntMap var15x = (Object2IntMap)var12.join();
+         Sets.SetView var16 = Sets.difference(((Map)var8.join()).keySet(), var14x.models.keySet());
+         if (!var16.isEmpty()) {
+            LOGGER.debug("Unreferenced models: \n{}", var16.stream().sorted().map((var0) -> "\t" + String.valueOf(var0) + "\n").collect(Collectors.joining()));
          }
 
-         ModelBakery var15 = new ModelBakery((EntityModelSet)var6.join(), this.atlasManager, this.playerSkinRenderCache, ((BlockStateModelLoader.LoadedModels)var9.join()).models(), ((ClientItemInfoLoader.LoadedClientInfos)var10.join()).contents(), var12x.models(), var12x.missing());
-         return loadModels(var11x, var15, var13x, (EntityModelSet)var6.join(), (SpecialBlockModelRenderer)var7.join(), var2);
+         ModelBakery var17 = new ModelBakery((EntityModelSet)var6.join(), this.atlasManager, this.playerSkinRenderCache, ((BlockStateModelLoader.LoadedModels)var9.join()).models(), ((ClientItemInfoLoader.LoadedClientInfos)var10.join()).contents(), var14x.models(), var14x.missing());
+         return loadModels(var12x, var13, var17, var15x, (EntityModelSet)var6.join(), (SpecialBlockModelRenderer)var7.join(), var2);
       }, var2);
       Objects.requireNonNull(var3);
       return var10000.thenCompose(var3::wait).thenAcceptAsync(this::apply, var4);
    }
 
-   private static CompletableFuture<Map<ResourceLocation, UnbakedModel>> loadBlockModels(ResourceManager var0, Executor var1) {
+   private static CompletableFuture<Map<Identifier, UnbakedModel>> loadBlockModels(ResourceManager var0, Executor var1) {
       return CompletableFuture.supplyAsync(() -> MODEL_LISTER.listMatchingResources(var0), var1).thenCompose((var1x) -> {
          ArrayList var2 = new ArrayList(var1x.size());
 
          for(Map.Entry var4 : var1x.entrySet()) {
             var2.add(CompletableFuture.supplyAsync(() -> {
-               ResourceLocation var1 = MODEL_LISTER.fileToId((ResourceLocation)var4.getKey());
+               Identifier var1 = MODEL_LISTER.fileToId((Identifier)var4.getKey());
 
                try {
                   BufferedReader var2 = ((Resource)var4.getValue()).openAsReader();
@@ -157,7 +161,7 @@ public class ModelManager implements PreparableReloadListener {
       });
    }
 
-   private static ResolvedModels discoverModelDependencies(Map<ResourceLocation, UnbakedModel> var0, BlockStateModelLoader.LoadedModels var1, ClientItemInfoLoader.LoadedClientInfos var2) {
+   private static ResolvedModels discoverModelDependencies(Map<Identifier, UnbakedModel> var0, BlockStateModelLoader.LoadedModels var1, ClientItemInfoLoader.LoadedClientInfos var2) {
       try (Zone var3 = Profiler.get().zone("dependencies")) {
          ModelDiscovery var4 = new ModelDiscovery(var0, MissingBlockModel.missingModel());
          var4.addSpecialModel(ItemModelGenerator.GENERATED_ITEM_MODEL_ID, new ItemModelGenerator());
@@ -169,36 +173,48 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations var0, ModelBakery var1, Object2IntMap<BlockState> var2, EntityModelSet var3, SpecialBlockModelRenderer var4, Executor var5) {
-      final Multimap var6 = Multimaps.synchronizedMultimap(HashMultimap.create());
+   private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations var0, final SpriteLoader.Preparations var1, ModelBakery var2, Object2IntMap<BlockState> var3, EntityModelSet var4, SpecialBlockModelRenderer var5, Executor var6) {
       final Multimap var7 = Multimaps.synchronizedMultimap(HashMultimap.create());
-      return var1.bakeModels(new SpriteGetter() {
-         private final TextureAtlasSprite missingSprite = var0.missing();
+      final Multimap var8 = Multimaps.synchronizedMultimap(HashMultimap.create());
+      return var2.bakeModels(new SpriteGetter() {
+         private final TextureAtlasSprite blockMissing = var0.missing();
+         private final TextureAtlasSprite itemMissing = var1.missing();
 
-         public TextureAtlasSprite get(Material var1, ModelDebugName var2) {
-            if (var1.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS)) {
-               TextureAtlasSprite var3 = var0.getSprite(var1.texture());
-               if (var3 != null) {
-                  return var3;
+         public TextureAtlasSprite get(Material var1x, ModelDebugName var2) {
+            Identifier var3 = var1x.atlasLocation();
+            boolean var4 = var3.equals(ModelManager.BLOCK_OR_ITEM);
+            boolean var5 = var3.equals(TextureAtlas.LOCATION_ITEMS);
+            boolean var6 = var3.equals(TextureAtlas.LOCATION_BLOCKS);
+            if (var4 || var5) {
+               TextureAtlasSprite var7x = var1.getSprite(var1x.texture());
+               if (var7x != null) {
+                  return var7x;
                }
             }
 
-            var6.put(var2.debugName(), var1);
-            return this.missingSprite;
+            if (var4 || var6) {
+               TextureAtlasSprite var8x = var0.getSprite(var1x.texture());
+               if (var8x != null) {
+                  return var8x;
+               }
+            }
+
+            var7.put(var2.debugName(), var1x);
+            return var5 ? this.itemMissing : this.blockMissing;
          }
 
-         public TextureAtlasSprite reportMissingReference(String var1, ModelDebugName var2) {
-            var7.put(var2.debugName(), var1);
-            return this.missingSprite;
+         public TextureAtlasSprite reportMissingReference(String var1x, ModelDebugName var2) {
+            var8.put(var2.debugName(), var1x);
+            return this.blockMissing;
          }
-      }, var5).thenApply((var5x) -> {
-         var6.asMap().forEach((var0, var1) -> LOGGER.warn("Missing textures in model {}:\n{}", var0, var1.stream().sorted(Material.COMPARATOR).map((var0x) -> {
+      }, var6).thenApply((var5x) -> {
+         var7.asMap().forEach((var0, var1) -> LOGGER.warn("Missing textures in model {}:\n{}", var0, var1.stream().sorted(Material.COMPARATOR).map((var0x) -> {
                String var10000 = String.valueOf(var0x.atlasLocation());
                return "    " + var10000 + ":" + String.valueOf(var0x.texture());
             }).collect(Collectors.joining("\n"))));
-         var7.asMap().forEach((var0, var1) -> LOGGER.warn("Missing texture references in model {}:\n{}", var0, var1.stream().sorted().map((var0x) -> "    " + var0x).collect(Collectors.joining("\n"))));
-         Map var6x = createBlockStateToModelDispatch(var5x.blockStateModels(), var5x.missingModels().block());
-         return new ReloadState(var5x, var2, var6x, var3, var4);
+         var8.asMap().forEach((var0, var1) -> LOGGER.warn("Missing texture references in model {}:\n{}", var0, var1.stream().sorted().map((var0x) -> "    " + var0x).collect(Collectors.joining("\n"))));
+         Map var6 = createBlockStateToModelDispatch(var5x.blockStateModels(), var5x.missingModels().block());
+         return new ReloadState(var5x, var3, var6, var4, var5);
       });
    }
 
@@ -262,10 +278,10 @@ public class ModelManager implements PreparableReloadListener {
       return () -> this.entityModelSet;
    }
 
-   static record ResolvedModels(ResolvedModel missing, Map<ResourceLocation, ResolvedModel> models) {
-      final Map<ResourceLocation, ResolvedModel> models;
+   static record ResolvedModels(ResolvedModel missing, Map<Identifier, ResolvedModel> models) {
+      final Map<Identifier, ResolvedModel> models;
 
-      ResolvedModels(ResolvedModel var1, Map<ResourceLocation, ResolvedModel> var2) {
+      ResolvedModels(ResolvedModel var1, Map<Identifier, ResolvedModel> var2) {
          super();
          this.missing = var1;
          this.models = var2;

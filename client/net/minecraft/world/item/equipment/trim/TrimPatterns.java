@@ -1,11 +1,11 @@
 package net.minecraft.world.item.equipment.trim;
 
-import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 
 public class TrimPatterns {
    public static final ResourceKey<TrimPattern> SENTRY = registryKey("sentry");
@@ -53,15 +53,15 @@ public class TrimPatterns {
    }
 
    public static void register(BootstrapContext<TrimPattern> var0, ResourceKey<TrimPattern> var1) {
-      TrimPattern var2 = new TrimPattern(defaultAssetId(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var1.location())), false);
+      TrimPattern var2 = new TrimPattern(defaultAssetId(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var1.identifier())), false);
       var0.register(var1, var2);
    }
 
    private static ResourceKey<TrimPattern> registryKey(String var0) {
-      return ResourceKey.create(Registries.TRIM_PATTERN, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.TRIM_PATTERN, Identifier.withDefaultNamespace(var0));
    }
 
-   public static ResourceLocation defaultAssetId(ResourceKey<TrimPattern> var0) {
-      return var0.location();
+   public static Identifier defaultAssetId(ResourceKey<TrimPattern> var0) {
+      return var0.identifier();
    }
 }

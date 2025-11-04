@@ -6,13 +6,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntrySystemSpecs implements DebugScreenEntry {
-   private static final ResourceLocation GROUP = ResourceLocation.withDefaultNamespace("system");
+   private static final Identifier GROUP = Identifier.withDefaultNamespace("system");
 
    public DebugEntrySystemSpecs() {
       super();

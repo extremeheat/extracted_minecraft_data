@@ -28,6 +28,7 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.debug.DebugHiveInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -163,7 +164,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    private static boolean releaseOccupant(Level var0, BlockPos var1, BlockState var2, Occupant var3, @Nullable List<Entity> var4, BeeReleaseStatus var5, @Nullable BlockPos var6) {
-      if (Bee.isNightOrRaining(var0) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
+      if ((Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.BEES_STAY_IN_HIVE, var1) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
          return false;
       } else {
          Direction var7 = (Direction)var2.getValue(BeehiveBlock.FACING);

@@ -1,7 +1,7 @@
 package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageType;
 
 public interface DamageTypeTags {
@@ -41,6 +41,6 @@ public interface DamageTypeTags {
    TagKey<DamageType> IS_MACE_SMASH = create("mace_smash");
 
    private static TagKey<DamageType> create(String var0) {
-      return TagKey.<DamageType>create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<DamageType>create(Registries.DAMAGE_TYPE, Identifier.withDefaultNamespace(var0));
    }
 }

@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import org.jspecify.annotations.Nullable;
 
 public interface StringRepresentable {

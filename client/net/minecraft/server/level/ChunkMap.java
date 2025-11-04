@@ -49,7 +49,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -66,6 +65,7 @@ import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.TriState;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -875,8 +875,8 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
 
    public static CompoundTag getChunkDataFixContextTag(ResourceKey<Level> var0, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var1) {
       CompoundTag var2 = new CompoundTag();
-      var2.putString("dimension", var0.location().toString());
-      var1.ifPresent((var1x) -> var2.putString("generator", var1x.location().toString()));
+      var2.putString("dimension", var0.identifier().toString());
+      var1.ifPresent((var1x) -> var2.putString("generator", var1x.identifier().toString()));
       return var2;
    }
 
@@ -1170,7 +1170,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
             var4.lastSectionPos = var6;
          }
 
-         if (var7 || this.distanceManager.inEntityTickingRange(var6.chunk().toLong())) {
+         if (var7 || var4.entity.needsSync || this.distanceManager.inEntityTickingRange(var6.chunk().toLong())) {
             var4.serverEntity.sendChanges();
          }
       }

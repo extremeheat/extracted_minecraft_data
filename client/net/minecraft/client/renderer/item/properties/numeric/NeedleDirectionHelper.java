@@ -23,7 +23,7 @@ public abstract class NeedleDirectionHelper {
       if (var3 == null) {
          return 0.0F;
       } else {
-         if (var2 == null && var3 != null) {
+         if (var2 == null) {
             Level var6 = ((ItemOwner)var3).level();
             if (var6 instanceof ClientLevel) {
                ClientLevel var5 = (ClientLevel)var6;

@@ -17,7 +17,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jspecify.annotations.Nullable;

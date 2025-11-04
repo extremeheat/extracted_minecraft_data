@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
@@ -21,8 +21,8 @@ public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
    }
 
    static {
-      OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("overworld"));
-      NETHER = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("the_nether"));
-      END = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("the_end"));
+      OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, Identifier.withDefaultNamespace("overworld"));
+      NETHER = ResourceKey.create(Registries.LEVEL_STEM, Identifier.withDefaultNamespace("the_nether"));
+      END = ResourceKey.create(Registries.LEVEL_STEM, Identifier.withDefaultNamespace("the_end"));
    }
 }

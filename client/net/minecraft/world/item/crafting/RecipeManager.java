@@ -79,7 +79,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       this.recipes.values().forEach((var3x) -> {
          Recipe var4 = var3x.value();
          if (!var4.isSpecial() && var4.placementInfo().isImpossibleToPlace()) {
-            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().location());
+            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().identifier());
          } else {
             var3.forEach((var1x) -> var1x.accept(var4));
             if (var4 instanceof StonecutterRecipe) {

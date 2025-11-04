@@ -1,9 +1,9 @@
 package net.minecraft.network.protocol;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record PacketType<T extends Packet<?>>(PacketFlow flow, ResourceLocation id) {
-   public PacketType(PacketFlow var1, ResourceLocation var2) {
+public record PacketType<T extends Packet<?>>(PacketFlow flow, Identifier id) {
+   public PacketType(PacketFlow var1, Identifier var2) {
       super();
       this.flow = var1;
       this.id = var2;

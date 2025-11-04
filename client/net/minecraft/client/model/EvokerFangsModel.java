@@ -42,7 +42,7 @@ public class EvokerFangsModel extends EntityModel<EvokerFangsRenderState> {
       this.upperJaw.zRot = 3.1415927F - var3 * 0.35F * 3.1415927F;
       this.lowerJaw.zRot = 3.1415927F + var3 * 0.35F * 3.1415927F;
       ModelPart var10000 = this.base;
-      var10000.y -= (var2 + Mth.sin(var2 * 2.7F)) * 7.2F;
+      var10000.y -= (var2 + Mth.sin((double)(var2 * 2.7F))) * 7.2F;
       float var4 = 1.0F;
       if (var2 > 0.9F) {
          var4 *= (1.0F - var2) / 0.1F;

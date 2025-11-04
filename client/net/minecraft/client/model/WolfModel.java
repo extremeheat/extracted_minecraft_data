@@ -68,7 +68,7 @@ public class WolfModel extends EntityModel<WolfRenderState> {
       if (var1.isAngry) {
          this.tail.yRot = 0.0F;
       } else {
-         this.tail.yRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
+         this.tail.yRot = Mth.cos((double)(var2 * 0.6662F)) * 1.4F * var3;
       }
 
       if (var1.isSitting) {
@@ -107,10 +107,10 @@ public class WolfModel extends EntityModel<WolfRenderState> {
          var10000 = this.leftFrontLeg;
          var10000.y += 1.0F * var4;
       } else {
-         this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-         this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-         this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-         this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
+         this.rightHindLeg.xRot = Mth.cos((double)(var2 * 0.6662F)) * 1.4F * var3;
+         this.leftHindLeg.xRot = Mth.cos((double)(var2 * 0.6662F + 3.1415927F)) * 1.4F * var3;
+         this.rightFrontLeg.xRot = Mth.cos((double)(var2 * 0.6662F + 3.1415927F)) * 1.4F * var3;
+         this.leftFrontLeg.xRot = Mth.cos((double)(var2 * 0.6662F)) * 1.4F * var3;
       }
 
       this.realHead.zRot = var1.headRollAngle + var1.getBodyRollAngle(0.0F);

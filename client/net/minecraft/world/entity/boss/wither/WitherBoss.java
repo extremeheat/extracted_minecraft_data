@@ -338,7 +338,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
          return this.getX();
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
-         float var3 = Mth.cos(var2);
+         float var3 = Mth.cos((double)var2);
          return this.getX() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }
@@ -353,7 +353,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
          return this.getZ();
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
-         float var3 = Mth.sin(var2);
+         float var3 = Mth.sin((double)var2);
          return this.getZ() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }

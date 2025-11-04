@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 import org.jspecify.annotations.Nullable;
@@ -41,7 +41,7 @@ public class SimpleEquipmentLayer<S extends LivingEntityRenderState, RM extends 
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
       if (var8 != null && !var8.assetId().isEmpty() && (!var4.isBaby || this.babyModel != null)) {
          EntityModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, (ResourceLocation)null, var4.outlineColor, this.order);
+         this.equipmentRenderer.renderLayers(this.layer, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, (Identifier)null, var4.outlineColor, this.order);
       }
    }
 }

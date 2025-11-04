@@ -109,7 +109,7 @@ public class Blaze extends Monster {
       if (var2 != null && var2.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(var2)) {
          Vec3 var3 = this.getDeltaMovement();
          this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - var3.y) * 0.30000001192092896, 0.0));
-         this.hasImpulse = true;
+         this.needsSync = true;
       }
 
       super.customServerAiStep(var1);

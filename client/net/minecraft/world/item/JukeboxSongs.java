@@ -1,14 +1,14 @@
 package net.minecraft.world.item;
 
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Util;
 
 public interface JukeboxSongs {
    ResourceKey<JukeboxSong> THIRTEEN = create("13");
@@ -34,11 +34,11 @@ public interface JukeboxSongs {
    ResourceKey<JukeboxSong> LAVA_CHICKEN = create("lava_chicken");
 
    private static ResourceKey<JukeboxSong> create(String var0) {
-      return ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.JUKEBOX_SONG, Identifier.withDefaultNamespace(var0));
    }
 
    private static void register(BootstrapContext<JukeboxSong> var0, ResourceKey<JukeboxSong> var1, Holder.Reference<SoundEvent> var2, int var3, int var4) {
-      var0.register(var1, new JukeboxSong(var2, Component.translatable(Util.makeDescriptionId("jukebox_song", var1.location())), (float)var3, var4));
+      var0.register(var1, new JukeboxSong(var2, Component.translatable(Util.makeDescriptionId("jukebox_song", var1.identifier())), (float)var3, var4));
    }
 
    static void bootstrap(BootstrapContext<JukeboxSong> var0) {

@@ -21,7 +21,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
@@ -116,7 +116,7 @@ public class CreateBuffetWorldScreen extends Screen {
          public Entry(final Holder.Reference<Biome> var2) {
             super();
             this.biome = var2;
-            ResourceLocation var3 = var2.key().location();
+            Identifier var3 = var2.key().identifier();
             String var4 = var3.toLanguageKey("biome");
             if (Language.getInstance().has(var4)) {
                this.name = Component.translatable(var4);

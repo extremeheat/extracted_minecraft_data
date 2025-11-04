@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class AttributeSupplier {
@@ -32,7 +32,7 @@ public class AttributeSupplier {
       return this.getAttributeInstance(var1).getBaseValue();
    }
 
-   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
+   public double getModifierValue(Holder<Attribute> var1, Identifier var2) {
       AttributeModifier var3 = this.getAttributeInstance(var1).getModifier(var2);
       if (var3 == null) {
          String var10002 = String.valueOf(var2);
@@ -61,7 +61,7 @@ public class AttributeSupplier {
       return this.instances.containsKey(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
+   public boolean hasModifier(Holder<Attribute> var1, Identifier var2) {
       AttributeInstance var3 = (AttributeInstance)this.instances.get(var1);
       return var3 != null && var3.getModifier(var2) != null;
    }

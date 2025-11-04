@@ -86,7 +86,7 @@ public final class ProjectileUtil {
       }
 
       AABB var9 = AABB.ofSize(var2, (double)var5, (double)var5, (double)var5).expandTowards(var4.subtract(var2)).inflate(1.0);
-      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5, true);
+      Collection var10 = getManyEntityHitResult(var7, var0, var2, var4, var9, var3, var5, var6, true);
       return !var10.isEmpty() ? Either.right(var10) : Either.left(var8);
    }
 
@@ -164,23 +164,40 @@ public final class ProjectileUtil {
    }
 
    public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, boolean var6) {
-      return getManyEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1), var6);
+      return getManyEntityHitResult(var0, var1, var2, var3, var4, var5, computeMargin(var1), ClipContext.Block.COLLIDER, var6);
    }
 
-   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6, boolean var7) {
-      ArrayList var8 = new ArrayList();
+   public static Collection<EntityHitResult> getManyEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6, ClipContext.Block var7, boolean var8) {
+      ArrayList var9 = new ArrayList();
 
-      for(Entity var10 : var0.getEntities(var1, var4, var5)) {
-         AABB var11 = var10.getBoundingBox().inflate((double)var6);
-         if (var7 && var11.contains(var2)) {
-            var8.add(new EntityHitResult(var10, var2));
+      for(Entity var11 : var0.getEntities(var1, var4, var5)) {
+         AABB var12 = var11.getBoundingBox();
+         if (var8 && var12.contains(var2)) {
+            var9.add(new EntityHitResult(var11, var2));
          } else {
-            Optional var12 = var11.clip(var2, var3);
-            var12.ifPresent((var2x) -> var8.add(new EntityHitResult(var10, var2x)));
+            Optional var13 = var12.clip(var2, var3);
+            if (var13.isPresent()) {
+               var9.add(new EntityHitResult(var11, (Vec3)var13.get()));
+            } else if (!((double)var6 <= 0.0)) {
+               Optional var14 = var12.inflate((double)var6).clip(var2, var3);
+               if (!var14.isEmpty()) {
+                  Vec3 var15 = (Vec3)var14.get();
+                  Vec3 var16 = var12.getCenter();
+                  BlockHitResult var17 = var0.clipIncludingBorder(new ClipContext(var15, var16, var7, ClipContext.Fluid.NONE, var1));
+                  if (var17.getType() != HitResult.Type.MISS) {
+                     var16 = var17.getLocation();
+                  }
+
+                  Optional var18 = var11.getBoundingBox().clip(var15, var16);
+                  if (var18.isPresent()) {
+                     var9.add(new EntityHitResult(var11, (Vec3)var18.get()));
+                  }
+               }
+            }
          }
       }
 
-      return var8;
+      return var9;
    }
 
    public static void rotateTowardsMovement(Entity var0, float var1) {

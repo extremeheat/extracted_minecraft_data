@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.Util;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
 

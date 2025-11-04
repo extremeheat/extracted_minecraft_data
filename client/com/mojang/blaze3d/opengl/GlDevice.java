@@ -25,11 +25,12 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.client.renderer.ShaderManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
@@ -100,9 +101,9 @@ public class GlDevice implements GpuDevice {
       return this.maxSupportedAnisotropy;
    }
 
-   public GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5) {
+   public GpuSampler createSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5, OptionalDouble var6) {
       if (var5 >= 1 && var5 <= this.maxSupportedAnisotropy) {
-         return new GlSampler(var1, var2, var3, var4, var5);
+         return new GlSampler(var1, var2, var3, var4, var5, var6);
       } else {
          int var10002 = this.getMaxSupportedAnisotropy();
          throw new IllegalArgumentException("maxAnisotropy out of range; must be >= 1 and <= " + var10002 + ", but was " + var5);
@@ -338,7 +339,7 @@ public class GlDevice implements GpuDevice {
       return (GlRenderPipeline)this.pipelineCache.computeIfAbsent(var1, (var1x) -> this.compilePipeline(var1x, this.defaultShaderSource));
    }
 
-   protected GlShaderModule getOrCompileShader(ResourceLocation var1, ShaderType var2, ShaderDefines var3, ShaderSource var4) {
+   protected GlShaderModule getOrCompileShader(Identifier var1, ShaderType var2, ShaderDefines var3, ShaderSource var4) {
       ShaderCompilationKey var5 = new ShaderCompilationKey(var1, var2, var3);
       return (GlShaderModule)this.shaderCache.computeIfAbsent(var5, (var2x) -> this.compileShader(var2x, var4));
    }
@@ -409,12 +410,12 @@ public class GlDevice implements GpuDevice {
       return this.precompilePipeline(var1, var2);
    }
 
-   static record ShaderCompilationKey(ResourceLocation id, ShaderType type, ShaderDefines defines) {
-      final ResourceLocation id;
+   static record ShaderCompilationKey(Identifier id, ShaderType type, ShaderDefines defines) {
+      final Identifier id;
       final ShaderType type;
       final ShaderDefines defines;
 
-      ShaderCompilationKey(ResourceLocation var1, ShaderType var2, ShaderDefines var3) {
+      ShaderCompilationKey(Identifier var1, ShaderType var2, ShaderDefines var3) {
          super();
          this.id = var1;
          this.type = var2;

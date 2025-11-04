@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
@@ -175,6 +176,8 @@ public class SectionRenderDispatcher {
       final BlockPos.MutableBlockPos renderOrigin;
       private boolean playerChanged;
       private long uploadedTime;
+      private long fadeDuration;
+      private boolean wasPreviouslyEmpty;
 
       public RenderSection(final int var2, final long var3) {
          super();
@@ -186,9 +189,21 @@ public class SectionRenderDispatcher {
          this.setSectionNode(var3);
       }
 
-      public float getVisibility(long var1, long var3) {
-         long var5 = var1 - this.uploadedTime;
-         return var5 >= var3 ? 1.0F : (float)var5 / (float)var3;
+      public float getVisibility(long var1) {
+         long var3 = var1 - this.uploadedTime;
+         return var3 >= this.fadeDuration ? 1.0F : (float)var3 / (float)this.fadeDuration;
+      }
+
+      public void setFadeDuration(long var1) {
+         this.fadeDuration = var1;
+      }
+
+      public void setWasPreviouslyEmpty(boolean var1) {
+         this.wasPreviouslyEmpty = var1;
+      }
+
+      public boolean wasPreviouslyEmpty() {
+         return this.wasPreviouslyEmpty;
       }
 
       private boolean doesChunkExistAt(long var1) {
@@ -216,7 +231,7 @@ public class SectionRenderDispatcher {
                   }
 
                   if (this.uploadedTime == 0L) {
-                     this.uploadedTime = System.currentTimeMillis();
+                     this.uploadedTime = Util.getMillis();
                   }
 
                }), SectionRenderDispatcher.this.mainThreadUploadExecutor);
@@ -257,6 +272,7 @@ public class SectionRenderDispatcher {
          ((SectionMesh)this.sectionMesh.getAndSet(CompiledSectionMesh.UNCOMPILED)).close();
          this.dirty = true;
          this.uploadedTime = 0L;
+         this.wasPreviouslyEmpty = false;
       }
 
       public BlockPos getRenderOrigin() {

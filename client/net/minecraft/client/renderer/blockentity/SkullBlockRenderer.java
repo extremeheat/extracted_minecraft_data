@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.SkullModelBase;
@@ -22,7 +21,8 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.SkullBlock;
@@ -35,13 +35,13 @@ import org.jspecify.annotations.Nullable;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
-   private static final Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put(SkullBlock.Types.SKELETON, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
-      var0.put(SkullBlock.Types.WITHER_SKELETON, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
-      var0.put(SkullBlock.Types.ZOMBIE, ResourceLocation.withDefaultNamespace("textures/entity/zombie/zombie.png"));
-      var0.put(SkullBlock.Types.CREEPER, ResourceLocation.withDefaultNamespace("textures/entity/creeper/creeper.png"));
-      var0.put(SkullBlock.Types.DRAGON, ResourceLocation.withDefaultNamespace("textures/entity/enderdragon/dragon.png"));
-      var0.put(SkullBlock.Types.PIGLIN, ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin.png"));
+   private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+      var0.put(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
+      var0.put(SkullBlock.Types.WITHER_SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
+      var0.put(SkullBlock.Types.ZOMBIE, Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png"));
+      var0.put(SkullBlock.Types.CREEPER, Identifier.withDefaultNamespace("textures/entity/creeper/creeper.png"));
+      var0.put(SkullBlock.Types.DRAGON, Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png"));
+      var0.put(SkullBlock.Types.PIGLIN, Identifier.withDefaultNamespace("textures/entity/piglin/piglin.png"));
       var0.put(SkullBlock.Types.PLAYER, DefaultPlayerSkin.getDefaultTexture());
    });
    private final PlayerSkinRenderCache playerSkinRenderCache;
@@ -120,14 +120,14 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
          }
       }
 
-      return getSkullRenderType(var1, (ResourceLocation)null);
+      return getSkullRenderType(var1, (Identifier)null);
    }
 
-   public static RenderType getSkullRenderType(SkullBlock.Type var0, @Nullable ResourceLocation var1) {
-      return RenderTypes.entityCutoutNoCullZOffset(var1 != null ? var1 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
+   public static RenderType getSkullRenderType(SkullBlock.Type var0, @Nullable Identifier var1) {
+      return RenderTypes.entityCutoutNoCullZOffset(var1 != null ? var1 : (Identifier)SKIN_BY_TYPE.get(var0));
    }
 
-   public static RenderType getPlayerSkinRenderType(ResourceLocation var0) {
+   public static RenderType getPlayerSkinRenderType(Identifier var0) {
       return RenderTypes.entityTranslucent(var0);
    }
 

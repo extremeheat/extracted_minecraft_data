@@ -40,7 +40,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -63,8 +62,8 @@ import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.players.PlayerList;
@@ -79,6 +78,7 @@ import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.LevelDebugSynchronizers;
@@ -91,6 +91,9 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.RandomSequences;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -121,6 +124,7 @@ import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.MoonPhase;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.StructureManager;
@@ -144,6 +148,7 @@ import net.minecraft.world.level.chunk.storage.EntityStorage;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.entity.EntityTickList;
@@ -201,6 +206,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private final ServerLevelData serverLevelData;
    final EntityTickList entityTickList = new EntityTickList();
    private final ServerWaypointManager waypointManager;
+   private final EnvironmentAttributeSystem environmentAttributes;
    private final PersistentEntitySectionManager<Entity> entityManager;
    private final GameEventDispatcher gameEventDispatcher;
    public boolean noSave;
@@ -244,7 +250,6 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.chunkSource = new ServerChunkCache(this, var3, var15, var10006, var2, var13, var10009, var10010, var14, var10012::updateChunkStatus, () -> var1.overworld().getDataStorage());
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
-      this.updateSkyBrightness();
       this.prepareWeather();
       this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.getType(this.dimensionTypeRegistration()));
       if (!var1.isSingleplayer()) {
@@ -264,6 +269,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.gameEventDispatcher = new GameEventDispatcher(this);
       this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var12, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.TYPE));
       this.waypointManager = new ServerWaypointManager();
+      this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
+      this.updateSkyBrightness();
    }
 
    /** @deprecated */
@@ -287,6 +294,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public StructureManager structureManager() {
       return this.structureManager;
+   }
+
+   public EnvironmentAttributeSystem environmentAttributes() {
+      return this.environmentAttributes;
    }
 
    public void tick(BooleanSupplier var1) {
@@ -401,6 +412,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       this.debugSynchronizers.tick(this.server.debugSubscribers());
       var2.pop();
+      this.environmentAttributes().invalidateTickCache();
    }
 
    public boolean shouldTickBlocksAt(long var1) {
@@ -627,15 +639,20 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       ChunkAccess var5 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false);
       if (var5 != null) {
          var2 = var5.getInhabitedTime();
-         var4 = this.getMoonBrightness();
+         var4 = this.getMoonBrightness(var1);
       }
 
       return new DifficultyInstance(this.getDifficulty(), this.getDayTime(), var2, var4);
    }
 
+   public float getMoonBrightness(BlockPos var1) {
+      MoonPhase var2 = (MoonPhase)this.environmentAttributes.getValue(EnvironmentAttributes.MOON_PHASE, var1);
+      return DimensionType.MOON_BRIGHTNESS_PER_PHASE[var2.index()];
+   }
+
    private void advanceWeatherCycle() {
       boolean var1 = this.isRaining();
-      if (this.dimensionType().hasSkyLight()) {
+      if (this.canHaveWeather()) {
          if ((Boolean)this.getGameRules().get(GameRules.ADVANCE_WEATHER)) {
             int var2 = this.serverLevelData.getClearWeatherTime();
             int var3 = this.serverLevelData.getThunderTime();
@@ -1719,7 +1736,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.server.fuelValues();
    }
 
-   public RandomSource getRandomSequence(ResourceLocation var1) {
+   public RandomSource getRandomSequence(Identifier var1) {
       return this.randomSequences.get(var1, this.getSeed());
    }
 
@@ -1779,6 +1796,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    // $FF: synthetic method
    public ChunkSource getChunkSource() {
       return this.getChunkSource();
+   }
+
+   // $FF: synthetic method
+   public EnvironmentAttributeReader environmentAttributes() {
+      return this.environmentAttributes();
    }
 
    // $FF: synthetic method

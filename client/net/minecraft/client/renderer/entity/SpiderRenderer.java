@@ -6,11 +6,11 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SpiderEyesLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Spider;
 
 public class SpiderRenderer<T extends Spider> extends MobRenderer<T, LivingEntityRenderState, SpiderModel> {
-   private static final ResourceLocation SPIDER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/spider/spider.png");
+   private static final Identifier SPIDER_LOCATION = Identifier.withDefaultNamespace("textures/entity/spider/spider.png");
 
    public SpiderRenderer(EntityRendererProvider.Context var1) {
       this(var1, ModelLayers.SPIDER);
@@ -25,7 +25,7 @@ public class SpiderRenderer<T extends Spider> extends MobRenderer<T, LivingEntit
       return 180.0F;
    }
 
-   public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(LivingEntityRenderState var1) {
       return SPIDER_LOCATION;
    }
 

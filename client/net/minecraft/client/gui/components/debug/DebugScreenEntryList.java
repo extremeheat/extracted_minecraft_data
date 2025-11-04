@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import org.apache.commons.io.FileUtils;
@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 public class DebugScreenEntryList {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_DEBUG_PROFILE_VERSION = 4649;
-   private Map<ResourceLocation, DebugScreenEntryStatus> allStatuses;
-   private final List<ResourceLocation> currentlyEnabled = new ArrayList();
+   private Map<Identifier, DebugScreenEntryStatus> allStatuses;
+   private final List<Identifier> currentlyEnabled = new ArrayList();
    private boolean isOverlayVisible = false;
    private @Nullable DebugScreenProfile profile;
    private final File debugProfileFile;
@@ -83,23 +83,23 @@ public class DebugScreenEntryList {
       this.allStatuses = new HashMap((Map)DebugScreenEntries.PROFILES.get(DebugScreenProfile.DEFAULT));
    }
 
-   public DebugScreenEntryStatus getStatus(ResourceLocation var1) {
+   public DebugScreenEntryStatus getStatus(Identifier var1) {
       DebugScreenEntryStatus var2 = (DebugScreenEntryStatus)this.allStatuses.get(var1);
       return var2 == null ? DebugScreenEntryStatus.NEVER : var2;
    }
 
-   public boolean isCurrentlyEnabled(ResourceLocation var1) {
+   public boolean isCurrentlyEnabled(Identifier var1) {
       return this.currentlyEnabled.contains(var1);
    }
 
-   public void setStatus(ResourceLocation var1, DebugScreenEntryStatus var2) {
+   public void setStatus(Identifier var1, DebugScreenEntryStatus var2) {
       this.profile = null;
       this.allStatuses.put(var1, var2);
       this.rebuildCurrentList();
       this.save();
    }
 
-   public boolean toggleStatus(ResourceLocation var1) {
+   public boolean toggleStatus(Identifier var1) {
       DebugScreenEntryStatus var2 = (DebugScreenEntryStatus)this.allStatuses.get(var1);
       byte var4 = 0;
       //$FF: var4->value
@@ -133,7 +133,7 @@ public class DebugScreenEntryList {
       }
    }
 
-   public Collection<ResourceLocation> getCurrentlyEnabled() {
+   public Collection<Identifier> getCurrentlyEnabled() {
       return this.currentlyEnabled;
    }
 
@@ -159,14 +159,14 @@ public class DebugScreenEntryList {
 
       for(Map.Entry var3 : this.allStatuses.entrySet()) {
          if (var3.getValue() == DebugScreenEntryStatus.ALWAYS_ON || this.isOverlayVisible && var3.getValue() == DebugScreenEntryStatus.IN_OVERLAY) {
-            DebugScreenEntry var4 = DebugScreenEntries.getEntry((ResourceLocation)var3.getKey());
+            DebugScreenEntry var4 = DebugScreenEntries.getEntry((Identifier)var3.getKey());
             if (var4 != null && var4.isAllowed(var1)) {
-               this.currentlyEnabled.add((ResourceLocation)var3.getKey());
+               this.currentlyEnabled.add((Identifier)var3.getKey());
             }
          }
       }
 
-      this.currentlyEnabled.sort(ResourceLocation::compareTo);
+      this.currentlyEnabled.sort(Identifier::compareTo);
       ++this.currentlyEnabledVersion;
    }
 
@@ -189,18 +189,18 @@ public class DebugScreenEntryList {
 
    }
 
-   static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<ResourceLocation, DebugScreenEntryStatus>> custom) {
-      private static final Codec<Map<ResourceLocation, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
+   static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<Identifier, DebugScreenEntryStatus>> custom) {
+      private static final Codec<Map<Identifier, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
       public static final Codec<SerializedOptions> CODEC;
 
-      SerializedOptions(Optional<DebugScreenProfile> var1, Optional<Map<ResourceLocation, DebugScreenEntryStatus>> var2) {
+      SerializedOptions(Optional<DebugScreenProfile> var1, Optional<Map<Identifier, DebugScreenEntryStatus>> var2) {
          super();
          this.profile = var1;
          this.custom = var2;
       }
 
       static {
-         CUSTOM_ENTRIES_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, DebugScreenEntryStatus.CODEC);
+         CUSTOM_ENTRIES_CODEC = Codec.unboundedMap(Identifier.CODEC, DebugScreenEntryStatus.CODEC);
          CODEC = RecordCodecBuilder.create((var0) -> var0.group(DebugScreenProfile.CODEC.optionalFieldOf("profile").forGetter(SerializedOptions::profile), CUSTOM_ENTRIES_CODEC.optionalFieldOf("custom").forGetter(SerializedOptions::custom)).apply(var0, SerializedOptions::new));
       }
    }

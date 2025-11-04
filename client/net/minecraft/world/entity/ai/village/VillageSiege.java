@@ -74,9 +74,9 @@ public class VillageSiege implements CustomSpawner {
             if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
                for(int var5 = 0; var5 < 10; ++var5) {
                   float var6 = var1.random.nextFloat() * 6.2831855F;
-                  this.spawnX = var4.getX() + Mth.floor(Mth.cos(var6) * 32.0F);
+                  this.spawnX = var4.getX() + Mth.floor(Mth.cos((double)var6) * 32.0F);
                   this.spawnY = var4.getY();
-                  this.spawnZ = var4.getZ() + Mth.floor(Mth.sin(var6) * 32.0F);
+                  this.spawnZ = var4.getZ() + Mth.floor(Mth.sin((double)var6) * 32.0F);
                   if (this.findRandomSpawnPos(var1, new BlockPos(this.spawnX, this.spawnY, this.spawnZ)) != null) {
                      this.nextSpawnTime = 0;
                      this.zombiesToSpawn = 20;

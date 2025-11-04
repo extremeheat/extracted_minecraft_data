@@ -8,13 +8,13 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StreamTagVisitor;
 import net.minecraft.util.ExceptionCollector;
+import net.minecraft.util.FileUtil;
 import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 

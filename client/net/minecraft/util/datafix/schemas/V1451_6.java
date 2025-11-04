@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1451_6 extends NamespacedSchema {
@@ -28,8 +28,8 @@ public class V1451_6 extends NamespacedSchema {
                return Pair.of("_special", var0);
             } else {
                try {
-                  ResourceLocation var2 = ResourceLocation.bySeparator(var0.substring(0, var1), '.');
-                  ResourceLocation var3 = ResourceLocation.bySeparator(var0.substring(var1 + 1), '.');
+                  Identifier var2 = Identifier.bySeparator(var0.substring(0, var1), '.');
+                  Identifier var3 = Identifier.bySeparator(var0.substring(var1 + 1), '.');
                   return Pair.of(var2.toString(), var3.toString());
                } catch (Exception var4) {
                   return Pair.of("_special", var0);
@@ -91,7 +91,7 @@ public class V1451_6 extends NamespacedSchema {
    }
 
    public static String packNamespacedWithDot(String var0) {
-      ResourceLocation var1 = ResourceLocation.tryParse(var0);
+      Identifier var1 = Identifier.tryParse(var0);
       return var1 != null ? var1.getNamespace() + "." + var1.getPath() : var0;
    }
 }

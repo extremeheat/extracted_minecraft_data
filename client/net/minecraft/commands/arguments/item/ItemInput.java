@@ -13,9 +13,9 @@ import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -60,7 +60,7 @@ public class ItemInput {
       RegistryOps var2 = var1.createSerializationContext(NbtOps.INSTANCE);
       return (String)this.components.entrySet().stream().flatMap((var1x) -> {
          DataComponentType var2x = (DataComponentType)var1x.getKey();
-         ResourceLocation var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var2x);
+         Identifier var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var2x);
          if (var3 == null) {
             return Stream.empty();
          } else {
@@ -79,6 +79,6 @@ public class ItemInput {
    }
 
    private String getItemName() {
-      return this.item.unwrapKey().map(ResourceKey::location).orElseGet(() -> "unknown[" + String.valueOf(this.item) + "]").toString();
+      return this.item.unwrapKey().map(ResourceKey::identifier).orElseGet(() -> "unknown[" + String.valueOf(this.item) + "]").toString();
    }
 }

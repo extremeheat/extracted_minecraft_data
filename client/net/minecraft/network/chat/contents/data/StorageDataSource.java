@@ -5,12 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record StorageDataSource(ResourceLocation id) implements DataSource {
-   public static final MapCodec<StorageDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
+public record StorageDataSource(Identifier id) implements DataSource {
+   public static final MapCodec<StorageDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
 
-   public StorageDataSource(ResourceLocation var1) {
+   public StorageDataSource(Identifier var1) {
       super();
       this.id = var1;
    }

@@ -10,11 +10,11 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, EquineRenderState, AbstractEquineModel<EquineRenderState>> {
-   private final ResourceLocation texture;
+   private final Identifier texture;
 
    public UndeadHorseRenderer(EntityRendererProvider.Context var1, Type var2) {
       super(var1, new HorseModel(var1.bakeLayer(var2.model)), new HorseModel(var1.bakeLayer(var2.babyModel)));
@@ -23,7 +23,7 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
       this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), var2.saddleLayer, (var0) -> var0.saddle, new EquineSaddleModel(var1.bakeLayer(var2.saddleModel)), new EquineSaddleModel(var1.bakeLayer(var2.babySaddleModel))));
    }
 
-   public ResourceLocation getTextureLocation(EquineRenderState var1) {
+   public Identifier getTextureLocation(EquineRenderState var1) {
       return this.texture;
    }
 
@@ -32,7 +32,7 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((EquineRenderState)var1);
    }
 
@@ -42,17 +42,17 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
    }
 
    public static enum Type {
-      SKELETON(ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_skeleton.png"), ModelLayers.SKELETON_HORSE, ModelLayers.SKELETON_HORSE_BABY, EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, ModelLayers.SKELETON_HORSE_SADDLE, ModelLayers.SKELETON_HORSE_BABY_SADDLE),
-      ZOMBIE(ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_zombie.png"), ModelLayers.ZOMBIE_HORSE, ModelLayers.ZOMBIE_HORSE_BABY, EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, ModelLayers.ZOMBIE_HORSE_SADDLE, ModelLayers.ZOMBIE_HORSE_BABY_SADDLE);
+      SKELETON(Identifier.withDefaultNamespace("textures/entity/horse/horse_skeleton.png"), ModelLayers.SKELETON_HORSE, ModelLayers.SKELETON_HORSE_BABY, EquipmentClientInfo.LayerType.SKELETON_HORSE_SADDLE, ModelLayers.SKELETON_HORSE_SADDLE, ModelLayers.SKELETON_HORSE_BABY_SADDLE),
+      ZOMBIE(Identifier.withDefaultNamespace("textures/entity/horse/horse_zombie.png"), ModelLayers.ZOMBIE_HORSE, ModelLayers.ZOMBIE_HORSE_BABY, EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, ModelLayers.ZOMBIE_HORSE_SADDLE, ModelLayers.ZOMBIE_HORSE_BABY_SADDLE);
 
-      final ResourceLocation texture;
+      final Identifier texture;
       final ModelLayerLocation model;
       final ModelLayerLocation babyModel;
       final EquipmentClientInfo.LayerType saddleLayer;
       final ModelLayerLocation saddleModel;
       final ModelLayerLocation babySaddleModel;
 
-      private Type(final ResourceLocation var3, final ModelLayerLocation var4, final ModelLayerLocation var5, final EquipmentClientInfo.LayerType var6, final ModelLayerLocation var7, final ModelLayerLocation var8) {
+      private Type(final Identifier var3, final ModelLayerLocation var4, final ModelLayerLocation var5, final EquipmentClientInfo.LayerType var6, final ModelLayerLocation var7, final ModelLayerLocation var8) {
          this.texture = var3;
          this.model = var4;
          this.babyModel = var5;

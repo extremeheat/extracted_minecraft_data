@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class AdvancementProgress implements Comparable<AdvancementProgress> {

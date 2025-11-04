@@ -18,7 +18,6 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -30,7 +29,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.util.OptionEnum;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -91,10 +90,6 @@ public final class OptionInstance<T> {
 
    public static <T> TooltipSupplier<T> cachedConstantTooltip(Component var0) {
       return (var1) -> Tooltip.create(var0);
-   }
-
-   public static <T extends OptionEnum> CaptionBasedToString<T> forOptionEnum() {
-      return (var0, var1) -> var1.getCaption();
    }
 
    public AbstractWidget createButton(Options var1) {

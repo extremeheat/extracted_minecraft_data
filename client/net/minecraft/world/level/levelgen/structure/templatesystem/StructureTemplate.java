@@ -28,8 +28,8 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomizableContainer;
@@ -773,10 +773,10 @@ public class StructureTemplate {
       }
    }
 
-   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceKey<StructureTemplatePool> pool, ResourceLocation target, int placementPriority, int selectionPriority) {
+   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, Identifier name, ResourceKey<StructureTemplatePool> pool, Identifier target, int placementPriority, int selectionPriority) {
       final StructureBlockInfo info;
 
-      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceKey<StructureTemplatePool> var4, ResourceLocation var5, int var6, int var7) {
+      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, Identifier var3, ResourceKey<StructureTemplatePool> var4, Identifier var5, int var6, int var7) {
          super();
          this.info = var1;
          this.jointType = var2;
@@ -789,11 +789,11 @@ public class StructureTemplate {
 
       public static JigsawBlockInfo of(StructureBlockInfo var0) {
          CompoundTag var1 = (CompoundTag)Objects.requireNonNull(var0.nbt(), () -> String.valueOf(var0) + " nbt was null");
-         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), (ResourceLocation)var1.read("name", ResourceLocation.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), (ResourceKey)var1.read("pool", JigsawBlockEntity.POOL_CODEC).orElse(Pools.EMPTY), (ResourceLocation)var1.read("target", ResourceLocation.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), var1.getIntOr("placement_priority", 0), var1.getIntOr("selection_priority", 0));
+         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), (Identifier)var1.read("name", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), (ResourceKey)var1.read("pool", JigsawBlockEntity.POOL_CODEC).orElse(Pools.EMPTY), (Identifier)var1.read("target", Identifier.CODEC).orElse(JigsawBlockEntity.EMPTY_ID), var1.getIntOr("placement_priority", 0), var1.getIntOr("selection_priority", 0));
       }
 
       public String toString() {
-         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool.location(), this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
+         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool.identifier(), this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
       }
 
       public JigsawBlockInfo withInfo(StructureBlockInfo var1) {

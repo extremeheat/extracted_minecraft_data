@@ -35,8 +35,8 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
          this.remove();
       } else {
          float var1 = 0.6F;
-         this.xd += (double)(0.6F * Mth.cos(this.angle));
-         this.zd += (double)(0.6F * Mth.sin(this.angle));
+         this.xd += (double)(0.6F * Mth.cos((double)this.angle));
+         this.zd += (double)(0.6F * Mth.sin((double)this.angle));
          this.xd *= 0.07;
          this.zd *= 0.07;
          this.move(this.xd, this.yd, this.zd);

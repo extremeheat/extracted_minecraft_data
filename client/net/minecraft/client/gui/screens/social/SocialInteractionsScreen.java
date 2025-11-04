@@ -25,14 +25,14 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 
 public class SocialInteractionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.socialInteractions.title");
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("social_interactions/background");
-   private static final ResourceLocation SEARCH_SPRITE = ResourceLocation.withDefaultNamespace("icon/search");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("social_interactions/background");
+   private static final Identifier SEARCH_SPRITE = Identifier.withDefaultNamespace("icon/search");
    private static final Component TAB_ALL = Component.translatable("gui.socialInteractions.tab_all");
    private static final Component TAB_HIDDEN = Component.translatable("gui.socialInteractions.tab_hidden");
    private static final Component TAB_BLOCKED = Component.translatable("gui.socialInteractions.tab_blocked");
@@ -198,8 +198,8 @@ public class SocialInteractionsScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = this.marginX() + 3;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SEARCH_SPRITE, var5 + 10, 76, 12, 12);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

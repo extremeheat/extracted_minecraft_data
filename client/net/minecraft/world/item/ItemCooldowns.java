@@ -5,12 +5,12 @@ import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.component.UseCooldown;
 
 public class ItemCooldowns {
-   private final Map<ResourceLocation, CooldownInstance> cooldowns = Maps.newHashMap();
+   private final Map<Identifier, CooldownInstance> cooldowns = Maps.newHashMap();
    private int tickCount;
 
    public ItemCooldowns() {
@@ -22,7 +22,7 @@ public class ItemCooldowns {
    }
 
    public float getCooldownPercent(ItemStack var1, float var2) {
-      ResourceLocation var3 = this.getCooldownGroup(var1);
+      Identifier var3 = this.getCooldownGroup(var1);
       CooldownInstance var4 = (CooldownInstance)this.cooldowns.get(var3);
       if (var4 != null) {
          float var5 = (float)(var4.endTime - var4.startTime);
@@ -42,37 +42,37 @@ public class ItemCooldowns {
             Map.Entry var2 = (Map.Entry)var1.next();
             if (((CooldownInstance)var2.getValue()).endTime <= this.tickCount) {
                var1.remove();
-               this.onCooldownEnded((ResourceLocation)var2.getKey());
+               this.onCooldownEnded((Identifier)var2.getKey());
             }
          }
       }
 
    }
 
-   public ResourceLocation getCooldownGroup(ItemStack var1) {
+   public Identifier getCooldownGroup(ItemStack var1) {
       UseCooldown var2 = (UseCooldown)var1.get(DataComponents.USE_COOLDOWN);
-      ResourceLocation var3 = BuiltInRegistries.ITEM.getKey(var1.getItem());
-      return var2 == null ? var3 : (ResourceLocation)var2.cooldownGroup().orElse(var3);
+      Identifier var3 = BuiltInRegistries.ITEM.getKey(var1.getItem());
+      return var2 == null ? var3 : (Identifier)var2.cooldownGroup().orElse(var3);
    }
 
    public void addCooldown(ItemStack var1, int var2) {
       this.addCooldown(this.getCooldownGroup(var1), var2);
    }
 
-   public void addCooldown(ResourceLocation var1, int var2) {
+   public void addCooldown(Identifier var1, int var2) {
       this.cooldowns.put(var1, new CooldownInstance(this.tickCount, this.tickCount + var2));
       this.onCooldownStarted(var1, var2);
    }
 
-   public void removeCooldown(ResourceLocation var1) {
+   public void removeCooldown(Identifier var1) {
       this.cooldowns.remove(var1);
       this.onCooldownEnded(var1);
    }
 
-   protected void onCooldownStarted(ResourceLocation var1, int var2) {
+   protected void onCooldownStarted(Identifier var1, int var2) {
    }
 
-   protected void onCooldownEnded(ResourceLocation var1) {
+   protected void onCooldownEnded(Identifier var1) {
    }
 
    static record CooldownInstance(int startTime, int endTime) {

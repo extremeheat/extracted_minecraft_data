@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.rendertype;
 
 import java.util.function.Supplier;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Util;
 import org.joml.Matrix4f;
 
 public class TextureTransform {

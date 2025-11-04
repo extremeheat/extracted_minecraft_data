@@ -1,9 +1,9 @@
 package net.minecraft.world.entity.animal;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public interface TemperatureVariants {
-   ResourceLocation TEMPERATE = ResourceLocation.withDefaultNamespace("temperate");
-   ResourceLocation WARM = ResourceLocation.withDefaultNamespace("warm");
-   ResourceLocation COLD = ResourceLocation.withDefaultNamespace("cold");
+   Identifier TEMPERATE = Identifier.withDefaultNamespace("temperate");
+   Identifier WARM = Identifier.withDefaultNamespace("warm");
+   Identifier COLD = Identifier.withDefaultNamespace("cold");
 }

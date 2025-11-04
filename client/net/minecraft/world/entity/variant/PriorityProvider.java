@@ -11,8 +11,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 
 public interface PriorityProvider<Context, Condition extends PriorityProvider.SelectorCondition<Context>> {
    List<Selector<Context, Condition>> selectors();

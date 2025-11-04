@@ -3,17 +3,17 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.HoglinRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 
 public class HoglinRenderer extends AbstractHoglinRenderer<Hoglin> {
-   private static final ResourceLocation HOGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/hoglin/hoglin.png");
+   private static final Identifier HOGLIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/hoglin/hoglin.png");
 
    public HoglinRenderer(EntityRendererProvider.Context var1) {
       super(var1, ModelLayers.HOGLIN, ModelLayers.HOGLIN_BABY, 0.7F);
    }
 
-   public ResourceLocation getTextureLocation(HoglinRenderState var1) {
+   public Identifier getTextureLocation(HoglinRenderState var1) {
       return HOGLIN_LOCATION;
    }
 
@@ -32,7 +32,7 @@ public class HoglinRenderer extends AbstractHoglinRenderer<Hoglin> {
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((HoglinRenderState)var1);
    }
 }

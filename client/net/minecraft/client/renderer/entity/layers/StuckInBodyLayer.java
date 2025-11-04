@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionfc;
@@ -18,10 +18,10 @@ import org.joml.Quaternionfc;
 public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderLayer<AvatarRenderState, M> {
    private final Model<S> model;
    private final S modelState;
-   private final ResourceLocation texture;
+   private final Identifier texture;
    private final PlacementStyle placementStyle;
 
-   public StuckInBodyLayer(LivingEntityRenderer<?, AvatarRenderState, M> var1, Model<S> var2, S var3, ResourceLocation var4, PlacementStyle var5) {
+   public StuckInBodyLayer(LivingEntityRenderer<?, AvatarRenderState, M> var1, Model<S> var2, S var3, Identifier var4, PlacementStyle var5) {
       super(var1);
       this.model = var2;
       this.modelState = var3;

@@ -1,8 +1,8 @@
 package net.minecraft.util;
 
-import net.minecraft.Util;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ARGB {
    private static final int LINEAR_CHANNEL_DEPTH = 1024;
@@ -185,10 +185,11 @@ public class ARGB {
    }
 
    public static Vector3f vector3fFromRGB24(int var0) {
-      float var1 = (float)red(var0) / 255.0F;
-      float var2 = (float)green(var0) / 255.0F;
-      float var3 = (float)blue(var0) / 255.0F;
-      return new Vector3f(var1, var2, var3);
+      return new Vector3f(redFloat(var0), greenFloat(var0), blueFloat(var0));
+   }
+
+   public static Vector4f vector4fFromARGB32(int var0) {
+      return new Vector4f(redFloat(var0), greenFloat(var0), blueFloat(var0), alphaFloat(var0));
    }
 
    public static int average(int var0, int var1) {

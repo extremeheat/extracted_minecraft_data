@@ -97,9 +97,9 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
 
       this.eye.visible = true;
       float var9 = var1.tailAnimation;
-      this.tailParts[0].yRot = Mth.sin(var9) * 3.1415927F * 0.05F;
-      this.tailParts[1].yRot = Mth.sin(var9) * 3.1415927F * 0.1F;
-      this.tailParts[2].yRot = Mth.sin(var9) * 3.1415927F * 0.15F;
+      this.tailParts[0].yRot = Mth.sin((double)var9) * 3.1415927F * 0.05F;
+      this.tailParts[1].yRot = Mth.sin((double)var9) * 3.1415927F * 0.1F;
+      this.tailParts[2].yRot = Mth.sin((double)var9) * 3.1415927F * 0.15F;
    }
 
    private void setupSpikes(float var1, float var2) {
@@ -112,7 +112,7 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
    }
 
    private static float getSpikeOffset(int var0, float var1, float var2) {
-      return 1.0F + Mth.cos(var1 * 1.5F + (float)var0) * 0.01F - var2;
+      return 1.0F + Mth.cos((double)(var1 * 1.5F + (float)var0)) * 0.01F - var2;
    }
 
    private static float getSpikeX(int var0, float var1, float var2) {

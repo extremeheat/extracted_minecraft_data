@@ -56,12 +56,11 @@ import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.AxisAngle4f;
@@ -536,7 +535,7 @@ public class ExtraCodecs {
          }
       }, (var0) -> Base64.getEncoder().encodeToString(var0));
       ESCAPED_STRING = Codec.STRING.comapFlatMap((var0) -> DataResult.success(StringEscapeUtils.unescapeJava(var0)), StringEscapeUtils::escapeJava);
-      TAG_OR_ELEMENT_ID = Codec.STRING.comapFlatMap((var0) -> var0.startsWith("#") ? ResourceLocation.read(var0.substring(1)).map((var0x) -> new TagOrElementLocation(var0x, true)) : ResourceLocation.read(var0).map((var0x) -> new TagOrElementLocation(var0x, false)), TagOrElementLocation::decoratedId);
+      TAG_OR_ELEMENT_ID = Codec.STRING.comapFlatMap((var0) -> var0.startsWith("#") ? Identifier.read(var0.substring(1)).map((var0x) -> new TagOrElementLocation(var0x, true)) : Identifier.read(var0).map((var0x) -> new TagOrElementLocation(var0x, false)), TagOrElementLocation::decoratedId);
       toOptionalLong = (var0) -> (OptionalLong)var0.map(OptionalLong::of).orElseGet(OptionalLong::empty);
       fromOptionalLong = (var0) -> var0.isPresent() ? Optional.of(var0.getAsLong()) : Optional.empty();
       BIT_SET = Codec.LONG_STREAM.xmap((var0) -> BitSet.valueOf(var0.toArray()), (var0) -> Arrays.stream(var0.toLongArray()));
@@ -564,7 +563,7 @@ public class ExtraCodecs {
          int[] var1 = var0.codePoints().toArray();
          return var1.length != 1 ? DataResult.error(() -> "Expected one codepoint, got: " + var0) : DataResult.success(var1[0]);
       }, Character::toString);
-      RESOURCE_PATH_CODEC = Codec.STRING.validate((var0) -> !ResourceLocation.isValidPath(var0) ? DataResult.error(() -> "Invalid string to use as a resource path element: " + var0) : DataResult.success(var0));
+      RESOURCE_PATH_CODEC = Codec.STRING.validate((var0) -> !Identifier.isValidPath(var0) ? DataResult.error(() -> "Invalid string to use as a resource path element: " + var0) : DataResult.success(var0));
       UNTRUSTED_URI = Codec.STRING.comapFlatMap((var0) -> {
          try {
             return DataResult.success(Util.parseAndValidateUntrustedUri(var0));
@@ -643,8 +642,8 @@ public class ExtraCodecs {
       }
    }
 
-   public static record TagOrElementLocation(ResourceLocation id, boolean tag) {
-      public TagOrElementLocation(ResourceLocation var1, boolean var2) {
+   public static record TagOrElementLocation(Identifier id, boolean tag) {
+      public TagOrElementLocation(Identifier var1, boolean var2) {
          super();
          this.id = var1;
          this.tag = var2;

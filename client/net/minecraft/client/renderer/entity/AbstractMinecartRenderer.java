@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartBehavior;
@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
-   private static final ResourceLocation MINECART_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/minecart.png");
+   private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart.png");
    private static final float DISPLAY_BLOCK_SCALE = 0.75F;
    protected final MinecartModel model;
 
@@ -49,7 +49,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
       float var10 = var1.hurtTime;
       if (var10 > 0.0F) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin(var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
       }
 
       BlockState var11 = var1.displayBlockState;

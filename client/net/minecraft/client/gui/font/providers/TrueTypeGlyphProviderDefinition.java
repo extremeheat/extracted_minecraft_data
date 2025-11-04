@@ -12,20 +12,20 @@ import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.List;
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Util;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.freetype.FT_Face;
 import org.lwjgl.util.freetype.FreeType;
 
-public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float size, float oversample, Shift shift, String skip) implements GlyphProviderDefinition {
+public record TrueTypeGlyphProviderDefinition(Identifier location, float size, float oversample, Shift shift, String skip) implements GlyphProviderDefinition {
    private static final Codec<String> SKIP_LIST_CODEC;
    public static final MapCodec<TrueTypeGlyphProviderDefinition> CODEC;
 
-   public TrueTypeGlyphProviderDefinition(ResourceLocation var1, float var2, float var3, Shift var4, String var5) {
+   public TrueTypeGlyphProviderDefinition(Identifier var1, float var2, float var3, Shift var4, String var5) {
       super();
       this.location = var1;
       this.size = var2;
@@ -52,7 +52,6 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float s
          TrueTypeGlyphProvider var21;
          try {
             ByteBuffer var19 = TextureUtil.readResource(var4);
-            var19.flip();
             synchronized(FreeTypeUtil.LIBRARY_LOCK) {
                MemoryStack var6 = MemoryStack.stackPush();
 
@@ -115,7 +114,7 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float s
 
    static {
       SKIP_LIST_CODEC = Codec.withAlternative(Codec.STRING, Codec.STRING.listOf(), (var0) -> String.join("", var0));
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location), Codec.FLOAT.optionalFieldOf("size", 11.0F).forGetter(TrueTypeGlyphProviderDefinition::size), Codec.FLOAT.optionalFieldOf("oversample", 1.0F).forGetter(TrueTypeGlyphProviderDefinition::oversample), TrueTypeGlyphProviderDefinition.Shift.CODEC.optionalFieldOf("shift", TrueTypeGlyphProviderDefinition.Shift.NONE).forGetter(TrueTypeGlyphProviderDefinition::shift), SKIP_LIST_CODEC.optionalFieldOf("skip", "").forGetter(TrueTypeGlyphProviderDefinition::skip)).apply(var0, TrueTypeGlyphProviderDefinition::new));
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location), Codec.FLOAT.optionalFieldOf("size", 11.0F).forGetter(TrueTypeGlyphProviderDefinition::size), Codec.FLOAT.optionalFieldOf("oversample", 1.0F).forGetter(TrueTypeGlyphProviderDefinition::oversample), TrueTypeGlyphProviderDefinition.Shift.CODEC.optionalFieldOf("shift", TrueTypeGlyphProviderDefinition.Shift.NONE).forGetter(TrueTypeGlyphProviderDefinition::shift), SKIP_LIST_CODEC.optionalFieldOf("skip", "").forGetter(TrueTypeGlyphProviderDefinition::skip)).apply(var0, TrueTypeGlyphProviderDefinition::new));
    }
 
    public static record Shift(float x, float y) {

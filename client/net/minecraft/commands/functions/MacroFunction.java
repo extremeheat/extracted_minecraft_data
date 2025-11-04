@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
-import net.minecraft.Util;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.UnboundEntryAction;
@@ -26,7 +25,8 @@ import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class MacroFunction<T extends ExecutionCommandSource<T>> implements CommandFunction<T> {
@@ -34,17 +34,17 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
    private static final int MAX_CACHE_ENTRIES = 8;
    private final List<String> parameters;
    private final Object2ObjectLinkedOpenHashMap<List<String>, InstantiatedFunction<T>> cache = new Object2ObjectLinkedOpenHashMap(8, 0.25F);
-   private final ResourceLocation id;
+   private final Identifier id;
    private final List<Entry<T>> entries;
 
-   public MacroFunction(ResourceLocation var1, List<Entry<T>> var2, List<String> var3) {
+   public MacroFunction(Identifier var1, List<Entry<T>> var2, List<String> var3) {
       super();
       this.id = var1;
       this.entries = var2;
       this.parameters = var3;
    }
 
-   public ResourceLocation id() {
+   public Identifier id() {
       return this.id;
    }
 
@@ -208,7 +208,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          return IntLists.emptyList();
       }
 
-      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) {
+      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, Identifier var3) {
          return this.compiledAction;
       }
    }
@@ -229,7 +229,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          return this.parameters;
       }
 
-      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException {
+      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, Identifier var3) throws FunctionInstantiationException {
          String var4 = this.template.substitute(var1);
 
          try {
@@ -243,6 +243,6 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
    interface Entry<T> {
       IntList parameters();
 
-      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException;
+      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, Identifier var3) throws FunctionInstantiationException;
    }
 }

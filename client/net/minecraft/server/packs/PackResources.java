@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -17,7 +17,7 @@ public interface PackResources extends AutoCloseable {
 
    @Nullable IoSupplier<InputStream> getRootResource(String... var1);
 
-   @Nullable IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2);
+   @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2);
 
    void listResources(PackType var1, String var2, String var3, ResourceOutput var4);
 
@@ -38,6 +38,6 @@ public interface PackResources extends AutoCloseable {
    void close();
 
    @FunctionalInterface
-   public interface ResourceOutput extends BiConsumer<ResourceLocation, IoSupplier<InputStream>> {
+   public interface ResourceOutput extends BiConsumer<Identifier, IoSupplier<InputStream>> {
    }
 }

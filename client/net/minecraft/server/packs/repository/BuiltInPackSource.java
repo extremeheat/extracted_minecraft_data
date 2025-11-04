@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -28,10 +28,10 @@ public abstract class BuiltInPackSource implements RepositorySource {
    public static final KnownPack CORE_PACK_INFO = KnownPack.vanilla("core");
    private final PackType packType;
    private final VanillaPackResources vanillaPack;
-   private final ResourceLocation packDir;
+   private final Identifier packDir;
    private final DirectoryValidator validator;
 
-   public BuiltInPackSource(PackType var1, VanillaPackResources var2, ResourceLocation var3, DirectoryValidator var4) {
+   public BuiltInPackSource(PackType var1, VanillaPackResources var2, Identifier var3, DirectoryValidator var4) {
       super();
       this.packType = var1;
       this.vanillaPack = var2;

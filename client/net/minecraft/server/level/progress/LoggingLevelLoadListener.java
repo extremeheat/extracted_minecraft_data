@@ -1,10 +1,10 @@
 package net.minecraft.server.level.progress;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;

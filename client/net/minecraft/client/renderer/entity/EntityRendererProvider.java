@@ -14,7 +14,7 @@ import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 
@@ -86,7 +86,7 @@ public interface EntityRendererProvider<T extends Entity> {
          return this.atlasManager;
       }
 
-      public TextureAtlas getAtlas(ResourceLocation var1) {
+      public TextureAtlas getAtlas(Identifier var1) {
          return this.atlasManager.getAtlasOrThrow(var1);
       }
 

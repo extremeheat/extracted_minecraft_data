@@ -9,7 +9,7 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -80,7 +80,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       super.close();
    }
 
-   public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
+   public void dumpContents(Identifier var1, Path var2) throws IOException {
       if (this.pixels != null) {
          String var3 = var1.toDebugFileName() + ".png";
          Path var4 = var2.resolve(var3);

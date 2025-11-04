@@ -60,10 +60,10 @@ public class FoxModel extends EntityModel<FoxRenderState> {
       super.setupAnim(var1);
       float var2 = var1.walkAnimationSpeed;
       float var3 = var1.walkAnimationPos;
-      this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
-      this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
-      this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
-      this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
+      this.rightHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
+      this.leftHindLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
+      this.rightFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F + 3.1415927F)) * 1.4F * var2;
+      this.leftFrontLeg.xRot = Mth.cos((double)(var3 * 0.6662F)) * 1.4F * var2;
       this.head.zRot = var1.headRollAngle;
       this.rightHindLeg.visible = true;
       this.leftHindLeg.visible = true;
@@ -143,11 +143,11 @@ public class FoxModel extends EntityModel<FoxRenderState> {
       if (var1.isSleeping) {
          this.head.xRot = 0.0F;
          this.head.yRot = -2.0943952F;
-         this.head.zRot = Mth.cos(var1.ageInTicks * 0.027F) / 22.0F;
+         this.head.zRot = Mth.cos((double)(var1.ageInTicks * 0.027F)) / 22.0F;
       }
 
       if (var1.isCrouching) {
-         float var6 = Mth.cos(var1.ageInTicks) * 0.01F;
+         float var6 = Mth.cos((double)var1.ageInTicks) * 0.01F;
          this.body.yRot = var6;
          this.rightHindLeg.zRot = var6;
          this.leftHindLeg.zRot = var6;
@@ -158,10 +158,10 @@ public class FoxModel extends EntityModel<FoxRenderState> {
       if (var1.isFaceplanted) {
          float var7 = 0.1F;
          this.legMotionPos += 0.67F;
-         this.rightHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F) * 0.1F;
-         this.leftHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F + 3.1415927F) * 0.1F;
-         this.rightFrontLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F + 3.1415927F) * 0.1F;
-         this.leftFrontLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F) * 0.1F;
+         this.rightHindLeg.xRot = Mth.cos((double)(this.legMotionPos * 0.4662F)) * 0.1F;
+         this.leftHindLeg.xRot = Mth.cos((double)(this.legMotionPos * 0.4662F + 3.1415927F)) * 0.1F;
+         this.rightFrontLeg.xRot = Mth.cos((double)(this.legMotionPos * 0.4662F + 3.1415927F)) * 0.1F;
+         this.leftFrontLeg.xRot = Mth.cos((double)(this.legMotionPos * 0.4662F)) * 0.1F;
       }
 
    }

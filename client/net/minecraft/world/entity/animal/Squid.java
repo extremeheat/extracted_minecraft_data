@@ -119,7 +119,7 @@ public class Squid extends AgeableWaterCreature {
       if (this.isInWater()) {
          if (this.tentacleMovement < 3.1415927F) {
             float var1 = this.tentacleMovement / 3.1415927F;
-            this.tentacleAngle = Mth.sin(var1 * var1 * 3.1415927F) * 3.1415927F * 0.25F;
+            this.tentacleAngle = Mth.sin((double)(var1 * var1 * 3.1415927F)) * 3.1415927F * 0.25F;
             if ((double)var1 > 0.75) {
                if (this.isLocalInstanceAuthoritative()) {
                   this.setDeltaMovement(this.movementVector);
@@ -145,7 +145,7 @@ public class Squid extends AgeableWaterCreature {
          this.zBodyRot += 3.1415927F * this.rotateSpeed * 1.5F;
          this.xBodyRot += (-((float)Mth.atan2(var2, var4.y)) * 57.295776F - this.xBodyRot) * 0.1F;
       } else {
-         this.tentacleAngle = Mth.abs(Mth.sin(this.tentacleMovement)) * 3.1415927F * 0.25F;
+         this.tentacleAngle = Mth.abs(Mth.sin((double)this.tentacleMovement)) * 3.1415927F * 0.25F;
          if (!this.level().isClientSide()) {
             double var5 = this.getDeltaMovement().y;
             if (this.hasEffect(MobEffects.LEVITATION)) {
@@ -234,7 +234,7 @@ public class Squid extends AgeableWaterCreature {
             this.squid.movementVector = Vec3.ZERO;
          } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
             float var2 = this.squid.getRandom().nextFloat() * 6.2831855F;
-            this.squid.movementVector = new Vec3((double)(Mth.cos(var2) * 0.2F), (double)(-0.1F + this.squid.getRandom().nextFloat() * 0.2F), (double)(Mth.sin(var2) * 0.2F));
+            this.squid.movementVector = new Vec3((double)(Mth.cos((double)var2) * 0.2F), (double)(-0.1F + this.squid.getRandom().nextFloat() * 0.2F), (double)(Mth.sin((double)var2) * 0.2F));
          }
 
       }

@@ -23,7 +23,7 @@ public class SpecialDates {
       return HALLOWEEN.equals(dayNow());
    }
 
-   public static boolean isExtendedChrismas() {
+   public static boolean isExtendedChristmas() {
       return CHRISTMAS_RANGE.contains(dayNow());
    }
 

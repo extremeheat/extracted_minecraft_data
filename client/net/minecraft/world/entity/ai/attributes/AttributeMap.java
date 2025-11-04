@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class AttributeMap {
@@ -52,7 +52,7 @@ public class AttributeMap {
       return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
+   public boolean hasModifier(Holder<Attribute> var1, Identifier var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
    }
@@ -67,7 +67,7 @@ public class AttributeMap {
       return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
    }
 
-   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
+   public double getModifierValue(Holder<Attribute> var1, Identifier var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
    }

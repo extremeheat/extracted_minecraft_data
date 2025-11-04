@@ -7,7 +7,6 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.util.Objects;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public class RealmsTermsScreen extends RealmsScreen {

@@ -1,37 +1,40 @@
 package net.minecraft.server.level;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import java.util.Objects;
 import java.util.function.IntFunction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.OptionEnum;
 
-public enum ParticleStatus implements OptionEnum {
+public enum ParticleStatus {
    ALL(0, "options.particles.all"),
    DECREASED(1, "options.particles.decreased"),
    MINIMAL(2, "options.particles.minimal");
 
-   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.<ParticleStatus>continuous(ParticleStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.<ParticleStatus>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final Codec<ParticleStatus> LEGACY_CODEC;
    private final int id;
-   private final String key;
+   private final Component caption;
 
    private ParticleStatus(final int var3, final String var4) {
       this.id = var3;
-      this.key = var4;
+      this.caption = Component.translatable(var4);
    }
 
-   public String getKey() {
-      return this.key;
-   }
-
-   public int getId() {
-      return this.id;
-   }
-
-   public static ParticleStatus byId(int var0) {
-      return (ParticleStatus)BY_ID.apply(var0);
+   public Component caption() {
+      return this.caption;
    }
 
    // $FF: synthetic method
    private static ParticleStatus[] $values() {
       return new ParticleStatus[]{ALL, DECREASED, MINIMAL};
+   }
+
+   static {
+      PrimitiveCodec var10000 = Codec.INT;
+      IntFunction var10001 = BY_ID;
+      Objects.requireNonNull(var10001);
+      LEGACY_CODEC = var10000.xmap(var10001::apply, (var0) -> var0.id);
    }
 }

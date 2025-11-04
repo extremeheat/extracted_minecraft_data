@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public record MethodInfo<Params, Result>(String description, Optional<ParamInfo<Params>> params, Optional<ResultInfo<Result>> result) {
@@ -36,21 +36,21 @@ public record MethodInfo<Params, Result>(String description, Optional<ParamInfo<
       return RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("description").forGetter(MethodInfo::description), paramsTypedCodec().fieldOf("params").forGetter(MethodInfo::params), ResultInfo.typedCodec().optionalFieldOf("result").forGetter(MethodInfo::result)).apply(var0, MethodInfo::new));
    }
 
-   public Named<Params, Result> named(ResourceLocation var1) {
+   public Named<Params, Result> named(Identifier var1) {
       return new Named<Params, Result>(var1, this);
    }
 
-   public static record Named<Params, Result>(ResourceLocation name, MethodInfo<Params, Result> contents) {
+   public static record Named<Params, Result>(Identifier name, MethodInfo<Params, Result> contents) {
       public static final Codec<Named<?, ?>> CODEC = typedCodec();
 
-      public Named(ResourceLocation var1, MethodInfo<Params, Result> var2) {
+      public Named(Identifier var1, MethodInfo<Params, Result> var2) {
          super();
          this.name = var1;
          this.contents = var2;
       }
 
       public static <Params, Result> Codec<Named<Params, Result>> typedCodec() {
-         return RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter(Named::name), MethodInfo.typedCodec().forGetter(Named::contents)).apply(var0, Named::new));
+         return RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("name").forGetter(Named::name), MethodInfo.typedCodec().forGetter(Named::contents)).apply(var0, Named::new));
       }
    }
 }

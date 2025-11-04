@@ -53,8 +53,8 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.codec.StreamEncoder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import net.minecraft.util.LenientJsonParser;
@@ -606,26 +606,26 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
-   public ResourceLocation readResourceLocation() {
-      return ResourceLocation.parse(this.readUtf(32767));
+   public Identifier readIdentifier() {
+      return Identifier.parse(this.readUtf(32767));
    }
 
-   public FriendlyByteBuf writeResourceLocation(ResourceLocation var1) {
+   public FriendlyByteBuf writeIdentifier(Identifier var1) {
       this.writeUtf(var1.toString());
       return this;
    }
 
    public <T> ResourceKey<T> readResourceKey(ResourceKey<? extends Registry<T>> var1) {
-      ResourceLocation var2 = this.readResourceLocation();
+      Identifier var2 = this.readIdentifier();
       return ResourceKey.create(var1, var2);
    }
 
    public void writeResourceKey(ResourceKey<?> var1) {
-      this.writeResourceLocation(var1.location());
+      this.writeIdentifier(var1.identifier());
    }
 
    public <T> ResourceKey<? extends Registry<T>> readRegistryKey() {
-      ResourceLocation var1 = this.readResourceLocation();
+      Identifier var1 = this.readIdentifier();
       return ResourceKey.createRegistryKey(var1);
    }
 

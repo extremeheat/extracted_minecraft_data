@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class RegistryDumpReport implements DataProvider {
    private final PackOutput output;
@@ -22,7 +22,7 @@ public class RegistryDumpReport implements DataProvider {
 
    public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
-      BuiltInRegistries.REGISTRY.listElements().forEach((var1x) -> var2.add(var1x.key().location().toString(), dumpRegistry((Registry)var1x.value())));
+      BuiltInRegistries.REGISTRY.listElements().forEach((var1x) -> var2.add(var1x.key().identifier().toString(), dumpRegistry((Registry)var1x.value())));
       Path var3 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("registries.json");
       return DataProvider.saveStable(var1, var2, var3);
    }
@@ -30,7 +30,7 @@ public class RegistryDumpReport implements DataProvider {
    private static <T> JsonElement dumpRegistry(Registry<T> var0) {
       JsonObject var1 = new JsonObject();
       if (var0 instanceof DefaultedRegistry) {
-         ResourceLocation var2 = ((DefaultedRegistry)var0).getDefaultKey();
+         Identifier var2 = ((DefaultedRegistry)var0).getDefaultKey();
          var1.addProperty("default", var2.toString());
       }
 
@@ -42,7 +42,7 @@ public class RegistryDumpReport implements DataProvider {
          int var4 = var0.getId(var3x);
          JsonObject var5 = new JsonObject();
          var5.addProperty("protocol_id", var4);
-         var3.add(var2x.key().location().toString(), var5);
+         var3.add(var2x.key().identifier().toString(), var5);
       });
       var1.add("entries", var3);
       return var1;

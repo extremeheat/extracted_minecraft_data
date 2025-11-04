@@ -15,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 import org.jspecify.annotations.Nullable;
 
@@ -306,7 +306,7 @@ public final class DataComponentPatch {
                var0 = var0.substring("!".length());
             }
 
-            ResourceLocation var2 = ResourceLocation.tryParse(var0);
+            Identifier var2 = Identifier.tryParse(var0);
             DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(var2);
             if (var3 == null) {
                return DataResult.error(() -> "No component with type: '" + String.valueOf(var2) + "'");
@@ -315,7 +315,7 @@ public final class DataComponentPatch {
             }
          }, (var0) -> {
             DataComponentType var1 = var0.type();
-            ResourceLocation var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var1);
+            Identifier var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var1);
             return var2 == null ? DataResult.error(() -> "Unregistered component: " + String.valueOf(var1)) : DataResult.success(var0.removed() ? "!" + String.valueOf(var2) : var2.toString());
          });
       }

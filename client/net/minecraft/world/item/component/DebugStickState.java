@@ -3,9 +3,9 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 

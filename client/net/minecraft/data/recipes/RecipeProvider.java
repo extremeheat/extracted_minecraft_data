@@ -15,11 +15,11 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.EnterBlockTrigger;
-import net.minecraft.advancements.critereon.ImpossibleTrigger;
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.EnterBlockTrigger;
+import net.minecraft.advancements.criterion.ImpossibleTrigger;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -33,8 +33,8 @@ import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -318,8 +318,8 @@ public abstract class RecipeProvider {
    }
 
    private void nineBlockStorageRecipes(RecipeCategory var1, ItemLike var2, RecipeCategory var3, ItemLike var4, String var5, @Nullable String var6, String var7, @Nullable String var8) {
-      this.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), this.has(var4)).save(this.output, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var7)));
-      this.shaped(var3, var4).define('#', var2).pattern("###").pattern("###").pattern("###").group(var6).unlockedBy(getHasName(var2), this.has(var2)).save(this.output, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var5)));
+      this.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), this.has(var4)).save(this.output, ResourceKey.create(Registries.RECIPE, Identifier.parse(var7)));
+      this.shaped(var3, var4).define('#', var2).pattern("###").pattern("###").pattern("###").group(var6).unlockedBy(getHasName(var2), this.has(var2)).save(this.output, ResourceKey.create(Registries.RECIPE, Identifier.parse(var5)));
    }
 
    protected void copySmithingTemplate(ItemLike var1, ItemLike var2) {
@@ -501,7 +501,7 @@ public abstract class RecipeProvider {
             RecipeOutput var7 = new RecipeOutput() {
                public void accept(ResourceKey<Recipe<?>> var1x, Recipe<?> var2x, @Nullable AdvancementHolder var3x) {
                   if (!var5.add(var1x)) {
-                     throw new IllegalStateException("Duplicate recipe " + String.valueOf(var1x.location()));
+                     throw new IllegalStateException("Duplicate recipe " + String.valueOf(var1x.identifier()));
                   } else {
                      this.saveRecipe(var1x, var2x);
                      if (var3x != null) {
@@ -521,7 +521,7 @@ public abstract class RecipeProvider {
                }
 
                private void saveRecipe(ResourceKey<Recipe<?>> var1x, Recipe<?> var2x) {
-                  var6.add(DataProvider.saveStable(var1, var2, Recipe.CODEC, var2x, var3.json(var1x.location())));
+                  var6.add(DataProvider.saveStable(var1, var2, Recipe.CODEC, var2x, var3.json(var1x.identifier())));
                }
 
                private void saveAdvancement(AdvancementHolder var1x) {

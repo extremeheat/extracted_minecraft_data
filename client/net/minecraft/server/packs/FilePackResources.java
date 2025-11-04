@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.io.IOUtils;
@@ -33,7 +33,7 @@ public class FilePackResources extends AbstractPackResources {
       this.prefix = var3;
    }
 
-   private static String getPathFromLocation(PackType var0, ResourceLocation var1) {
+   private static String getPathFromLocation(PackType var0, Identifier var1) {
       return String.format(Locale.ROOT, "%s/%s/%s", var0.getDirectory(), var1.getNamespace(), var1.getPath());
    }
 
@@ -41,7 +41,7 @@ public class FilePackResources extends AbstractPackResources {
       return this.getResource(String.join("/", var1));
    }
 
-   public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
+   public IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
       return this.getResource(getPathFromLocation(var1, var2));
    }
 
@@ -73,7 +73,7 @@ public class FilePackResources extends AbstractPackResources {
             String var7 = var6.getName();
             String var8 = extractNamespace(var5, var7);
             if (!var8.isEmpty()) {
-               if (ResourceLocation.isValidNamespace(var8)) {
+               if (Identifier.isValidNamespace(var8)) {
                   var4.add(var8);
                } else {
                   LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var8, this.zipFileAccess.file);
@@ -114,7 +114,7 @@ public class FilePackResources extends AbstractPackResources {
                String var10 = var9.getName();
                if (var10.startsWith(var8)) {
                   String var11 = var10.substring(var7.length());
-                  ResourceLocation var12 = ResourceLocation.tryBuild(var2, var11);
+                  Identifier var12 = Identifier.tryBuild(var2, var11);
                   if (var12 != null) {
                      var4.accept(var12, IoSupplier.create(var5, var9));
                   } else {

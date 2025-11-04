@@ -15,9 +15,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class ClientTelemetryManager implements AutoCloseable {

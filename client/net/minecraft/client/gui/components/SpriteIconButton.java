@@ -4,7 +4,7 @@ import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public abstract class SpriteIconButton extends Button {
@@ -92,7 +92,7 @@ public abstract class SpriteIconButton extends Button {
          return this;
       }
 
-      public Builder sprite(ResourceLocation var1, int var2, int var3) {
+      public Builder sprite(Identifier var1, int var2, int var3) {
          this.sprite = new WidgetSprites(var1);
          this.spriteWidth = var2;
          this.spriteHeight = var3;

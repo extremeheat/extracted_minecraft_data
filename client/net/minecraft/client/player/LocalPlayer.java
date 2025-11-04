@@ -938,8 +938,8 @@ public class LocalPlayer extends AbstractClientPlayer {
             Vec2 var8 = this.input.getMoveVector();
             float var9 = var6 * var8.x;
             float var10 = var6 * var8.y;
-            float var11 = Mth.sin(this.getYRot() * 0.017453292F);
-            float var12 = Mth.cos(this.getYRot() * 0.017453292F);
+            float var11 = Mth.sin((double)(this.getYRot() * 0.017453292F));
+            float var12 = Mth.cos((double)(this.getYRot() * 0.017453292F));
             var5 = new Vec3((double)(var9 * var12 - var10 * var11), var5.y, (double)(var10 * var12 + var9 * var11));
             var7 = (float)var5.lengthSqr();
             if (var7 <= 0.001F) {
@@ -1026,8 +1026,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    protected boolean isHorizontalCollisionMinor(Vec3 var1) {
       float var2 = this.getYRot() * 0.017453292F;
-      double var3 = (double)Mth.sin(var2);
-      double var5 = (double)Mth.cos(var2);
+      double var3 = (double)Mth.sin((double)var2);
+      double var5 = (double)Mth.cos((double)var2);
       double var7 = (double)this.xxa * var5 - (double)this.zza * var3;
       double var9 = (double)this.zza * var5 + (double)this.xxa * var3;
       double var11 = Mth.square(var7) + Mth.square(var9);
@@ -1050,7 +1050,26 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean isSprintingPossible(boolean var1) {
-      return !this.isMobilityRestricted() && this.hasEnoughFoodToSprint() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (var1 || !this.isInShallowWater());
+      boolean var10000;
+      if (!this.isMobilityRestricted()) {
+         label30: {
+            if (this.isPassenger()) {
+               if (!this.vehicleCanSprint(this.getVehicle())) {
+                  break label30;
+               }
+            } else if (!this.hasEnoughFoodToDoExhaustiveManoeuvres()) {
+               break label30;
+            }
+
+            if (var1 || !this.isInShallowWater()) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    private boolean canStartSprinting() {
@@ -1059,10 +1078,6 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    private boolean vehicleCanSprint(Entity var1) {
       return var1.canSprint() && var1.isLocalInstanceAuthoritative();
-   }
-
-   private boolean hasEnoughFoodToSprint() {
-      return this.isPassenger() || this.getFoodData().hasEnoughFood() || this.getAbilities().mayfly;
    }
 
    public float getWaterVision() {

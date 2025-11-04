@@ -10,9 +10,9 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Stopwatch;
 import net.minecraft.world.Stopwatches;
@@ -27,10 +27,10 @@ public class StopwatchCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopwatch").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("create").then(Commands.argument("id", ResourceLocationArgument.id()).executes((var0x) -> createStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id")))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "scale"))))).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 1.0))))).then(Commands.literal("restart").then(Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> restartStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id")))))).then(Commands.literal("remove").then(Commands.argument("id", ResourceLocationArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> removeStopwatch((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stopwatch").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("create").then(Commands.argument("id", IdentifierArgument.id()).executes((var0x) -> createStopwatch((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "id")))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).suggests(SUGGEST_STOPWATCHES).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "scale"))))).executes((var0x) -> queryStopwatch((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "id"), 1.0))))).then(Commands.literal("restart").then(Commands.argument("id", IdentifierArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> restartStopwatch((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "id")))))).then(Commands.literal("remove").then(Commands.argument("id", IdentifierArgument.id()).suggests(SUGGEST_STOPWATCHES).executes((var0x) -> removeStopwatch((CommandSourceStack)var0x.getSource(), IdentifierArgument.getId(var0x, "id"))))));
    }
 
-   private static int createStopwatch(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
+   private static int createStopwatch(CommandSourceStack var0, Identifier var1) throws CommandSyntaxException {
       MinecraftServer var2 = var0.getServer();
       Stopwatches var3 = var2.getStopwatches();
       Stopwatch var4 = new Stopwatch(Stopwatches.currentTime());
@@ -42,7 +42,7 @@ public class StopwatchCommand {
       }
    }
 
-   private static int queryStopwatch(CommandSourceStack var0, ResourceLocation var1, double var2) throws CommandSyntaxException {
+   private static int queryStopwatch(CommandSourceStack var0, Identifier var1, double var2) throws CommandSyntaxException {
       MinecraftServer var4 = var0.getServer();
       Stopwatches var5 = var4.getStopwatches();
       Stopwatch var6 = var5.get(var1);
@@ -56,7 +56,7 @@ public class StopwatchCommand {
       }
    }
 
-   private static int restartStopwatch(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
+   private static int restartStopwatch(CommandSourceStack var0, Identifier var1) throws CommandSyntaxException {
       MinecraftServer var2 = var0.getServer();
       Stopwatches var3 = var2.getStopwatches();
       if (!var3.update(var1, (var0x) -> new Stopwatch(Stopwatches.currentTime()))) {
@@ -67,7 +67,7 @@ public class StopwatchCommand {
       }
    }
 
-   private static int removeStopwatch(CommandSourceStack var0, ResourceLocation var1) throws CommandSyntaxException {
+   private static int removeStopwatch(CommandSourceStack var0, Identifier var1) throws CommandSyntaxException {
       MinecraftServer var2 = var0.getServer();
       Stopwatches var3 = var2.getStopwatches();
       if (!var3.remove(var1)) {

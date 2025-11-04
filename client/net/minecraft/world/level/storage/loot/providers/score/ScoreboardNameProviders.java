@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class ScoreboardNameProviders {
    private static final Codec<ScoreboardNameProvider> TYPED_CODEC;
@@ -18,7 +18,7 @@ public class ScoreboardNameProviders {
    }
 
    private static LootScoreProviderType register(String var0, MapCodec<? extends ScoreboardNameProvider> var1) {
-      return (LootScoreProviderType)Registry.register(BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootScoreProviderType(var1));
+      return (LootScoreProviderType)Registry.register(BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootScoreProviderType(var1));
    }
 
    static {

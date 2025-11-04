@@ -9,7 +9,7 @@ import java.util.EnumSet;
 import java.util.List;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
@@ -74,7 +74,7 @@ public class ChunkStatus {
    }
 
    public static ChunkStatus byName(String var0) {
-      return BuiltInRegistries.CHUNK_STATUS.getValue(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.CHUNK_STATUS.getValue(Identifier.tryParse(var0));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {

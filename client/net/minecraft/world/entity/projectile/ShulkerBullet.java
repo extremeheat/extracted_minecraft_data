@@ -165,7 +165,7 @@ public class ShulkerBullet extends Projectile {
          this.targetDeltaZ = var17 / var19 * 0.15;
       }
 
-      this.hasImpulse = true;
+      this.needsSync = true;
       this.flightSteps = 10 + this.random.nextInt(5) * 10;
    }
 

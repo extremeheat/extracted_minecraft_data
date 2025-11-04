@@ -14,7 +14,6 @@ import java.time.ZonedDateTime;
 import java.time.format.FormatStyle;
 import java.util.Objects;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -28,6 +27,7 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

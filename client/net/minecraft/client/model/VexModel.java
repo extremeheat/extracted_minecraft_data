@@ -48,7 +48,7 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
       super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
-      float var2 = Mth.cos(var1.ageInTicks * 5.5F * 0.017453292F) * 0.1F;
+      float var2 = Mth.cos((double)(var1.ageInTicks * 5.5F * 0.017453292F)) * 0.1F;
       this.rightArm.zRot = 0.62831855F + var2;
       this.leftArm.zRot = -(0.62831855F + var2);
       if (var1.isCharging) {
@@ -58,7 +58,7 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel<
          this.body.xRot = 0.15707964F;
       }
 
-      this.leftWing.yRot = 1.0995574F + Mth.cos(var1.ageInTicks * 45.836624F * 0.017453292F) * 0.017453292F * 16.2F;
+      this.leftWing.yRot = 1.0995574F + Mth.cos((double)(var1.ageInTicks * 45.836624F * 0.017453292F)) * 0.017453292F * 16.2F;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.leftWing.xRot = 0.47123888F;
       this.leftWing.zRot = -0.47123888F;

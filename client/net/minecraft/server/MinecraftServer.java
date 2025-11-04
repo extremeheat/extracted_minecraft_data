@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -13,9 +12,7 @@ import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
@@ -52,16 +49,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.imageio.ImageIO;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
-import net.minecraft.FileUtil;
 import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -87,8 +81,8 @@ import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPac
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.obfuscate.DontObfuscate;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.bossevents.CustomBossEvents;
 import net.minecraft.server.level.ChunkLoadCounter;
 import net.minecraft.server.level.ChunkMap;
@@ -121,12 +115,15 @@ import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
+import net.minecraft.util.FileUtil;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
+import net.minecraft.util.PngInfo;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.ServerDebugSubscribers;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
@@ -453,7 +450,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          ResourceKey var18 = (ResourceKey)var17.getKey();
          ServerLevel var19;
          if (var18 != LevelStem.OVERWORLD) {
-            ResourceKey var20 = ResourceKey.create(Registries.DIMENSION, var18.location());
+            ResourceKey var20 = ResourceKey.create(Registries.DIMENSION, var18.identifier());
             DerivedLevelData var21 = new DerivedLevelData(this.worldData, var1);
             var19 = new ServerLevel(this, this.executor, this.storageSource, var21, var20, (LevelStem)var17.getValue(), var2, var7, ImmutableList.of(), false, var29);
             this.levels.put(var20, var19);
@@ -596,7 +593,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       for(ServerLevel var6 : this.getAllLevels()) {
          if (!var1) {
-            LOGGER.info("Saving chunks for level '{}'/{}", var6, var6.dimension().location());
+            LOGGER.info("Saving chunks for level '{}'/{}", var6, var6.dimension().identifier());
          }
 
          var6.save((ProgressListener)null, var2, SharedConstants.DEBUG_DONT_SAVE_WORLD || var6.noSave && !var3);
@@ -956,12 +953,14 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       Optional var1 = Optional.of(this.getFile("server-icon.png")).filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])).or(() -> this.storageSource.getIconFile().filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])));
       return var1.flatMap((var0) -> {
          try {
-            BufferedImage var1 = ImageIO.read(var0.toFile());
-            Preconditions.checkState(var1.getWidth() == 64, "Must be 64 pixels wide");
-            Preconditions.checkState(var1.getHeight() == 64, "Must be 64 pixels high");
-            ByteArrayOutputStream var2 = new ByteArrayOutputStream();
-            ImageIO.write(var1, "PNG", var2);
-            return Optional.of(new ServerStatus.Favicon(var2.toByteArray()));
+            byte[] var1 = Files.readAllBytes(var0);
+            PngInfo var2 = PngInfo.fromBytes(var1);
+            if (var2.width() == 64 && var2.height() == 64) {
+               return Optional.of(new ServerStatus.Favicon(var1));
+            } else {
+               int var10002 = var2.width();
+               throw new IllegalArgumentException("Invalid world icon size [" + var10002 + ", " + var2.height() + "], but expected [64, 64]");
+            }
          } catch (Exception var3) {
             LOGGER.error("Couldn't load server icon", var3);
             return Optional.empty();
@@ -1115,7 +1114,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       for(ServerLevel var4 : this.getAllLevels()) {
          var2.push((Supplier)(() -> {
             String var10000 = String.valueOf(var4);
-            return var10000 + " " + String.valueOf(var4.dimension().location());
+            return var10000 + " " + String.valueOf(var4.dimension().identifier());
          }));
          if (this.tickCount % 20 == 0) {
             var2.push("timeSync");
@@ -1250,7 +1249,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       var1.setDetail("Active Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getSelectedPacks())));
       var1.setDetail("Available Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getAvailablePacks())));
-      var1.setDetail("Enabled Feature Flags", (Supplier)(() -> (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(ResourceLocation::toString).collect(Collectors.joining(", "))));
+      var1.setDetail("Enabled Feature Flags", (Supplier)(() -> (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(Identifier::toString).collect(Collectors.joining(", "))));
       var1.setDetail("World Generation", (Supplier)(() -> this.worldData.worldGenSettingsLifecycle().toString()));
       var1.setDetail("World Seed", (Supplier)(() -> String.valueOf(this.worldData.worldGenOptions().seed())));
       SuppressedExceptionCollector var10002 = this.suppressedExceptions;
@@ -1799,7 +1798,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       try {
          for(Map.Entry var4 : this.levels.entrySet()) {
-            ResourceLocation var5 = ((ResourceKey)var4.getKey()).location();
+            Identifier var5 = ((ResourceKey)var4.getKey()).identifier();
             Path var6 = var2.resolve(var5.getNamespace()).resolve(var5.getPath());
             Files.createDirectories(var6);
             ((ServerLevel)var4.getValue()).saveDebugReport(var6);
@@ -1851,7 +1850,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          final GameRules var4 = this.worldData.getGameRules();
          var4.visitGameRuleTypes(new GameRuleTypeVisitor() {
             public <T> void visit(GameRule<T> var1) {
-               var3.add(String.format(Locale.ROOT, "%s=%s\n", var1.getResourceLocation(), var4.getAsString(var1)));
+               var3.add(String.format(Locale.ROOT, "%s=%s\n", var1.getIdentifier(), var4.getAsString(var1)));
             }
          });
 
@@ -2116,7 +2115,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return true;
    }
 
-   public void handleCustomClickAction(ResourceLocation var1, Optional<Tag> var2) {
+   public void handleCustomClickAction(Identifier var1, Optional<Tag> var2) {
       LOGGER.debug("Received custom click action {} with payload {}", var1, var2.orElse((Object)null));
    }
 
@@ -2200,7 +2199,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             CrashReportCategory var10 = var1.addCategory("Chunk Info");
             Objects.requireNonNull(var3);
             var10.setDetail("Level", var3::level);
-            var10.setDetail("Dimension", (CrashReportDetail)(() -> var3.dimension().location().toString()));
+            var10.setDetail("Dimension", (CrashReportDetail)(() -> var3.dimension().identifier().toString()));
             Objects.requireNonNull(var3);
             var10.setDetail("Storage", var3::type);
             Objects.requireNonNull(var2);

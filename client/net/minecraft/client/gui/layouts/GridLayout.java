@@ -4,8 +4,8 @@ import com.mojang.math.Divisor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 
 public class GridLayout extends AbstractLayout {
    private final List<LayoutElement> children;

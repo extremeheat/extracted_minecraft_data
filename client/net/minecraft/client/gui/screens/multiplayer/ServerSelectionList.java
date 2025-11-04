@@ -14,7 +14,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,31 +32,32 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.network.EventLoopGroupHolder;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ServerSelectionList extends ObjectSelectionList<Entry> {
-   static final ResourceLocation INCOMPATIBLE_SPRITE = ResourceLocation.withDefaultNamespace("server_list/incompatible");
-   static final ResourceLocation UNREACHABLE_SPRITE = ResourceLocation.withDefaultNamespace("server_list/unreachable");
-   static final ResourceLocation PING_1_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_1");
-   static final ResourceLocation PING_2_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_2");
-   static final ResourceLocation PING_3_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_3");
-   static final ResourceLocation PING_4_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_4");
-   static final ResourceLocation PING_5_SPRITE = ResourceLocation.withDefaultNamespace("server_list/ping_5");
-   static final ResourceLocation PINGING_1_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_1");
-   static final ResourceLocation PINGING_2_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_2");
-   static final ResourceLocation PINGING_3_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_3");
-   static final ResourceLocation PINGING_4_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_4");
-   static final ResourceLocation PINGING_5_SPRITE = ResourceLocation.withDefaultNamespace("server_list/pinging_5");
-   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/join_highlighted");
-   static final ResourceLocation JOIN_SPRITE = ResourceLocation.withDefaultNamespace("server_list/join");
-   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_up_highlighted");
-   static final ResourceLocation MOVE_UP_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_up");
-   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_down_highlighted");
-   static final ResourceLocation MOVE_DOWN_SPRITE = ResourceLocation.withDefaultNamespace("server_list/move_down");
+   static final Identifier INCOMPATIBLE_SPRITE = Identifier.withDefaultNamespace("server_list/incompatible");
+   static final Identifier UNREACHABLE_SPRITE = Identifier.withDefaultNamespace("server_list/unreachable");
+   static final Identifier PING_1_SPRITE = Identifier.withDefaultNamespace("server_list/ping_1");
+   static final Identifier PING_2_SPRITE = Identifier.withDefaultNamespace("server_list/ping_2");
+   static final Identifier PING_3_SPRITE = Identifier.withDefaultNamespace("server_list/ping_3");
+   static final Identifier PING_4_SPRITE = Identifier.withDefaultNamespace("server_list/ping_4");
+   static final Identifier PING_5_SPRITE = Identifier.withDefaultNamespace("server_list/ping_5");
+   static final Identifier PINGING_1_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_1");
+   static final Identifier PINGING_2_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_2");
+   static final Identifier PINGING_3_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_3");
+   static final Identifier PINGING_4_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_4");
+   static final Identifier PINGING_5_SPRITE = Identifier.withDefaultNamespace("server_list/pinging_5");
+   static final Identifier JOIN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/join_highlighted");
+   static final Identifier JOIN_SPRITE = Identifier.withDefaultNamespace("server_list/join");
+   static final Identifier MOVE_UP_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/move_up_highlighted");
+   static final Identifier MOVE_UP_SPRITE = Identifier.withDefaultNamespace("server_list/move_up");
+   static final Identifier MOVE_DOWN_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("server_list/move_down_highlighted");
+   static final Identifier MOVE_DOWN_SPRITE = Identifier.withDefaultNamespace("server_list/move_down");
    static final Logger LOGGER = LogUtils.getLogger();
    static final ThreadPoolExecutor THREAD_POOL;
    static final Component SCANNING_LABEL;
@@ -268,7 +268,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       private final FaviconTexture icon;
       private byte @Nullable [] lastIconBytes;
       private @Nullable List<Component> onlinePlayersTooltip;
-      private @Nullable ResourceLocation statusIcon;
+      private @Nullable Identifier statusIcon;
       private @Nullable Component statusIconTooltip;
 
       protected OnlineServerEntry(final JoinMultiplayerScreen var2, final ServerData var3) {
@@ -324,7 +324,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
                var8 = 8 - var8;
             }
 
-            ResourceLocation var17;
+            Identifier var17;
             switch (var8) {
                case 1 -> var17 = ServerSelectionList.PINGING_2_SPRITE;
                case 2 -> var17 = ServerSelectionList.PINGING_3_SPRITE;
@@ -338,7 +338,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
          int var16 = this.getContentRight() - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)this.statusIcon, var16, this.getContentY(), 10, 8);
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.statusIcon, var16, this.getContentY(), 10, 8);
          }
 
          byte[] var9 = this.serverData.getIconBytes();
@@ -370,27 +370,27 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             int var13 = var2 - this.getContentX();
             int var14 = var3 - this.getContentY();
             if (this.mouseOverRightHalf(var13, var14, 32)) {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                ServerSelectionList.this.handleCursor(var1);
             } else {
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.JOIN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
             }
 
             if (var15 > 0) {
                if (this.mouseOverTopLeftQuarter(var13, var14, 32)) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   ServerSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_UP_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
 
             if (var15 < this.screen.getServers().size() - 1) {
                if (this.mouseOverBottomLeftQuarter(var13, var14, 32)) {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                   ServerSelectionList.this.handleCursor(var1);
                } else {
-                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
+                  var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.MOVE_DOWN_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                }
             }
          }
@@ -437,7 +437,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.screen.getServers().save();
       }
 
-      protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
+      protected void drawIcon(GuiGraphics var1, int var2, int var3, Identifier var4) {
          var1.blit(RenderPipelines.GUI_TEXTURED, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 

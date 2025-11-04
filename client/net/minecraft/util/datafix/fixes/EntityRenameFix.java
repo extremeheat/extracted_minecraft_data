@@ -10,7 +10,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DynamicOps;
 import java.util.Locale;
 import java.util.function.Function;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class EntityRenameFix extends DataFix {

@@ -19,12 +19,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
 import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
+import net.minecraft.world.entity.animal.ZombieNautilusVariant;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.coppergolem.CopperGolemState;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
@@ -75,6 +77,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<FrogVariant>> FROG_VARIANT;
    public static final EntityDataSerializer<Holder<PigVariant>> PIG_VARIANT;
+   public static final EntityDataSerializer<Holder<ZombieNautilusVariant>> ZOMBIE_NAUTILUS_VARIANT;
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT;
    public static final EntityDataSerializer<Armadillo.ArmadilloState> ARMADILLO_STATE;
    public static final EntityDataSerializer<Sniffer.State> SNIFFER_STATE;
@@ -83,6 +86,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Vector3fc> VECTOR3;
    public static final EntityDataSerializer<Quaternionfc> QUATERNION;
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
+   public static final EntityDataSerializer<HumanoidArm> HUMANOID_ARM;
 
    public static void registerSerializer(EntityDataSerializer<?> var0) {
       SERIALIZERS.add(var0);
@@ -188,6 +192,7 @@ public class EntityDataSerializers {
       WOLF_SOUND_VARIANT = EntityDataSerializer.<Holder<WolfSoundVariant>>forValueType(WolfSoundVariant.STREAM_CODEC);
       FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
       PIG_VARIANT = EntityDataSerializer.<Holder<PigVariant>>forValueType(PigVariant.STREAM_CODEC);
+      ZOMBIE_NAUTILUS_VARIANT = EntityDataSerializer.<Holder<ZombieNautilusVariant>>forValueType(ZombieNautilusVariant.STREAM_CODEC);
       PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
       ARMADILLO_STATE = EntityDataSerializer.<Armadillo.ArmadilloState>forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
       SNIFFER_STATE = EntityDataSerializer.<Sniffer.State>forValueType(Sniffer.State.STREAM_CODEC);
@@ -196,6 +201,7 @@ public class EntityDataSerializers {
       VECTOR3 = EntityDataSerializer.<Vector3fc>forValueType(ByteBufCodecs.VECTOR3F);
       QUATERNION = EntityDataSerializer.<Quaternionfc>forValueType(ByteBufCodecs.QUATERNIONF);
       RESOLVABLE_PROFILE = EntityDataSerializer.<ResolvableProfile>forValueType(ResolvableProfile.STREAM_CODEC);
+      HUMANOID_ARM = EntityDataSerializer.<HumanoidArm>forValueType(HumanoidArm.STREAM_CODEC);
       registerSerializer(BYTE);
       registerSerializer(INT);
       registerSerializer(LONG);
@@ -224,6 +230,7 @@ public class EntityDataSerializers {
       registerSerializer(FROG_VARIANT);
       registerSerializer(PIG_VARIANT);
       registerSerializer(CHICKEN_VARIANT);
+      registerSerializer(ZOMBIE_NAUTILUS_VARIANT);
       registerSerializer(OPTIONAL_GLOBAL_POS);
       registerSerializer(PAINTING_VARIANT);
       registerSerializer(SNIFFER_STATE);
@@ -233,5 +240,6 @@ public class EntityDataSerializers {
       registerSerializer(VECTOR3);
       registerSerializer(QUATERNION);
       registerSerializer(RESOLVABLE_PROFILE);
+      registerSerializer(HUMANOID_ARM);
    }
 }

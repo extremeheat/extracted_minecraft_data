@@ -14,7 +14,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class KeyMapping implements Comparable<KeyMapping> {
@@ -217,7 +217,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.compareTo((KeyMapping)var1);
    }
 
-   public static record Category(ResourceLocation id) {
+   public static record Category(Identifier id) {
       static final List<Category> SORT_ORDER = new ArrayList();
       public static final Category MOVEMENT = register("movement");
       public static final Category MISC = register("misc");
@@ -228,16 +228,16 @@ public class KeyMapping implements Comparable<KeyMapping> {
       public static final Category SPECTATOR = register("spectator");
       public static final Category DEBUG = register("debug");
 
-      public Category(ResourceLocation var1) {
+      public Category(Identifier var1) {
          super();
          this.id = var1;
       }
 
       private static Category register(String var0) {
-         return register(ResourceLocation.withDefaultNamespace(var0));
+         return register(Identifier.withDefaultNamespace(var0));
       }
 
-      public static Category register(ResourceLocation var0) {
+      public static Category register(Identifier var0) {
          Category var1 = new Category(var0);
          if (SORT_ORDER.contains(var1)) {
             throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", var0));

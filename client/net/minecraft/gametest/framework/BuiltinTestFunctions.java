@@ -4,8 +4,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class BuiltinTestFunctions extends TestFunctionLoader {
    public static final ResourceKey<Consumer<GameTestHelper>> ALWAYS_PASS = create("always_pass");
@@ -16,7 +16,7 @@ public class BuiltinTestFunctions extends TestFunctionLoader {
    }
 
    private static ResourceKey<Consumer<GameTestHelper>> create(String var0) {
-      return ResourceKey.create(Registries.TEST_FUNCTION, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.TEST_FUNCTION, Identifier.withDefaultNamespace(var0));
    }
 
    public static Consumer<GameTestHelper> bootstrap(Registry<Consumer<GameTestHelper>> var0) {

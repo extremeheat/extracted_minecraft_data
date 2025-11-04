@@ -1,6 +1,6 @@
 package com.mojang.realmsclient.client;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class UploadStatus {
    private volatile long bytesWritten;

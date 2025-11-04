@@ -5,7 +5,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FrogRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 
@@ -14,7 +14,7 @@ public class FrogRenderer extends MobRenderer<Frog, FrogRenderState, FrogModel> 
       super(var1, new FrogModel(var1.bakeLayer(ModelLayers.FROG)), 0.3F);
    }
 
-   public ResourceLocation getTextureLocation(FrogRenderState var1) {
+   public Identifier getTextureLocation(FrogRenderState var1) {
       return var1.texture;
    }
 
@@ -33,7 +33,7 @@ public class FrogRenderer extends MobRenderer<Frog, FrogRenderState, FrogModel> 
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((FrogRenderState)var1);
    }
 

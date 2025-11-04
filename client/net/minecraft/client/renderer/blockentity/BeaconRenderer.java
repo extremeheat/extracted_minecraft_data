@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
@@ -22,7 +22,7 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T, BeaconRenderState> {
-   public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
+   public static final Identifier BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/beacon_beam.png");
    public static final int MAX_RENDER_Y = 2048;
    private static final float BEAM_SCALE_THRESHOLD = 96.0F;
    public static final float SOLID_BEAM_RADIUS = 0.2F;
@@ -64,7 +64,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
       submitBeaconBeam(var0, var1, BEAM_LOCATION, 1.0F, var3, var4, var5, var6, 0.2F * var2, 0.25F * var2);
    }
 
-   public static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, ResourceLocation var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9) {
+   public static void submitBeaconBeam(PoseStack var0, SubmitNodeCollector var1, Identifier var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9) {
       int var10 = var5 + var6;
       var0.pushPose();
       var0.translate(0.5, 0.0, 0.5);

@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -37,15 +37,18 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
    private static final Logger LOGGER = LogUtils.getLogger();
    /** @deprecated */
    @Deprecated
-   public static final ResourceLocation LOCATION_BLOCKS = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
+   public static final Identifier LOCATION_BLOCKS = Identifier.withDefaultNamespace("textures/atlas/blocks.png");
    /** @deprecated */
    @Deprecated
-   public static final ResourceLocation LOCATION_PARTICLES = ResourceLocation.withDefaultNamespace("textures/atlas/particles.png");
+   public static final Identifier LOCATION_ITEMS = Identifier.withDefaultNamespace("textures/atlas/items.png");
+   /** @deprecated */
+   @Deprecated
+   public static final Identifier LOCATION_PARTICLES = Identifier.withDefaultNamespace("textures/atlas/particles.png");
    private List<TextureAtlasSprite> sprites = List.of();
    private List<SpriteContents.AnimationState> animatedTexturesStates = List.of();
-   private Map<ResourceLocation, TextureAtlasSprite> texturesByName = Map.of();
+   private Map<Identifier, TextureAtlasSprite> texturesByName = Map.of();
    private @Nullable TextureAtlasSprite missingSprite;
-   private final ResourceLocation location;
+   private final Identifier location;
    private final int maxSupportedTextureSize;
    private int width;
    private int height;
@@ -54,7 +57,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
    private GpuTextureView[] mipViews = new GpuTextureView[0];
    private @Nullable GpuBuffer spriteUbos;
 
-   public TextureAtlas(ResourceLocation var1) {
+   public TextureAtlas(Identifier var1) {
       super();
       this.location = var1;
       this.maxSupportedTextureSize = RenderSystem.getDevice().getMaxTextureSize();
@@ -64,7 +67,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1, var2, var3, this.location});
       GpuDevice var4 = RenderSystem.getDevice();
       this.close();
-      ResourceLocation var10002 = this.location;
+      Identifier var10002 = this.location;
       Objects.requireNonNull(var10002);
       this.texture = var4.createTexture(var10002::toString, 15, TextureFormat.RGBA8, var1, var2, 1, var3 + 1);
       this.textureView = var4.createTextureView(this.texture);
@@ -141,7 +144,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       GpuDevice var1 = RenderSystem.getDevice();
       int var2 = Mth.roundToward(SpriteContents.UBO_SIZE, RenderSystem.getDevice().getUniformOffsetAlignment());
       int var3 = var2 * this.mipLevelCount;
-      GpuSampler var4 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
+      GpuSampler var4 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
       List var5 = this.sprites.stream().filter((var0) -> !var0.isAnimated()).toList();
       ArrayList var6 = new ArrayList();
       ByteBuffer var7 = MemoryUtil.memAlloc(var5.size() * var3);
@@ -184,13 +187,13 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       MemoryUtil.memFree(var7);
    }
 
-   public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
+   public void dumpContents(Identifier var1, Path var2) throws IOException {
       String var3 = var1.toDebugFileName();
       TextureUtil.writeAsPNG(var2, var3, this.getTexture(), this.maxMipLevel, (var0) -> var0);
       dumpSpriteNames(var2, var3, this.texturesByName);
    }
 
-   private static void dumpSpriteNames(Path var0, String var1, Map<ResourceLocation, TextureAtlasSprite> var2) {
+   private static void dumpSpriteNames(Path var0, String var1, Map<Identifier, TextureAtlasSprite> var2) {
       Path var3 = var0.resolve(var1 + ".txt");
 
       try {
@@ -247,7 +250,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       this.cycleAnimationFrames();
    }
 
-   public TextureAtlasSprite getSprite(ResourceLocation var1) {
+   public TextureAtlasSprite getSprite(Identifier var1) {
       TextureAtlasSprite var2 = (TextureAtlasSprite)this.texturesByName.getOrDefault(var1, this.missingSprite);
       if (var2 == null) {
          throw new IllegalStateException("Tried to lookup sprite, but atlas is not initialized");
@@ -286,7 +289,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
 
    }
 
-   public ResourceLocation location() {
+   public Identifier location() {
       return this.location;
    }
 

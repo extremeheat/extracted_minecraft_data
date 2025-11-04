@@ -10,7 +10,7 @@ import net.minecraft.client.User;
 import net.minecraft.client.gui.components.SplashRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.RandomSource;
@@ -23,7 +23,7 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
    public static final Component CHRISTMAS;
    public static final Component NEW_YEAR;
    public static final Component HALLOWEEN;
-   private static final ResourceLocation SPLASHES_LOCATION;
+   private static final Identifier SPLASHES_LOCATION;
    private static final RandomSource RANDOM;
    private List<Component> splashes = List.of();
    private final User user;
@@ -98,7 +98,7 @@ public class SplashManager extends SimplePreparableReloadListener<List<Component
       CHRISTMAS = literalSplash("Merry X-mas!");
       NEW_YEAR = literalSplash("Happy new year!");
       HALLOWEEN = literalSplash("OOoooOOOoooo! Spooky!");
-      SPLASHES_LOCATION = ResourceLocation.withDefaultNamespace("texts/splashes.txt");
+      SPLASHES_LOCATION = Identifier.withDefaultNamespace("texts/splashes.txt");
       RANDOM = RandomSource.create();
    }
 }

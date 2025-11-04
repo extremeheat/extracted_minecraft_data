@@ -303,8 +303,8 @@ public class HappyGhast extends Animal {
       float var4 = 0.0F;
       float var5 = 0.0F;
       if (var1.zza != 0.0F) {
-         float var6 = Mth.cos(var1.getXRot() * 0.017453292F);
-         float var7 = -Mth.sin(var1.getXRot() * 0.017453292F);
+         float var6 = Mth.cos((double)(var1.getXRot() * 0.017453292F));
+         float var7 = -Mth.sin((double)(var1.getXRot() * 0.017453292F));
          if (var1.zza < 0.0F) {
             var6 *= -0.5F;
             var7 *= -0.5F;

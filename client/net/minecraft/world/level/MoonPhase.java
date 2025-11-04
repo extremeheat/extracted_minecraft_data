@@ -1,5 +1,6 @@
 package net.minecraft.world.level;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 public enum MoonPhase implements StringRepresentable {
@@ -12,7 +13,9 @@ public enum MoonPhase implements StringRepresentable {
    FIRST_QUARTER(6, "first_quarter"),
    WAXING_GIBBOUS(7, "waxing_gibbous");
 
+   public static final Codec<MoonPhase> CODEC = StringRepresentable.<MoonPhase>fromEnum(MoonPhase::values);
    public static final int COUNT = values().length;
+   public static final int PHASE_LENGTH = 24000;
    private final int index;
    private final String name;
 
@@ -23,6 +26,10 @@ public enum MoonPhase implements StringRepresentable {
 
    public int index() {
       return this.index;
+   }
+
+   public int startTick() {
+      return this.index * 24000;
    }
 
    public String getSerializedName() {

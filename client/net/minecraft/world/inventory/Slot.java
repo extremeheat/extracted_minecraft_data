@@ -1,7 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -80,7 +80,7 @@ public class Slot {
       return Math.min(this.getMaxStackSize(), var1.getMaxStackSize());
    }
 
-   public @Nullable ResourceLocation getNoItemIcon() {
+   public @Nullable Identifier getNoItemIcon() {
       return null;
    }
 

@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -21,11 +21,11 @@ public class PackSelectionModel {
    private final PackRepository repository;
    final List<Pack> selected;
    final List<Pack> unselected;
-   final Function<Pack, ResourceLocation> iconGetter;
+   final Function<Pack, Identifier> iconGetter;
    final Consumer<EntryBase> onListChanged;
    private final Consumer<PackRepository> output;
 
-   public PackSelectionModel(Consumer<EntryBase> var1, Function<Pack, ResourceLocation> var2, PackRepository var3, Consumer<PackRepository> var4) {
+   public PackSelectionModel(Consumer<EntryBase> var1, Function<Pack, Identifier> var2, PackRepository var3, Consumer<PackRepository> var4) {
       super();
       this.onListChanged = var1;
       this.iconGetter = var2;
@@ -63,7 +63,7 @@ public class PackSelectionModel {
    }
 
    public interface Entry {
-      ResourceLocation getIconTexture();
+      Identifier getIconTexture();
 
       PackCompatibility getCompatibility();
 
@@ -118,8 +118,8 @@ public class PackSelectionModel {
 
       protected abstract List<Pack> getOtherList();
 
-      public ResourceLocation getIconTexture() {
-         return (ResourceLocation)PackSelectionModel.this.iconGetter.apply(this.pack);
+      public Identifier getIconTexture() {
+         return (Identifier)PackSelectionModel.this.iconGetter.apply(this.pack);
       }
 
       public PackCompatibility getCompatibility() {

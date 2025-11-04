@@ -86,7 +86,7 @@ public interface DataComponentPredicate {
       private final AnyValue predicate;
 
       public AnyValueType(AnyValue var1) {
-         super(Codec.unit(var1));
+         super(MapCodec.unitCodec(var1));
          this.predicate = var1;
       }
 

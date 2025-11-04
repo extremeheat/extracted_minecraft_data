@@ -29,7 +29,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -92,8 +91,8 @@ import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerScoreboard;
@@ -114,6 +113,7 @@ import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -132,7 +132,6 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
@@ -429,7 +428,7 @@ public class ServerPlayer extends Player {
       var1.storeNullable("entered_nether_pos", Vec3.CODEC, this.enteredNetherPosition);
       this.saveParentVehicle(var1);
       var1.store("recipeBook", ServerRecipeBook.Packed.CODEC, this.recipeBook.pack());
-      var1.putString("Dimension", this.level().dimension().location().toString());
+      var1.putString("Dimension", this.level().dimension().identifier().toString());
       var1.storeNullable("respawn", ServerPlayer.RespawnConfig.CODEC, this.respawnConfig);
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       var1.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
@@ -1733,13 +1732,12 @@ public class ServerPlayer extends Player {
       this.allowsListing = var1.allowsListing();
       this.particleStatus = var1.particleStatus();
       this.getEntityData().set(DATA_PLAYER_MODE_CUSTOMISATION, (byte)var1.modelCustomisation());
-      this.getEntityData().set(DATA_PLAYER_MAIN_HAND, (byte)var1.mainHand().getId());
+      this.getEntityData().set(DATA_PLAYER_MAIN_HAND, var1.mainHand());
    }
 
    public ClientInformation clientInformation() {
       byte var1 = (Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION);
-      HumanoidArm var2 = (HumanoidArm)HumanoidArm.BY_ID.apply((Byte)this.getEntityData().get(DATA_PLAYER_MAIN_HAND));
-      return new ClientInformation(this.language, this.requestedViewDistance, this.chatVisibility, this.canChatColor, var1, var2, this.textFilteringEnabled, this.allowsListing, this.particleStatus);
+      return new ClientInformation(this.language, this.requestedViewDistance, this.chatVisibility, this.canChatColor, var1, this.getMainArm(), this.textFilteringEnabled, this.allowsListing, this.particleStatus);
    }
 
    public boolean canChatInColor() {
@@ -1959,11 +1957,15 @@ public class ServerPlayer extends Player {
       super.updateUsingItem(var1);
    }
 
-   public boolean drop(boolean var1) {
+   public void drop(boolean var1) {
       Inventory var2 = this.getInventory();
       ItemStack var3 = var2.removeFromSelected(var1);
       this.containerMenu.findSlot(var2, var2.getSelectedSlot()).ifPresent((var2x) -> this.containerMenu.setRemoteSlot(var2x, var2.getSelectedItem()));
-      return this.drop(var3, false, true) != null;
+      if (this.useItem.isEmpty()) {
+         this.stopUsingItem();
+      }
+
+      this.drop(var3, false, true);
    }
 
    public void handleExtraItemsCreatedOnUse(ItemStack var1) {
@@ -2059,6 +2061,11 @@ public class ServerPlayer extends Player {
       return var1 != null && var1.getControllingPassenger() != this ? var1.getKnownMovement() : this.lastKnownClientMovement;
    }
 
+   public Vec3 getKnownSpeed() {
+      Entity var1 = this.getVehicle();
+      return var1 != null && var1.getControllingPassenger() != this ? var1.getKnownSpeed() : this.lastKnownClientMovement;
+   }
+
    public void setKnownMovement(Vec3 var1) {
       this.lastKnownClientMovement = var1;
    }
@@ -2152,10 +2159,10 @@ public class ServerPlayer extends Player {
    }
 
    static {
-      CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE);
-      CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_entity_range"), 2.0, AttributeModifier.Operation.ADD_VALUE);
+      CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE);
+      CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("creative_mode_entity_range"), 2.0, AttributeModifier.Operation.ADD_VALUE);
       SPAWN_SET_MESSAGE = Component.translatable("block.minecraft.set_spawn");
-      WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("waypoint_transmit_range_crouch"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+      WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER = new AttributeModifier(Identifier.withDefaultNamespace("waypoint_transmit_range_crouch"), -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
    }
 
    static record RespawnPosAngle(Vec3 position, float yaw, float pitch) {

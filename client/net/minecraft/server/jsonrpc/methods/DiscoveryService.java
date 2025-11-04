@@ -23,13 +23,13 @@ public class DiscoveryService {
       ArrayList var1 = new ArrayList(BuiltInRegistries.INCOMING_RPC_METHOD.size() + BuiltInRegistries.OUTGOING_RPC_METHOD.size());
       BuiltInRegistries.INCOMING_RPC_METHOD.listElements().forEach((var1x) -> {
          if (((IncomingRpcMethod)var1x.value()).attributes().discoverable()) {
-            var1.add(((IncomingRpcMethod)var1x.value()).info().named(var1x.key().location()));
+            var1.add(((IncomingRpcMethod)var1x.value()).info().named(var1x.key().identifier()));
          }
 
       });
       BuiltInRegistries.OUTGOING_RPC_METHOD.listElements().forEach((var1x) -> {
          if (((OutgoingRpcMethod)var1x.value()).attributes().discoverable()) {
-            var1.add(((OutgoingRpcMethod)var1x.value()).info().named(var1x.key().location()));
+            var1.add(((OutgoingRpcMethod)var1x.value()).info().named(var1x.key().identifier()));
          }
 
       });

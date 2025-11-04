@@ -5,7 +5,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -19,6 +18,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.BlockUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -333,7 +333,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    public float getRowingTime(int var1, float var2) {
-      return this.getPaddleState(var1) ? Mth.clampedLerp(this.paddlePositions[var1] - 0.3926991F, this.paddlePositions[var1], var2) : 0.0F;
+      return this.getPaddleState(var1) ? Mth.clampedLerp(var2, this.paddlePositions[var1] - 0.3926991F, this.paddlePositions[var1]) : 0.0F;
    }
 
    public Leashable.@Nullable LeashData getLeashData() {
@@ -577,7 +577,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             var1 -= 0.005F;
          }
 
-         this.setDeltaMovement(this.getDeltaMovement().add((double)(Mth.sin(-this.getYRot() * 0.017453292F) * var1), 0.0, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var1)));
+         this.setDeltaMovement(this.getDeltaMovement().add((double)(Mth.sin((double)(-this.getYRot() * 0.017453292F)) * var1), 0.0, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * var1)));
          this.setPaddleState(this.inputRight && !this.inputLeft || this.inputUp, this.inputLeft && !this.inputRight || this.inputUp);
       }
    }

@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.blockentity.ShulkerBoxRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
@@ -38,18 +38,18 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
       this.shulkerBoxRenderer.getExtents(this.orientation, this.openness, var1);
    }
 
-   public static record Unbaked(ResourceLocation texture, float openness, Direction orientation) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier texture, float openness, Direction orientation) implements SpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(var0, Unbaked::new));
 
       public Unbaked() {
-         this(ResourceLocation.withDefaultNamespace("shulker"), 0.0F, Direction.UP);
+         this(Identifier.withDefaultNamespace("shulker"), 0.0F, Direction.UP);
       }
 
       public Unbaked(DyeColor var1) {
          this(Sheets.colorToShulkerMaterial(var1), 0.0F, Direction.UP);
       }
 
-      public Unbaked(ResourceLocation var1, float var2, Direction var3) {
+      public Unbaked(Identifier var1, float var2, Direction var3) {
          super();
          this.texture = var1;
          this.openness = var2;

@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
@@ -11,9 +11,9 @@ import net.minecraft.world.inventory.ItemCombinerMenu;
 import net.minecraft.world.item.ItemStack;
 
 public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends AbstractContainerScreen<T> implements ContainerListener {
-   private final ResourceLocation menuResource;
+   private final Identifier menuResource;
 
-   public ItemCombinerScreen(T var1, Inventory var2, Component var3, ResourceLocation var4) {
+   public ItemCombinerScreen(T var1, Inventory var2, Component var3, Identifier var4) {
       super(var1, var2, var3);
       this.menuResource = var4;
    }

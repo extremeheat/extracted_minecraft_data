@@ -51,9 +51,9 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
       this.head.yRot = var1.yRot * 0.017453292F;
       float var2 = var1.walkAnimationPos;
       float var3 = var1.walkAnimationSpeed;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
+      this.rightHindLeg.xRot = Mth.cos((double)(var2 * 0.6662F)) * 1.4F * var3;
+      this.leftHindLeg.xRot = Mth.cos((double)(var2 * 0.6662F + 3.1415927F)) * 1.4F * var3;
+      this.rightFrontLeg.xRot = Mth.cos((double)(var2 * 0.6662F + 3.1415927F)) * 1.4F * var3;
+      this.leftFrontLeg.xRot = Mth.cos((double)(var2 * 0.6662F)) * 1.4F * var3;
    }
 }

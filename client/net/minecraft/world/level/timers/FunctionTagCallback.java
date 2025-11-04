@@ -3,14 +3,14 @@ package net.minecraft.world.level.timers;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 
-public record FunctionTagCallback(ResourceLocation tagId) implements TimerCallback<MinecraftServer> {
-   public static final MapCodec<FunctionTagCallback> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("Name").forGetter(FunctionTagCallback::tagId)).apply(var0, FunctionTagCallback::new));
+public record FunctionTagCallback(Identifier tagId) implements TimerCallback<MinecraftServer> {
+   public static final MapCodec<FunctionTagCallback> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("Name").forGetter(FunctionTagCallback::tagId)).apply(var0, FunctionTagCallback::new));
 
-   public FunctionTagCallback(ResourceLocation var1) {
+   public FunctionTagCallback(Identifier var1) {
       super();
       this.tagId = var1;
    }

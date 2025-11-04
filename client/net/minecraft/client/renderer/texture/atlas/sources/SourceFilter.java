@@ -4,12 +4,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ResourceLocationPattern;
+import net.minecraft.util.IdentifierPattern;
 
-public record SourceFilter(ResourceLocationPattern filter) implements SpriteSource {
-   public static final MapCodec<SourceFilter> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocationPattern.CODEC.fieldOf("pattern").forGetter(SourceFilter::filter)).apply(var0, SourceFilter::new));
+public record SourceFilter(IdentifierPattern filter) implements SpriteSource {
+   public static final MapCodec<SourceFilter> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IdentifierPattern.CODEC.fieldOf("pattern").forGetter(SourceFilter::filter)).apply(var0, SourceFilter::new));
 
-   public SourceFilter(final ResourceLocationPattern var1) {
+   public SourceFilter(final IdentifierPattern var1) {
       super();
       this.filter = var1;
    }

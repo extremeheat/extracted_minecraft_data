@@ -19,7 +19,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.EntityHitResult;
 
 public record PiercingWeapon(float minReach, float maxReach, float hitboxMargin, boolean dealsKnockback, boolean dismounts, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
-   public static final Codec<PiercingWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("min_reach", 0.0F).forGetter(PiercingWeapon::minReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("max_reach", 3.0F).forGetter(PiercingWeapon::maxReach), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("hitbox_margin", 0.3F).forGetter(PiercingWeapon::hitboxMargin), Codec.BOOL.optionalFieldOf("deals_knockback", true).forGetter(PiercingWeapon::dealsKnockback), Codec.BOOL.optionalFieldOf("dismounts", false).forGetter(PiercingWeapon::dismounts), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(PiercingWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(PiercingWeapon::hitSound)).apply(var0, PiercingWeapon::new));
+   public static final Codec<PiercingWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 128.0F).optionalFieldOf("min_reach", 0.0F).forGetter(PiercingWeapon::minReach), ExtraCodecs.floatRange(0.0F, 128.0F).optionalFieldOf("max_reach", 3.0F).forGetter(PiercingWeapon::maxReach), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(PiercingWeapon::hitboxMargin), Codec.BOOL.optionalFieldOf("deals_knockback", true).forGetter(PiercingWeapon::dealsKnockback), Codec.BOOL.optionalFieldOf("dismounts", false).forGetter(PiercingWeapon::dismounts), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(PiercingWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(PiercingWeapon::hitSound)).apply(var0, PiercingWeapon::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, PiercingWeapon> STREAM_CODEC;
 
    public PiercingWeapon(float var1, float var2, float var3, boolean var4, boolean var5, Optional<Holder<SoundEvent>> var6, Optional<Holder<SoundEvent>> var7) {
@@ -42,9 +42,7 @@ public record PiercingWeapon(float minReach, float maxReach, float hitboxMargin,
    }
 
    public static boolean canHitEntity(Entity var0, Entity var1) {
-      if (!var1.canBeHitByProjectile()) {
-         return false;
-      } else {
+      if (var1.canBeHitByProjectile() && !var1.isInvulnerable() && var1.isAlive()) {
          if (var1 instanceof Player) {
             Player var2 = (Player)var1;
             if (var0 instanceof Player) {
@@ -56,6 +54,8 @@ public record PiercingWeapon(float minReach, float maxReach, float hitboxMargin,
          }
 
          return !var0.isPassengerOfSameVehicle(var1);
+      } else {
+         return false;
       }
    }
 

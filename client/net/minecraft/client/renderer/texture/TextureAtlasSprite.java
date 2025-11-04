@@ -6,13 +6,13 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.nio.ByteBuffer;
 import net.minecraft.client.renderer.SpriteCoordinateExpander;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 public class TextureAtlasSprite implements AutoCloseable {
-   private final ResourceLocation atlasLocation;
+   private final Identifier atlasLocation;
    private final SpriteContents contents;
    private final int x;
    private final int y;
@@ -22,7 +22,7 @@ public class TextureAtlasSprite implements AutoCloseable {
    private final float v1;
    private final int padding;
 
-   protected TextureAtlasSprite(ResourceLocation var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
+   protected TextureAtlasSprite(Identifier var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
       super();
       this.atlasLocation = var1;
       this.contents = var2;
@@ -77,7 +77,7 @@ public class TextureAtlasSprite implements AutoCloseable {
       return this.v0 + var2 * var1;
    }
 
-   public ResourceLocation atlasLocation() {
+   public Identifier atlasLocation() {
       return this.atlasLocation;
    }
 

@@ -12,8 +12,8 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
@@ -36,7 +36,7 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
    }
 
    private static ResourceKey<ChatType> create(String var0) {
-      return ResourceKey.create(Registries.CHAT_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return ResourceKey.create(Registries.CHAT_TYPE, Identifier.withDefaultNamespace(var0));
    }
 
    public static void bootstrap(BootstrapContext<ChatType> var0) {

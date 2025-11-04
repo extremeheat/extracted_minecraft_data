@@ -19,9 +19,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.Util;
 import net.minecraft.util.DelegateDataOutput;
 import net.minecraft.util.FastBufferedInputStream;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class NbtIo {

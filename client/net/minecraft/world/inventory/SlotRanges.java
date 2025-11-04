@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.EquipmentSlot;
 import org.jspecify.annotations.Nullable;
 

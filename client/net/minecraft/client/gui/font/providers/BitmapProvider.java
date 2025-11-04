@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -48,11 +48,11 @@ public class BitmapProvider implements GlyphProvider {
       return IntSets.unmodifiable(this.glyphs.keySet());
    }
 
-   public static record Definition(ResourceLocation file, int height, int ascent, int[][] codepointGrid) implements GlyphProviderDefinition {
+   public static record Definition(Identifier file, int height, int ascent, int[][] codepointGrid) implements GlyphProviderDefinition {
       private static final Codec<int[][]> CODEPOINT_GRID_CODEC;
       public static final MapCodec<Definition> CODEC;
 
-      public Definition(ResourceLocation var1, int var2, int var3, int[][] var4) {
+      public Definition(Identifier var1, int var2, int var3, int[][] var4) {
          super();
          this.file = var1;
          this.height = var2;
@@ -95,7 +95,7 @@ public class BitmapProvider implements GlyphProvider {
       }
 
       private GlyphProvider load(ResourceManager var1) throws IOException {
-         ResourceLocation var2 = this.file.withPrefix("textures/");
+         Identifier var2 = this.file.withPrefix("textures/");
          InputStream var3 = var1.open(var2);
 
          BitmapProvider var22;
@@ -178,7 +178,7 @@ public class BitmapProvider implements GlyphProvider {
 
             return var1;
          }).validate(Definition::validateDimensions);
-         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("file").forGetter(Definition::file), Codec.INT.optionalFieldOf("height", 8).forGetter(Definition::height), Codec.INT.fieldOf("ascent").forGetter(Definition::ascent), CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(Definition::codepointGrid)).apply(var0, Definition::new)).validate(Definition::validate);
+         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("file").forGetter(Definition::file), Codec.INT.optionalFieldOf("height", 8).forGetter(Definition::height), Codec.INT.fieldOf("ascent").forGetter(Definition::ascent), CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(Definition::codepointGrid)).apply(var0, Definition::new)).validate(Definition::validate);
       }
    }
 

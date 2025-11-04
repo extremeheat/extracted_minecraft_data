@@ -30,7 +30,7 @@ import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
@@ -456,7 +456,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       Registry var6 = var0.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
       for(Map.Entry var8 : var2.entrySet()) {
-         ResourceLocation var9 = var6.getKey((Structure)var8.getKey());
+         Identifier var9 = var6.getKey((Structure)var8.getKey());
          var5.put(var9.toString(), ((StructureStart)var8.getValue()).createTag(var0, var1));
       }
 
@@ -465,7 +465,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
 
       for(Map.Entry var13 : var3.entrySet()) {
          if (!((LongSet)var13.getValue()).isEmpty()) {
-            ResourceLocation var10 = var6.getKey((Structure)var13.getKey());
+            Identifier var10 = var6.getKey((Structure)var13.getKey());
             var11.putLongArray(var10.toString(), ((LongSet)var13.getValue()).toLongArray());
          }
       }
@@ -480,7 +480,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       CompoundTag var6 = var1.getCompoundOrEmpty("starts");
 
       for(String var8 : var6.keySet()) {
-         ResourceLocation var9 = ResourceLocation.tryParse(var8);
+         Identifier var9 = Identifier.tryParse(var8);
          Structure var10 = (Structure)var5.getValue(var9);
          if (var10 == null) {
             LOGGER.error("Unknown structure start: {}", var9);
@@ -500,7 +500,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       Registry var4 = var0.lookupOrThrow(Registries.STRUCTURE);
       CompoundTag var5 = var2.getCompoundOrEmpty("References");
       var5.forEach((var3x, var4x) -> {
-         ResourceLocation var5 = ResourceLocation.tryParse(var3x);
+         Identifier var5 = Identifier.tryParse(var3x);
          Structure var6 = (Structure)var4.getValue(var5);
          if (var6 == null) {
             LOGGER.warn("Found reference to unknown structure '{}' in chunk {}, discarding", var5, var1);

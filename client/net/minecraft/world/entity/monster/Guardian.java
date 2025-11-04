@@ -241,7 +241,7 @@ public class Guardian extends Monster {
             this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F)));
             this.setYRot(this.random.nextFloat() * 360.0F);
             this.setOnGround(false);
-            this.hasImpulse = true;
+            this.needsSync = true;
          }
 
          if (this.hasActiveAttackTarget()) {
@@ -357,7 +357,7 @@ public class Guardian extends Monster {
             this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
          }
 
-         this.guardian.hasImpulse = true;
+         this.guardian.needsSync = true;
       }
 
       public void stop() {

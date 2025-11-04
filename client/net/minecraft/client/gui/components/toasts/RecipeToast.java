@@ -6,14 +6,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class RecipeToast implements Toast {
-   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/recipe");
+   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("toast/recipe");
    private static final long DISPLAY_TIME = 5000L;
    private static final Component TITLE_TEXT = Component.translatable("recipe.toast.title");
    private static final Component DESCRIPTION_TEXT = Component.translatable("recipe.toast.description");
@@ -48,7 +48,7 @@ public class RecipeToast implements Toast {
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       var1.drawString(var2, (Component)TITLE_TEXT, 30, 7, -11534256, false);
       var1.drawString(var2, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
       Entry var5 = (Entry)this.recipeItems.get(this.displayedRecipeIndex);

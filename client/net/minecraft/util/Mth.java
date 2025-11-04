@@ -4,7 +4,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
-import net.minecraft.Util;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -25,13 +24,16 @@ public class Mth {
    public static final float RAD_TO_DEG = 57.295776F;
    public static final float EPSILON = 1.0E-5F;
    public static final float SQRT_OF_TWO = sqrt(2.0F);
-   private static final float SIN_SCALE = 10430.378F;
    public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
    public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
    public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
+   private static final int SIN_QUANTIZATION = 65536;
+   private static final int SIN_MASK = 65535;
+   private static final int COS_OFFSET = 16384;
+   private static final double SIN_SCALE = 10430.378350470453;
    private static final float[] SIN = (float[])Util.make(new float[65536], (var0x) -> {
       for(int var1 = 0; var1 < var0x.length; ++var1) {
-         var0x[var1] = (float)Math.sin((double)var1 * 3.141592653589793 * 2.0 / 65536.0);
+         var0x[var1] = (float)Math.sin((double)var1 / 10430.378350470453);
       }
 
    });
@@ -48,12 +50,12 @@ public class Mth {
       super();
    }
 
-   public static float sin(float var0) {
-      return SIN[(int)(var0 * 10430.378F) & '\uffff'];
+   public static float sin(double var0) {
+      return SIN[(int)((long)(var0 * 10430.378350470453) & 65535L)];
    }
 
-   public static float cos(float var0) {
-      return SIN[(int)(var0 * 10430.378F + 16384.0F) & '\uffff'];
+   public static float cos(double var0) {
+      return SIN[(int)((long)(var0 * 10430.378350470453 + 16384.0) & 65535L)];
    }
 
    public static float sqrt(float var0) {
@@ -115,18 +117,18 @@ public class Mth {
    }
 
    public static double clampedLerp(double var0, double var2, double var4) {
-      if (var4 < 0.0) {
-         return var0;
+      if (var0 < 0.0) {
+         return var2;
       } else {
-         return var4 > 1.0 ? var2 : lerp(var4, var0, var2);
+         return var0 > 1.0 ? var4 : lerp(var0, var2, var4);
       }
    }
 
    public static float clampedLerp(float var0, float var1, float var2) {
-      if (var2 < 0.0F) {
-         return var0;
+      if (var0 < 0.0F) {
+         return var1;
       } else {
-         return var2 > 1.0F ? var1 : lerp(var2, var0, var1);
+         return var0 > 1.0F ? var2 : lerp(var0, var1, var2);
       }
    }
 
@@ -620,11 +622,11 @@ public class Mth {
    }
 
    public static double clampedMap(double var0, double var2, double var4, double var6, double var8) {
-      return clampedLerp(var6, var8, inverseLerp(var0, var2, var4));
+      return clampedLerp(inverseLerp(var0, var2, var4), var6, var8);
    }
 
    public static float clampedMap(float var0, float var1, float var2, float var3, float var4) {
-      return clampedLerp(var3, var4, inverseLerp(var0, var1, var2));
+      return clampedLerp(inverseLerp(var0, var1, var2), var3, var4);
    }
 
    public static double map(double var0, double var2, double var4, double var6, double var8) {

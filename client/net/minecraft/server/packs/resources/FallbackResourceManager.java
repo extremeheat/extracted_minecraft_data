@@ -22,7 +22,7 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import org.jspecify.annotations.Nullable;
@@ -44,15 +44,15 @@ public class FallbackResourceManager implements ResourceManager {
       this.pushInternal(var1.packId(), var1, (Predicate)null);
    }
 
-   public void push(PackResources var1, Predicate<ResourceLocation> var2) {
+   public void push(PackResources var1, Predicate<Identifier> var2) {
       this.pushInternal(var1.packId(), var1, var2);
    }
 
-   public void pushFilterOnly(String var1, Predicate<ResourceLocation> var2) {
+   public void pushFilterOnly(String var1, Predicate<Identifier> var2) {
       this.pushInternal(var1, (PackResources)null, var2);
    }
 
-   private void pushInternal(String var1, @Nullable PackResources var2, @Nullable Predicate<ResourceLocation> var3) {
+   private void pushInternal(String var1, @Nullable PackResources var2, @Nullable Predicate<Identifier> var3) {
       this.fallbacks.add(new PackEntry(var1, var2, var3));
    }
 
@@ -60,7 +60,7 @@ public class FallbackResourceManager implements ResourceManager {
       return ImmutableSet.of(this.namespace);
    }
 
-   public Optional<Resource> getResource(ResourceLocation var1) {
+   public Optional<Resource> getResource(Identifier var1) {
       for(int var2 = this.fallbacks.size() - 1; var2 >= 0; --var2) {
          PackEntry var3 = (PackEntry)this.fallbacks.get(var2);
          PackResources var4 = var3.resources;
@@ -81,16 +81,16 @@ public class FallbackResourceManager implements ResourceManager {
       return Optional.empty();
    }
 
-   private static Resource createResource(PackResources var0, ResourceLocation var1, IoSupplier<InputStream> var2, IoSupplier<ResourceMetadata> var3) {
+   private static Resource createResource(PackResources var0, Identifier var1, IoSupplier<InputStream> var2, IoSupplier<ResourceMetadata> var3) {
       return new Resource(var0, wrapForDebug(var1, var0, var2), var3);
    }
 
-   private static IoSupplier<InputStream> wrapForDebug(ResourceLocation var0, PackResources var1, IoSupplier<InputStream> var2) {
+   private static IoSupplier<InputStream> wrapForDebug(Identifier var0, PackResources var1, IoSupplier<InputStream> var2) {
       return LOGGER.isDebugEnabled() ? () -> new LeakedResourceWarningInputStream((InputStream)var2.get(), var0, var1.packId()) : var2;
    }
 
-   public List<Resource> getResourceStack(ResourceLocation var1) {
-      ResourceLocation var2 = getMetadataLocation(var1);
+   public List<Resource> getResourceStack(Identifier var1) {
+      Identifier var2 = getMetadataLocation(var1);
       ArrayList var3 = new ArrayList();
       boolean var4 = false;
       String var5 = null;
@@ -132,20 +132,20 @@ public class FallbackResourceManager implements ResourceManager {
       return Lists.reverse(var3);
    }
 
-   private static boolean isMetadata(ResourceLocation var0) {
+   private static boolean isMetadata(Identifier var0) {
       return var0.getPath().endsWith(".mcmeta");
    }
 
-   private static ResourceLocation getResourceLocationFromMetadata(ResourceLocation var0) {
+   private static Identifier getIdentifierFromMetadata(Identifier var0) {
       String var1 = var0.getPath().substring(0, var0.getPath().length() - ".mcmeta".length());
       return var0.withPath(var1);
    }
 
-   static ResourceLocation getMetadataLocation(ResourceLocation var0) {
+   static Identifier getMetadataLocation(Identifier var0) {
       return var0.withPath(var0.getPath() + ".mcmeta");
    }
 
-   public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
       HashMap var3 = new HashMap();
       HashMap var4 = new HashMap();
       int var5 = this.fallbacks.size();
@@ -171,7 +171,7 @@ public class FallbackResourceManager implements ResourceManager {
                }
 
                if (isMetadata(var5x)) {
-                  if (var2.test(getResourceLocationFromMetadata(var5x))) {
+                  if (var2.test(getIdentifierFromMetadata(var5x))) {
                      var4.put(var5x, new 1ResourceWithSourceAndIndex(var8, var6x, var6));
                   }
                } else if (var2.test(var5x)) {
@@ -184,7 +184,7 @@ public class FallbackResourceManager implements ResourceManager {
 
       TreeMap var10 = Maps.newTreeMap();
       var3.forEach((var2x, var3x) -> {
-         ResourceLocation var5 = getMetadataLocation(var2x);
+         Identifier var5 = getMetadataLocation(var2x);
          1ResourceWithSourceAndIndex var6 = (1ResourceWithSourceAndIndex)var4.get(var5);
          IoSupplier var4x;
          if (var6 != null && var6.packIndex >= var3x.packIndex) {
@@ -198,9 +198,9 @@ public class FallbackResourceManager implements ResourceManager {
       return var10;
    }
 
-   private IoSupplier<ResourceMetadata> createStackMetadataFinder(ResourceLocation var1, int var2) {
+   private IoSupplier<ResourceMetadata> createStackMetadataFinder(Identifier var1, int var2) {
       return () -> {
-         ResourceLocation var3 = getMetadataLocation(var1);
+         Identifier var3 = getMetadataLocation(var1);
 
          for(int var4 = this.fallbacks.size() - 1; var4 >= var2; --var4) {
             PackEntry var5 = (PackEntry)this.fallbacks.get(var4);
@@ -250,7 +250,7 @@ public class FallbackResourceManager implements ResourceManager {
       return var2;
    }
 
-   private static void applyPackFiltersToExistingResources(PackEntry var0, Map<ResourceLocation, EntryStack> var1) {
+   private static void applyPackFiltersToExistingResources(PackEntry var0, Map<Identifier, EntryStack> var1) {
       for(EntryStack var3 : var1.values()) {
          if (var0.isFiltered(var3.fileLocation)) {
             var3.fileSources.clear();
@@ -261,12 +261,12 @@ public class FallbackResourceManager implements ResourceManager {
 
    }
 
-   private void listPackResources(PackEntry var1, String var2, Predicate<ResourceLocation> var3, Map<ResourceLocation, EntryStack> var4) {
+   private void listPackResources(PackEntry var1, String var2, Predicate<Identifier> var3, Map<Identifier, EntryStack> var4) {
       PackResources var5 = var1.resources;
       if (var5 != null) {
          var5.listResources(this.type, this.namespace, var2, (var3x, var4x) -> {
             if (isMetadata(var3x)) {
-               ResourceLocation var5x = getResourceLocationFromMetadata(var3x);
+               Identifier var5x = getIdentifierFromMetadata(var3x);
                if (!var3.test(var5x)) {
                   return;
                }
@@ -284,7 +284,7 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
+   public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
       HashMap var3 = Maps.newHashMap();
 
       for(PackEntry var5 : this.fallbacks) {
@@ -320,7 +320,7 @@ public class FallbackResourceManager implements ResourceManager {
       private final Supplier<String> message;
       private boolean closed;
 
-      public LeakedResourceWarningInputStream(InputStream var1, ResourceLocation var2, String var3) {
+      public LeakedResourceWarningInputStream(InputStream var1, Identifier var2, String var3) {
          super(var1);
          Exception var4 = new Exception("Stacktrace");
          this.message = () -> {
@@ -344,16 +344,16 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   static record EntryStack(ResourceLocation fileLocation, ResourceLocation metadataLocation, List<ResourceWithSource> fileSources, Map<PackResources, IoSupplier<InputStream>> metaSources) {
-      final ResourceLocation fileLocation;
+   static record EntryStack(Identifier fileLocation, Identifier metadataLocation, List<ResourceWithSource> fileSources, Map<PackResources, IoSupplier<InputStream>> metaSources) {
+      final Identifier fileLocation;
       final List<ResourceWithSource> fileSources;
       final Map<PackResources, IoSupplier<InputStream>> metaSources;
 
-      EntryStack(ResourceLocation var1) {
+      EntryStack(Identifier var1) {
          this(var1, FallbackResourceManager.getMetadataLocation(var1), new ArrayList(), new Object2ObjectArrayMap());
       }
 
-      private EntryStack(ResourceLocation var1, ResourceLocation var2, List<ResourceWithSource> var3, Map<PackResources, IoSupplier<InputStream>> var4) {
+      private EntryStack(Identifier var1, Identifier var2, List<ResourceWithSource> var3, Map<PackResources, IoSupplier<InputStream>> var4) {
          super();
          this.fileLocation = var1;
          this.metadataLocation = var2;
@@ -362,25 +362,25 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   static record PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<ResourceLocation> filter) {
+   static record PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<Identifier> filter) {
       final String name;
       final @Nullable PackResources resources;
 
-      PackEntry(String var1, @Nullable PackResources var2, @Nullable Predicate<ResourceLocation> var3) {
+      PackEntry(String var1, @Nullable PackResources var2, @Nullable Predicate<Identifier> var3) {
          super();
          this.name = var1;
          this.resources = var2;
          this.filter = var3;
       }
 
-      public void filterAll(Collection<ResourceLocation> var1) {
+      public void filterAll(Collection<Identifier> var1) {
          if (this.filter != null) {
             var1.removeIf(this.filter);
          }
 
       }
 
-      public boolean isFiltered(ResourceLocation var1) {
+      public boolean isFiltered(Identifier var1) {
          return this.filter != null && this.filter.test(var1);
       }
    }

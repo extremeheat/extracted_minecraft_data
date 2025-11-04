@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import java.net.URI;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -10,6 +9,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 public class DisconnectedScreen extends Screen {
    private static final Component TO_SERVER_LIST = Component.translatable("gui.toMenu");

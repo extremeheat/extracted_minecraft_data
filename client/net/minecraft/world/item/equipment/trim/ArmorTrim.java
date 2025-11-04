@@ -5,15 +5,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
@@ -36,13 +36,13 @@ public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> patte
       var2.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
    }
 
-   public ResourceLocation layerAssetId(String var1, ResourceKey<EquipmentAsset> var2) {
+   public Identifier layerAssetId(String var1, ResourceKey<EquipmentAsset> var2) {
       MaterialAssetGroup.AssetInfo var3 = ((TrimMaterial)this.material().value()).assets().assetId(var2);
       return ((TrimPattern)this.pattern().value()).assetId().withPath((UnaryOperator)((var2x) -> var1 + "/" + var2x + "_" + var3.suffix()));
    }
 
    static {
       STREAM_CODEC = StreamCodec.composite(TrimMaterial.STREAM_CODEC, ArmorTrim::material, TrimPattern.STREAM_CODEC, ArmorTrim::pattern, ArmorTrim::new);
-      UPGRADE_TITLE = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.upgrade"))).withStyle(ChatFormatting.GRAY);
+      UPGRADE_TITLE = Component.translatable(Util.makeDescriptionId("item", Identifier.withDefaultNamespace("smithing_template.upgrade"))).withStyle(ChatFormatting.GRAY);
    }
 }

@@ -2,11 +2,11 @@ package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.gizmos.TextGizmo;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 
 public class GameTestBlockHighlightRenderer {

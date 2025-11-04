@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.handshake;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class HandshakePacketTypes {
    public static final PacketType<ClientIntentionPacket> CLIENT_INTENTION = createServerbound("intention");
@@ -13,6 +13,6 @@ public class HandshakePacketTypes {
    }
 
    private static <T extends Packet<ServerHandshakePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
    }
 }

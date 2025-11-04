@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -89,7 +90,7 @@ public class TurtleEggBlock extends Block {
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.shouldUpdateHatchLevel(var2) && onSand(var2, var3)) {
+      if (this.shouldUpdateHatchLevel(var2, var3) && onSand(var2, var3)) {
          int var5 = (Integer)var1.getValue(HATCH);
          if (var5 < 2) {
             var2.playSound((Entity)null, var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
@@ -130,13 +131,9 @@ public class TurtleEggBlock extends Block {
 
    }
 
-   private boolean shouldUpdateHatchLevel(Level var1) {
-      return isVeryEarlyMorning(var1) || var1.random.nextInt(500) == 0;
-   }
-
-   private static boolean isVeryEarlyMorning(Level var0) {
-      long var1 = var0.getDayTime() % 24000L;
-      return var1 > 21061L && var1 < 21905L;
+   private boolean shouldUpdateHatchLevel(Level var1, BlockPos var2) {
+      float var3 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.TURTLE_EGG_HATCH_CHANCE, var2);
+      return var3 > 0.0F && var1.random.nextFloat() < var3;
    }
 
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {

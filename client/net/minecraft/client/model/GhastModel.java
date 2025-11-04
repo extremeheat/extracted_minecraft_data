@@ -48,7 +48,7 @@ public class GhastModel extends EntityModel<GhastRenderState> {
 
    public static void animateTentacles(EntityRenderState var0, ModelPart[] var1) {
       for(int var2 = 0; var2 < var1.length; ++var2) {
-         var1[var2].xRot = 0.2F * Mth.sin(var0.ageInTicks * 0.3F + (float)var2) + 0.4F;
+         var1[var2].xRot = 0.2F * Mth.sin((double)(var0.ageInTicks * 0.3F + (float)var2)) + 0.4F;
       }
 
    }

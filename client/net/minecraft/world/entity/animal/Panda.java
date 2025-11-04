@@ -476,7 +476,7 @@ public class Panda extends Animal {
             if (this.rollCounter == 1) {
                float var2 = this.getYRot() * 0.017453292F;
                float var3 = this.isBaby() ? 0.1F : 0.2F;
-               this.rollDelta = new Vec3(var1.x + (double)(-Mth.sin(var2) * var3), 0.0, var1.z + (double)(Mth.cos(var2) * var3));
+               this.rollDelta = new Vec3(var1.x + (double)(-Mth.sin((double)var2) * var3), 0.0, var1.z + (double)(Mth.cos((double)var2) * var3));
                this.setDeltaMovement(this.rollDelta.add(0.0, 0.27, 0.0));
             } else if ((float)this.rollCounter != 7.0F && (float)this.rollCounter != 15.0F && (float)this.rollCounter != 23.0F) {
                this.setDeltaMovement(this.rollDelta.x, var1.y, this.rollDelta.z);
@@ -491,7 +491,7 @@ public class Panda extends Animal {
    private void afterSneeze() {
       Vec3 var1 = this.getDeltaMovement();
       Level var2 = this.level();
-      var2.addParticle(ParticleTypes.SNEEZE, this.getX() - (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin(this.yBodyRot * 0.017453292F), this.getEyeY() - 0.10000000149011612, this.getZ() + (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos(this.yBodyRot * 0.017453292F), var1.x, 0.0, var1.z);
+      var2.addParticle(ParticleTypes.SNEEZE, this.getX() - (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(this.yBodyRot * 0.017453292F)), this.getEyeY() - 0.10000000149011612, this.getZ() + (double)(this.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(this.yBodyRot * 0.017453292F)), var1.x, 0.0, var1.z);
       this.playSound(SoundEvents.PANDA_SNEEZE, 1.0F, 1.0F);
 
       for(Panda var5 : var2.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
@@ -835,8 +835,8 @@ public class Panda extends Animal {
                return false;
             } else {
                float var1 = this.panda.getYRot() * 0.017453292F;
-               float var2 = -Mth.sin(var1);
-               float var3 = Mth.cos(var1);
+               float var2 = -Mth.sin((double)var1);
+               float var3 = Mth.cos((double)var1);
                int var4 = (double)Math.abs(var2) > 0.5 ? Mth.sign((double)var2) : 0;
                int var5 = (double)Math.abs(var3) > 0.5 ? Mth.sign((double)var3) : 0;
                if (this.panda.level().getBlockState(this.panda.blockPosition().offset(var4, -1, var5)).isAir()) {

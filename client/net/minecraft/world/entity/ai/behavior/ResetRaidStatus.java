@@ -22,7 +22,7 @@ public class ResetRaidStatus {
                Raid var5 = var0x.getRaidAt(var1.blockPosition());
                if (var5 == null || var5.isStopped() || var5.isLoss()) {
                   var4.setDefaultActivity(Activity.IDLE);
-                  var4.updateActivityFromSchedule(var0x.getDayTime(), var0x.getGameTime());
+                  var4.updateActivityFromSchedule(var0x.environmentAttributes(), var0x.getGameTime(), var1.position());
                }
 
                return true;

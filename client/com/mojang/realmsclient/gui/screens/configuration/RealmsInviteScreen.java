@@ -2,7 +2,6 @@ package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -14,6 +13,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class RealmsInviteScreen extends RealmsScreen {

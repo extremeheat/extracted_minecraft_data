@@ -18,7 +18,7 @@ public class VillagerCalmDown {
                if (!var8) {
                   var1.erase();
                   var2.erase();
-                  var5.getBrain().updateActivityFromSchedule(var4.getDayTime(), var4.getGameTime());
+                  var5.getBrain().updateActivityFromSchedule(var4.environmentAttributes(), var4.getGameTime(), var5.position());
                }
 
                return true;

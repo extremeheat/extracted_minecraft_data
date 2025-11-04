@@ -2,16 +2,16 @@ package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.shaders.ShaderType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class GlShaderModule implements AutoCloseable {
    private static final int NOT_ALLOCATED = -1;
    public static final GlShaderModule INVALID_SHADER;
-   private final ResourceLocation id;
+   private final Identifier id;
    private int shaderId;
    private final ShaderType type;
 
-   public GlShaderModule(int var1, ResourceLocation var2, ShaderType var3) {
+   public GlShaderModule(int var1, Identifier var2, ShaderType var3) {
       super();
       this.id = var2;
       this.shaderId = var1;
@@ -28,7 +28,7 @@ public class GlShaderModule implements AutoCloseable {
       }
    }
 
-   public ResourceLocation getId() {
+   public Identifier getId() {
       return this.id;
    }
 
@@ -41,6 +41,6 @@ public class GlShaderModule implements AutoCloseable {
    }
 
    static {
-      INVALID_SHADER = new GlShaderModule(-1, ResourceLocation.withDefaultNamespace("invalid"), ShaderType.VERTEX);
+      INVALID_SHADER = new GlShaderModule(-1, Identifier.withDefaultNamespace("invalid"), ShaderType.VERTEX);
    }
 }

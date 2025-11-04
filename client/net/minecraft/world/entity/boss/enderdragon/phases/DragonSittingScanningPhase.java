@@ -30,7 +30,7 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_ATTACKING);
          } else {
             Vec3 var3 = (new Vec3(((LivingEntity)var2).getX() - this.dragon.getX(), 0.0, ((LivingEntity)var2).getZ() - this.dragon.getZ())).normalize();
-            Vec3 var4 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
+            Vec3 var4 = (new Vec3((double)Mth.sin((double)(this.dragon.getYRot() * 0.017453292F)), 0.0, (double)(-Mth.cos((double)(this.dragon.getYRot() * 0.017453292F))))).normalize();
             float var5 = (float)var4.dot(var3);
             float var6 = (float)(Math.acos((double)var5) * 57.2957763671875) + 0.5F;
             if (var6 < 0.0F || var6 > 10.0F) {

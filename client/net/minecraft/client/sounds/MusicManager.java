@@ -1,15 +1,15 @@
 package net.minecraft.client.sounds;
 
 import com.mojang.serialization.Codec;
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.OptionEnum;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.Nullable;
@@ -64,12 +64,12 @@ public class MusicManager {
    }
 
    private static boolean canReplace(Music var0, SoundInstance var1) {
-      return var0.replaceCurrentMusic() && !((SoundEvent)var0.sound().value()).location().equals(var1.getLocation());
+      return var0.replaceCurrentMusic() && !((SoundEvent)var0.sound().value()).location().equals(var1.getIdentifier());
    }
 
    public void startPlaying(Music var1) {
       SoundEvent var2 = (SoundEvent)var1.sound().value();
-      this.currentMusic = SimpleSoundInstance.forMusic(var2, this.currentGain);
+      this.currentMusic = SimpleSoundInstance.forMusic(var2);
       switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
          case STARTED:
             this.minecraft.getToastManager().showNowPlayingToast();
@@ -130,14 +130,14 @@ public class MusicManager {
             this.stopPlaying();
             return false;
          } else {
-            this.minecraft.getSoundManager().setVolume(this.currentMusic, this.currentGain);
+            this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.currentGain);
             return true;
          }
       }
    }
 
    public boolean isPlayingMusic(Music var1) {
-      return this.currentMusic == null ? false : ((SoundEvent)var1.sound().value()).location().equals(this.currentMusic.getLocation());
+      return this.currentMusic == null ? false : ((SoundEvent)var1.sound().value()).location().equals(this.currentMusic.getIdentifier());
    }
 
    public @Nullable String getCurrentMusicTranslationKey() {
@@ -156,22 +156,20 @@ public class MusicManager {
       this.nextSongDelay = this.gameMusicFrequency.getNextSongDelay(this.minecraft.getSituationalMusic(), this.random);
    }
 
-   public static enum MusicFrequency implements OptionEnum, StringRepresentable {
-      DEFAULT(20),
-      FREQUENT(10),
-      CONSTANT(0);
+   public static enum MusicFrequency implements StringRepresentable {
+      DEFAULT("DEFAULT", "options.music_frequency.default", 20),
+      FREQUENT("FREQUENT", "options.music_frequency.frequent", 10),
+      CONSTANT("CONSTANT", "options.music_frequency.constant", 0);
 
       public static final Codec<MusicFrequency> CODEC = StringRepresentable.<MusicFrequency>fromEnum(MusicFrequency::values);
-      private static final String KEY_PREPEND = "options.music_frequency.";
-      private final int id;
+      private final String name;
       private final int maxFrequency;
-      private final String key;
+      private final Component caption;
 
-      private MusicFrequency(final int var3) {
-         this.id = var3;
-         this.maxFrequency = var3 * 1200;
-         String var10001 = this.name();
-         this.key = "options.music_frequency." + var10001.toLowerCase(Locale.ROOT);
+      private MusicFrequency(final String var3, final String var4, final int var5) {
+         this.name = var3;
+         this.maxFrequency = var5 * 1200;
+         this.caption = Component.translatable(var4);
       }
 
       int getNextSongDelay(@Nullable Music var1, RandomSource var2) {
@@ -186,16 +184,12 @@ public class MusicManager {
          }
       }
 
-      public int getId() {
-         return this.id;
-      }
-
-      public String getKey() {
-         return this.key;
+      public Component caption() {
+         return this.caption;
       }
 
       public String getSerializedName() {
-         return this.name();
+         return this.name;
       }
 
       // $FF: synthetic method

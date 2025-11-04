@@ -2,7 +2,7 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import java.util.stream.LongStream;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class Xoroshiro128PlusPlus {
    private long seedLo;

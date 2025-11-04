@@ -13,7 +13,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class RealmsLongRunningMcoConnectTaskScreen extends RealmsLongRunningMcoTaskScreen {
    private final LongRunningTask task;
@@ -32,7 +32,7 @@ public class RealmsLongRunningMcoConnectTaskScreen extends RealmsLongRunningMcoT
          LinearLayout var1 = LinearLayout.horizontal().spacing(10);
          StringWidget var2 = new StringWidget(Component.translatable("mco.connect.region", Component.translatable(this.serverAddress.regionData().region().translationKey)), this.font);
          var1.addChild(var2);
-         ResourceLocation var3 = this.serverAddress.regionData().serviceQuality() != null ? this.serverAddress.regionData().serviceQuality().getIcon() : ServiceQuality.UNKNOWN.getIcon();
+         Identifier var3 = this.serverAddress.regionData().serviceQuality() != null ? this.serverAddress.regionData().serviceQuality().getIcon() : ServiceQuality.UNKNOWN.getIcon();
          var1.addChild(ImageWidget.sprite(10, 8, var3), (Consumer)(LayoutSettings::alignVerticallyTop));
          this.footer.addChild(var1, (Consumer)((var0) -> var0.paddingTop(40)));
          this.footer.visitWidgets((var1x) -> {

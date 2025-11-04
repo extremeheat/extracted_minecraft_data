@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class FontTexture extends AbstractTexture implements Dumpable {
@@ -49,7 +49,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       }
    }
 
-   public void dumpContents(ResourceLocation var1, Path var2) {
+   public void dumpContents(Identifier var1, Path var2) {
       if (this.texture != null) {
          String var3 = var1.toDebugFileName();
          TextureUtil.writeAsPNG(var2, var3, this.texture, 0, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);

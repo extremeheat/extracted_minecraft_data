@@ -14,7 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -22,18 +22,18 @@ import net.minecraft.world.BossEvent;
 
 public class CustomBossEvent extends ServerBossEvent {
    private static final int DEFAULT_MAX = 100;
-   private final ResourceLocation id;
+   private final Identifier id;
    private final Set<UUID> players = Sets.newHashSet();
    private int value;
    private int max = 100;
 
-   public CustomBossEvent(ResourceLocation var1, Component var2) {
+   public CustomBossEvent(Identifier var1, Component var2) {
       super(var2, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
       this.id = var1;
       this.setProgress(0.0F);
    }
 
-   public ResourceLocation getTextId() {
+   public Identifier getTextId() {
       return this.id;
    }
 
@@ -130,7 +130,7 @@ public class CustomBossEvent extends ServerBossEvent {
       return !var2.isEmpty() || !var3.isEmpty();
    }
 
-   public static CustomBossEvent load(ResourceLocation var0, Packed var1) {
+   public static CustomBossEvent load(Identifier var0, Packed var1) {
       CustomBossEvent var2 = new CustomBossEvent(var0, var1.name);
       var2.setVisible(var1.visible);
       var2.setValue(var1.value);

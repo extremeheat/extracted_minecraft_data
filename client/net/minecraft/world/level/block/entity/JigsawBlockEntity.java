@@ -12,8 +12,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.JigsawBlock;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class JigsawBlockEntity extends BlockEntity {
    public static final Codec<ResourceKey<StructureTemplatePool>> POOL_CODEC;
-   public static final ResourceLocation EMPTY_ID;
+   public static final Identifier EMPTY_ID;
    private static final int DEFAULT_PLACEMENT_PRIORITY = 0;
    private static final int DEFAULT_SELECTION_PRIORITY = 0;
    public static final String TARGET = "target";
@@ -37,8 +37,8 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String NAME = "name";
    public static final String FINAL_STATE = "final_state";
    public static final String DEFAULT_FINAL_STATE = "minecraft:air";
-   private ResourceLocation name;
-   private ResourceLocation target;
+   private Identifier name;
+   private Identifier target;
    private ResourceKey<StructureTemplatePool> pool;
    private JointType joint;
    private String finalState;
@@ -56,11 +56,11 @@ public class JigsawBlockEntity extends BlockEntity {
       this.selectionPriority = 0;
    }
 
-   public ResourceLocation getName() {
+   public Identifier getName() {
       return this.name;
    }
 
-   public ResourceLocation getTarget() {
+   public Identifier getTarget() {
       return this.target;
    }
 
@@ -84,11 +84,11 @@ public class JigsawBlockEntity extends BlockEntity {
       return this.selectionPriority;
    }
 
-   public void setName(ResourceLocation var1) {
+   public void setName(Identifier var1) {
       this.name = var1;
    }
 
-   public void setTarget(ResourceLocation var1) {
+   public void setTarget(Identifier var1) {
       this.target = var1;
    }
 
@@ -114,8 +114,8 @@ public class JigsawBlockEntity extends BlockEntity {
 
    protected void saveAdditional(ValueOutput var1) {
       super.saveAdditional(var1);
-      var1.store("name", ResourceLocation.CODEC, this.name);
-      var1.store("target", ResourceLocation.CODEC, this.target);
+      var1.store("name", Identifier.CODEC, this.name);
+      var1.store("target", Identifier.CODEC, this.target);
       var1.store("pool", POOL_CODEC, this.pool);
       var1.putString("final_state", this.finalState);
       var1.store("joint", JigsawBlockEntity.JointType.CODEC, this.joint);
@@ -125,8 +125,8 @@ public class JigsawBlockEntity extends BlockEntity {
 
    protected void loadAdditional(ValueInput var1) {
       super.loadAdditional(var1);
-      this.name = (ResourceLocation)var1.read("name", ResourceLocation.CODEC).orElse(EMPTY_ID);
-      this.target = (ResourceLocation)var1.read("target", ResourceLocation.CODEC).orElse(EMPTY_ID);
+      this.name = (Identifier)var1.read("name", Identifier.CODEC).orElse(EMPTY_ID);
+      this.target = (Identifier)var1.read("target", Identifier.CODEC).orElse(EMPTY_ID);
       this.pool = (ResourceKey)var1.read("pool", POOL_CODEC).orElse(Pools.EMPTY);
       this.finalState = var1.getStringOr("final_state", "minecraft:air");
       this.joint = (JointType)var1.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> StructureTemplate.getDefaultJointType(this.getBlockState()));
@@ -156,7 +156,7 @@ public class JigsawBlockEntity extends BlockEntity {
 
    static {
       POOL_CODEC = ResourceKey.codec(Registries.TEMPLATE_POOL);
-      EMPTY_ID = ResourceLocation.withDefaultNamespace("empty");
+      EMPTY_ID = Identifier.withDefaultNamespace("empty");
    }
 
    public static enum JointType implements StringRepresentable {

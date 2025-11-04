@@ -8,11 +8,11 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Giant;
 
 public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, HumanoidModel<ZombieRenderState>> {
-   private static final ResourceLocation ZOMBIE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/zombie.png");
+   private static final Identifier ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
 
    public GiantMobRenderer(EntityRendererProvider.Context var1, float var2) {
       super(var1, new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT)), 0.5F * var2);
@@ -20,7 +20,7 @@ public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, Huma
       this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.GIANT_ARMOR, var1.getModelSet(), GiantZombieModel::new), var1.getEquipmentRenderer()));
    }
 
-   public ResourceLocation getTextureLocation(ZombieRenderState var1) {
+   public Identifier getTextureLocation(ZombieRenderState var1) {
       return ZOMBIE_LOCATION;
    }
 
@@ -34,7 +34,7 @@ public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, Huma
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((ZombieRenderState)var1);
    }
 

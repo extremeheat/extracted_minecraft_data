@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.time.Instant;
 import java.util.UUID;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 

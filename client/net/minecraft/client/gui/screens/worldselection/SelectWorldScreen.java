@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -17,6 +16,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FileUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -63,6 +63,7 @@ public class SelectWorldScreen extends Screen {
          }
 
       });
+      this.searchBox.setHint(Component.translatable("gui.selectWorld.search").setStyle(EditBox.SEARCH_HINT_STYLE));
       Consumer var3 = WorldSelectionList.WorldListEntry::joinWorld;
       this.list = (WorldSelectionList)this.layout.addToContents((new WorldSelectionList.Builder(this.minecraft, this)).width(this.width).height(this.layout.getContentHeight()).filter(this.searchBox.getValue()).oldList(this.list).onEntrySelect(this::updateButtonStatus).onEntryInteract(var3).build());
       this.createFooterButtons(var3, this.list);

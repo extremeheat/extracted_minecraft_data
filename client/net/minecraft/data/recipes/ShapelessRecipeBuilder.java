@@ -9,7 +9,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
@@ -98,12 +98,12 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
       ShapelessRecipe var4 = new ShapelessRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.result, this.ingredients);
-      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.location()));
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
       }
    }
 

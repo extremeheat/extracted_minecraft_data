@@ -1,6 +1,6 @@
 package net.minecraft.world.inventory;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
@@ -12,9 +12,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class HorseInventoryMenu extends AbstractContainerMenu {
-   private static final ResourceLocation SADDLE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/saddle");
-   private static final ResourceLocation LLAMA_ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/llama_armor");
-   private static final ResourceLocation ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/horse_armor");
+   private static final Identifier SADDLE_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/saddle");
+   private static final Identifier LLAMA_ARMOR_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/llama_armor");
+   private static final Identifier ARMOR_SLOT_SPRITE = Identifier.withDefaultNamespace("container/slot/horse_armor");
    private final Container horseContainer;
    private final AbstractHorse horse;
    private static final int SLOT_SADDLE = 0;
@@ -33,7 +33,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
       });
       final boolean var7 = var4 instanceof Llama;
-      ResourceLocation var8 = var7 ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      Identifier var8 = var7 ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
       Container var9 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
       this.addSlot(new ArmorSlot(var9, var4, EquipmentSlot.BODY, 0, 8, 36, var8) {
          public boolean isActive() {

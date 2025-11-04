@@ -13,12 +13,12 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
 
 public class BoatRenderer extends AbstractBoatRenderer {
    private final Model.Simple waterPatchModel;
-   private final ResourceLocation texture;
+   private final Identifier texture;
    private final EntityModel<BoatRenderState> model;
 
    public BoatRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {

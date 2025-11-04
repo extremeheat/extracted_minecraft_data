@@ -31,7 +31,7 @@ public record BlockElementRotation(Vector3fc origin, Direction.Axis axis, float 
    private static Vector3fc computeRescale(boolean var0, float var1, Direction.Axis var2) {
       if (var0 && var1 != 0.0F) {
          float var3 = Math.abs(var1);
-         float var4 = 1.0F / Mth.cos(var3 * 0.017453292F);
+         float var4 = 1.0F / Mth.cos((double)(var3 * 0.017453292F));
          Vector3f var10000;
          switch (var2) {
             case X -> var10000 = new Vector3f(1.0F, var4, var4);
