@@ -3,6 +3,7 @@ package net.minecraft.data.recipes;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -352,17 +353,24 @@ public abstract class RecipeProvider {
    protected void waxRecipes(FeatureFlagSet var1) {
       ((BiMap)HoneycombItem.WAXABLES.get()).forEach((var2, var3) -> {
          if (var3.requiredFeatures().isSubsetOf(var1)) {
-            this.shapeless(RecipeCategory.BUILDING_BLOCKS, (ItemLike)var3).requires(var2).requires(Items.HONEYCOMB).group(getItemName(var3)).unlockedBy(getHasName(var2), this.has(var2)).save(this.output, getConversionRecipeName(var3, Items.HONEYCOMB));
+            Pair var4 = (Pair)HoneycombItem.WAXED_RECIPES.getOrDefault(var3, Pair.of(RecipeCategory.BUILDING_BLOCKS, getItemName(var3)));
+            RecipeCategory var5 = (RecipeCategory)var4.getFirst();
+            String var6 = (String)var4.getSecond();
+            this.shapeless(var5, (ItemLike)var3).requires(var2).requires(Items.HONEYCOMB).group(var6).unlockedBy(getHasName(var2), this.has(var2)).save(this.output, getConversionRecipeName(var3, Items.HONEYCOMB));
          }
       });
    }
 
    protected void grate(Block var1, Block var2) {
-      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 4).define('M', var2).pattern(" M ").pattern("M M").pattern(" M ").unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 4).define('M', var2).pattern(" M ").pattern("M M").pattern(" M ").group(getItemName(var1)).unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
    }
 
    protected void copperBulb(Block var1, Block var2) {
-      this.shaped(RecipeCategory.REDSTONE, var1, 4).define('C', var2).define('R', Items.REDSTONE).define('B', Items.BLAZE_ROD).pattern(" C ").pattern("CBC").pattern(" R ").unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
+      this.shaped(RecipeCategory.REDSTONE, var1, 4).define('C', var2).define('R', Items.REDSTONE).define('B', Items.BLAZE_ROD).pattern(" C ").pattern("CBC").pattern(" R ").unlockedBy(getHasName(var2), this.has(var2)).group(getItemName(var1)).save(this.output);
+   }
+
+   protected void waxedChiseled(Block var1, Block var2) {
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 2).define('M', var2).pattern(" M ").pattern(" M ").group(getItemName(var1)).unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
    }
 
    protected void suspiciousStew(Item var1, SuspiciousEffectHolder var2) {

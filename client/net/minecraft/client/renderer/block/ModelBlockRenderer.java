@@ -23,6 +23,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Vector3fc;
 
 public class ModelBlockRenderer {
    private static final Direction[] DIRECTIONS = Direction.values();
@@ -142,7 +143,7 @@ public class ModelBlockRenderer {
 
    private void renderModelFaceAO(BlockAndTintGetter var1, BlockState var2, BlockPos var3, PoseStack var4, VertexConsumer var5, List<BakedQuad> var6, AmbientOcclusionRenderStorage var7, int var8) {
       for(BakedQuad var10 : var6) {
-         calculateShape(var1, var2, var3, var10.vertices(), var10.direction(), var7);
+         calculateShape(var1, var2, var3, var10, var7);
          var7.calculate(var1, var2, var3, var10.direction(), var10.shade());
          this.putQuadData(var1, var2, var3, var5, var4.last(), var10, var7, var8);
       }
@@ -173,82 +174,83 @@ public class ModelBlockRenderer {
          var11 = 1.0F;
       }
 
-      var4.putBulkData(var5, var6, var7.brightness, var9, var10, var11, 1.0F, var7.lightmap, var8, true);
+      var4.putBulkData(var5, var6, var7.brightness, var9, var10, var11, 1.0F, var7.lightmap, var8);
    }
 
-   private static void calculateShape(BlockAndTintGetter var0, BlockState var1, BlockPos var2, int[] var3, Direction var4, CommonRenderStorage var5) {
+   private static void calculateShape(BlockAndTintGetter var0, BlockState var1, BlockPos var2, BakedQuad var3, CommonRenderStorage var4) {
+      float var5 = 32.0F;
       float var6 = 32.0F;
       float var7 = 32.0F;
-      float var8 = 32.0F;
+      float var8 = -32.0F;
       float var9 = -32.0F;
       float var10 = -32.0F;
-      float var11 = -32.0F;
 
-      for(int var12 = 0; var12 < 4; ++var12) {
-         float var13 = Float.intBitsToFloat(var3[var12 * 8]);
-         float var14 = Float.intBitsToFloat(var3[var12 * 8 + 1]);
-         float var15 = Float.intBitsToFloat(var3[var12 * 8 + 2]);
-         var6 = Math.min(var6, var13);
-         var7 = Math.min(var7, var14);
-         var8 = Math.min(var8, var15);
-         var9 = Math.max(var9, var13);
-         var10 = Math.max(var10, var14);
-         var11 = Math.max(var11, var15);
+      for(int var11 = 0; var11 < 4; ++var11) {
+         Vector3fc var12 = var3.position(var11);
+         float var13 = var12.x();
+         float var14 = var12.y();
+         float var15 = var12.z();
+         var5 = Math.min(var5, var13);
+         var6 = Math.min(var6, var14);
+         var7 = Math.min(var7, var15);
+         var8 = Math.max(var8, var13);
+         var9 = Math.max(var9, var14);
+         var10 = Math.max(var10, var15);
       }
 
-      if (var5 instanceof AmbientOcclusionRenderStorage var16) {
-         var16.faceShape[ModelBlockRenderer.SizeInfo.WEST.index] = var6;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.EAST.index] = var9;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.DOWN.index] = var7;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.UP.index] = var10;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.NORTH.index] = var8;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.SOUTH.index] = var11;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_WEST.index] = 1.0F - var6;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_EAST.index] = 1.0F - var9;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_DOWN.index] = 1.0F - var7;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_UP.index] = 1.0F - var10;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_NORTH.index] = 1.0F - var8;
-         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_SOUTH.index] = 1.0F - var11;
+      if (var4 instanceof AmbientOcclusionRenderStorage var16) {
+         var16.faceShape[ModelBlockRenderer.SizeInfo.WEST.index] = var5;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.EAST.index] = var8;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.DOWN.index] = var6;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.UP.index] = var9;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.NORTH.index] = var7;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.SOUTH.index] = var10;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_WEST.index] = 1.0F - var5;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_EAST.index] = 1.0F - var8;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_DOWN.index] = 1.0F - var6;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_UP.index] = 1.0F - var9;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_NORTH.index] = 1.0F - var7;
+         var16.faceShape[ModelBlockRenderer.SizeInfo.FLIP_SOUTH.index] = 1.0F - var10;
       }
 
       float var17 = 1.0E-4F;
       float var18 = 0.9999F;
       boolean var10001;
-      switch (var4) {
+      switch (var3.direction()) {
          case DOWN:
          case UP:
-            var10001 = var6 >= 1.0E-4F || var8 >= 1.0E-4F || var9 <= 0.9999F || var11 <= 0.9999F;
+            var10001 = var5 >= 1.0E-4F || var7 >= 1.0E-4F || var8 <= 0.9999F || var10 <= 0.9999F;
             break;
          case NORTH:
          case SOUTH:
-            var10001 = var6 >= 1.0E-4F || var7 >= 1.0E-4F || var9 <= 0.9999F || var10 <= 0.9999F;
+            var10001 = var5 >= 1.0E-4F || var6 >= 1.0E-4F || var8 <= 0.9999F || var9 <= 0.9999F;
             break;
          case WEST:
          case EAST:
-            var10001 = var7 >= 1.0E-4F || var8 >= 1.0E-4F || var10 <= 0.9999F || var11 <= 0.9999F;
+            var10001 = var6 >= 1.0E-4F || var7 >= 1.0E-4F || var9 <= 0.9999F || var10 <= 0.9999F;
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
       }
 
-      var5.facePartial = var10001;
-      switch (var4) {
-         case DOWN -> var10001 = var7 == var10 && (var7 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
-         case UP -> var10001 = var7 == var10 && (var10 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
-         case NORTH -> var10001 = var8 == var11 && (var8 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
-         case SOUTH -> var10001 = var8 == var11 && (var11 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
-         case WEST -> var10001 = var6 == var9 && (var6 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
-         case EAST -> var10001 = var6 == var9 && (var9 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+      var4.facePartial = var10001;
+      switch (var3.direction()) {
+         case DOWN -> var10001 = var6 == var9 && (var6 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case UP -> var10001 = var6 == var9 && (var9 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+         case NORTH -> var10001 = var7 == var10 && (var7 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case SOUTH -> var10001 = var7 == var10 && (var10 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
+         case WEST -> var10001 = var5 == var8 && (var5 < 1.0E-4F || var1.isCollisionShapeFullBlock(var0, var2));
+         case EAST -> var10001 = var5 == var8 && (var8 > 0.9999F || var1.isCollisionShapeFullBlock(var0, var2));
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      var5.faceCubic = var10001;
+      var4.faceCubic = var10001;
    }
 
    private void renderModelFaceFlat(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int var4, int var5, boolean var6, PoseStack var7, VertexConsumer var8, List<BakedQuad> var9, CommonRenderStorage var10) {
       for(BakedQuad var12 : var9) {
          if (var6) {
-            calculateShape(var1, var2, var3, var12.vertices(), var12.direction(), var10);
+            calculateShape(var1, var2, var3, var12, var10);
             Object var13 = var10.faceCubic ? var10.scratchPos.setWithOffset(var3, (Direction)var12.direction()) : var3;
             var4 = var10.cache.getLightColor(var2, var1, (BlockPos)var13);
          }

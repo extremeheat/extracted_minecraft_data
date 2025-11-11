@@ -55,4 +55,8 @@ public class Parched extends AbstractSkeleton {
    protected int getAttackInterval() {
       return 70;
    }
+
+   public boolean canBeAffected(MobEffectInstance var1) {
+      return var1.getEffect() == MobEffects.WEAKNESS ? false : super.canBeAffected(var1);
+   }
 }

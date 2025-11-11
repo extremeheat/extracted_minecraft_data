@@ -510,6 +510,13 @@ public class GameTestHelper {
       }
    }
 
+   public void assertEntityPresent(EntityType<?> var1, AABB var2, Component var3) {
+      AABB var4 = this.absoluteAABB(var2);
+      if (!this.getLevel().hasEntities(var1, var4, Entity::isAlive)) {
+         throw this.assertionException(BlockPos.containing(var2.getCenter()), var3);
+      }
+   }
+
    public void assertEntitiesPresent(EntityType<?> var1, int var2) {
       List var3 = this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
       if (var3.size() != var2) {
@@ -757,12 +764,6 @@ public class GameTestHelper {
       this.succeedWhen(() -> this.assertEntityData(var1, var2, var3, var4));
    }
 
-   public void assertEntityPosition(Entity var1, AABB var2, Component var3) {
-      if (!var2.contains(this.relativeVec(var1.position()))) {
-         throw this.assertionException(var3);
-      }
-   }
-
    public <E extends Entity> void assertEntityProperty(E var1, Predicate<E> var2, Component var3) {
       if (!var2.test(var1)) {
          throw this.assertionException(var1.blockPosition(), "test.error.entity_property", var1.getName(), var3);
@@ -944,6 +945,10 @@ public class GameTestHelper {
 
    public Direction getTestDirection() {
       return this.testInfo.getRotation().rotate(Direction.SOUTH);
+   }
+
+   public Direction getAbsoluteDirection(Direction var1) {
+      return this.getTestRotation().rotate(var1);
    }
 
    public void assertTrue(boolean var1, Component var2) {

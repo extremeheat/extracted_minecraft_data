@@ -122,7 +122,7 @@ public class InputControlHandlers {
 
       public void addControl(SingleOptionInput var1, Screen var2, InputControlHandler.Output var3) {
          SingleOptionInput.Entry var4 = (SingleOptionInput.Entry)var1.initial().orElse((SingleOptionInput.Entry)var1.entries().getFirst());
-         CycleButton.Builder var5 = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault, var4).withValues(var1.entries()).displayOnlyValue(!var1.labelVisible());
+         CycleButton.Builder var5 = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault, var4).withValues(var1.entries()).displayState(!var1.labelVisible() ? CycleButton.DisplayState.VALUE : CycleButton.DisplayState.NAME_AND_VALUE);
          CycleButton var6 = var5.create(0, 0, var1.width(), 20, var1.label());
          var3.accept(var6, Action.ValueGetter.of((Supplier)(() -> ((SingleOptionInput.Entry)var6.getValue()).id())));
       }

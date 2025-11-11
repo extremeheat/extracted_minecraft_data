@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ShulkerBoxRenderer;
@@ -14,7 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
    private final ShulkerBoxRenderer shulkerBoxRenderer;
@@ -34,7 +34,7 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
       this.shulkerBoxRenderer.submit(var2, var3, var4, var5, this.orientation, this.openness, (ModelFeatureRenderer.CrumblingOverlay)null, this.material, var7);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       this.shulkerBoxRenderer.getExtents(this.orientation, this.openness, var1);
    }
 

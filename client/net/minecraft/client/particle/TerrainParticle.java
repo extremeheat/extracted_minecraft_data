@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.RandomSource;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class TerrainParticle extends SingleQuadParticle {
+   private final SingleQuadParticle.Layer layer;
    private final BlockPos pos;
    private final float uo;
    private final float vo;
@@ -36,10 +38,11 @@ public class TerrainParticle extends SingleQuadParticle {
       this.quadSize /= 2.0F;
       this.uo = this.random.nextFloat() * 3.0F;
       this.vo = this.random.nextFloat() * 3.0F;
+      this.layer = this.sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
    }
 
    public SingleQuadParticle.Layer getLayer() {
-      return SingleQuadParticle.Layer.TERRAIN;
+      return this.layer;
    }
 
    protected float getU0() {

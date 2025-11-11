@@ -274,24 +274,28 @@ public class HashOps implements DynamicOps<HashCode> {
       return unsupported();
    }
 
+   boolean isEmpty(HashCode var1) {
+      return var1.equals(this.empty);
+   }
+
    public DataResult<HashCode> mergeToList(HashCode var1, HashCode var2) {
-      return unsupported();
+      return this.isEmpty(var1) ? DataResult.success(this.createList(Stream.of(var2))) : unsupported();
    }
 
    public DataResult<HashCode> mergeToList(HashCode var1, List<HashCode> var2) {
-      return unsupported();
+      return this.isEmpty(var1) ? DataResult.success(this.createList(var2.stream())) : unsupported();
    }
 
    public DataResult<HashCode> mergeToMap(HashCode var1, HashCode var2, HashCode var3) {
-      return unsupported();
+      return this.isEmpty(var1) ? DataResult.success(this.createMap(Map.of(var2, var3))) : unsupported();
    }
 
    public DataResult<HashCode> mergeToMap(HashCode var1, Map<HashCode, HashCode> var2) {
-      return unsupported();
+      return this.isEmpty(var1) ? DataResult.success(this.createMap(var2)) : unsupported();
    }
 
    public DataResult<HashCode> mergeToMap(HashCode var1, MapLike<HashCode> var2) {
-      return unsupported();
+      return this.isEmpty(var1) ? DataResult.success(this.createMap(var2.entries())) : unsupported();
    }
 
    public DataResult<Stream<Pair<HashCode, HashCode>>> getMapValues(HashCode var1) {
@@ -557,7 +561,7 @@ public class HashOps implements DynamicOps<HashCode> {
       }
 
       protected DataResult<HashCode> build(List<Pair<HashCode, HashCode>> var1, HashCode var2) {
-         assert var2.equals(HashOps.this.empty());
+         assert HashOps.this.isEmpty(var2);
 
          return DataResult.success(HashOps.hashMap(HashOps.this.hashFunction.newHasher(), var1.stream()).hash());
       }

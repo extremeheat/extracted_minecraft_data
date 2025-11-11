@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -68,15 +69,24 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, var3);
    }
 
-   public void renderSlot(GuiGraphics var1, Slot var2) {
-      if (var2 instanceof CrafterSlot var3) {
-         if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
-            this.renderDisabledSlot(var1, var3);
-            return;
+   public void renderSlot(GuiGraphics var1, Slot var2, int var3, int var4) {
+      label22: {
+         if (var2 instanceof CrafterSlot var5) {
+            if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
+               this.renderDisabledSlot(var1, var5);
+               break label22;
+            }
          }
+
+         super.renderSlot(var1, var2, var3, var4);
       }
 
-      super.renderSlot(var1, var2);
+      int var7 = this.leftPos + var2.x - 2;
+      int var6 = this.topPos + var2.y - 2;
+      if (var3 > var7 && var4 > var6 && var3 < var7 + 19 && var4 < var6 + 19) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
    }
 
    private void renderDisabledSlot(GuiGraphics var1, CrafterSlot var2) {

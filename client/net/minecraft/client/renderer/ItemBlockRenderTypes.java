@@ -307,8 +307,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WAXED_OXIDIZED_COPPER_GRATE, var2);
       var0.put(Blocks.FIREFLY_BUSH, var2);
       var0.put(Blocks.CACTUS_FLOWER, var2);
+      var0.put(Blocks.BEACON, var2);
       ChunkSectionLayer var3 = ChunkSectionLayer.TRANSLUCENT;
-      var0.put(Blocks.BEACON, var3);
       var0.put(Blocks.ICE, var3);
       var0.put(Blocks.NETHER_PORTAL, var3);
       var0.put(Blocks.GLASS, var3);

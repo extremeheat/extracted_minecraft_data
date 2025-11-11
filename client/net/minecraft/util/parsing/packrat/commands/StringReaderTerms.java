@@ -75,7 +75,7 @@ public interface StringReaderTerms {
       public TerminalCharacters(CharList var1) {
          super();
          String var2 = (String)var1.intStream().mapToObj(Character::toString).collect(Collectors.joining("|"));
-         this.error = DelayedException.create(CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect(), String.valueOf(var2));
+         this.error = DelayedException.create(CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect(), var2);
          this.suggestions = (var1x) -> var1.intStream().mapToObj(Character::toString);
       }
 

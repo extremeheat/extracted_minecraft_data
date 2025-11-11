@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.mojang.math.OctahedralGroup;
-import com.mojang.math.Quadrant;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
@@ -308,7 +307,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1)));
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0) {
@@ -316,27 +315,39 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90, var1)));
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0) {
-      return rotateHorizontal(var0, BLOCK_CENTER);
+      return rotateHorizontal(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
-   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1)));
+   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1) {
+      return rotateHorizontal(var0, var1, BLOCK_CENTER);
+   }
+
+   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2)));
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0) {
-      return rotateAll(var0, BLOCK_CENTER);
+      return rotateAll(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
    public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, var0, Direction.EAST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R90), var1), Direction.SOUTH, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R180), var1), Direction.WEST, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R0, Quadrant.R270), var1), Direction.UP, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0), var1), Direction.DOWN, rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R0), var1)));
+      return rotateAll(var0, OctahedralGroup.IDENTITY, var1);
+   }
+
+   public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2), Direction.UP, rotate(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1), var2), Direction.DOWN, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90.compose(var1), var2)));
    }
 
    public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0) {
-      return Map.of(AttachFace.WALL, rotateHorizontal(var0), AttachFace.FLOOR, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R270, Quadrant.R0))), AttachFace.CEILING, rotateHorizontal(rotate(var0, OctahedralGroup.fromXYAngles(Quadrant.R90, Quadrant.R180))));
+      return rotateAttachFace(var0, OctahedralGroup.IDENTITY);
+   }
+
+   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0, OctahedralGroup var1) {
+      return Map.of(AttachFace.WALL, rotateHorizontal(var0, var1), AttachFace.FLOOR, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1)), AttachFace.CEILING, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(OctahedralGroup.BLOCK_ROT_X_90).compose(var1)));
    }
 
    public interface DoubleLineConsumer {

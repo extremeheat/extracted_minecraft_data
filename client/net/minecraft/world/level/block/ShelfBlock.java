@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -179,7 +181,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       ItemStack var6 = var1.hasInfiniteMaterials() && var5.isEmpty() ? var0.copy() : var5;
       var4.setItem(var4.getSelectedSlot(), var6);
       var4.setChanged();
-      var2.setChanged(GameEvent.ITEM_INTERACT_FINISH);
+      var2.setChanged(var6.has(DataComponents.USE_EFFECTS) && !((UseEffects)var6.get(DataComponents.USE_EFFECTS)).interactVibrations() ? null : GameEvent.ITEM_INTERACT_FINISH);
       return !var5.isEmpty();
    }
 

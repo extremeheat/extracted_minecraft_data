@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 public interface NeighborUpdater {
    Direction[] UPDATE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH};
 
-   void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6);
+   void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6);
 
    void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3);
 

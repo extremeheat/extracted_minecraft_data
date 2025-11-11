@@ -66,7 +66,7 @@ public class BlockListReport implements DataProvider {
                   var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
                }
 
-               if (var18.size() > 0) {
+               if (!var18.isEmpty()) {
                   var17.add("properties", var18);
                }
 

@@ -296,8 +296,7 @@ public class Options {
    public boolean onboardAccessibility;
    private static final Component MUSIC_FREQUENCY_TOOLTIP = Component.translatable("options.music_frequency.tooltip");
    private final OptionInstance<MusicManager.MusicFrequency> musicFrequency;
-   private static final Component NOW_PLAYING_TOAST_TOOLTIP = Component.translatable("options.showNowPlayingToast.tooltip");
-   private final OptionInstance<Boolean> showNowPlayingToast;
+   private final OptionInstance<MusicToastDisplayState> musicToast;
    public boolean syncWrites;
    public boolean startedCleanly;
 
@@ -755,8 +754,8 @@ public class Options {
       return this.musicFrequency;
    }
 
-   public OptionInstance<Boolean> showNowPlayingToast() {
-      return this.showNowPlayingToast;
+   public OptionInstance<MusicToastDisplayState> musicToast() {
+      return this.musicToast;
    }
 
    public Options(Minecraft var1, File var2) {
@@ -1082,14 +1081,7 @@ public class Options {
       });
       this.onboardAccessibility = true;
       this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (var0) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(var0));
-      this.showNowPlayingToast = OptionInstance.createBoolean("options.showNowPlayingToast", OptionInstance.cachedConstantTooltip(NOW_PLAYING_TOAST_TOOLTIP), false, (var1x) -> {
-         if (var1x) {
-            this.minecraft.getToastManager().createNowPlayingToast();
-         } else {
-            this.minecraft.getToastManager().removeNowPlayingToast();
-         }
-
-      });
+      this.musicToast = new OptionInstance<MusicToastDisplayState>("options.musicToast", (var0) -> Tooltip.create(var0.tooltip()), (var0, var1x) -> var1x.text(), new OptionInstance.Enum(Arrays.asList(MusicToastDisplayState.values()), MusicToastDisplayState.CODEC), MusicToastDisplayState.NEVER, (var1x) -> this.minecraft.getToastManager().setMusicToastDisplayState(var1x));
       this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
@@ -1232,7 +1224,7 @@ public class Options {
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
       this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
-      var1.process("showNowPlayingToast", this.showNowPlayingToast);
+      var1.process("musicToast", this.musicToast);
       var1.process("musicFrequency", this.musicFrequency);
 
       for(KeyMapping var5 : this.keyMappings) {

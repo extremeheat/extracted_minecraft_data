@@ -2,7 +2,6 @@ package net.minecraft.core;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -27,13 +26,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
 
 @Immutable
 public class BlockPos extends Vec3i {
    public static final Codec<BlockPos> CODEC;
    public static final StreamCodec<ByteBuf, BlockPos> STREAM_CODEC;
-   private static final Logger LOGGER;
    public static final BlockPos ZERO;
    public static final int PACKED_HORIZONTAL_LENGTH;
    public static final int PACKED_Y_LENGTH;
@@ -205,17 +202,16 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos rotate(Rotation var1) {
+      BlockPos var10000;
       switch (var1) {
-         case NONE:
-         default:
-            return this;
-         case CLOCKWISE_90:
-            return new BlockPos(-this.getZ(), this.getY(), this.getX());
-         case CLOCKWISE_180:
-            return new BlockPos(-this.getX(), this.getY(), -this.getZ());
-         case COUNTERCLOCKWISE_90:
-            return new BlockPos(this.getZ(), this.getY(), -this.getX());
+         case CLOCKWISE_90 -> var10000 = new BlockPos(-this.getZ(), this.getY(), this.getX());
+         case CLOCKWISE_180 -> var10000 = new BlockPos(-this.getX(), this.getY(), -this.getZ());
+         case COUNTERCLOCKWISE_90 -> var10000 = new BlockPos(this.getZ(), this.getY(), -this.getX());
+         case NONE -> var10000 = this;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    public BlockPos cross(Vec3i var1) {
@@ -683,7 +679,6 @@ public class BlockPos extends Vec3i {
             return this.decode((ByteBuf)var1);
          }
       };
-      LOGGER = LogUtils.getLogger();
       ZERO = new BlockPos(0, 0, 0);
       PACKED_HORIZONTAL_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
       PACKED_Y_LENGTH = 64 - 2 * PACKED_HORIZONTAL_LENGTH;
@@ -780,18 +775,15 @@ public class BlockPos extends Vec3i {
       }
 
       public MutableBlockPos clamp(Direction.Axis var1, int var2, int var3) {
+         MutableBlockPos var10000;
          switch (var1) {
-            case X -> {
-               return this.set(Mth.clamp(this.getX(), var2, var3), this.getY(), this.getZ());
-            }
-            case Y -> {
-               return this.set(this.getX(), Mth.clamp(this.getY(), var2, var3), this.getZ());
-            }
-            case Z -> {
-               return this.set(this.getX(), this.getY(), Mth.clamp(this.getZ(), var2, var3));
-            }
-            default -> throw new IllegalStateException("Unable to clamp axis " + String.valueOf(var1));
+            case X -> var10000 = this.set(Mth.clamp(this.getX(), var2, var3), this.getY(), this.getZ());
+            case Y -> var10000 = this.set(this.getX(), Mth.clamp(this.getY(), var2, var3), this.getZ());
+            case Z -> var10000 = this.set(this.getX(), this.getY(), Mth.clamp(this.getZ(), var2, var3));
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
+
+         return var10000;
       }
 
       public MutableBlockPos setX(int var1) {

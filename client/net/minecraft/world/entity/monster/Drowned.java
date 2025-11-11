@@ -53,7 +53,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
@@ -204,14 +203,15 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   protected boolean shouldTravelInFluid(FluidState var1) {
-      return this.isUnderWater() && this.wantsToSwim();
-   }
-
    protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
-      this.moveRelative(0.01F, var1);
-      this.move(MoverType.SELF, this.getDeltaMovement());
-      this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      if (this.isUnderWater() && this.wantsToSwim()) {
+         this.moveRelative(0.01F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+      } else {
+         super.travelInWater(var1, var2, var4, var5);
+      }
+
    }
 
    public void updateSwimming() {

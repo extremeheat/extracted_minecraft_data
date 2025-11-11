@@ -15,7 +15,7 @@ public class BlockMarker extends SingleQuadParticle {
       this.gravity = 0.0F;
       this.lifetime = 80;
       this.hasPhysics = false;
-      this.layer = this.sprite.atlasLocation() == TextureAtlas.LOCATION_BLOCKS ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
+      this.layer = this.sprite.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
    }
 
    public SingleQuadParticle.Layer getLayer() {

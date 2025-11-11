@@ -14,9 +14,11 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -24,9 +26,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -38,6 +42,7 @@ import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
@@ -54,7 +59,9 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractNautilus extends TamableAnimal implements PlayerRideableJumping {
+public abstract class AbstractNautilus extends TamableAnimal implements HasCustomInventoryScreen, PlayerRideableJumping {
+   public static final int INVENTORY_SLOT_OFFSET = 500;
+   public static final int INVENTORY_ROWS = 3;
    public static final int SMALL_RESTRICTION_RADIUS = 16;
    public static final int LARGE_RESTRICTION_RADIUS = 32;
    public static final int RESTRICTION_RADIUS_BUFFER = 8;
@@ -71,6 +78,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    private static final float DASH_MOMENTUM_ON_LAND = 0.5F;
    private int dashCooldown = 0;
    protected float playerJumpPendingScale;
+   protected SimpleContainer inventory;
    private static final double BUBBLE_SPREAD_FACTOR = 0.8;
    private static final double BUBBLE_DIRECTION_SCALE = 1.1;
    private static final double BUBBLE_Y_OFFSET = 0.25;
@@ -83,6 +91,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.011F, 0.0F, true);
       this.lookControl = new SmoothSwimmingLookControl(this, 10);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
+      this.createInventory();
    }
 
    public boolean isFood(ItemStack var1) {
@@ -227,7 +236,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    }
 
    private void applyEffects(Level var1) {
-      LivingEntity var2 = this.getControllingPassenger();
+      Entity var2 = this.getFirstPassenger();
       if (var2 instanceof Player var3) {
          boolean var4 = var3.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
          boolean var5 = var1.getGameTime() % 40L == 0L;
@@ -348,6 +357,9 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       ItemStack var3 = var1.getItemInHand(var2);
       if (this.isBaby()) {
          return super.mobInteract(var1, var2);
+      } else if (this.isTame() && var1.isSecondaryUseActive()) {
+         this.openCustomInventoryScreen(var1);
+         return InteractionResult.SUCCESS;
       } else {
          if (!var3.isEmpty()) {
             if (!this.level().isClientSide() && !this.isTame() && this.isFood(var3)) {
@@ -357,9 +369,9 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
             }
 
             if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
+               FoodProperties var6 = (FoodProperties)var3.get(DataComponents.FOOD);
+               this.heal(var6 != null ? (float)(2 * var6.nutrition()) : 1.0F);
                this.usePlayerItem(var1, var2, var3);
-               FoodProperties var5 = (FoodProperties)var3.get(DataComponents.FOOD);
-               this.heal(var5 != null ? (float)(2 * var5.nutrition()) : 1.0F);
                this.playEatingSound();
                return InteractionResult.SUCCESS;
             }
@@ -374,7 +386,13 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
             this.doPlayerRide(var1);
             return InteractionResult.SUCCESS;
          } else {
-            return super.mobInteract(var1, var2);
+            InteractionResult var5 = super.mobInteract(var1, var2);
+            if (var5 == InteractionResult.PASS) {
+               this.openCustomInventoryScreen(var1);
+               return InteractionResult.SUCCESS;
+            } else {
+               return var5;
+            }
          }
       }
    }
@@ -424,6 +442,46 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       } else {
          return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.NAUTILUS_SADDLE_EQUIP : super.getEquipSound(var1, var2, var3));
       }
+   }
+
+   public final int getInventorySize() {
+      return AbstractMountInventoryMenu.getInventorySize(this.getInventoryColumns());
+   }
+
+   protected void createInventory() {
+      SimpleContainer var1 = this.inventory;
+      this.inventory = new SimpleContainer(this.getInventorySize());
+      if (var1 != null) {
+         int var2 = Math.min(var1.getContainerSize(), this.inventory.getContainerSize());
+
+         for(int var3 = 0; var3 < var2; ++var3) {
+            ItemStack var4 = var1.getItem(var3);
+            if (!var4.isEmpty()) {
+               this.inventory.setItem(var3, var4.copy());
+            }
+         }
+      }
+
+   }
+
+   public void openCustomInventoryScreen(Player var1) {
+      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTame()) {
+         var1.openNautilusInventory(this, this.inventory);
+      }
+
+   }
+
+   public @Nullable SlotAccess getSlot(int var1) {
+      int var2 = var1 - 500;
+      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
+   }
+
+   public boolean hasInventoryChanged(Container var1) {
+      return this.inventory != var1;
+   }
+
+   public int getInventoryColumns() {
+      return 0;
    }
 
    static {

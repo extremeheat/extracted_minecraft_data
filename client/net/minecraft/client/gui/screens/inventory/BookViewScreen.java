@@ -148,16 +148,21 @@ public class BookViewScreen extends Screen {
       if (super.keyPressed(var1)) {
          return true;
       } else {
+         boolean var10000;
          switch (var1.key()) {
             case 266:
                this.backButton.onPress(var1);
-               return true;
+               var10000 = true;
+               break;
             case 267:
                this.forwardButton.onPress(var1);
-               return true;
+               var10000 = true;
+               break;
             default:
-               return false;
+               var10000 = false;
          }
+
+         return var10000;
       }
    }
 

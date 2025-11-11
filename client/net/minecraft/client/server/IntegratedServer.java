@@ -88,6 +88,17 @@ public class IntegratedServer extends MinecraftServer {
       return this.paused;
    }
 
+   public void processPacketsAndTick(boolean var1) {
+      try (Gizmos.TemporaryCollection var2 = Gizmos.withCollector(this.gizmoCollector)) {
+         super.processPacketsAndTick(var1);
+      }
+
+      if (this.tickRateManager().runsNormally()) {
+         this.latestTicksGizmos = this.gizmoCollector.drainGizmos();
+      }
+
+   }
+
    public void tickServer(BooleanSupplier var1) {
       boolean var2 = this.paused;
       this.paused = Minecraft.getInstance().isPaused() || this.getPlayerList().getPlayers().isEmpty();
@@ -106,15 +117,11 @@ public class IntegratedServer extends MinecraftServer {
             this.forceTimeSynchronization();
          }
 
-         try (Gizmos.TemporaryCollection var4 = Gizmos.withCollector(this.gizmoCollector)) {
-            super.tickServer(var1);
-         }
-
-         this.latestTicksGizmos = this.gizmoCollector.drainGizmos();
-         int var9 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
-         if (var9 != this.getPlayerList().getViewDistance()) {
-            LOGGER.info("Changing view distance to {}, from {}", var9, this.getPlayerList().getViewDistance());
-            this.getPlayerList().setViewDistance(var9);
+         super.tickServer(var1);
+         int var4 = Math.max(2, (Integer)this.minecraft.options.renderDistance().get());
+         if (var4 != this.getPlayerList().getViewDistance()) {
+            LOGGER.info("Changing view distance to {}, from {}", var4, this.getPlayerList().getViewDistance());
+            this.getPlayerList().setViewDistance(var4);
          }
 
          int var5 = Math.max(2, (Integer)this.minecraft.options.simulationDistance().get());

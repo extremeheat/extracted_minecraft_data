@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -141,18 +142,23 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       }
    }
 
-   private void renderScroller(GuiGraphics var1, int var2, int var3, MerchantOffers var4) {
-      int var5 = var4.size() + 1 - 7;
-      if (var5 > 1) {
-         int var6 = 139 - (27 + (var5 - 1) * 139 / var5);
-         int var7 = 1 + var6 / var5 + 139 / var5;
-         boolean var8 = true;
-         int var9 = Math.min(113, this.scrollOff * var7);
-         if (this.scrollOff == var5 - 1) {
-            var9 = 113;
+   private void renderScroller(GuiGraphics var1, int var2, int var3, int var4, int var5, MerchantOffers var6) {
+      int var7 = var6.size() + 1 - 7;
+      if (var7 > 1) {
+         int var8 = 139 - (27 + (var7 - 1) * 139 / var7);
+         int var9 = 1 + var8 / var7 + 139 / var7;
+         boolean var10 = true;
+         int var11 = Math.min(113, this.scrollOff * var9);
+         if (this.scrollOff == var7 - 1) {
+            var11 = 113;
          }
 
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 6, 27);
+         int var12 = var2 + 94;
+         int var13 = var3 + 18 + var11;
+         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_SPRITE, var12, var13, 6, 27);
+         if (var4 >= var12 && var4 < var2 + 94 + 6 && var5 >= var13 && var5 <= var13 + 27) {
+            var1.requestCursor(this.isDragging ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+         }
       } else {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 6, 27);
       }
@@ -167,7 +173,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          int var7 = (this.height - this.imageHeight) / 2;
          int var8 = var7 + 16 + 1;
          int var9 = var6 + 5 + 5;
-         this.renderScroller(var1, var6, var7, var5);
+         this.renderScroller(var1, var6, var7, var2, var3, var5);
          int var10 = 0;
 
          for(MerchantOffer var12 : var5) {
@@ -270,7 +276,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    }
 
    public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      this.isDragging = false;
       int var3 = (this.width - this.imageWidth) / 2;
       int var4 = (this.height - this.imageHeight) / 2;
       if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && var1.x() > (double)(var3 + 94) && var1.x() < (double)(var3 + 94 + 6) && var1.y() > (double)(var4 + 18) && var1.y() <= (double)(var4 + 18 + 139 + 1)) {
@@ -278,6 +283,11 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       }
 
       return super.mouseClicked(var1, var2);
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      this.isDragging = false;
+      return super.mouseReleased(var1);
    }
 
    class TradeOfferButton extends Button.Plain {

@@ -20,8 +20,8 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
       this.recipeFilterName = var2;
    }
 
-   protected void initFilterButtonTextures() {
-      this.filterButton.initTextureValues(FILTER_SPRITES);
+   protected WidgetSprites getFilterButtonTextures() {
+      return FILTER_SPRITES;
    }
 
    protected boolean isCraftingSlot(Slot var1) {

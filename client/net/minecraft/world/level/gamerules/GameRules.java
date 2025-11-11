@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
@@ -91,7 +92,7 @@ public class GameRules {
 
    public GameRules(FeatureFlagSet var1) {
       super();
-      this.rules = GameRuleMap.of(BuiltInRegistries.GAME_RULE.stream().filter((var1x) -> var1x.requiredFeatures().isSubsetOf(var1)));
+      this.rules = GameRuleMap.of(BuiltInRegistries.GAME_RULE.filterFeatures(var1).listElements().map(Holder::value));
    }
 
    public Stream<GameRule<?>> availableRules() {

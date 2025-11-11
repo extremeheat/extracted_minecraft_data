@@ -1,28 +1,32 @@
 package net.minecraft.client.renderer;
 
+import java.util.EnumMap;
+import java.util.Map;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Util;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public enum FaceInfo {
-   DOWN(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z)}),
-   UP(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z)}),
-   NORTH(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z)}),
-   SOUTH(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z)}),
-   WEST(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MIN_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z)}),
-   EAST(new VertexInfo[]{new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MAX_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MIN_Y, FaceInfo.Constants.MIN_Z), new VertexInfo(FaceInfo.Constants.MAX_X, FaceInfo.Constants.MAX_Y, FaceInfo.Constants.MIN_Z)});
+   DOWN(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z)}),
+   UP(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z)}),
+   NORTH(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z)}),
+   SOUTH(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z)}),
+   WEST(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z)}),
+   EAST(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z)});
 
-   private static final FaceInfo[] BY_FACING = (FaceInfo[])Util.make(new FaceInfo[6], (var0) -> {
-      var0[FaceInfo.Constants.MIN_Y] = DOWN;
-      var0[FaceInfo.Constants.MAX_Y] = UP;
-      var0[FaceInfo.Constants.MIN_Z] = NORTH;
-      var0[FaceInfo.Constants.MAX_Z] = SOUTH;
-      var0[FaceInfo.Constants.MIN_X] = WEST;
-      var0[FaceInfo.Constants.MAX_X] = EAST;
+   private static final Map<Direction, FaceInfo> BY_FACING = (Map)Util.make(new EnumMap(Direction.class), (var0) -> {
+      var0.put(Direction.DOWN, DOWN);
+      var0.put(Direction.UP, UP);
+      var0.put(Direction.NORTH, NORTH);
+      var0.put(Direction.SOUTH, SOUTH);
+      var0.put(Direction.WEST, WEST);
+      var0.put(Direction.EAST, EAST);
    });
    private final VertexInfo[] infos;
 
    public static FaceInfo fromFacing(Direction var0) {
-      return BY_FACING[var0.get3DDataValue()];
+      return (FaceInfo)BY_FACING.get(var0);
    }
 
    private FaceInfo(final VertexInfo... var3) {
@@ -38,38 +42,63 @@ public enum FaceInfo {
       return new FaceInfo[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
    }
 
-   public static final class Constants {
-      public static final int MAX_Z;
-      public static final int MAX_Y;
-      public static final int MAX_X;
-      public static final int MIN_Z;
-      public static final int MIN_Y;
-      public static final int MIN_X;
+   public static enum Extent {
+      MIN_X,
+      MIN_Y,
+      MIN_Z,
+      MAX_X,
+      MAX_Y,
+      MAX_Z;
 
-      public Constants() {
-         super();
+      private Extent() {
       }
 
-      static {
-         MAX_Z = Direction.SOUTH.get3DDataValue();
-         MAX_Y = Direction.UP.get3DDataValue();
-         MAX_X = Direction.EAST.get3DDataValue();
-         MIN_Z = Direction.NORTH.get3DDataValue();
-         MIN_Y = Direction.DOWN.get3DDataValue();
-         MIN_X = Direction.WEST.get3DDataValue();
+      public float select(Vector3fc var1, Vector3fc var2) {
+         float var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.x();
+            case 1 -> var10000 = var1.y();
+            case 2 -> var10000 = var1.z();
+            case 3 -> var10000 = var2.x();
+            case 4 -> var10000 = var2.y();
+            case 5 -> var10000 = var2.z();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
+
+      public float select(float var1, float var2, float var3, float var4, float var5, float var6) {
+         float var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1;
+            case 1 -> var10000 = var2;
+            case 2 -> var10000 = var3;
+            case 3 -> var10000 = var4;
+            case 4 -> var10000 = var5;
+            case 5 -> var10000 = var6;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
+
+      // $FF: synthetic method
+      private static Extent[] $values() {
+         return new Extent[]{MIN_X, MIN_Y, MIN_Z, MAX_X, MAX_Y, MAX_Z};
       }
    }
 
-   public static class VertexInfo {
-      public final int xFace;
-      public final int yFace;
-      public final int zFace;
-
-      VertexInfo(int var1, int var2, int var3) {
+   public static record VertexInfo(Extent xFace, Extent yFace, Extent zFace) {
+      public VertexInfo(Extent var1, Extent var2, Extent var3) {
          super();
          this.xFace = var1;
          this.yFace = var2;
          this.zFace = var3;
+      }
+
+      public Vector3f select(Vector3fc var1, Vector3fc var2) {
+         return new Vector3f(this.xFace.select(var1, var2), this.yFace.select(var1, var2), this.zFace.select(var1, var2));
       }
    }
 }

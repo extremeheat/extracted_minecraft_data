@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -151,7 +152,7 @@ public class PauseScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (this.rendersNowPlayingToast()) {
-         NowPlayingToast.renderToast(this.minecraft, var1, this.font);
+         NowPlayingToast.renderToast(var1, this.font);
       }
 
       if (this.showPauseMenu && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
@@ -169,7 +170,7 @@ public class PauseScreen extends Screen {
 
    public boolean rendersNowPlayingToast() {
       Options var1 = this.minecraft.options;
-      return (Boolean)var1.showNowPlayingToast().get() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
+      return ((MusicToastDisplayState)var1.musicToast().get()).renderInPauseScreen() && var1.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F && this.showPauseMenu;
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {

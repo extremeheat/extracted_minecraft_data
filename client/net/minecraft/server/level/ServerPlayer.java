@@ -66,9 +66,9 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetDataPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
-import net.minecraft.network.protocol.game.ClientboundHorseScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
+import net.minecraft.network.protocol.game.ClientboundMountScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenBookPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
@@ -163,6 +163,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.inventory.HorseInventoryMenu;
+import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.inventory.RemoteSlot;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
@@ -1322,8 +1323,20 @@ public class ServerPlayer extends Player {
 
       this.nextContainerCounter();
       int var3 = var1.getInventoryColumns();
-      this.connection.send(new ClientboundHorseScreenOpenPacket(this.containerCounter, var3, var1.getId()));
+      this.connection.send(new ClientboundMountScreenOpenPacket(this.containerCounter, var3, var1.getId()));
       this.containerMenu = new HorseInventoryMenu(this.containerCounter, this.getInventory(), var2, var1, var3);
+      this.initMenu(this.containerMenu);
+   }
+
+   public void openNautilusInventory(AbstractNautilus var1, Container var2) {
+      if (this.containerMenu != this.inventoryMenu) {
+         this.closeContainer();
+      }
+
+      this.nextContainerCounter();
+      int var3 = var1.getInventoryColumns();
+      this.connection.send(new ClientboundMountScreenOpenPacket(this.containerCounter, var3, var1.getId()));
+      this.containerMenu = new NautilusInventoryMenu(this.containerCounter, this.getInventory(), var2, var1, var3);
       this.initMenu(this.containerMenu);
    }
 
@@ -1662,6 +1675,7 @@ public class ServerPlayer extends Player {
          if (var1 == GameType.SPECTATOR) {
             this.removeEntitiesOnShoulder();
             this.stopRiding();
+            this.stopUsingItem();
             EnchantmentHelper.stopLocationBasedEffects(this);
          } else {
             this.setCamera(this);

@@ -36,7 +36,7 @@ public class BreakingItemParticle extends SingleQuadParticle {
       this.quadSize /= 2.0F;
       this.uo = this.random.nextFloat() * 3.0F;
       this.vo = this.random.nextFloat() * 3.0F;
-      this.layer = var8.atlasLocation() == TextureAtlas.LOCATION_BLOCKS ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
+      this.layer = var8.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
    }
 
    protected float getU0() {

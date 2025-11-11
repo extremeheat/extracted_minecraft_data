@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.block.model;
 
-import com.mojang.math.OctahedralGroup;
 import com.mojang.math.Quadrant;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -33,6 +32,10 @@ public record Variant(Identifier modelLocation, SimpleModelState modelState) imp
       return this.withState(this.modelState.withY(var1));
    }
 
+   public Variant withZRot(Quadrant var1) {
+      return this.withState(this.modelState.withZ(var1));
+   }
+
    public Variant withUvLock(boolean var1) {
       return this.withState(this.modelState.withUvLock(var1));
    }
@@ -61,36 +64,41 @@ public record Variant(Identifier modelLocation, SimpleModelState modelState) imp
       CODEC = MAP_CODEC.codec();
    }
 
-   public static record SimpleModelState(Quadrant x, Quadrant y, boolean uvLock) {
-      public static final MapCodec<SimpleModelState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Quadrant.CODEC.optionalFieldOf("x", Quadrant.R0).forGetter(SimpleModelState::x), Quadrant.CODEC.optionalFieldOf("y", Quadrant.R0).forGetter(SimpleModelState::y), Codec.BOOL.optionalFieldOf("uvlock", false).forGetter(SimpleModelState::uvLock)).apply(var0, SimpleModelState::new));
+   public static record SimpleModelState(Quadrant x, Quadrant y, Quadrant z, boolean uvLock) {
+      public static final MapCodec<SimpleModelState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Quadrant.CODEC.optionalFieldOf("x", Quadrant.R0).forGetter(SimpleModelState::x), Quadrant.CODEC.optionalFieldOf("y", Quadrant.R0).forGetter(SimpleModelState::y), Quadrant.CODEC.optionalFieldOf("z", Quadrant.R0).forGetter(SimpleModelState::z), Codec.BOOL.optionalFieldOf("uvlock", false).forGetter(SimpleModelState::uvLock)).apply(var0, SimpleModelState::new));
       public static final SimpleModelState DEFAULT;
 
-      public SimpleModelState(Quadrant var1, Quadrant var2, boolean var3) {
+      public SimpleModelState(Quadrant var1, Quadrant var2, Quadrant var3, boolean var4) {
          super();
          this.x = var1;
          this.y = var2;
-         this.uvLock = var3;
+         this.z = var3;
+         this.uvLock = var4;
       }
 
       public ModelState asModelState() {
-         BlockModelRotation var1 = BlockModelRotation.get(OctahedralGroup.fromXYAngles(this.x, this.y));
+         BlockModelRotation var1 = BlockModelRotation.get(Quadrant.fromXYZAngles(this.x, this.y, this.z));
          return (ModelState)(this.uvLock ? var1.withUvLock() : var1);
       }
 
       public SimpleModelState withX(Quadrant var1) {
-         return new SimpleModelState(var1, this.y, this.uvLock);
+         return new SimpleModelState(var1, this.y, this.z, this.uvLock);
       }
 
       public SimpleModelState withY(Quadrant var1) {
-         return new SimpleModelState(this.x, var1, this.uvLock);
+         return new SimpleModelState(this.x, var1, this.z, this.uvLock);
+      }
+
+      public SimpleModelState withZ(Quadrant var1) {
+         return new SimpleModelState(this.x, this.y, var1, this.uvLock);
       }
 
       public SimpleModelState withUvLock(boolean var1) {
-         return new SimpleModelState(this.x, this.y, var1);
+         return new SimpleModelState(this.x, this.y, this.z, var1);
       }
 
       static {
-         DEFAULT = new SimpleModelState(Quadrant.R0, Quadrant.R0, false);
+         DEFAULT = new SimpleModelState(Quadrant.R0, Quadrant.R0, Quadrant.R0, false);
       }
    }
 }

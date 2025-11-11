@@ -47,7 +47,7 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity, 
          var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var1.yRot));
          var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(67.5F));
          var2.translate(0.0F, -0.125F, 0.0F);
-         var3.submitModel(this.bookModel, this.bookState, var2, EnchantTableRenderer.BOOK_LOCATION.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_LOCATION), 0, var1.breakProgress);
+         var3.submitModel(this.bookModel, this.bookState, var2, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, var1.breakProgress);
          var2.popPose();
       }
    }

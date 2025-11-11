@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.component.DataComponents;
@@ -12,7 +12,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPatternLayers> {
@@ -33,7 +33,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
       this.bannerRenderer.submitSpecial(var3, var4, var5, var6, this.baseColor, (BannerPatternLayers)Objects.requireNonNullElse(var1, BannerPatternLayers.EMPTY), var8);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       this.bannerRenderer.getExtents(var1);
    }
 

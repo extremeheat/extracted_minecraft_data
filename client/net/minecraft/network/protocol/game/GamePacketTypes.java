@@ -44,7 +44,7 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundForgetLevelChunkPacket> CLIENTBOUND_FORGET_LEVEL_CHUNK = createClientbound("forget_level_chunk");
    public static final PacketType<ClientboundGameEventPacket> CLIENTBOUND_GAME_EVENT = createClientbound("game_event");
    public static final PacketType<ClientboundGameTestHighlightPosPacket> CLIENTBOUND_GAME_TEST_HIGHLIGHT_POS = createClientbound("game_test_highlight_pos");
-   public static final PacketType<ClientboundHorseScreenOpenPacket> CLIENTBOUND_HORSE_SCREEN_OPEN = createClientbound("horse_screen_open");
+   public static final PacketType<ClientboundMountScreenOpenPacket> CLIENTBOUND_MOUNT_SCREEN_OPEN = createClientbound("mount_screen_open");
    public static final PacketType<ClientboundHurtAnimationPacket> CLIENTBOUND_HURT_ANIMATION = createClientbound("hurt_animation");
    public static final PacketType<ClientboundInitializeBorderPacket> CLIENTBOUND_INITIALIZE_BORDER = createClientbound("initialize_border");
    public static final PacketType<ClientboundLevelChunkWithLightPacket> CLIENTBOUND_LEVEL_CHUNK_WITH_LIGHT = createClientbound("level_chunk_with_light");

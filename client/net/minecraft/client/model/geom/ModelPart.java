@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -127,7 +128,7 @@ public final class ModelPart {
       this.setRotation(var4.x, var4.y, var4.z);
    }
 
-   public void getExtentsForGui(PoseStack var1, Set<Vector3f> var2) {
+   public void getExtentsForGui(PoseStack var1, Consumer<Vector3fc> var2) {
       this.visit(var1, (var1x, var2x, var3, var4) -> {
          for(Polygon var8 : var4.polygons) {
             for(Vertex var12 : var8.vertices()) {
@@ -135,7 +136,7 @@ public final class ModelPart {
                float var14 = var12.worldY();
                float var15 = var12.worldZ();
                Vector3f var16 = var1x.pose().transformPosition(var13, var14, var15, new Vector3f());
-               var2.add(var16);
+               var2.accept(var16);
             }
          }
 

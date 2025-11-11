@@ -53,6 +53,7 @@ import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.NautilusInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
@@ -142,7 +143,6 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameTestHighlightPosPacket;
-import net.minecraft.network.protocol.game.ClientboundHorseScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
@@ -154,6 +154,7 @@ import net.minecraft.network.protocol.game.ClientboundLightUpdatePacketData;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
+import net.minecraft.network.protocol.game.ClientboundMountScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveMinecartPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket;
@@ -283,6 +284,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Guardian;
@@ -297,9 +299,11 @@ import net.minecraft.world.entity.vehicle.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.inventory.NautilusInventoryMenu;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -1223,16 +1227,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var10000.ifPresent(var10001::addDeltaMovement);
    }
 
-   public void handleHorseScreenOpen(ClientboundHorseScreenOpenPacket var1) {
+   public void handleMountScreenOpen(ClientboundMountScreenOpenPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (PacketProcessor)this.minecraft.packetProcessor());
       Entity var2 = this.level.getEntity(var1.getEntityId());
-      if (var2 instanceof AbstractHorse var3) {
-         LocalPlayer var4 = this.minecraft.player;
-         int var5 = var1.getInventoryColumns();
-         SimpleContainer var6 = new SimpleContainer(AbstractHorse.getInventorySize(var5));
-         HorseInventoryMenu var7 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var6, var3, var5);
-         var4.containerMenu = var7;
-         this.minecraft.setScreen(new HorseInventoryScreen(var7, var4.getInventory(), var3, var5));
+      LocalPlayer var3 = this.minecraft.player;
+      int var4 = var1.getInventoryColumns();
+      SimpleContainer var5 = new SimpleContainer(AbstractMountInventoryMenu.getInventorySize(var4));
+      if (var2 instanceof AbstractHorse var6) {
+         HorseInventoryMenu var8 = new HorseInventoryMenu(var1.getContainerId(), var3.getInventory(), var5, var6, var4);
+         var3.containerMenu = var8;
+         this.minecraft.setScreen(new HorseInventoryScreen(var8, var3.getInventory(), var6, var4));
+      } else if (var2 instanceof AbstractNautilus var7) {
+         NautilusInventoryMenu var9 = new NautilusInventoryMenu(var1.getContainerId(), var3.getInventory(), var5, var7, var4);
+         var3.containerMenu = var9;
+         this.minecraft.setScreen(new NautilusInventoryScreen(var9, var3.getInventory(), var7, var4));
       }
 
    }

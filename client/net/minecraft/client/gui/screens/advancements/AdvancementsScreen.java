@@ -132,7 +132,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       var1.nextStratum();
       this.renderInside(var1, var5, var6);
       var1.nextStratum();
-      this.renderWindow(var1, var5, var6);
+      this.renderWindow(var1, var5, var6, var2, var3);
       if (this.isScrolling && this.selectedTab != null) {
          if (this.selectedTab.canScrollHorizontally() && this.selectedTab.canScrollVertically()) {
             var1.requestCursor(CursorTypes.RESIZE_ALL);
@@ -195,15 +195,15 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
    }
 
-   public void renderWindow(GuiGraphics var1, int var2, int var3) {
+   public void renderWindow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       var1.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var5 : this.tabs.values()) {
-            var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
+         for(AdvancementTab var7 : this.tabs.values()) {
+            var7.drawTab(var1, var2, var3, var4, var5, var7 == this.selectedTab);
          }
 
-         for(AdvancementTab var7 : this.tabs.values()) {
-            var7.drawIcon(var1, var2, var3);
+         for(AdvancementTab var9 : this.tabs.values()) {
+            var9.drawIcon(var1, var2, var3);
          }
       }
 

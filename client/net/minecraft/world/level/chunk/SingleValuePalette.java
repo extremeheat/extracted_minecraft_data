@@ -13,9 +13,9 @@ public class SingleValuePalette<T> implements Palette<T> {
 
    public SingleValuePalette(List<T> var1) {
       super();
-      if (var1.size() > 0) {
+      if (!var1.isEmpty()) {
          Validate.isTrue(var1.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var1.size());
-         this.value = (T)var1.get(0);
+         this.value = (T)var1.getFirst();
       }
 
    }

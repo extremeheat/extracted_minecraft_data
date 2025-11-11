@@ -189,7 +189,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       return SoundEvents.ZOMBIFIED_PIGLIN_DEATH;
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+   public void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(var1.nextInt(20) == 0 ? Items.GOLDEN_SPEAR : Items.GOLDEN_SWORD));
    }
 

@@ -270,8 +270,8 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   public Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer() {
-      return () -> this.specialBlockModelRenderer;
+   public SpecialBlockModelRenderer specialBlockModelRenderer() {
+      return this.specialBlockModelRenderer;
    }
 
    public Supplier<EntityModelSet> entityModels() {

@@ -10,9 +10,10 @@ import java.util.function.ToIntFunction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlagSet;
 
-public final class GameRule<T> {
+public final class GameRule<T> implements FeatureElement {
    private final GameRuleCategory category;
    private final GameRuleType gameRuleType;
    private final ArgumentType<T> argument;

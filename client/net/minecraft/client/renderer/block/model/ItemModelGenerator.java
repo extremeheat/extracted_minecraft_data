@@ -10,7 +10,6 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.client.resources.model.SpriteGetter;
 import net.minecraft.client.resources.model.UnbakedGeometry;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
@@ -45,10 +44,6 @@ public class ItemModelGenerator implements UnbakedModel {
    }
 
    private static QuadCollection bake(TextureSlots var0, ModelBaker var1, ModelState var2, ModelDebugName var3) {
-      return bake(var0, var1.sprites(), var2, var3);
-   }
-
-   private static QuadCollection bake(TextureSlots var0, SpriteGetter var1, ModelState var2, ModelDebugName var3) {
       ArrayList var4 = new ArrayList();
 
       for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
@@ -58,7 +53,7 @@ public class ItemModelGenerator implements UnbakedModel {
             break;
          }
 
-         SpriteContents var8 = var1.get(var7, var3).contents();
+         SpriteContents var8 = var1.sprites().get(var7, var3).contents();
          var4.addAll(processFrames(var5, var6, var8));
       }
 

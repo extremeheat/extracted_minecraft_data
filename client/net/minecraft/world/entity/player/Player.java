@@ -78,6 +78,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -791,6 +792,9 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void openHorseInventory(AbstractHorse var1, Container var2) {
    }
 
+   public void openNautilusInventory(AbstractNautilus var1, Container var2) {
+   }
+
    public OptionalInt openMenu(@Nullable MenuProvider var1) {
       return OptionalInt.empty();
    }
@@ -924,7 +928,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                boolean var7 = var5 > 0.9F;
                boolean var8;
                if (this.isSprinting() && var7) {
-                  this.makeSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK);
+                  this.playServerSideSound(SoundEvents.PLAYER_ATTACK_KNOCKBACK);
                   var8 = true;
                } else {
                   var8 = false;
@@ -1146,8 +1150,12 @@ public abstract class Player extends Avatar implements ContainerUser {
       } else {
          ItemStack var7 = this.getItemBySlot(var1);
          DamageSource var8 = this.createAttackSource(var7);
-         float var9 = this.getAttackStrengthScale(0.5F) * (this.getEnchantedDamage(var2, var3, var8) - var3);
-         var3 *= this.baseDamageScaleFactor();
+         float var9 = this.getEnchantedDamage(var2, var3, var8) - var3;
+         if (!this.isUsingItem() || this.getUsedItemHand().asEquipmentSlot() != var1) {
+            var9 *= this.getAttackStrengthScale(0.5F);
+            var3 *= this.baseDamageScaleFactor();
+         }
+
          if (var5 && this.deflectProjectile(var2)) {
             return true;
          } else {
@@ -1158,10 +1166,10 @@ public abstract class Player extends Avatar implements ContainerUser {
                var11 = var12.getHealth();
             }
 
-            Vec3 var16 = var2.getDeltaMovement();
+            Vec3 var15 = var2.getDeltaMovement();
             boolean var13 = var4 && var2.hurtOrSimulate(var8, var10);
             if (var5) {
-               this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var8), var16);
+               this.causeExtraKnockback(var2, 0.4F + this.getKnockback(var2, var8), var15);
             }
 
             boolean var14 = false;

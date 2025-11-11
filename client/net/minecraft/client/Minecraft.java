@@ -388,6 +388,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private long clientTickCount;
    private final PacketProcessor packetProcessor;
    private final SimpleGizmoCollector perTickGizmos;
+   private List<SimpleGizmoCollector.GizmoInstance> drainedLatestTickGizmos;
 
    public Minecraft(final GameConfig var1) {
       super("Client");
@@ -398,6 +399,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.reloadStateTracker = new ResourceLoadStateTracker();
       this.perTickGizmos = new SimpleGizmoCollector();
+      this.drainedLatestTickGizmos = new ArrayList();
       instance = this;
       this.clientStartTimeMs = System.currentTimeMillis();
       this.gameDirectory = var1.location.gameDirectory;
@@ -547,9 +549,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
-      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.atlasManager, this.modelManager.specialBlockModelRenderer(), this.blockColors);
+      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.atlasManager, this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), var11, this.playerSkinRenderCache);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.mapRenderer, this.blockRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), var11, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
       this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
@@ -1209,24 +1211,25 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.reloadResourcePacks().thenRun(() -> var2.complete((Object)null));
       }
 
-      int var14 = this.deltaTracker.advanceTime(Util.getMillis(), var1);
+      int var16 = this.deltaTracker.advanceTime(Util.getMillis(), var1);
       ProfilerFiller var3 = Profiler.get();
       if (var1) {
-         var3.push("scheduledPacketProcessing");
-         this.packetProcessor.processQueuedPackets();
-         var3.popPush("scheduledExecutables");
-         this.runAllTasks();
-         var3.popPush("tick");
-         if (var14 > 0) {
-            this.perTickGizmos.drainGizmos();
-            if (this.isLevelRunningNormally()) {
-               var3.push("textures");
-               this.textureManager.tick();
-               var3.pop();
-            }
+         try (Gizmos.TemporaryCollection var4 = this.collectPerTickGizmos()) {
+            var3.push("scheduledPacketProcessing");
+            this.packetProcessor.processQueuedPackets();
+            var3.popPush("scheduledExecutables");
+            this.runAllTasks();
+            var3.pop();
          }
 
-         for(int var4 = 0; var4 < Math.min(10, var14); ++var4) {
+         var3.push("tick");
+         if (var16 > 0 && this.isLevelRunningNormally()) {
+            var3.push("textures");
+            this.textureManager.tick();
+            var3.pop();
+         }
+
+         for(int var17 = 0; var17 < Math.min(10, var16); ++var17) {
             var3.incrementCounter("clientTick");
 
             try (Gizmos.TemporaryCollection var5 = this.collectPerTickGizmos()) {
@@ -1234,13 +1237,17 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          }
 
+         if (var16 > 0 && (this.level == null || this.level.tickRateManager().runsNormally())) {
+            this.drainedLatestTickGizmos = this.perTickGizmos.drainGizmos();
+         }
+
          var3.pop();
       }
 
       this.window.setErrorSection("Render");
 
-      boolean var15;
-      try (Gizmos.TemporaryCollection var16 = this.levelRenderer.collectPerFrameGizmos()) {
+      boolean var18;
+      try (Gizmos.TemporaryCollection var19 = this.levelRenderer.collectPerFrameGizmos()) {
          var3.push("gpuAsync");
          RenderSystem.executePendingTasks();
          var3.popPush("sound");
@@ -1252,11 +1259,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var3.popPush("render");
          long var6 = Util.getNanos();
          if (!this.debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) && !this.metricsRecorder.isRecording()) {
-            var15 = false;
+            var18 = false;
             this.gpuUtilization = 0.0;
          } else {
-            var15 = (this.currentFrameProfile == null || this.currentFrameProfile.isDone()) && !TimerQuery.getInstance().isRecording();
-            if (var15) {
+            var18 = (this.currentFrameProfile == null || this.currentFrameProfile.isDone()) && !TimerQuery.getInstance().isRecording();
+            if (var18) {
                TimerQuery.getInstance().beginProfile();
             }
          }
@@ -1274,7 +1281,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          this.frameTimeNs = Util.getNanos() - var6;
-         if (var15) {
+         if (var18) {
             this.currentFrameProfile = TimerQuery.getInstance().endProfile();
          }
 
@@ -1298,22 +1305,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       this.window.setErrorSection("Post render");
       ++this.frames;
-      boolean var17 = this.pause;
+      boolean var20 = this.pause;
       this.pause = this.hasSingleplayerServer() && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen()) && !this.singleplayerServer.isPublished();
-      if (!var17 && this.pause) {
+      if (!var20 && this.pause) {
          this.soundManager.pauseAllExcept(SoundSource.MUSIC, SoundSource.UI);
       }
 
       this.deltaTracker.updatePauseState(this.pause);
       this.deltaTracker.updateFrozenState(!this.isLevelRunningNormally());
-      long var18 = Util.getNanos();
-      long var19 = var18 - this.lastNanoTime;
-      if (var15) {
-         this.savedCpuDuration = var19;
+      long var21 = Util.getNanos();
+      long var22 = var21 - this.lastNanoTime;
+      if (var18) {
+         this.savedCpuDuration = var22;
       }
 
-      this.getDebugOverlay().logFrameDuration(var19);
-      this.lastNanoTime = var18;
+      this.getDebugOverlay().logFrameDuration(var22);
+      this.lastNanoTime = var21;
       var3.push("fpsUpdate");
       if (this.currentFrameProfile != null && this.currentFrameProfile.isDone()) {
          this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
@@ -2804,7 +2811,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public Collection<SimpleGizmoCollector.GizmoInstance> getPerTickGizmos() {
-      return this.perTickGizmos.getGizmos();
+      return this.drainedLatestTickGizmos;
    }
 
    static {

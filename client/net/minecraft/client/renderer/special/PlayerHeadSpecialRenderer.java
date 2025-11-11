@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.SkullBlock;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerSkinRenderCache.RenderInfo> {
@@ -33,7 +33,7 @@ public class PlayerHeadSpecialRenderer implements SpecialModelRenderer<PlayerSki
       SkullBlockRenderer.submitSkull((Direction)null, 180.0F, 0.0F, var3, var4, var5, this.modelBase, var9, var8, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       var2.translate(0.5F, 0.0F, 0.5F);
       var2.scale(-1.0F, -1.0F, 1.0F);

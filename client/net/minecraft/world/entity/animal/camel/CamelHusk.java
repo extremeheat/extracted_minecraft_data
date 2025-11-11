@@ -58,6 +58,10 @@ public class CamelHusk extends Camel {
       return null;
    }
 
+   public boolean canFallInLove() {
+      return false;
+   }
+
    protected SoundEvent getDeathSound() {
       return SoundEvents.CAMEL_HUSK_DEATH;
    }

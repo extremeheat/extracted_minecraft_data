@@ -29,7 +29,7 @@ public class FishingRodItem extends Item {
          }
 
          var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.NEUTRAL, 1.0F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-         var2.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+         var4.causeUseVibration(var2, GameEvent.ITEM_INTERACT_FINISH);
       } else {
          var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
          if (var1 instanceof ServerLevel) {
@@ -40,7 +40,7 @@ public class FishingRodItem extends Item {
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));
-         var2.gameEvent(GameEvent.ITEM_INTERACT_START);
+         var4.causeUseVibration(var2, GameEvent.ITEM_INTERACT_START);
       }
 
       return InteractionResult.SUCCESS;

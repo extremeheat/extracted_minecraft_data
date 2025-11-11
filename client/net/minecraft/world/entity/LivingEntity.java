@@ -404,7 +404,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                      var2.broadcastEntityEvent(this, (byte)67);
                      this.hurtServer(var2, this.damageSources().drown(), 2.0F);
                   }
-               } else if (this.getAirSupply() < this.getMaxAirSupply() && !this.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS)) {
+               } else if (this.getAirSupply() < this.getMaxAirSupply() && MobEffectUtil.shouldEffectsRefillAirsupply(this)) {
                   this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
                }
 
@@ -1376,7 +1376,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                ServerPlayer var9 = (ServerPlayer)this;
                var9.awardStat(Stats.ITEM_USED.get(var2.getItem()));
                CriteriaTriggers.USED_TOTEM.trigger(var9, var2);
-               this.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+               var2.causeUseVibration(this, GameEvent.ITEM_INTERACT_FINISH);
             }
 
             this.setHealth(1.0F);
@@ -3313,7 +3313,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (!this.level().isClientSide()) {
             this.setLivingEntityFlag(1, true);
             this.setLivingEntityFlag(2, var1 == InteractionHand.OFF_HAND);
-            this.gameEvent(GameEvent.ITEM_INTERACT_START);
+            this.useItem.causeUseVibration(this, GameEvent.ITEM_INTERACT_START);
             if (this.useItem.has(DataComponents.KINETIC_WEAPON)) {
                this.recentKineticEnemies = new Object2LongOpenHashMap();
             }
@@ -3425,7 +3425,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.recentKineticEnemies = null;
          this.setLivingEntityFlag(1, false);
          if (var1) {
-            this.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+            this.useItem.causeUseVibration(this, GameEvent.ITEM_INTERACT_FINISH);
          }
       }
 

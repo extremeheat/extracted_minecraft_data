@@ -18,7 +18,7 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState,
    public EndermanRenderer(EntityRendererProvider.Context var1) {
       super(var1, new EndermanModel(var1.bakeLayer(ModelLayers.ENDERMAN)), 0.5F);
       this.addLayer(new EnderEyesLayer(this));
-      this.addLayer(new CarriedBlockLayer(this, var1.getBlockRenderDispatcher()));
+      this.addLayer(new CarriedBlockLayer(this));
    }
 
    public Vec3 getRenderOffset(EndermanRenderState var1) {

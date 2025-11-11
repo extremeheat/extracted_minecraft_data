@@ -606,7 +606,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       return this.connection.scoreboard();
    }
 
-   public void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, int var4) {
+   public void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, @Block.UpdateFlags int var4) {
       this.levelRenderer.blockChanged(this, var1, var2, var3, var4);
    }
 

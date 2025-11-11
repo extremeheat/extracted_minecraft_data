@@ -675,7 +675,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                               if (!"up".equals(var73) && !"down".equals(var73)) {
                                  var76 = var63 + var73;
                               } else {
-                                 var76 = var63 + String.valueOf(var53.get("Rot").asInt(0));
+                                 var76 = var63 + var53.get("Rot").asInt(0);
                               }
 
                               var53.remove("SkullType");

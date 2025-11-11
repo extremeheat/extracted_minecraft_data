@@ -120,7 +120,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.setBlockState(var1, var2, 3);
    }
 
-   public abstract @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, int var3);
+   public abstract @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3);
 
    public abstract void setBlockEntity(BlockEntity var1);
 

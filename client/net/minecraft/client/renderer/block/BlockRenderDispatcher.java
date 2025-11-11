@@ -4,14 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.Objects;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -24,25 +23,23 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.jspecify.annotations.Nullable;
 
 public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelShaper blockModelShaper;
    private final MaterialSet materials;
    private final ModelBlockRenderer modelRenderer;
-   private final Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer;
-   private final LiquidBlockRenderer liquidBlockRenderer;
+   private @Nullable LiquidBlockRenderer liquidBlockRenderer;
    private final RandomSource singleThreadRandom = RandomSource.create();
    private final List<BlockModelPart> singleThreadPartList = new ArrayList();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(BlockModelShaper var1, MaterialSet var2, Supplier<SpecialBlockModelRenderer> var3, BlockColors var4) {
+   public BlockRenderDispatcher(BlockModelShaper var1, MaterialSet var2, BlockColors var3) {
       super();
       this.blockModelShaper = var1;
       this.materials = var2;
-      this.specialBlockModelRenderer = var3;
-      this.blockColors = var4;
+      this.blockColors = var3;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
-      this.liquidBlockRenderer = new LiquidBlockRenderer();
    }
 
    public BlockModelShaper getBlockModelShaper() {
@@ -72,7 +69,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
 
    public void renderLiquid(BlockPos var1, BlockAndTintGetter var2, VertexConsumer var3, BlockState var4, FluidState var5) {
       try {
-         this.liquidBlockRenderer.tesselate(var2, var1, var3, var4, var5);
+         ((LiquidBlockRenderer)Objects.requireNonNull(this.liquidBlockRenderer)).tesselate(var2, var1, var3, var4, var5);
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Tesselating liquid in world");
          CrashReportCategory var8 = var7.addCategory("Block being tesselated");
@@ -102,6 +99,6 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      this.liquidBlockRenderer.setupSprites(this.blockModelShaper, this.materials);
+      this.liquidBlockRenderer = new LiquidBlockRenderer(this.materials);
    }
 }

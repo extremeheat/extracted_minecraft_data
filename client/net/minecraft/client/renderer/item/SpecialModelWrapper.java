@@ -1,8 +1,11 @@
 package net.minecraft.client.renderer.item;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.function.Supplier;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
@@ -14,17 +17,24 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class SpecialModelWrapper<T> implements ItemModel {
    private final SpecialModelRenderer<T> specialRenderer;
    private final ModelRenderProperties properties;
+   private final Supplier<Vector3fc[]> extents;
 
    public SpecialModelWrapper(SpecialModelRenderer<T> var1, ModelRenderProperties var2) {
       super();
       this.specialRenderer = var1;
       this.properties = var2;
+      this.extents = Suppliers.memoize(() -> {
+         HashSet var1x = new HashSet();
+         Objects.requireNonNull(var1x);
+         var1.getExtents(var1x::add);
+         return (Vector3fc[])var1x.toArray(new Vector3fc[0]);
+      });
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
@@ -38,11 +48,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
       }
 
       Object var10 = this.specialRenderer.extractArgument(var2);
-      var8.setExtents(() -> {
-         HashSet var1 = new HashSet();
-         this.specialRenderer.getExtents(var1);
-         return (Vector3f[])var1.toArray(new Vector3f[0]);
-      });
+      var8.setExtents(this.extents);
       var8.setupSpecialModel(this.specialRenderer, var10);
       if (var10 != null) {
          var1.appendModelIdentityElement(var10);

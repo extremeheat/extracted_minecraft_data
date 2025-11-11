@@ -105,7 +105,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
-   public static final float USING_ITEM_SPEED_FACTOR = 0.2F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
@@ -435,7 +434,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void setExperienceValues(float var1, int var2, int var3) {
       if (var1 != this.experienceProgress) {
-         this.setExperienceDisplayStartTickToTickCount(var1);
+         this.setExperienceDisplayStartTickToTickCount();
       }
 
       this.experienceProgress = var1;
@@ -443,7 +442,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.experienceLevel = var3;
    }
 
-   private void setExperienceDisplayStartTickToTickCount(float var1) {
+   private void setExperienceDisplayStartTickToTickCount() {
       if (this.experienceDisplayStartTick == -2147483648) {
          this.experienceDisplayStartTick = -2147483647;
       } else {
@@ -768,7 +767,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          } else if (!var1 && this.input.keyPresses.jump() && !var5) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
-            } else if (!this.isSwimming()) {
+            } else if (!this.isSwimming() && (this.getVehicle() == null || this.jumpableVehicle() != null)) {
                var4.flying = !var4.flying;
                if (var4.flying && this.onGround()) {
                   this.jumpFromGround();

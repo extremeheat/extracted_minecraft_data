@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,10 +11,12 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage {
    protected static final int TEXT_MARGIN = 2;
    private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/button"), Identifier.withDefaultNamespace("widget/button_disabled"), Identifier.withDefaultNamespace("widget/button_highlighted"));
+   private @Nullable Supplier<Boolean> overrideRenderHighlightedSprite;
 
    public AbstractButton(int var1, int var2, int var3, int var4, Component var5) {
       super(var1, var2, var3, var4, var5);
@@ -33,7 +36,7 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
    }
 
    protected final void renderDefaultSprite(GuiGraphics var1) {
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
    }
 
    public void onClick(MouseButtonEvent var1, boolean var2) {
@@ -50,5 +53,9 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
       } else {
          return false;
       }
+   }
+
+   public void setOverrideRenderHighlightedSprite(Supplier<Boolean> var1) {
+      this.overrideRenderHighlightedSprite = var1;
    }
 }

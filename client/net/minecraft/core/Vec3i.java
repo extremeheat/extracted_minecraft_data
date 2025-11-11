@@ -39,13 +39,7 @@ public class Vec3i implements Comparable<Vec3i> {
          return false;
       } else {
          Vec3i var2 = (Vec3i)var1;
-         if (this.getX() != var2.getX()) {
-            return false;
-         } else if (this.getY() != var2.getY()) {
-            return false;
-         } else {
-            return this.getZ() == var2.getZ();
-         }
+         return this.getX() == var2.getX() && this.getY() == var2.getY() && this.getZ() == var2.getZ();
       }
    }
 

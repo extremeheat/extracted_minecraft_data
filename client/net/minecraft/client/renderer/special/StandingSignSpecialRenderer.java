@@ -5,7 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.Sheets;
@@ -16,7 +16,7 @@ import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.properties.WoodType;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class StandingSignSpecialRenderer implements NoDataSpecialModelRenderer {
    private final MaterialSet materials;
@@ -34,7 +34,7 @@ public class StandingSignSpecialRenderer implements NoDataSpecialModelRenderer {
       SignRenderer.submitSpecial(this.materials, var2, var3, var4, var5, this.model, this.material);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       SignRenderer.applyInHandTransforms(var2);
       this.model.root().getExtentsForGui(var2, var1);

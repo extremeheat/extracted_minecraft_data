@@ -1,48 +1,87 @@
 package net.minecraft.client.renderer.block.model;
 
+import com.mojang.math.MatrixUtil;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
+import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-public record BlockElementRotation(Vector3fc origin, Direction.Axis axis, float angle, boolean rescale, Matrix4fc transform) {
-   private static final Vector3fc NO_RESCALE = new Vector3f(1.0F, 1.0F, 1.0F);
-
-   public BlockElementRotation(Vector3fc var1, Direction.Axis var2, float var3, boolean var4) {
-      this(var1, var2, var3, var4, computeTransform(var2, var3, var4));
+public record BlockElementRotation(Vector3fc origin, RotationValue value, boolean rescale, Matrix4fc transform) {
+   public BlockElementRotation(Vector3fc var1, RotationValue var2, boolean var3) {
+      this(var1, var2, var3, computeTransform(var2, var3));
    }
 
-   public BlockElementRotation(Vector3fc var1, Direction.Axis var2, float var3, boolean var4, Matrix4fc var5) {
+   public BlockElementRotation(Vector3fc var1, RotationValue var2, boolean var3, Matrix4fc var4) {
       super();
       this.origin = var1;
-      this.axis = var2;
-      this.angle = var3;
-      this.rescale = var4;
-      this.transform = var5;
+      this.value = var2;
+      this.rescale = var3;
+      this.transform = var4;
    }
 
-   private static Matrix4f computeTransform(Direction.Axis var0, float var1, boolean var2) {
-      Vector3fc var3 = var0.getPositive().getUnitVec3f();
-      return (new Matrix4f()).rotation(var1 * 0.017453292F, var3).scale(computeRescale(var2, var1, var0));
-   }
-
-   private static Vector3fc computeRescale(boolean var0, float var1, Direction.Axis var2) {
-      if (var0 && var1 != 0.0F) {
-         float var3 = Math.abs(var1);
-         float var4 = 1.0F / Mth.cos((double)(var3 * 0.017453292F));
-         Vector3f var10000;
-         switch (var2) {
-            case X -> var10000 = new Vector3f(1.0F, var4, var4);
-            case Y -> var10000 = new Vector3f(var4, 1.0F, var4);
-            case Z -> var10000 = new Vector3f(var4, var4, 1.0F);
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-
-         return var10000;
-      } else {
-         return NO_RESCALE;
+   private static Matrix4f computeTransform(RotationValue var0, boolean var1) {
+      Matrix4f var2 = var0.transformation();
+      if (var1 && !MatrixUtil.isIdentity(var2)) {
+         Vector3fc var3 = computeRescale(var2);
+         var2.scale(var3);
       }
+
+      return var2;
+   }
+
+   private static Vector3fc computeRescale(Matrix4fc var0) {
+      Vector3f var1 = new Vector3f();
+      float var2 = scaleFactorForAxis(var0, Direction.Axis.X, var1);
+      float var3 = scaleFactorForAxis(var0, Direction.Axis.Y, var1);
+      float var4 = scaleFactorForAxis(var0, Direction.Axis.Z, var1);
+      return var1.set(var2, var3, var4);
+   }
+
+   private static float scaleFactorForAxis(Matrix4fc var0, Direction.Axis var1, Vector3f var2) {
+      Vector3f var3 = var2.set(var1.getPositive().getUnitVec3f());
+      Vector3f var4 = var0.transformDirection(var3);
+      float var5 = Math.abs(var4.x);
+      float var6 = Math.abs(var4.y);
+      float var7 = Math.abs(var4.z);
+      float var8 = Math.max(Math.max(var5, var6), var7);
+      return 1.0F / var8;
+   }
+
+   public static record SingleAxisRotation(Direction.Axis axis, float angle) implements RotationValue {
+      public SingleAxisRotation(Direction.Axis var1, float var2) {
+         super();
+         this.axis = var1;
+         this.angle = var2;
+      }
+
+      public Matrix4f transformation() {
+         Matrix4f var1 = new Matrix4f();
+         if (this.angle == 0.0F) {
+            return var1;
+         } else {
+            Vector3fc var2 = this.axis.getPositive().getUnitVec3f();
+            var1.rotation(this.angle * 0.017453292F, var2);
+            return var1;
+         }
+      }
+   }
+
+   public static record EulerXYZRotation(float x, float y, float z) implements RotationValue {
+      public EulerXYZRotation(float var1, float var2, float var3) {
+         super();
+         this.x = var1;
+         this.y = var2;
+         this.z = var3;
+      }
+
+      public Matrix4f transformation() {
+         return (new Matrix4f()).rotationZYX(this.z * 0.017453292F, this.y * 0.017453292F, this.x * 0.017453292F);
+      }
+   }
+
+   public interface RotationValue {
+      Matrix4f transformation();
    }
 }

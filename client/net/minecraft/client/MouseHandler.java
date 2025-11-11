@@ -40,7 +40,7 @@ public class MouseHandler {
    private double xpos;
    private double ypos;
    private @Nullable LastClick lastClick;
-   protected int lastClickButton;
+   protected @MouseButtonInfo.MouseButton int lastClickButton;
    private int fakeRightMouse;
    private @Nullable MouseButtonInfo activeButton = null;
    private boolean ignoreFirstMove = true;

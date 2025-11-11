@@ -138,19 +138,27 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          boolean var9 = var1.useItemHand == InteractionHand.MAIN_HAND;
          if (var9 == var8) {
             this.poseRightArm(var1);
-            this.poseLeftArm(var1);
+            if (!var1.rightArmPose.affectsOffhandPose()) {
+               this.poseLeftArm(var1);
+            }
          } else {
             this.poseLeftArm(var1);
-            this.poseRightArm(var1);
+            if (!var1.leftArmPose.affectsOffhandPose()) {
+               this.poseRightArm(var1);
+            }
          }
       } else {
          boolean var15 = var8 ? var2.isTwoHanded() : var3.isTwoHanded();
          if (var8 != var15) {
             this.poseLeftArm(var1);
-            this.poseRightArm(var1);
+            if (!var1.leftArmPose.affectsOffhandPose()) {
+               this.poseRightArm(var1);
+            }
          } else {
             this.poseRightArm(var1);
-            this.poseLeftArm(var1);
+            if (!var1.rightArmPose.affectsOffhandPose()) {
+               this.poseLeftArm(var1);
+            }
          }
       }
 
@@ -387,30 +395,36 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    }
 
    public static enum ArmPose {
-      EMPTY(false),
-      ITEM(false),
-      BLOCK(false),
-      BOW_AND_ARROW(true),
-      THROW_TRIDENT(false),
-      CROSSBOW_CHARGE(true),
-      CROSSBOW_HOLD(true),
-      SPYGLASS(false),
-      TOOT_HORN(false),
-      BRUSH(false),
-      SPEAR(false) {
+      EMPTY(false, false),
+      ITEM(false, false),
+      BLOCK(false, false),
+      BOW_AND_ARROW(true, true),
+      THROW_TRIDENT(false, true),
+      CROSSBOW_CHARGE(true, true),
+      CROSSBOW_HOLD(true, true),
+      SPYGLASS(false, false),
+      TOOT_HORN(false, false),
+      BRUSH(false, false),
+      SPEAR(false, true) {
          public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {
             SpearAnimations.thirdPersonUseItem(var1, var2, var3, var4, var5);
          }
       };
 
       private final boolean twoHanded;
+      private final boolean affectsOffhandPose;
 
-      ArmPose(final boolean var3) {
+      ArmPose(final boolean var3, final boolean var4) {
          this.twoHanded = var3;
+         this.affectsOffhandPose = var4;
       }
 
       public boolean isTwoHanded() {
          return this.twoHanded;
+      }
+
+      public boolean affectsOffhandPose() {
+         return this.affectsOffhandPose;
       }
 
       public <S extends ArmedEntityRenderState> void animateUseItem(S var1, PoseStack var2, float var3, HumanoidArm var4, ItemStack var5) {

@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -33,7 +33,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRenderState> {
@@ -115,7 +115,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRende
       var0.translate(-0.5F, -0.5F, -0.5F);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       preparePose(var2, false, Direction.SOUTH);
       this.headModel.root().getExtentsForGui(var2, var1);

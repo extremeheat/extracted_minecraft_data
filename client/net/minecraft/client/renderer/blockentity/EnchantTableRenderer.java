@@ -21,7 +21,7 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity, EnchantTableRenderState> {
-   public static final Material BOOK_LOCATION;
+   public static final Material BOOK_TEXTURE;
    private final MaterialSet materials;
    private final BookModel bookModel;
 
@@ -62,7 +62,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       float var6 = Mth.frac(var1.flip + 0.25F) * 1.6F - 0.3F;
       float var7 = Mth.frac(var1.flip + 0.75F) * 1.6F - 0.3F;
       BookModel.State var8 = new BookModel.State(var1.time, Mth.clamp(var6, 0.0F, 1.0F), Mth.clamp(var7, 0.0F, 1.0F), var1.open);
-      var3.submitModel(this.bookModel, var8, var2, BOOK_LOCATION.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_LOCATION), 0, var1.breakProgress);
+      var3.submitModel(this.bookModel, var8, var2, BOOK_TEXTURE.renderType(RenderTypes::entitySolid), var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BOOK_TEXTURE), 0, var1.breakProgress);
       var2.popPose();
    }
 
@@ -72,6 +72,6 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
    }
 
    static {
-      BOOK_LOCATION = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("enchanting_table_book");
+      BOOK_TEXTURE = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("enchanting_table_book");
    }
 }

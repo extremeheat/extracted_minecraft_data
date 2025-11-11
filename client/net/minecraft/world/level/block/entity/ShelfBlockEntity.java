@@ -27,6 +27,7 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBackedContainer {
@@ -81,10 +82,13 @@ public class ShelfBlockEntity extends BlockEntity implements ItemOwner, ListBack
       return var3;
    }
 
-   public void setChanged(Holder.Reference<GameEvent> var1) {
+   public void setChanged(Holder.@Nullable Reference<GameEvent> var1) {
       super.setChanged();
       if (this.level != null) {
-         this.level.gameEvent(var1, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
+         if (var1 != null) {
+            this.level.gameEvent(var1, this.worldPosition, GameEvent.Context.of(this.getBlockState()));
+         }
+
          this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
       }
 

@@ -207,12 +207,9 @@ public class Pig extends Animal implements ItemSteerable {
 
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       if (var1.getDifficulty() != Difficulty.PEACEFUL) {
-         ZombifiedPiglin var3 = (ZombifiedPiglin)this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (var1x) -> {
-            if (this.getMainHandItem().isEmpty()) {
-               var1x.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
-            }
-
-            var1x.setPersistenceRequired();
+         ZombifiedPiglin var3 = (ZombifiedPiglin)this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), (var2x) -> {
+            var2x.populateDefaultEquipmentSlots(this.getRandom(), var1.getCurrentDifficultyAt(this.blockPosition()));
+            var2x.setPersistenceRequired();
          });
          if (var3 == null) {
             super.thunderHit(var1, var2);

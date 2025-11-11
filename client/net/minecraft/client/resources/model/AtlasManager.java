@@ -1,5 +1,6 @@
 package net.minecraft.client.resources.model;
 
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -20,8 +22,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.slf4j.Logger;
 
 public class AtlasManager implements PreparableReloadListener, MaterialSet, AutoCloseable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final List<AtlasConfig> KNOWN_ATLASES;
    public static final PreparableReloadListener.StateKey<PendingStitchResults> PENDING_STITCH;
    private final Map<Identifier, AtlasEntry> atlasByTexture = new HashMap();
@@ -110,7 +114,21 @@ public class AtlasManager implements PreparableReloadListener, MaterialSet, Auto
          }));
       CompletableFuture var10000 = var5.allReadyToUpload;
       Objects.requireNonNull(var3);
-      return var10000.thenCompose(var3::wait).thenAcceptAsync((var2x) -> this.materialLookup = var5.joinAndUpload(), var4);
+      return var10000.thenCompose(var3::wait).thenAcceptAsync((var2x) -> this.updateSpriteMaps(var5), var4);
+   }
+
+   private void updateSpriteMaps(PendingStitchResults var1) {
+      this.materialLookup = var1.joinAndUpload();
+      HashMap var2 = new HashMap();
+      this.materialLookup.forEach((var1x, var2x) -> {
+         if (!var1x.texture().equals(MissingTextureAtlasSprite.getLocation())) {
+            TextureAtlasSprite var3 = (TextureAtlasSprite)var2.putIfAbsent(var1x.texture(), var2x);
+            if (var3 != null) {
+               LOGGER.warn("Duplicate sprite {} from atlas {}, already defined in atlas {}. This will be rejected in a future version", new Object[]{var1x.texture(), var1x.atlasLocation(), var3.atlasLocation()});
+            }
+         }
+
+      });
    }
 
    static {

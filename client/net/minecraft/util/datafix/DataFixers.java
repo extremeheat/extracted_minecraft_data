@@ -207,6 +207,7 @@ import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
 import net.minecraft.util.datafix.fixes.OptionsKeyTranslationFix;
 import net.minecraft.util.datafix.fixes.OptionsLowerCaseLanguageFix;
 import net.minecraft.util.datafix.fixes.OptionsMenuBlurrinessFix;
+import net.minecraft.util.datafix.fixes.OptionsMusicToastFix;
 import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OptionsSetGraphicsPresetToCustomFix;
@@ -878,9 +879,9 @@ public class DataFixers {
       Map var176 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var175, "Rename british shorthair", References.ENTITY, "minecraft:cat", var176));
       var0.addFixer(new CriteriaRenameFix(var175, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var176.getOrDefault(var1x, var1x)));
-      Set var296 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var296);
-      var0.addFixer(new PoiTypeRemoveFix(var175, "Remove unpopulated villager PoI types", var296::contains));
+      Set var297 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var297);
+      var0.addFixer(new PoiTypeRemoveFix(var175, "Remove unpopulated villager PoI types", var297::contains));
       Schema var177 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var177));
       Schema var178 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1150,6 +1151,8 @@ public class DataFixers {
       var0.addFixer(new WorldBorderWarningTimeFix(var293));
       Schema var294 = var0.addSchema(4658, SAME_NAMESPACED);
       var0.addFixer(new GameRuleRegistryFix(var294));
+      Schema var295 = var0.addSchema(4661, SAME_NAMESPACED);
+      var0.addFixer(new OptionsMusicToastFix(var295, false));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

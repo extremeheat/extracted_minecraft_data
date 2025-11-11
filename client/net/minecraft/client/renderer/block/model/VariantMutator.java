@@ -8,6 +8,7 @@ import net.minecraft.resources.Identifier;
 public interface VariantMutator extends UnaryOperator<Variant> {
    VariantProperty<Quadrant> X_ROT = Variant::withXRot;
    VariantProperty<Quadrant> Y_ROT = Variant::withYRot;
+   VariantProperty<Quadrant> Z_ROT = Variant::withZRot;
    VariantProperty<Identifier> MODEL = Variant::withModel;
    VariantProperty<Boolean> UV_LOCK = Variant::withUvLock;
 

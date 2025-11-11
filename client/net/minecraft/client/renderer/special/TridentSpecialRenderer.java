@@ -2,14 +2,14 @@ package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.TridentModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
    private final TridentModel model;
@@ -26,7 +26,7 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
       var2.popPose();
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       var2.scale(1.0F, -1.0F, -1.0F);
       this.model.root().getExtentsForGui(var2, var1);

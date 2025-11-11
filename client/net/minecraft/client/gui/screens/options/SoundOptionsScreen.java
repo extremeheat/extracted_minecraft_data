@@ -21,7 +21,7 @@ public class SoundOptionsScreen extends OptionsSubScreen {
       this.list.addSmall(this.getAllSoundOptionsExceptMaster());
       this.list.addBig(this.options.soundDevice());
       this.list.addSmall(this.options.showSubtitles(), this.options.directionalAudio());
-      this.list.addSmall(this.options.musicFrequency(), this.options.showNowPlayingToast());
+      this.list.addSmall(this.options.musicFrequency(), this.options.musicToast());
    }
 
    private OptionInstance<?>[] getAllSoundOptionsExceptMaster() {

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -684,11 +685,15 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (var6 != selectedTab) {
-            this.renderTabButton(var1, var6);
+            this.renderTabButton(var1, var3, var4, var6);
          }
       }
 
       var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      if (this.insideScrollbar((double)var3, (double)var4)) {
+         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      }
+
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
@@ -698,7 +703,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
-      this.renderTabButton(var1, selectedTab);
+      this.renderTabButton(var1, var3, var4, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
          InventoryScreen.renderEntityInInventoryFollowsMouse(var1, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)var3, (float)var4, this.minecraft.player);
       }
@@ -744,23 +749,27 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   protected void renderTabButton(GuiGraphics var1, CreativeModeTab var2) {
-      boolean var3 = var2 == selectedTab;
-      boolean var4 = var2.row() == CreativeModeTab.Row.TOP;
-      int var5 = var2.column();
-      int var6 = this.leftPos + this.getTabX(var2);
-      int var7 = this.topPos - (var4 ? 28 : -(this.imageHeight - 4));
-      Identifier[] var8;
-      if (var4) {
-         var8 = var3 ? SELECTED_TOP_TABS : UNSELECTED_TOP_TABS;
+   protected void renderTabButton(GuiGraphics var1, int var2, int var3, CreativeModeTab var4) {
+      boolean var5 = var4 == selectedTab;
+      boolean var6 = var4.row() == CreativeModeTab.Row.TOP;
+      int var7 = var4.column();
+      int var8 = this.leftPos + this.getTabX(var4);
+      int var9 = this.topPos - (var6 ? 28 : -(this.imageHeight - 4));
+      Identifier[] var10;
+      if (var6) {
+         var10 = var5 ? SELECTED_TOP_TABS : UNSELECTED_TOP_TABS;
       } else {
-         var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
+         var10 = var5 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
-      int var9 = var6 + 13 - 8;
-      int var10 = var7 + 16 - 8 + (var4 ? 1 : -1);
-      var1.renderItem(var2.getIconItem(), var9, var10);
+      if (!var5 && var2 > var8 && var3 > var9 && var2 < var8 + 26 && var3 < var9 + 32) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var10[Mth.clamp(var7, 0, var10.length)], var8, var9, 26, 32);
+      int var11 = var8 + 13 - 8;
+      int var12 = var9 + 16 - 8 + (var6 ? 1 : -1);
+      var1.renderItem(var4.getIconItem(), var11, var12);
    }
 
    public boolean isInventoryOpen() {

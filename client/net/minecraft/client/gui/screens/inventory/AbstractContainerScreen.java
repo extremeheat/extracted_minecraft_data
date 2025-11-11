@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -56,7 +57,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    protected final Set<Slot> quickCraftSlots;
    protected boolean isQuickCrafting;
    private int quickCraftingType;
-   private int quickCraftingButton;
+   private @MouseButtonInfo.MouseButton int quickCraftingButton;
    private boolean skipNextRelease;
    private int quickCraftingRemainder;
    private boolean doubleclick;
@@ -104,7 +105,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
       this.renderSlotHighlightBack(var1);
-      this.renderSlots(var1);
+      this.renderSlots(var1, var2, var3);
       this.renderSlotHighlightFront(var1);
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
@@ -150,10 +151,10 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    }
 
-   protected void renderSlots(GuiGraphics var1) {
-      for(Slot var3 : this.menu.slots) {
-         if (var3.isActive()) {
-            this.renderSlot(var1, var3);
+   protected void renderSlots(GuiGraphics var1, int var2, int var3) {
+      for(Slot var5 : this.menu.slots) {
+         if (var5.isActive()) {
+            this.renderSlot(var1, var5, var2, var3);
          }
       }
 
@@ -220,60 +221,60 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    protected abstract void renderBg(GuiGraphics var1, float var2, int var3, int var4);
 
-   protected void renderSlot(GuiGraphics var1, Slot var2) {
-      int var3 = var2.x;
-      int var4 = var2.y;
-      ItemStack var5 = var2.getItem();
-      boolean var6 = false;
-      boolean var7 = var2 == this.clickedSlot && !this.draggingItem.isEmpty() && !this.isSplittingStack;
-      ItemStack var8 = this.menu.getCarried();
-      String var9 = null;
-      if (var2 == this.clickedSlot && !this.draggingItem.isEmpty() && this.isSplittingStack && !var5.isEmpty()) {
-         var5 = var5.copyWithCount(var5.getCount() / 2);
-      } else if (this.isQuickCrafting && this.quickCraftSlots.contains(var2) && !var8.isEmpty()) {
+   protected void renderSlot(GuiGraphics var1, Slot var2, int var3, int var4) {
+      int var5 = var2.x;
+      int var6 = var2.y;
+      ItemStack var7 = var2.getItem();
+      boolean var8 = false;
+      boolean var9 = var2 == this.clickedSlot && !this.draggingItem.isEmpty() && !this.isSplittingStack;
+      ItemStack var10 = this.menu.getCarried();
+      String var11 = null;
+      if (var2 == this.clickedSlot && !this.draggingItem.isEmpty() && this.isSplittingStack && !var7.isEmpty()) {
+         var7 = var7.copyWithCount(var7.getCount() / 2);
+      } else if (this.isQuickCrafting && this.quickCraftSlots.contains(var2) && !var10.isEmpty()) {
          if (this.quickCraftSlots.size() == 1) {
             return;
          }
 
-         if (AbstractContainerMenu.canItemQuickReplace(var2, var8, true) && this.menu.canDragTo(var2)) {
-            var6 = true;
-            int var10 = Math.min(var8.getMaxStackSize(), var2.getMaxStackSize(var8));
-            int var11 = var2.getItem().isEmpty() ? 0 : var2.getItem().getCount();
-            int var12 = AbstractContainerMenu.getQuickCraftPlaceCount(this.quickCraftSlots, this.quickCraftingType, var8) + var11;
-            if (var12 > var10) {
-               var12 = var10;
+         if (AbstractContainerMenu.canItemQuickReplace(var2, var10, true) && this.menu.canDragTo(var2)) {
+            var8 = true;
+            int var12 = Math.min(var10.getMaxStackSize(), var2.getMaxStackSize(var10));
+            int var13 = var2.getItem().isEmpty() ? 0 : var2.getItem().getCount();
+            int var14 = AbstractContainerMenu.getQuickCraftPlaceCount(this.quickCraftSlots, this.quickCraftingType, var10) + var13;
+            if (var14 > var12) {
+               var14 = var12;
                String var10000 = ChatFormatting.YELLOW.toString();
-               var9 = var10000 + var10;
+               var11 = var10000 + var12;
             }
 
-            var5 = var8.copyWithCount(var12);
+            var7 = var10.copyWithCount(var14);
          } else {
             this.quickCraftSlots.remove(var2);
             this.recalculateQuickCraftRemaining();
          }
       }
 
-      if (var5.isEmpty() && var2.isActive()) {
-         Identifier var13 = var2.getNoItemIcon();
-         if (var13 != null) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var13, var3, var4, 16, 16);
-            var7 = true;
+      if (var7.isEmpty() && var2.isActive()) {
+         Identifier var15 = var2.getNoItemIcon();
+         if (var15 != null) {
+            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var15, var5, var6, 16, 16);
+            var9 = true;
          }
       }
 
-      if (!var7) {
-         if (var6) {
-            var1.fill(var3, var4, var3 + 16, var4 + 16, -2130706433);
+      if (!var9) {
+         if (var8) {
+            var1.fill(var5, var6, var5 + 16, var6 + 16, -2130706433);
          }
 
-         int var14 = var2.x + var2.y * this.imageWidth;
+         int var16 = var2.x + var2.y * this.imageWidth;
          if (var2.isFake()) {
-            var1.renderFakeItem(var5, var3, var4, var14);
+            var1.renderFakeItem(var7, var5, var6, var16);
          } else {
-            var1.renderItem(var5, var3, var4, var14);
+            var1.renderItem(var7, var5, var6, var16);
          }
 
-         var1.renderItemDecorations(this.font, var5, var3, var4, var9);
+         var1.renderItemDecorations(this.font, var7, var5, var6, var11);
       }
 
    }

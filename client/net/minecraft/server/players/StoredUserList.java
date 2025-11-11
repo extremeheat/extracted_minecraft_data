@@ -100,7 +100,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    }
 
    public boolean isEmpty() {
-      return this.map.size() < 1;
+      return this.map.isEmpty();
    }
 
    protected String getKeyForUser(K var1) {

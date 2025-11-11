@@ -101,6 +101,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -164,6 +165,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final FeatureRenderDispatcher featureRenderDispatcher;
    private @Nullable GpuSampler chunkLayerSampler;
    private final SimpleGizmoCollector collectedGizmos = new SimpleGizmoCollector();
+   private FinalizedGizmos finalizedGizmos = new FinalizedGizmos(new DrawableGizmoPrimitives(), new DrawableGizmoPrimitives());
 
    public LevelRenderer(Minecraft var1, EntityRenderDispatcher var2, BlockEntityRenderDispatcher var3, RenderBuffers var4, LevelRenderState var5, FeatureRenderDispatcher var6) {
       super();
@@ -618,6 +620,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          var8.pop();
+         this.finalizeGizmoCollection();
+         this.finalizedGizmos.standardPrimitives().render(var21, var19, var6.cameraRenderState, var3);
+         var19.endLastBatch();
          this.checkPoseStack(var21);
          var19.endBatch(Sheets.translucentItemSheet());
          var19.endBatch(Sheets.bannerSheet());
@@ -718,33 +723,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          MultiBufferSource.BufferSource var6x = this.renderBuffers.bufferSource();
          RenderSystem.outputColorTextureOverride = ((RenderTarget)var6.get()).getColorTextureView();
          RenderSystem.outputDepthTextureOverride = ((RenderTarget)var6.get()).getDepthTextureView();
-         DrawableGizmoPrimitives var7 = new DrawableGizmoPrimitives();
-         DrawableGizmoPrimitives var8 = new DrawableGizmoPrimitives();
-         boolean var9 = false;
-         this.collectedGizmos.addTemporaryGizmos(this.minecraft.getPerTickGizmos());
-         IntegratedServer var10 = this.minecraft.getSingleplayerServer();
-         if (var10 != null) {
-            this.collectedGizmos.addTemporaryGizmos(var10.getPerTickGizmos());
-         }
-
-         long var11 = Util.getMillis();
-
-         for(SimpleGizmoCollector.GizmoInstance var14 : this.collectedGizmos.drainGizmos()) {
-            float var15 = var14.getAlphaMultiplier(var11);
-            if (var14.isAlwaysOnTop()) {
-               var9 = true;
-               var14.gizmo().emit(var8, var15);
-            } else {
-               var14.gizmo().emit(var7, var15);
-            }
-         }
-
-         var7.render(var5, var6x, var2, var4);
-         var6x.endLastBatch();
-         if (var9) {
-            RenderTarget var16 = Minecraft.getInstance().getMainRenderTarget();
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var16.getDepthTexture(), 1.0);
-            var8.render(var5, var6x, var2, var4);
+         if (!this.finalizedGizmos.alwaysOnTopPrimitives().isEmpty()) {
+            RenderTarget var7 = Minecraft.getInstance().getMainRenderTarget();
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(var7.getDepthTexture(), 1.0);
+            this.finalizedGizmos.alwaysOnTopPrimitives().render(var5, var6x, var2, var4);
             var6x.endLastBatch();
          }
 
@@ -1211,7 +1193,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   public void blockChanged(BlockGetter var1, BlockPos var2, BlockState var3, BlockState var4, int var5) {
+   public void blockChanged(BlockGetter var1, BlockPos var2, BlockState var3, BlockState var4, @Block.UpdateFlags int var5) {
       this.setBlockDirty(var2, (var5 & 8) != 0);
    }
 
@@ -1388,6 +1370,24 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return Gizmos.withCollector(this.collectedGizmos);
    }
 
+   private void finalizeGizmoCollection() {
+      DrawableGizmoPrimitives var1 = new DrawableGizmoPrimitives();
+      DrawableGizmoPrimitives var2 = new DrawableGizmoPrimitives();
+      this.collectedGizmos.addTemporaryGizmos(this.minecraft.getPerTickGizmos());
+      IntegratedServer var3 = this.minecraft.getSingleplayerServer();
+      if (var3 != null) {
+         this.collectedGizmos.addTemporaryGizmos(var3.getPerTickGizmos());
+      }
+
+      long var4 = Util.getMillis();
+
+      for(SimpleGizmoCollector.GizmoInstance var7 : this.collectedGizmos.drainGizmos()) {
+         var7.gizmo().emit(var7.isAlwaysOnTop() ? var2 : var1, var7.getAlphaMultiplier(var4));
+      }
+
+      this.finalizedGizmos = new FinalizedGizmos(var1, var2);
+   }
+
    @FunctionalInterface
    public interface BrightnessGetter {
       BrightnessGetter DEFAULT = (var0, var1) -> {
@@ -1397,5 +1397,13 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       };
 
       int packedBrightness(BlockAndTintGetter var1, BlockPos var2);
+   }
+
+   static record FinalizedGizmos(DrawableGizmoPrimitives standardPrimitives, DrawableGizmoPrimitives alwaysOnTopPrimitives) {
+      FinalizedGizmos(DrawableGizmoPrimitives var1, DrawableGizmoPrimitives var2) {
+         super();
+         this.standardPrimitives = var1;
+         this.alwaysOnTopPrimitives = var2;
+      }
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
@@ -103,6 +104,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                int var17 = var4 - (var6 + 14 + 19 * var8);
                if (var16 >= 0 && var17 >= 0 && var16 < 108 && var17 < 19) {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+                  var1.requestCursor(CursorTypes.POINTING_HAND);
                   var15 = -128;
                } else {
                   var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ENCHANTMENT_SLOT_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
@@ -143,7 +145,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          if (!var10.isEmpty()) {
             int var11 = (this.menu).levelClue[var8];
             int var12 = var8 + 1;
-            if (this.isHovering(60, 14 + 19 * var8, 108, 17, (double)var2, (double)var3) && var9 > 0 && var11 >= 0 && var10 != null) {
+            if (this.isHovering(60, 14 + 19 * var8, 108, 17, (double)var2, (double)var3) && var9 > 0 && var11 >= 0) {
                ArrayList var13 = Lists.newArrayList();
                var13.add(Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder)var10.get(), var11)).withStyle(ChatFormatting.WHITE));
                if (!var6) {
@@ -195,6 +197,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       for(int var3 = 0; var3 < 3; ++var3) {
          if ((this.menu).costs[var3] != 0) {
             var2 = true;
+            break;
          }
       }
 

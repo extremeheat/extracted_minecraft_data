@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -126,6 +127,16 @@ public class GameModeSwitcherScreen extends Screen {
          return true;
       } else {
          return super.keyReleased(var1);
+      }
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      if (this.minecraft.options.keyDebugModifier.matchesMouse(var1)) {
+         this.switchToHoveredGameMode();
+         this.minecraft.setScreen((Screen)null);
+         return true;
+      } else {
+         return super.mouseReleased(var1);
       }
    }
 

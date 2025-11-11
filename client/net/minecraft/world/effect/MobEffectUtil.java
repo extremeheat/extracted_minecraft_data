@@ -48,6 +48,10 @@ public final class MobEffectUtil {
       return var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER) || var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
    }
 
+   public static boolean shouldEffectsRefillAirsupply(LivingEntity var0) {
+      return !var0.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS) || var0.hasEffect(MobEffects.WATER_BREATHING) || var0.hasEffect(MobEffects.CONDUIT_POWER);
+   }
+
    public static List<ServerPlayer> addEffectToPlayersAround(ServerLevel var0, @Nullable Entity var1, Vec3 var2, double var3, MobEffectInstance var5, int var6) {
       Holder var7 = var5.getEffect();
       List var8 = var0.getPlayers((var7x) -> var7x.gameMode.isSurvival() && (var1 == null || !var1.isAlliedTo((Entity)var7x)) && var2.closerThan(var7x.position(), var3) && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).endsWithin(var6 - 1)));

@@ -1045,6 +1045,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.copperBulb(Blocks.WAXED_EXPOSED_COPPER_BULB, Blocks.WAXED_EXPOSED_COPPER);
       this.copperBulb(Blocks.WAXED_WEATHERED_COPPER_BULB, Blocks.WAXED_WEATHERED_COPPER);
       this.copperBulb(Blocks.WAXED_OXIDIZED_COPPER_BULB, Blocks.WAXED_OXIDIZED_COPPER);
+      this.waxedChiseled(Blocks.WAXED_CHISELED_COPPER, Blocks.WAXED_CUT_COPPER_SLAB);
+      this.waxedChiseled(Blocks.WAXED_EXPOSED_CHISELED_COPPER, Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB);
+      this.waxedChiseled(Blocks.WAXED_WEATHERED_CHISELED_COPPER, Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB);
+      this.waxedChiseled(Blocks.WAXED_OXIDIZED_CHISELED_COPPER, Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.COPPER_GRATE, Blocks.COPPER_BLOCK, 4);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.EXPOSED_COPPER_GRATE, Blocks.EXPOSED_COPPER, 4);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.WEATHERED_COPPER_GRATE, Blocks.WEATHERED_COPPER, 4);

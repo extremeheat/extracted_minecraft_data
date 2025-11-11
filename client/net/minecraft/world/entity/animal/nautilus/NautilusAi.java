@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
@@ -83,7 +84,7 @@ public class NautilusAi {
    }
 
    private static void initFightActivity(Brain<Nautilus> var0) {
-      var0.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, new ChargeAttack(80, ATTACK_TARGET_CONDITIONS, 0.6F, 2.0F, 12.0, 11.0))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT)));
+      var0.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, new ChargeAttack(80, ATTACK_TARGET_CONDITIONS, 0.6F, 2.0F, 12.0, 11.0, SoundEvents.NAUTILUS_DASH))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT)));
    }
 
    protected static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, AbstractNautilus var1) {

@@ -58,6 +58,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -137,7 +138,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    protected void registerGoals() {
-      this.goalSelector.addGoal(1, new PanicGoal(this, 1.2));
+      this.goalSelector.addGoal(1, new MountPanicGoal(1.2));
       this.goalSelector.addGoal(1, new RunAroundLikeCrazyGoal(this, 1.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0, AbstractHorse.class));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.0));
@@ -288,11 +289,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    }
 
    public final int getInventorySize() {
-      return getInventorySize(this.getInventoryColumns());
-   }
-
-   public static int getInventorySize(int var0) {
-      return var0 * 3;
+      return AbstractMountInventoryMenu.getInventorySize(this.getInventoryColumns());
    }
 
    protected void createInventory() {
@@ -1018,5 +1015,15 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
    static {
       MOMMY_TARGETING = TargetingConditions.forNonCombat().range(16.0).ignoreLineOfSight().selector(PARENT_HORSE_SELECTOR);
       DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
+   }
+
+   class MountPanicGoal extends PanicGoal {
+      public MountPanicGoal(final double var2) {
+         super(AbstractHorse.this, var2);
+      }
+
+      public boolean shouldPanic() {
+         return !AbstractHorse.this.isMobControlled() && super.shouldPanic();
+      }
    }
 }

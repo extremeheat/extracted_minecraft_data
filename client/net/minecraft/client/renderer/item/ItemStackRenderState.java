@@ -101,9 +101,9 @@ public class ItemStackRenderState {
          LayerRenderState var5 = this.layers[var4];
          var5.transform.apply(this.displayContext.leftHand(), var3);
          Matrix4f var6 = var3.pose();
-         Vector3f[] var7 = (Vector3f[])var5.extents.get();
+         Vector3fc[] var7 = (Vector3fc[])var5.extents.get();
 
-         for(Vector3f var11 : var7) {
+         for(Vector3fc var11 : var7) {
             var1.accept(var2.set(var11).mulPosition(var6));
          }
 
@@ -155,8 +155,8 @@ public class ItemStackRenderState {
    }
 
    public class LayerRenderState {
-      private static final Vector3f[] NO_EXTENTS = new Vector3f[0];
-      public static final Supplier<Vector3f[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
+      private static final Vector3fc[] NO_EXTENTS = new Vector3fc[0];
+      public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
       private final List<BakedQuad> quads = new ArrayList();
       boolean usesBlockLight;
       @Nullable TextureAtlasSprite particleIcon;
@@ -166,7 +166,7 @@ public class ItemStackRenderState {
       private int[] tintLayers;
       private @Nullable SpecialModelRenderer<Object> specialRenderer;
       private @Nullable Object argumentForSpecialRendering;
-      Supplier<Vector3f[]> extents;
+      Supplier<Vector3fc[]> extents;
 
       public LayerRenderState() {
          super();
@@ -201,7 +201,7 @@ public class ItemStackRenderState {
          this.usesBlockLight = var1;
       }
 
-      public void setExtents(Supplier<Vector3f[]> var1) {
+      public void setExtents(Supplier<Vector3fc[]> var1) {
          this.extents = var1;
       }
 

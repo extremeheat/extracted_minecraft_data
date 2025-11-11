@@ -22,7 +22,6 @@ import net.minecraft.world.level.levelgen.material.MaterialRuleList;
 import org.jspecify.annotations.Nullable;
 
 public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunction.FunctionContext {
-   private final NoiseSettings noiseSettings;
    final int cellCountXZ;
    final int cellCountY;
    final int cellNoiseMinY;
@@ -90,7 +89,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
          }
       };
-      this.noiseSettings = var5;
       this.cellWidth = var5.getCellWidth();
       this.cellHeight = var5.getCellHeight();
       this.cellCountXZ = var1;

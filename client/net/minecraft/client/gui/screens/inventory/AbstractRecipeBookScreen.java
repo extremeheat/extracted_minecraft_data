@@ -65,8 +65,8 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
    }
 
-   protected void renderSlots(GuiGraphics var1) {
-      super.renderSlots(var1);
+   protected void renderSlots(GuiGraphics var1, int var2, int var3) {
+      super.renderSlots(var1, var2, var3);
       this.recipeBookComponent.renderGhostRecipe(var1, this.isBiggerResultSlot());
    }
 

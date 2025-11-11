@@ -19,6 +19,14 @@ public interface LevelBasedPermissionSet extends PermissionSet {
       }
    }
 
+   default PermissionSet union(PermissionSet var1) {
+      if (var1 instanceof LevelBasedPermissionSet var2) {
+         return this.level().isEqualOrHigherThan(var2.level()) ? var2 : this;
+      } else {
+         return PermissionSet.super.union(var1);
+      }
+   }
+
    static LevelBasedPermissionSet forLevel(PermissionLevel var0) {
       LevelBasedPermissionSet var10000;
       switch (var0) {

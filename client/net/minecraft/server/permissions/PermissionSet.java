@@ -7,6 +7,6 @@ public interface PermissionSet {
    boolean hasPermission(Permission var1);
 
    default PermissionSet union(PermissionSet var1) {
-      return (var2) -> this.hasPermission(var2) || var1.hasPermission(var2);
+      return (PermissionSet)(var1 instanceof PermissionSetUnion ? var1.union(this) : new PermissionSetUnion(this, var1));
    }
 }

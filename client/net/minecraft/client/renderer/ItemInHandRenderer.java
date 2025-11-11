@@ -9,7 +9,6 @@ import net.minecraft.client.model.SpearAnimations;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -119,17 +118,15 @@ public class ItemInHandRenderer {
    private float offHandHeight;
    private float oOffHandHeight;
    private final EntityRenderDispatcher entityRenderDispatcher;
-   private final ItemRenderer itemRenderer;
    private final ItemModelResolver itemModelResolver;
 
-   public ItemInHandRenderer(Minecraft var1, EntityRenderDispatcher var2, ItemRenderer var3, ItemModelResolver var4) {
+   public ItemInHandRenderer(Minecraft var1, EntityRenderDispatcher var2, ItemModelResolver var3) {
       super();
       this.mainHandItem = ItemStack.EMPTY;
       this.offHandItem = ItemStack.EMPTY;
       this.minecraft = var1;
       this.entityRenderDispatcher = var2;
-      this.itemRenderer = var3;
-      this.itemModelResolver = var4;
+      this.itemModelResolver = var3;
    }
 
    public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, SubmitNodeCollector var5, int var6) {

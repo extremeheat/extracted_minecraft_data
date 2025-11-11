@@ -12,7 +12,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,20 +23,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LiquidBlockRenderer {
    private static final float MAX_FLUID_HEIGHT = 0.8888889F;
-   private final TextureAtlasSprite[] lavaIcons = new TextureAtlasSprite[2];
-   private final TextureAtlasSprite[] waterIcons = new TextureAtlasSprite[2];
-   private TextureAtlasSprite waterOverlay;
+   private final TextureAtlasSprite lavaStill;
+   private final TextureAtlasSprite lavaFlowing;
+   private final TextureAtlasSprite waterStill;
+   private final TextureAtlasSprite waterFlowing;
+   private final TextureAtlasSprite waterOverlay;
 
-   public LiquidBlockRenderer() {
+   public LiquidBlockRenderer(MaterialSet var1) {
       super();
-   }
-
-   protected void setupSprites(BlockModelShaper var1, MaterialSet var2) {
-      this.lavaIcons[0] = var1.getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
-      this.lavaIcons[1] = var2.get(ModelBakery.LAVA_FLOW);
-      this.waterIcons[0] = var1.getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
-      this.waterIcons[1] = var2.get(ModelBakery.WATER_FLOW);
-      this.waterOverlay = var2.get(ModelBakery.WATER_OVERLAY);
+      this.lavaStill = var1.get(ModelBakery.LAVA_STILL);
+      this.lavaFlowing = var1.get(ModelBakery.LAVA_FLOW);
+      this.waterStill = var1.get(ModelBakery.WATER_STILL);
+      this.waterFlowing = var1.get(ModelBakery.WATER_FLOW);
+      this.waterOverlay = var1.get(ModelBakery.WATER_OVERLAY);
    }
 
    private static boolean isNeighborSameFluid(FluidState var0, FluidState var1) {
@@ -71,68 +69,68 @@ public class LiquidBlockRenderer {
 
    public void tesselate(BlockAndTintGetter var1, BlockPos var2, VertexConsumer var3, BlockState var4, FluidState var5) {
       boolean var6 = var5.is(FluidTags.LAVA);
-      TextureAtlasSprite[] var7 = var6 ? this.lavaIcons : this.waterIcons;
-      int var8 = var6 ? 16777215 : BiomeColors.getAverageWaterColor(var1, var2);
-      float var9 = (float)(var8 >> 16 & 255) / 255.0F;
-      float var10 = (float)(var8 >> 8 & 255) / 255.0F;
-      float var11 = (float)(var8 & 255) / 255.0F;
-      BlockState var12 = var1.getBlockState(var2.relative(Direction.DOWN));
-      FluidState var13 = var12.getFluidState();
-      BlockState var14 = var1.getBlockState(var2.relative(Direction.UP));
-      FluidState var15 = var14.getFluidState();
-      BlockState var16 = var1.getBlockState(var2.relative(Direction.NORTH));
-      FluidState var17 = var16.getFluidState();
-      BlockState var18 = var1.getBlockState(var2.relative(Direction.SOUTH));
-      FluidState var19 = var18.getFluidState();
-      BlockState var20 = var1.getBlockState(var2.relative(Direction.WEST));
-      FluidState var21 = var20.getFluidState();
-      BlockState var22 = var1.getBlockState(var2.relative(Direction.EAST));
-      FluidState var23 = var22.getFluidState();
-      boolean var24 = !isNeighborSameFluid(var5, var15);
-      boolean var25 = shouldRenderFace(var5, var4, Direction.DOWN, var13) && !isFaceOccludedByNeighbor(Direction.DOWN, 0.8888889F, var12);
-      boolean var26 = shouldRenderFace(var5, var4, Direction.NORTH, var17);
-      boolean var27 = shouldRenderFace(var5, var4, Direction.SOUTH, var19);
-      boolean var28 = shouldRenderFace(var5, var4, Direction.WEST, var21);
-      boolean var29 = shouldRenderFace(var5, var4, Direction.EAST, var23);
-      if (var24 || var25 || var29 || var28 || var26 || var27) {
-         float var30 = var1.getShade(Direction.DOWN, true);
-         float var31 = var1.getShade(Direction.UP, true);
-         float var32 = var1.getShade(Direction.NORTH, true);
-         float var33 = var1.getShade(Direction.WEST, true);
-         Fluid var34 = var5.getType();
-         float var39 = this.getHeight(var1, var34, var2, var4, var5);
-         float var35;
+      TextureAtlasSprite var7 = var6 ? this.lavaStill : this.waterStill;
+      TextureAtlasSprite var8 = var6 ? this.lavaFlowing : this.waterFlowing;
+      int var9 = var6 ? 16777215 : BiomeColors.getAverageWaterColor(var1, var2);
+      float var10 = (float)(var9 >> 16 & 255) / 255.0F;
+      float var11 = (float)(var9 >> 8 & 255) / 255.0F;
+      float var12 = (float)(var9 & 255) / 255.0F;
+      BlockState var13 = var1.getBlockState(var2.relative(Direction.DOWN));
+      FluidState var14 = var13.getFluidState();
+      BlockState var15 = var1.getBlockState(var2.relative(Direction.UP));
+      FluidState var16 = var15.getFluidState();
+      BlockState var17 = var1.getBlockState(var2.relative(Direction.NORTH));
+      FluidState var18 = var17.getFluidState();
+      BlockState var19 = var1.getBlockState(var2.relative(Direction.SOUTH));
+      FluidState var20 = var19.getFluidState();
+      BlockState var21 = var1.getBlockState(var2.relative(Direction.WEST));
+      FluidState var22 = var21.getFluidState();
+      BlockState var23 = var1.getBlockState(var2.relative(Direction.EAST));
+      FluidState var24 = var23.getFluidState();
+      boolean var25 = !isNeighborSameFluid(var5, var16);
+      boolean var26 = shouldRenderFace(var5, var4, Direction.DOWN, var14) && !isFaceOccludedByNeighbor(Direction.DOWN, 0.8888889F, var13);
+      boolean var27 = shouldRenderFace(var5, var4, Direction.NORTH, var18);
+      boolean var28 = shouldRenderFace(var5, var4, Direction.SOUTH, var20);
+      boolean var29 = shouldRenderFace(var5, var4, Direction.WEST, var22);
+      boolean var30 = shouldRenderFace(var5, var4, Direction.EAST, var24);
+      if (var25 || var26 || var30 || var29 || var27 || var28) {
+         float var31 = var1.getShade(Direction.DOWN, true);
+         float var32 = var1.getShade(Direction.UP, true);
+         float var33 = var1.getShade(Direction.NORTH, true);
+         float var34 = var1.getShade(Direction.WEST, true);
+         Fluid var35 = var5.getType();
+         float var40 = this.getHeight(var1, var35, var2, var4, var5);
          float var36;
          float var37;
          float var38;
-         if (var39 >= 1.0F) {
-            var35 = 1.0F;
+         float var39;
+         if (var40 >= 1.0F) {
             var36 = 1.0F;
             var37 = 1.0F;
             var38 = 1.0F;
+            var39 = 1.0F;
          } else {
-            float var40 = this.getHeight(var1, var34, var2.north(), var16, var17);
-            float var41 = this.getHeight(var1, var34, var2.south(), var18, var19);
-            float var42 = this.getHeight(var1, var34, var2.east(), var22, var23);
-            float var43 = this.getHeight(var1, var34, var2.west(), var20, var21);
-            var35 = this.calculateAverageHeight(var1, var34, var39, var40, var42, var2.relative(Direction.NORTH).relative(Direction.EAST));
-            var36 = this.calculateAverageHeight(var1, var34, var39, var40, var43, var2.relative(Direction.NORTH).relative(Direction.WEST));
-            var37 = this.calculateAverageHeight(var1, var34, var39, var41, var42, var2.relative(Direction.SOUTH).relative(Direction.EAST));
-            var38 = this.calculateAverageHeight(var1, var34, var39, var41, var43, var2.relative(Direction.SOUTH).relative(Direction.WEST));
+            float var41 = this.getHeight(var1, var35, var2.north(), var17, var18);
+            float var42 = this.getHeight(var1, var35, var2.south(), var19, var20);
+            float var43 = this.getHeight(var1, var35, var2.east(), var23, var24);
+            float var44 = this.getHeight(var1, var35, var2.west(), var21, var22);
+            var36 = this.calculateAverageHeight(var1, var35, var40, var41, var43, var2.relative(Direction.NORTH).relative(Direction.EAST));
+            var37 = this.calculateAverageHeight(var1, var35, var40, var41, var44, var2.relative(Direction.NORTH).relative(Direction.WEST));
+            var38 = this.calculateAverageHeight(var1, var35, var40, var42, var43, var2.relative(Direction.SOUTH).relative(Direction.EAST));
+            var39 = this.calculateAverageHeight(var1, var35, var40, var42, var44, var2.relative(Direction.SOUTH).relative(Direction.WEST));
          }
 
-         float var66 = (float)(var2.getX() & 15);
-         float var67 = (float)(var2.getY() & 15);
-         float var68 = (float)(var2.getZ() & 15);
-         float var69 = 0.001F;
-         float var44 = var25 ? 0.001F : 0.0F;
-         if (var24 && !isFaceOccludedByNeighbor(Direction.UP, Math.min(Math.min(var36, var38), Math.min(var37, var35)), var14)) {
-            var36 -= 0.001F;
-            var38 -= 0.001F;
+         float var67 = (float)(var2.getX() & 15);
+         float var68 = (float)(var2.getY() & 15);
+         float var69 = (float)(var2.getZ() & 15);
+         float var70 = 0.001F;
+         float var45 = var26 ? 0.001F : 0.0F;
+         if (var25 && !isFaceOccludedByNeighbor(Direction.UP, Math.min(Math.min(var37, var39), Math.min(var38, var36)), var15)) {
             var37 -= 0.001F;
-            var35 -= 0.001F;
-            Vec3 var53 = var5.getFlow(var1, var2);
-            float var45;
+            var39 -= 0.001F;
+            var38 -= 0.001F;
+            var36 -= 0.001F;
+            Vec3 var54 = var5.getFlow(var1, var2);
             float var46;
             float var47;
             float var48;
@@ -140,114 +138,113 @@ public class LiquidBlockRenderer {
             float var50;
             float var51;
             float var52;
-            if (var53.x == 0.0 && var53.z == 0.0) {
-               TextureAtlasSprite var87 = var7[0];
-               var45 = var87.getU(0.0F);
-               var49 = var87.getV(0.0F);
-               var46 = var45;
-               var50 = var87.getV(1.0F);
-               var47 = var87.getU(1.0F);
-               var51 = var50;
-               var48 = var47;
-               var52 = var49;
+            float var53;
+            if (var54.x == 0.0 && var54.z == 0.0) {
+               var46 = var7.getU(0.0F);
+               var50 = var7.getV(0.0F);
+               var47 = var46;
+               var51 = var7.getV(1.0F);
+               var48 = var7.getU(1.0F);
+               var52 = var51;
+               var49 = var48;
+               var53 = var50;
             } else {
-               TextureAtlasSprite var54 = var7[1];
-               float var55 = (float)Mth.atan2(var53.z, var53.x) - 1.5707964F;
+               float var55 = (float)Mth.atan2(var54.z, var54.x) - 1.5707964F;
                float var56 = Mth.sin((double)var55) * 0.25F;
                float var57 = Mth.cos((double)var55) * 0.25F;
                float var58 = 0.5F;
-               var45 = var54.getU(0.5F + (-var57 - var56));
-               var49 = var54.getV(0.5F + -var57 + var56);
-               var46 = var54.getU(0.5F + -var57 + var56);
-               var50 = var54.getV(0.5F + var57 + var56);
-               var47 = var54.getU(0.5F + var57 + var56);
-               var51 = var54.getV(0.5F + (var57 - var56));
-               var48 = var54.getU(0.5F + (var57 - var56));
-               var52 = var54.getV(0.5F + (-var57 - var56));
+               var46 = var8.getU(0.5F + (-var57 - var56));
+               var50 = var8.getV(0.5F + -var57 + var56);
+               var47 = var8.getU(0.5F + -var57 + var56);
+               var51 = var8.getV(0.5F + var57 + var56);
+               var48 = var8.getU(0.5F + var57 + var56);
+               var52 = var8.getV(0.5F + (var57 - var56));
+               var49 = var8.getU(0.5F + (var57 - var56));
+               var53 = var8.getV(0.5F + (-var57 - var56));
             }
 
             int var88 = this.getLightColor(var1, var2);
-            float var90 = var31 * var9;
-            float var92 = var31 * var10;
-            float var94 = var31 * var11;
-            this.vertex(var3, var66 + 0.0F, var67 + var36, var68 + 0.0F, var90, var92, var94, var45, var49, var88);
-            this.vertex(var3, var66 + 0.0F, var67 + var38, var68 + 1.0F, var90, var92, var94, var46, var50, var88);
-            this.vertex(var3, var66 + 1.0F, var67 + var37, var68 + 1.0F, var90, var92, var94, var47, var51, var88);
-            this.vertex(var3, var66 + 1.0F, var67 + var35, var68 + 0.0F, var90, var92, var94, var48, var52, var88);
+            float var90 = var32 * var10;
+            float var92 = var32 * var11;
+            float var94 = var32 * var12;
+            this.vertex(var3, var67 + 0.0F, var68 + var37, var69 + 0.0F, var90, var92, var94, var46, var50, var88);
+            this.vertex(var3, var67 + 0.0F, var68 + var39, var69 + 1.0F, var90, var92, var94, var47, var51, var88);
+            this.vertex(var3, var67 + 1.0F, var68 + var38, var69 + 1.0F, var90, var92, var94, var48, var52, var88);
+            this.vertex(var3, var67 + 1.0F, var68 + var36, var69 + 0.0F, var90, var92, var94, var49, var53, var88);
             if (var5.shouldRenderBackwardUpFace(var1, var2.above())) {
-               this.vertex(var3, var66 + 0.0F, var67 + var36, var68 + 0.0F, var90, var92, var94, var45, var49, var88);
-               this.vertex(var3, var66 + 1.0F, var67 + var35, var68 + 0.0F, var90, var92, var94, var48, var52, var88);
-               this.vertex(var3, var66 + 1.0F, var67 + var37, var68 + 1.0F, var90, var92, var94, var47, var51, var88);
-               this.vertex(var3, var66 + 0.0F, var67 + var38, var68 + 1.0F, var90, var92, var94, var46, var50, var88);
+               this.vertex(var3, var67 + 0.0F, var68 + var37, var69 + 0.0F, var90, var92, var94, var46, var50, var88);
+               this.vertex(var3, var67 + 1.0F, var68 + var36, var69 + 0.0F, var90, var92, var94, var49, var53, var88);
+               this.vertex(var3, var67 + 1.0F, var68 + var38, var69 + 1.0F, var90, var92, var94, var48, var52, var88);
+               this.vertex(var3, var67 + 0.0F, var68 + var39, var69 + 1.0F, var90, var92, var94, var47, var51, var88);
             }
          }
 
-         if (var25) {
-            float var70 = var7[0].getU0();
-            float var72 = var7[0].getU1();
-            float var74 = var7[0].getV0();
-            float var76 = var7[0].getV1();
-            int var78 = this.getLightColor(var1, var2.below());
-            float var80 = var30 * var9;
-            float var82 = var30 * var10;
-            float var84 = var30 * var11;
-            this.vertex(var3, var66, var67 + var44, var68 + 1.0F, var80, var82, var84, var70, var76, var78);
-            this.vertex(var3, var66, var67 + var44, var68, var80, var82, var84, var70, var74, var78);
-            this.vertex(var3, var66 + 1.0F, var67 + var44, var68, var80, var82, var84, var72, var74, var78);
-            this.vertex(var3, var66 + 1.0F, var67 + var44, var68 + 1.0F, var80, var82, var84, var72, var76, var78);
+         if (var26) {
+            float var71 = var7.getU0();
+            float var73 = var7.getU1();
+            float var75 = var7.getV0();
+            float var77 = var7.getV1();
+            int var79 = this.getLightColor(var1, var2.below());
+            float var81 = var31 * var10;
+            float var83 = var31 * var11;
+            float var85 = var31 * var12;
+            this.vertex(var3, var67, var68 + var45, var69 + 1.0F, var81, var83, var85, var71, var77, var79);
+            this.vertex(var3, var67, var68 + var45, var69, var81, var83, var85, var71, var75, var79);
+            this.vertex(var3, var67 + 1.0F, var68 + var45, var69, var81, var83, var85, var73, var75, var79);
+            this.vertex(var3, var67 + 1.0F, var68 + var45, var69 + 1.0F, var81, var83, var85, var73, var77, var79);
          }
 
-         int var71 = this.getLightColor(var1, var2);
+         int var72 = this.getLightColor(var1, var2);
 
-         for(Direction var75 : Direction.Plane.HORIZONTAL) {
-            float var77;
-            float var79;
-            float var81;
-            float var83;
-            float var85;
+         for(Direction var76 : Direction.Plane.HORIZONTAL) {
+            float var78;
+            float var80;
+            float var82;
+            float var84;
             float var86;
+            float var87;
             boolean var89;
-            switch (var75) {
+            switch (var76) {
                case NORTH:
-                  var77 = var36;
-                  var79 = var35;
-                  var81 = var66;
-                  var85 = var66 + 1.0F;
-                  var83 = var68 + 0.001F;
-                  var86 = var68 + 0.001F;
-                  var89 = var26;
-                  break;
-               case SOUTH:
-                  var77 = var37;
-                  var79 = var38;
-                  var81 = var66 + 1.0F;
-                  var85 = var66;
-                  var83 = var68 + 1.0F - 0.001F;
-                  var86 = var68 + 1.0F - 0.001F;
+                  var78 = var37;
+                  var80 = var36;
+                  var82 = var67;
+                  var86 = var67 + 1.0F;
+                  var84 = var69 + 0.001F;
+                  var87 = var69 + 0.001F;
                   var89 = var27;
                   break;
-               case WEST:
-                  var77 = var38;
-                  var79 = var36;
-                  var81 = var66 + 0.001F;
-                  var85 = var66 + 0.001F;
-                  var83 = var68 + 1.0F;
-                  var86 = var68;
+               case SOUTH:
+                  var78 = var38;
+                  var80 = var39;
+                  var82 = var67 + 1.0F;
+                  var86 = var67;
+                  var84 = var69 + 1.0F - 0.001F;
+                  var87 = var69 + 1.0F - 0.001F;
                   var89 = var28;
                   break;
-               default:
-                  var77 = var35;
-                  var79 = var37;
-                  var81 = var66 + 1.0F - 0.001F;
-                  var85 = var66 + 1.0F - 0.001F;
-                  var83 = var68;
-                  var86 = var68 + 1.0F;
+               case WEST:
+                  var78 = var39;
+                  var80 = var37;
+                  var82 = var67 + 0.001F;
+                  var86 = var67 + 0.001F;
+                  var84 = var69 + 1.0F;
+                  var87 = var69;
                   var89 = var29;
+                  break;
+               default:
+                  var78 = var36;
+                  var80 = var38;
+                  var82 = var67 + 1.0F - 0.001F;
+                  var86 = var67 + 1.0F - 0.001F;
+                  var84 = var69;
+                  var87 = var69 + 1.0F;
+                  var89 = var30;
             }
 
-            if (var89 && !isFaceOccludedByNeighbor(var75, Math.max(var77, var79), var1.getBlockState(var2.relative(var75)))) {
-               BlockPos var91 = var2.relative(var75);
-               TextureAtlasSprite var93 = var7[1];
+            if (var89 && !isFaceOccludedByNeighbor(var76, Math.max(var78, var80), var1.getBlockState(var2.relative(var76)))) {
+               BlockPos var91 = var2.relative(var76);
+               TextureAtlasSprite var93 = var8;
                if (!var6) {
                   Block var95 = var1.getBlockState(var91).getBlock();
                   if (var95 instanceof HalfTransparentBlock || var95 instanceof LeavesBlock) {
@@ -256,23 +253,23 @@ public class LiquidBlockRenderer {
                }
 
                float var96 = var93.getU(0.0F);
-               float var97 = var93.getU(0.5F);
-               float var59 = var93.getV((1.0F - var77) * 0.5F);
-               float var60 = var93.getV((1.0F - var79) * 0.5F);
-               float var61 = var93.getV(0.5F);
-               float var62 = var75.getAxis() == Direction.Axis.Z ? var32 : var33;
-               float var63 = var31 * var62 * var9;
-               float var64 = var31 * var62 * var10;
-               float var65 = var31 * var62 * var11;
-               this.vertex(var3, var81, var67 + var77, var83, var63, var64, var65, var96, var59, var71);
-               this.vertex(var3, var85, var67 + var79, var86, var63, var64, var65, var97, var60, var71);
-               this.vertex(var3, var85, var67 + var44, var86, var63, var64, var65, var97, var61, var71);
-               this.vertex(var3, var81, var67 + var44, var83, var63, var64, var65, var96, var61, var71);
+               float var59 = var93.getU(0.5F);
+               float var60 = var93.getV((1.0F - var78) * 0.5F);
+               float var61 = var93.getV((1.0F - var80) * 0.5F);
+               float var62 = var93.getV(0.5F);
+               float var63 = var76.getAxis() == Direction.Axis.Z ? var33 : var34;
+               float var64 = var32 * var63 * var10;
+               float var65 = var32 * var63 * var11;
+               float var66 = var32 * var63 * var12;
+               this.vertex(var3, var82, var68 + var78, var84, var64, var65, var66, var96, var60, var72);
+               this.vertex(var3, var86, var68 + var80, var87, var64, var65, var66, var59, var61, var72);
+               this.vertex(var3, var86, var68 + var45, var87, var64, var65, var66, var59, var62, var72);
+               this.vertex(var3, var82, var68 + var45, var84, var64, var65, var66, var96, var62, var72);
                if (var93 != this.waterOverlay) {
-                  this.vertex(var3, var81, var67 + var44, var83, var63, var64, var65, var96, var61, var71);
-                  this.vertex(var3, var85, var67 + var44, var86, var63, var64, var65, var97, var61, var71);
-                  this.vertex(var3, var85, var67 + var79, var86, var63, var64, var65, var97, var60, var71);
-                  this.vertex(var3, var81, var67 + var77, var83, var63, var64, var65, var96, var59, var71);
+                  this.vertex(var3, var82, var68 + var45, var84, var64, var65, var66, var96, var62, var72);
+                  this.vertex(var3, var86, var68 + var45, var87, var64, var65, var66, var59, var62, var72);
+                  this.vertex(var3, var86, var68 + var80, var87, var64, var65, var66, var59, var61, var72);
+                  this.vertex(var3, var82, var68 + var78, var84, var64, var65, var66, var96, var60, var72);
                }
             }
          }

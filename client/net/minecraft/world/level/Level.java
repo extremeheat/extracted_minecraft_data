@@ -272,7 +272,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.setBlock(var1, var2, 3);
    }
 
-   public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, int var4);
+   public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, @Block.UpdateFlags int var4);
 
    public void setBlocksDirty(BlockPos var1, BlockState var2, BlockState var3) {
    }

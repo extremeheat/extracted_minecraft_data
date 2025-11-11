@@ -14,6 +14,7 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
@@ -50,10 +51,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
       var1.addChild(new StringWidget(this.getTitle(), this.font));
       this.list = (RegionSelectionList)this.layout.addToContents(new RegionSelectionList());
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.applySettings.accept(this.selection.preference(), this.selection.region());
-         this.onClose();
-      }).build());
+      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
       var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
       this.list.setSelected((RegionSelectionList.Entry)this.list.children().stream().filter((var1x) -> Objects.equals(var1x.regionSelection, this.selection)).findFirst().orElse((Object)null));
       this.layout.visitWidgets((var1x) -> {
@@ -64,11 +62,25 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
 
    protected void repositionElements() {
       this.layout.arrangeElements();
-      this.list.updateSize(this.width, this.layout);
+      if (this.list != null) {
+         this.list.updateSize(this.width, this.layout);
+      }
+
+   }
+
+   void onDone() {
+      if (this.selection.region() != null) {
+         this.applySettings.accept(this.selection.preference(), this.selection.region());
+      }
+
+      this.onClose();
    }
 
    void updateButtonValidity() {
-      this.doneButton.active = this.list.getSelected() != null;
+      if (this.doneButton != null && this.list != null) {
+         this.doneButton.active = this.list.getSelected() != null;
+      }
+
    }
 
    class RegionSelectionList extends ObjectSelectionList<Entry> {
@@ -126,7 +138,23 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
 
          public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
             RegionSelectionList.this.setSelected(this);
-            return super.mouseClicked(var1, var2);
+            if (var2) {
+               RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
+               RealmsPreferredRegionSelectionScreen.this.onDone();
+               return true;
+            } else {
+               return super.mouseClicked(var1, var2);
+            }
+         }
+
+         public boolean keyPressed(KeyEvent var1) {
+            if (var1.isSelection()) {
+               RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
+               RealmsPreferredRegionSelectionScreen.this.onDone();
+               return true;
+            } else {
+               return super.keyPressed(var1);
+            }
          }
       }
    }

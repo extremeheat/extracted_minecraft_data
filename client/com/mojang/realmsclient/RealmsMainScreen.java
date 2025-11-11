@@ -896,6 +896,7 @@ public class RealmsMainScreen extends RealmsScreen {
          }
 
          this.button = (Button)this.gridLayout.addChild(var5.buildOpenLinkButton(var2), 1, 1, this.gridLayout.newCellSettings().alignHorizontallyCenter().padding(4));
+         this.button.setOverrideRenderHighlightedSprite(() -> this.isFocused());
          GridLayout var10000 = this.gridLayout;
          List var10001 = this.children;
          Objects.requireNonNull(var10001);
@@ -933,14 +934,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
          this.gridLayout.setPosition(this.getContentX(), this.getContentY());
          this.updateEntryWidth();
-         this.children.forEach((var5x) -> {
-            if (var5x == this.button && this.isFocused()) {
-               this.button.render(var1, this.button.getX(), this.button.getY(), var5);
-            } else {
-               var5x.render(var1, var2, var3, var5);
-            }
-
-         });
+         this.children.forEach((var4x) -> var4x.render(var1, var2, var3, var5));
       }
 
       public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {

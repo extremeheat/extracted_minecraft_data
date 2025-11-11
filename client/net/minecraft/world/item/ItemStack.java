@@ -79,6 +79,7 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.component.WrittenBookContent;
@@ -93,6 +94,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.apache.commons.lang3.function.TriConsumer;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
@@ -733,6 +735,14 @@ public final class ItemStack implements DataComponentHolder {
          if (var5 != this) {
             var2.setItemInHand(var2.getUsedItemHand(), var5);
          }
+      }
+
+   }
+
+   public void causeUseVibration(Entity var1, Holder.Reference<GameEvent> var2) {
+      UseEffects var3 = (UseEffects)this.get(DataComponents.USE_EFFECTS);
+      if (var3 != null && var3.interactVibrations()) {
+         var1.gameEvent(var2);
       }
 
    }

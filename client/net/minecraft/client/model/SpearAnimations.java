@@ -30,6 +30,8 @@ public class SpearAnimations {
          var0.xRot -= 0.9599311F;
       }
 
+      var0.yRot = 0.017453292F * Math.clamp(57.295776F * var0.yRot, -60.0F, 60.0F);
+      var0.xRot = 0.017453292F * Math.clamp(57.295776F * var0.xRot, -120.0F, 30.0F);
       if (!(var4.ticksUsingItem <= 0.0F)) {
          KineticWeapon var6 = (KineticWeapon)var3.get(DataComponents.KINETIC_WEAPON);
          if (var6 != null) {
@@ -44,14 +46,16 @@ public class SpearAnimations {
    public static <S extends ArmedEntityRenderState> void thirdPersonUseItem(S var0, PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
       KineticWeapon var5 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
       if (var5 != null && var2 != 0.0F) {
-         UseParams var6 = SpearAnimations.UseParams.fromKineticWeapon(var5, var2);
-         int var7 = var3 == HumanoidArm.RIGHT ? 1 : -1;
-         float var8 = 1.0F - Ease.outBack(1.0F - var6.raiseProgress());
-         float var9 = 0.125F;
-         float var10 = hitFeedbackAmount(var0.ticksSinceEnemyHit);
-         var1.translate(0.0, (double)(-var10) * 0.4, (double)(-var5.forwardMovement() * (var8 - var6.raiseBackProgress()) + var10));
-         var1.rotateAround(Axis.XN.rotationDegrees(var6.raiseProgress() * 70.0F - var6.raiseBackProgress() * 70.0F), 0.0F, -0.03125F, 0.125F);
-         var1.rotateAround(Axis.YP.rotationDegrees(var6.raiseProgress() * (float)var7 * 90.0F - var6.swayProgress() * (float)var7 * 90.0F), 0.0F, 0.0F, 0.125F);
+         float var6 = Ease.inQuad(progress(var0.attackTime, 0.05F, 0.2F));
+         float var7 = Ease.inOutExpo(progress(var0.attackTime, 0.4F, 1.0F));
+         UseParams var8 = SpearAnimations.UseParams.fromKineticWeapon(var5, var2);
+         int var9 = var3 == HumanoidArm.RIGHT ? 1 : -1;
+         float var10 = 1.0F - Ease.outBack(1.0F - var8.raiseProgress());
+         float var11 = 0.125F;
+         float var12 = hitFeedbackAmount(var0.ticksSinceEnemyHit);
+         var1.translate(0.0, (double)(-var12) * 0.4, (double)(-var5.forwardMovement() * (var10 - var8.raiseBackProgress()) + var12));
+         var1.rotateAround(Axis.XN.rotationDegrees(70.0F * (var8.raiseProgress() - var8.raiseBackProgress()) - 40.0F * (var6 - var7)), 0.0F, -0.03125F, 0.125F);
+         var1.rotateAround(Axis.YP.rotationDegrees((float)(var9 * 90) * (var8.raiseProgress() - var8.swayProgress() + var7 - var6)), 0.0F, 0.0F, 0.125F);
       }
    }
 

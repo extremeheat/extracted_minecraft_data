@@ -1763,6 +1763,7 @@ public class SoundEvents {
    public static final SoundEvent ZOMBIE_HORSE_AMBIENT = register("entity.zombie_horse.ambient");
    public static final SoundEvent ZOMBIE_HORSE_ANGRY = register("entity.zombie_horse.angry");
    public static final SoundEvent ZOMBIE_HORSE_DEATH = register("entity.zombie_horse.death");
+   public static final SoundEvent ZOMBIE_HORSE_EAT = register("entity.zombie_horse.eat");
    public static final SoundEvent ZOMBIE_HORSE_HURT = register("entity.zombie_horse.hurt");
    public static final SoundEvent ZOMBIE_HURT = register("entity.zombie.hurt");
    public static final SoundEvent ZOMBIE_INFECT = register("entity.zombie.infect");

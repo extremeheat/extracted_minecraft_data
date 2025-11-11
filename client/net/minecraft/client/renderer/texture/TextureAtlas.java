@@ -185,6 +185,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
       }
 
       MemoryUtil.memFree(var7);
+      this.uploadAnimationFrames();
    }
 
    public void dumpContents(Identifier var1, Path var2) throws IOException {
@@ -231,19 +232,23 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
             var2.tick();
          }
 
-         if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
-            for(int var7 = 0; var7 <= this.maxMipLevel; ++var7) {
-               try (RenderPass var8 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[var7], OptionalInt.empty())) {
-                  for(SpriteContents.AnimationState var4 : this.animatedTexturesStates) {
-                     if (var4.needsToDraw()) {
-                        var4.drawToAtlas(var8, var4.getDrawUbo(var7));
-                     }
+         this.uploadAnimationFrames();
+      }
+   }
+
+   private void uploadAnimationFrames() {
+      if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
+         for(int var1 = 0; var1 <= this.maxMipLevel; ++var1) {
+            try (RenderPass var2 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[var1], OptionalInt.empty())) {
+               for(SpriteContents.AnimationState var4 : this.animatedTexturesStates) {
+                  if (var4.needsToDraw()) {
+                     var4.drawToAtlas(var2, var4.getDrawUbo(var1));
                   }
                }
             }
          }
-
       }
+
    }
 
    public void tick() {

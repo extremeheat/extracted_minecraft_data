@@ -63,19 +63,19 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, ItemRenderer var4, MapRenderer var5, BlockRenderDispatcher var6, AtlasManager var7, Font var8, Options var9, Supplier<EntityModelSet> var10, EquipmentAssetManager var11, PlayerSkinRenderCache var12) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, MapRenderer var4, BlockRenderDispatcher var5, AtlasManager var6, Font var7, Options var8, Supplier<EntityModelSet> var9, EquipmentAssetManager var10, PlayerSkinRenderCache var11) {
       super();
       this.textureManager = var2;
       this.itemModelResolver = var3;
-      this.mapRenderer = var5;
-      this.atlasManager = var7;
-      this.playerSkinRenderCache = var12;
-      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4, var3);
-      this.blockRenderDispatcher = var6;
-      this.font = var8;
-      this.options = var9;
-      this.entityModels = var10;
-      this.equipmentAssets = var11;
+      this.mapRenderer = var4;
+      this.atlasManager = var6;
+      this.playerSkinRenderCache = var11;
+      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var3);
+      this.blockRenderDispatcher = var5;
+      this.font = var7;
+      this.options = var8;
+      this.entityModels = var9;
+      this.equipmentAssets = var10;
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {

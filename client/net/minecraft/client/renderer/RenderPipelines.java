@@ -91,6 +91,7 @@ public class RenderPipelines {
    public static final RenderPipeline FLAT_CLOUDS;
    public static final RenderPipeline CLOUDS;
    public static final RenderPipeline LINES;
+   public static final RenderPipeline LINES_TRANSLUCENT;
    public static final RenderPipeline SECONDARY_BLOCK_OUTLINE;
    public static final RenderPipeline DEBUG_POINTS;
    public static final RenderPipeline DEBUG_FILLED_BOX;
@@ -215,8 +216,9 @@ public class RenderPipelines {
       END_GATEWAY = register(RenderPipeline.builder(END_PORTAL_SNIPPET).withLocation("pipeline/end_gateway").withShaderDefine("PORTAL_LAYERS", 16).build());
       FLAT_CLOUDS = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/flat_clouds").withCull(false).build());
       CLOUDS = register(RenderPipeline.builder(CLOUDS_SNIPPET).withLocation("pipeline/clouds").build());
-      LINES = register(RenderPipeline.builder(LINES_SNIPPET).withDepthWrite(false).withLocation("pipeline/lines").build());
-      SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withDepthWrite(false).build());
+      LINES = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/lines").build());
+      LINES_TRANSLUCENT = register(RenderPipeline.builder(LINES_SNIPPET).withDepthWrite(false).withLocation("pipeline/lines_translucent").build());
+      SECONDARY_BLOCK_OUTLINE = register(RenderPipeline.builder(LINES_SNIPPET).withLocation("pipeline/secondary_block_outline").withBlend(BlendFunction.TRANSLUCENT).withDepthWrite(false).build());
       DEBUG_POINTS = register(RenderPipeline.builder(MATRICES_PROJECTION_SNIPPET).withLocation("pipeline/debug_points").withVertexShader("core/debug_point").withFragmentShader("core/position_color").withCull(false).withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LINE_WIDTH, VertexFormat.Mode.POINTS).build());
       DEBUG_FILLED_BOX = register(RenderPipeline.builder(DEBUG_FILLED_SNIPPET).withLocation("pipeline/debug_filled_box").build());
       DEBUG_QUADS = register(RenderPipeline.builder(DEBUG_FILLED_SNIPPET).withLocation("pipeline/debug_quads").withCull(false).build());

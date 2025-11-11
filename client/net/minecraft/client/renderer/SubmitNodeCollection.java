@@ -90,7 +90,7 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5) {
       this.wasUsed = true;
       this.blockSubmits.add(new SubmitNodeStorage.BlockSubmit(var1.last().copy(), var2, var3, var4, var5));
-      ((SpecialBlockModelRenderer)Minecraft.getInstance().getModelManager().specialBlockModelRenderer().get()).renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4, var5);
+      Minecraft.getInstance().getModelManager().specialBlockModelRenderer().renderByBlock(var2.getBlock(), ItemDisplayContext.NONE, var1, this.submitNodeStorage, var3, var4, var5);
    }
 
    public void submitMovingBlock(PoseStack var1, MovingBlockRenderState var2) {

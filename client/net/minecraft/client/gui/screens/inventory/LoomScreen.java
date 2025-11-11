@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -108,49 +109,56 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
       int var11 = (int)(41.0F * this.scrollOffs);
       Identifier var12 = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var5 + 119, var6 + 13 + var11, 12, 15);
+      int var13 = var5 + 119;
+      int var14 = var6 + 13 + var11;
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var13, var14, 12, 15);
+      if (var3 >= var13 && var3 < var13 + 12 && var4 >= var14 && var4 < var14 + 15) {
+         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      }
+
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
-         DyeColor var13 = ((BannerItem)var10.getItem().getItem()).getColor();
-         int var14 = var5 + 141;
-         int var15 = var6 + 8;
-         var1.submitBannerPatternRenderState(this.flag, var13, this.resultBannerPatterns, var14, var15, var14 + 20, var15 + 40);
+         DyeColor var15 = ((BannerItem)var10.getItem().getItem()).getColor();
+         int var16 = var5 + 141;
+         int var17 = var6 + 8;
+         var1.submitBannerPatternRenderState(this.flag, var15, this.resultBannerPatterns, var16, var17, var16 + 20, var17 + 40);
       } else if (this.hasMaxPatterns) {
          var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
       }
 
       if (this.displayPatterns) {
-         int var26 = var5 + 60;
-         int var27 = var6 + 13;
-         List var28 = (this.menu).getSelectablePatterns();
+         int var28 = var5 + 60;
+         int var29 = var6 + 13;
+         List var30 = (this.menu).getSelectablePatterns();
 
-         label64:
-         for(int var16 = 0; var16 < 4; ++var16) {
-            for(int var17 = 0; var17 < 4; ++var17) {
-               int var18 = var16 + this.startRow;
-               int var19 = var18 * 4 + var17;
-               if (var19 >= var28.size()) {
-                  break label64;
+         label79:
+         for(int var18 = 0; var18 < 4; ++var18) {
+            for(int var19 = 0; var19 < 4; ++var19) {
+               int var20 = var18 + this.startRow;
+               int var21 = var20 * 4 + var19;
+               if (var21 >= var30.size()) {
+                  break label79;
                }
 
-               int var20 = var26 + var17 * 14;
-               int var21 = var27 + var16 * 14;
-               Holder var22 = (Holder)var28.get(var19);
-               boolean var23 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
-               Identifier var24;
-               if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
-                  var24 = PATTERN_SELECTED_SPRITE;
-               } else if (var23) {
-                  var24 = PATTERN_HIGHLIGHTED_SPRITE;
-                  DyeColor var25 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
-                  String var10001 = ((BannerPattern)var22.value()).translationKey();
-                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var25.getName()), var3, var4);
+               int var22 = var28 + var19 * 14;
+               int var23 = var29 + var18 * 14;
+               Holder var24 = (Holder)var30.get(var21);
+               boolean var25 = var3 >= var22 && var4 >= var23 && var3 < var22 + 14 && var4 < var23 + 14;
+               Identifier var26;
+               if (var21 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
+                  var26 = PATTERN_SELECTED_SPRITE;
+               } else if (var25) {
+                  var26 = PATTERN_HIGHLIGHTED_SPRITE;
+                  DyeColor var27 = ((DyeItem)this.dyeStack.getItem()).getDyeColor();
+                  String var10001 = ((BannerPattern)var24.value()).translationKey();
+                  var1.setTooltipForNextFrame(Component.translatable(var10001 + "." + var27.getName()), var3, var4);
+                  var1.requestCursor(CursorTypes.POINTING_HAND);
                } else {
-                  var24 = PATTERN_SPRITE;
+                  var26 = PATTERN_SPRITE;
                }
 
-               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var24, var20, var21, 14, 14);
-               TextureAtlasSprite var29 = var1.getSprite(Sheets.getBannerMaterial(var22));
-               this.renderBannerOnButton(var1, var20, var21, var29);
+               var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var26, var22, var23, 14, 14);
+               TextureAtlasSprite var31 = var1.getSprite(Sheets.getBannerMaterial(var24));
+               this.renderBannerOnButton(var1, var22, var23, var31);
             }
          }
       }
@@ -174,7 +182,6 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    }
 
    public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      this.scrolling = false;
       if (this.displayPatterns) {
          int var3 = this.leftPos + 60;
          int var4 = this.topPos + 13;
@@ -215,6 +222,11 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       } else {
          return super.mouseDragged(var1, var2, var4);
       }
+   }
+
+   public boolean mouseReleased(MouseButtonEvent var1) {
+      this.scrolling = false;
+      return super.mouseReleased(var1);
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {

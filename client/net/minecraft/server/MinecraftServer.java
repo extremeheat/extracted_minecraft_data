@@ -13,6 +13,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
@@ -750,15 +751,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                Profiler.Scope var4 = Profiler.use(this.createProfiler());
 
                try {
+                  this.processPacketsAndTick(var72);
                   ProfilerFiller var73 = Profiler.get();
-                  var73.push("tick");
-                  this.tickFrame.start();
-                  var73.push("scheduledPacketProcessing");
-                  this.packetProcessor.processQueuedPackets();
-                  var73.pop();
-                  this.tickServer(var72 ? () -> false : this::haveTime);
-                  this.tickFrame.end();
-                  var73.popPush("nextTickWait");
+                  var73.push("nextTickWait");
                   this.mayHaveDelayedTasks = true;
                   this.delayedTasksMaxNextTickTimeNanos = Math.max(Util.getNanos() + var1, this.nextTickTimeNanos);
                   this.startMeasuringTaskExecutionTime();
@@ -1036,6 +1031,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var5.pop();
    }
 
+   public void processPacketsAndTick(boolean var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("tick");
+      this.tickFrame.start();
+      var2.push("scheduledPacketProcessing");
+      this.packetProcessor.processQueuedPackets();
+      var2.pop();
+      this.tickServer(var1 ? () -> false : this::haveTime);
+      this.tickFrame.end();
+      var2.pop();
+   }
+
    private void autoSave() {
       this.ticksUntilAutosave = this.computeNextAutosaveInterval();
       LOGGER.debug("Autosave started");
@@ -1149,15 +1156,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       var2.popPush("server gui refresh");
 
-      for(int var8 = 0; var8 < this.tickables.size(); ++var8) {
-         ((Runnable)this.tickables.get(var8)).run();
+      for(Runnable var10 : this.tickables) {
+         var10.run();
       }
 
       var2.popPush("send chunks");
 
-      for(ServerPlayer var10 : this.playerList.getPlayers()) {
-         var10.connection.chunkSender.sendNextChunks(var10);
-         var10.connection.resumeFlushing();
+      for(ServerPlayer var11 : this.playerList.getPlayers()) {
+         var11.connection.chunkSender.sendNextChunks(var11);
+         var11.connection.resumeFlushing();
       }
 
       var2.pop();
@@ -1273,7 +1280,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public KeyPair getKeyPair() {
-      return this.keyPair;
+      return (KeyPair)Objects.requireNonNull(this.keyPair);
    }
 
    public int getPort() {
@@ -1429,10 +1436,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public boolean isReady() {
       return this.isReady;
-   }
-
-   public boolean hasGui() {
-      return false;
    }
 
    public boolean publishServer(@Nullable GameType var1, boolean var2, int var3) {
@@ -1880,7 +1883,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       try {
          String var3 = System.getProperty("java.class.path");
-         String var4 = System.getProperty("path.separator");
+         String var4 = File.pathSeparator;
 
          for(String var6 : Splitter.on(var4).split(var3)) {
             ((Writer)var2).write(var6);
@@ -2226,7 +2229,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void reportPacketHandlingException(Throwable var1, PacketType<?> var2) {
-      this.suppressedExceptions.addEntry("packet/" + var2.toString(), var1);
+      this.suppressedExceptions.addEntry("packet/" + String.valueOf(var2), var1);
    }
 
    public PotionBrewing potionBrewing() {

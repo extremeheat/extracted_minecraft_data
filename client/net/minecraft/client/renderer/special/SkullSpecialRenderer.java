@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -16,7 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.SkullBlock;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
@@ -35,7 +35,7 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, var2, var3, var4, this.model, this.renderType, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       var2.translate(0.5F, 0.0F, 0.5F);
       var2.scale(-1.0F, -1.0F, 1.0F);

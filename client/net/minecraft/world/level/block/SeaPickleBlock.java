@@ -126,7 +126,7 @@ public class SeaPickleBlock extends VegetationBlock implements BonemealableBlock
 
             for(int var14 = var13 - 2; var14 < var13; ++var14) {
                BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
-               if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
+               if (!var15.equals(var3) && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
                   BlockState var16 = var1.getBlockState(var15.below());
                   if (var16.is(BlockTags.CORAL_BLOCKS)) {
                      var1.setBlock(var15, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, var2.nextInt(4) + 1), 3);

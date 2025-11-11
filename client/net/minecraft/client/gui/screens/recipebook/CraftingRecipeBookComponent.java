@@ -83,8 +83,8 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
 
    }
 
-   protected void initFilterButtonTextures() {
-      this.filterButton.initTextureValues(FILTER_BUTTON_SPRITES);
+   protected WidgetSprites getFilterButtonTextures() {
+      return FILTER_BUTTON_SPRITES;
    }
 
    protected Component getRecipeFilterName() {

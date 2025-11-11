@@ -35,19 +35,20 @@ public class BoneMealItem extends Item {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockPos var4 = var3.relative(var1.getClickedFace());
-      if (growCrop(var1.getItemInHand(), var2, var3)) {
+      ItemStack var5 = var1.getItemInHand();
+      if (growCrop(var5, var2, var3)) {
          if (!var2.isClientSide()) {
-            var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+            var5.causeUseVibration(var1.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
             var2.levelEvent(1505, var3, 15);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         BlockState var5 = var2.getBlockState(var3);
-         boolean var6 = var5.isFaceSturdy(var2, var3, var1.getClickedFace());
-         if (var6 && growWaterPlant(var1.getItemInHand(), var2, var4, var1.getClickedFace())) {
+         BlockState var6 = var2.getBlockState(var3);
+         boolean var7 = var6.isFaceSturdy(var2, var3, var1.getClickedFace());
+         if (var7 && growWaterPlant(var5, var2, var4, var1.getClickedFace())) {
             if (!var2.isClientSide()) {
-               var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+               var5.causeUseVibration(var1.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
                var2.levelEvent(1505, var4, 15);
             }
 

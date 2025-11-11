@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.CopperGolemStatueModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.animal.coppergolem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
    private final CopperGolemStatueModel model;
@@ -36,7 +36,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       var3.submitModel(this.model, Direction.SOUTH, var2, RenderTypes.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       this.positionModel(var2);
       this.model.root().getExtentsForGui(var2, var1);

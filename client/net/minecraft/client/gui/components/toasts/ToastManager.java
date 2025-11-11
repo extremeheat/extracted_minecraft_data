@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -31,10 +32,7 @@ public class ToastManager {
    public ToastManager(Minecraft var1, Options var2) {
       super();
       this.minecraft = var1;
-      if ((Boolean)var2.showNowPlayingToast().get()) {
-         this.createNowPlayingToast();
-      }
-
+      this.initializeMusicToast((MusicToastDisplayState)var2.musicToast().get());
    }
 
    public void update() {
@@ -91,7 +89,7 @@ public class ToastManager {
             var4.render(var1, var2);
          }
 
-         if ((Boolean)this.minecraft.options.showNowPlayingToast().get() && this.nowPlayingToast != null && (this.minecraft.screen == null || !(this.minecraft.screen instanceof PauseScreen))) {
+         if (((MusicToastDisplayState)this.minecraft.options.musicToast().get()).renderToast() && this.nowPlayingToast != null && (this.minecraft.screen == null || !(this.minecraft.screen instanceof PauseScreen))) {
             this.nowPlayingToast.render(var1, var2);
          }
 
@@ -162,20 +160,36 @@ public class ToastManager {
 
    }
 
-   public void createNowPlayingToast() {
-      this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
-   }
-
-   public void removeNowPlayingToast() {
-      this.nowPlayingToast = null;
-   }
-
    public Minecraft getMinecraft() {
       return this.minecraft;
    }
 
    public double getNotificationDisplayTimeMultiplier() {
       return (Double)this.minecraft.options.notificationDisplayTime().get();
+   }
+
+   private void initializeMusicToast(MusicToastDisplayState var1) {
+      switch (var1) {
+         case PAUSE:
+         case PAUSE_AND_TOAST:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+         default:
+      }
+   }
+
+   public void setMusicToastDisplayState(MusicToastDisplayState var1) {
+      switch (var1) {
+         case PAUSE:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+            break;
+         case PAUSE_AND_TOAST:
+            this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
+            ((NowPlayingToast)this.nowPlayingToast.getToast()).showToast(this.minecraft.options);
+            break;
+         case NEVER:
+            this.nowPlayingToast = null;
+      }
+
    }
 
    class ToastInstance<T extends Toast> {

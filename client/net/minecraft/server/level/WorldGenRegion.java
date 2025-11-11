@@ -249,7 +249,7 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
+   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
       if (!this.ensureCanWrite(var1)) {
          return false;
       } else {

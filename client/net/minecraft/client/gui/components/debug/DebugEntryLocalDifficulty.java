@@ -24,7 +24,7 @@ public class DebugEntryLocalDifficulty implements DebugScreenEntry {
             float var9 = var7.getMoonBrightness(var8);
             long var10 = var4.getInhabitedTime();
             DifficultyInstance var12 = new DifficultyInstance(var7.getDifficulty(), var7.getDayTime(), var10, var9);
-            var1.addLine(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f", var12.getEffectiveDifficulty(), var12.getSpecialMultiplier()));
+            var1.addLine(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f (Day %d)", var12.getEffectiveDifficulty(), var12.getSpecialMultiplier(), var7.getDayCount()));
          }
 
       }

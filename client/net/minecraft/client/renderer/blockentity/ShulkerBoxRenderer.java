@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity, ShulkerBoxRenderState> {
@@ -89,7 +89,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model.setupAnim(var3);
    }
 
-   public void getExtents(Direction var1, float var2, Set<Vector3f> var3) {
+   public void getExtents(Direction var1, float var2, Consumer<Vector3fc> var3) {
       PoseStack var4 = new PoseStack();
       this.prepareModel(var4, var1, var2);
       this.model.root().getExtentsForGui(var4, var3);

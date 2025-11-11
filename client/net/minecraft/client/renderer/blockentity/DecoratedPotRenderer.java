@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
@@ -170,7 +170,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       var2.submitModelPart(this.rightSide, var1, var12.renderType(RenderTypes::entitySolid), var3, var4, this.materials.get(var12), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       this.neck.getExtentsForGui(var2, var1);
       this.top.getExtentsForGui(var2, var1);

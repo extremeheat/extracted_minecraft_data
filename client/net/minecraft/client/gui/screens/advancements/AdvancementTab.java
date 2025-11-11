@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.advancements.AdvancementHolder;
@@ -71,8 +72,14 @@ public class AdvancementTab {
       return this.display;
    }
 
-   public void drawTab(GuiGraphics var1, int var2, int var3, boolean var4) {
-      this.type.draw(var1, var2, var3, var4, this.index);
+   public void drawTab(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6) {
+      int var7 = var2 + this.type.getX(this.index);
+      int var8 = var3 + this.type.getY(this.index);
+      this.type.draw(var1, var7, var8, var6, this.index);
+      if (!var6 && var4 > var7 && var5 > var8 && var4 < var7 + this.type.getWidth() && var5 < var8 + this.type.getHeight()) {
+         var1.requestCursor(CursorTypes.POINTING_HAND);
+      }
+
    }
 
    public void drawIcon(GuiGraphics var1, int var2, int var3) {

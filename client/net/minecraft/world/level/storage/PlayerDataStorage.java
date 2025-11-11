@@ -66,7 +66,7 @@ public class PlayerDataStorage {
 
    private Optional<CompoundTag> load(NameAndId var1, String var2) {
       File var10002 = this.playerDir;
-      String var10003 = var1.id().toString();
+      String var10003 = String.valueOf(var1.id());
       File var3 = new File(var10002, var10003 + var2);
       if (var3.exists() && var3.isFile()) {
          try {

@@ -122,8 +122,16 @@ public class PackSelectionScreen extends Screen {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
-      this.setInitialFocus(this.search);
       this.reload();
+   }
+
+   protected void setInitialFocus() {
+      if (this.search != null) {
+         this.setInitialFocus(this.search);
+      } else {
+         super.setInitialFocus();
+      }
+
    }
 
    private void updateFilteredEntries(String var1) {

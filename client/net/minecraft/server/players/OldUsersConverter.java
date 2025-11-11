@@ -44,7 +44,7 @@ public class OldUsersConverter {
 
       for(String var4 : var2) {
          var4 = var4.trim();
-         if (!var4.startsWith("#") && var4.length() >= 1) {
+         if (!var4.startsWith("#") && !var4.isEmpty()) {
             String[] var5 = var4.split("\\|");
             var1.put(var5[0].toLowerCase(Locale.ROOT), var5);
          }

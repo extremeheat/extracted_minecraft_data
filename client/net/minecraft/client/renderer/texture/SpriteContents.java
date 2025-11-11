@@ -270,7 +270,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       private final AnimatedTexture animationInfo;
       private final Int2ObjectMap<GpuTextureView> frameTexturesByIndex;
       private final GpuBufferSlice[] spriteUbosByMip;
-      private boolean isDirty;
+      private boolean isDirty = true;
 
       AnimationState(final AnimatedTexture var2, final Int2ObjectMap<GpuTextureView> var3, final GpuBufferSlice[] var4) {
          super();

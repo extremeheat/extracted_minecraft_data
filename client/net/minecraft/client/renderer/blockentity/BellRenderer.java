@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRenderState> {
-   public static final Material BELL_RESOURCE_LOCATION;
+   public static final Material BELL_TEXTURE;
    private final MaterialSet materials;
    private final BellModel model;
 
@@ -42,8 +42,8 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
    public void submit(BellRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       BellModel.State var5 = new BellModel.State(var1.ticks, var1.shakeDirection);
       this.model.setupAnim(var5);
-      RenderType var6 = BELL_RESOURCE_LOCATION.renderType(RenderTypes::entitySolid);
-      var3.submitModel(this.model, var5, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BELL_RESOURCE_LOCATION), 0, var1.breakProgress);
+      RenderType var6 = BELL_TEXTURE.renderType(RenderTypes::entitySolid);
+      var3.submitModel(this.model, var5, var2, var6, var1.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.materials.get(BELL_TEXTURE), 0, var1.breakProgress);
    }
 
    // $FF: synthetic method
@@ -52,6 +52,6 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
    }
 
    static {
-      BELL_RESOURCE_LOCATION = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("bell/bell_body");
+      BELL_TEXTURE = Sheets.BLOCK_ENTITIES_MAPPER.defaultNamespaceApply("bell/bell_body");
    }
 }

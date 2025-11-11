@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.color.item.ItemTintSource;
@@ -15,7 +14,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.FaceBakery;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -32,7 +30,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BlockModelWrapper implements ItemModel {
@@ -50,7 +48,7 @@ public class BlockModelWrapper implements ItemModel {
    };
    private final List<ItemTintSource> tints;
    private final List<BakedQuad> quads;
-   private final Supplier<Vector3f[]> extents;
+   private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
    private final boolean animated;
    private final Function<ItemStack, RenderType> renderType;
@@ -74,16 +72,16 @@ public class BlockModelWrapper implements ItemModel {
       this.animated = var5;
    }
 
-   public static Vector3f[] computeExtents(List<BakedQuad> var0) {
+   public static Vector3fc[] computeExtents(List<BakedQuad> var0) {
       HashSet var1 = new HashSet();
 
       for(BakedQuad var3 : var0) {
-         int[] var10000 = var3.vertices();
-         Objects.requireNonNull(var1);
-         FaceBakery.extractPositions(var10000, var1::add);
+         for(int var4 = 0; var4 < 4; ++var4) {
+            var1.add(var3.position(var4));
+         }
       }
 
-      return (Vector3f[])var1.toArray((var0x) -> new Vector3f[var0x]);
+      return (Vector3fc[])var1.toArray((var0x) -> new Vector3fc[var0x]);
    }
 
    public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {

@@ -25,6 +25,14 @@ enum AdvancementTabType {
       this.max = var7;
    }
 
+   public int getWidth() {
+      return this.width;
+   }
+
+   public int getHeight() {
+      return this.height;
+   }
+
    public int getMax() {
       return this.max;
    }
@@ -40,7 +48,7 @@ enum AdvancementTabType {
          var7 = var6.middle();
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, var2 + this.getX(var5), var3 + this.getY(var5), this.width, this.height);
+      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, var2, var3, this.width, this.height);
    }
 
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {

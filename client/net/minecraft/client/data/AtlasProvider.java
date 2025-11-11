@@ -86,7 +86,7 @@ public class AtlasProvider implements DataProvider {
    }
 
    private static List<SpriteSource> blocksList() {
-      return List.of(forMapper(Sheets.BLOCKS_MAPPER), forMapper(ConduitRenderer.MAPPER), forMaterial(BellRenderer.BELL_RESOURCE_LOCATION), forMaterial(Sheets.DECORATED_POT_SIDE), forMaterial(EnchantTableRenderer.BOOK_LOCATION));
+      return List.of(forMapper(Sheets.BLOCKS_MAPPER), forMapper(ConduitRenderer.MAPPER), forMaterial(BellRenderer.BELL_TEXTURE), forMaterial(EnchantTableRenderer.BOOK_TEXTURE));
    }
 
    private static List<SpriteSource> itemsList() {

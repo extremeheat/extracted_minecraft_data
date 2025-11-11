@@ -86,6 +86,10 @@ public class CamelAi {
          super(var1);
       }
 
+      protected boolean checkExtraStartConditions(ServerLevel var1, Camel var2) {
+         return super.checkExtraStartConditions(var1, var2) && !var2.isMobControlled();
+      }
+
       protected void start(ServerLevel var1, Camel var2, long var3) {
          var2.standUpInstantly();
          super.start(var1, var2, var3);

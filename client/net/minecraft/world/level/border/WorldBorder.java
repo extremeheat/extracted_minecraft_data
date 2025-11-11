@@ -484,7 +484,7 @@ public class WorldBorder extends SavedData {
    }
 
    public static record Settings(double centerX, double centerZ, double damagePerBlock, double safeZone, int warningBlocks, int warningTime, double size, long lerpTime, double lerpTarget) {
-      public static final Settings DEFAULT = new Settings(0.0, 0.0, 0.2, 5.0, 5, 15, 5.9999968E7, 0L, 0.0);
+      public static final Settings DEFAULT = new Settings(0.0, 0.0, 0.2, 5.0, 5, 300, 5.9999968E7, 0L, 0.0);
       public static final Codec<Settings> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.doubleRange(-2.9999984E7, 2.9999984E7).fieldOf("center_x").forGetter(Settings::centerX), Codec.doubleRange(-2.9999984E7, 2.9999984E7).fieldOf("center_z").forGetter(Settings::centerZ), Codec.DOUBLE.fieldOf("damage_per_block").forGetter(Settings::damagePerBlock), Codec.DOUBLE.fieldOf("safe_zone").forGetter(Settings::safeZone), Codec.INT.fieldOf("warning_blocks").forGetter(Settings::warningBlocks), Codec.INT.fieldOf("warning_time").forGetter(Settings::warningTime), Codec.DOUBLE.fieldOf("size").forGetter(Settings::size), Codec.LONG.fieldOf("lerp_time").forGetter(Settings::lerpTime), Codec.DOUBLE.fieldOf("lerp_target").forGetter(Settings::lerpTarget)).apply(var0, Settings::new));
 
       public Settings(WorldBorder var1) {

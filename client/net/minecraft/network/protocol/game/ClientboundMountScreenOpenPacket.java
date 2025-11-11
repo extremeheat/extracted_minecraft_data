@@ -5,20 +5,20 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public class ClientboundHorseScreenOpenPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundHorseScreenOpenPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundHorseScreenOpenPacket>codec(ClientboundHorseScreenOpenPacket::write, ClientboundHorseScreenOpenPacket::new);
+public class ClientboundMountScreenOpenPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundMountScreenOpenPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundMountScreenOpenPacket>codec(ClientboundMountScreenOpenPacket::write, ClientboundMountScreenOpenPacket::new);
    private final int containerId;
    private final int inventoryColumns;
    private final int entityId;
 
-   public ClientboundHorseScreenOpenPacket(int var1, int var2, int var3) {
+   public ClientboundMountScreenOpenPacket(int var1, int var2, int var3) {
       super();
       this.containerId = var1;
       this.inventoryColumns = var2;
       this.entityId = var3;
    }
 
-   private ClientboundHorseScreenOpenPacket(FriendlyByteBuf var1) {
+   private ClientboundMountScreenOpenPacket(FriendlyByteBuf var1) {
       super();
       this.containerId = var1.readContainerId();
       this.inventoryColumns = var1.readVarInt();
@@ -31,12 +31,12 @@ public class ClientboundHorseScreenOpenPacket implements Packet<ClientGamePacket
       var1.writeInt(this.entityId);
    }
 
-   public PacketType<ClientboundHorseScreenOpenPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_HORSE_SCREEN_OPEN;
+   public PacketType<ClientboundMountScreenOpenPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_MOUNT_SCREEN_OPEN;
    }
 
    public void handle(ClientGamePacketListener var1) {
-      var1.handleHorseScreenOpen(this);
+      var1.handleMountScreenOpen(this);
    }
 
    public int getContainerId() {

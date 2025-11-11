@@ -98,8 +98,16 @@ public class ZombieHorse extends AbstractHorse {
       return SoundEvents.ZOMBIE_HORSE_ANGRY;
    }
 
+   protected SoundEvent getEatingSound() {
+      return SoundEvents.ZOMBIE_HORSE_EAT;
+   }
+
    public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.ZOMBIE_HORSE.create(var1, EntitySpawnReason.BREEDING);
+      return null;
+   }
+
+   public boolean canFallInLove() {
+      return false;
    }
 
    protected void addBehaviourGoals() {

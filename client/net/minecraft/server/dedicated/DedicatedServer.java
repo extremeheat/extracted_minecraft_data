@@ -513,10 +513,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    }
 
-   public boolean hasGui() {
-      return this.gui != null;
-   }
-
    public int spawnProtectionRadius() {
       return (Integer)this.getProperties().spawnProtection.get();
    }

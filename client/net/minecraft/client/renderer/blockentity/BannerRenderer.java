@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.client.model.BannerFlagModel;
 import net.minecraft.client.model.BannerModel;
 import net.minecraft.client.model.Model;
@@ -32,7 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, BannerRenderState> {
@@ -133,7 +133,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
       var2.submitModel(var5, var6, var1, var7.renderType(RenderTypes::entityNoOutline), var3, var4, var10, var0.get(var7), 0, var9);
    }
 
-   public void getExtents(Set<Vector3f> var1) {
+   public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
       var2.translate(0.5F, 0.0F, 0.5F);
       var2.scale(0.6666667F, -0.6666667F, -0.6666667F);

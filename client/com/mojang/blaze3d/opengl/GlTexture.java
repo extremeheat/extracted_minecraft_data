@@ -2,14 +2,17 @@ package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import org.jspecify.annotations.Nullable;
 
 public class GlTexture extends GpuTexture {
+   private static final int EMPTY = -1;
    protected final int id;
-   private final Int2IntMap fboCache = new Int2IntOpenHashMap();
+   private int firstFboId = -1;
+   private int firstFboDepthId = -1;
+   private @Nullable Int2IntMap fboCache;
    protected boolean closed;
    private int views;
 
@@ -30,11 +33,17 @@ public class GlTexture extends GpuTexture {
 
    private void destroyImmediately() {
       GlStateManager._deleteTexture(this.id);
-      IntIterator var1 = this.fboCache.values().iterator();
+      if (this.firstFboId != -1) {
+         GlStateManager._glDeleteFramebuffers(this.firstFboId);
+      }
 
-      while(var1.hasNext()) {
-         int var2 = (Integer)var1.next();
-         GlStateManager._glDeleteFramebuffers(var2);
+      if (this.fboCache != null) {
+         IntIterator var1 = this.fboCache.values().iterator();
+
+         while(var1.hasNext()) {
+            int var2 = (Integer)var1.next();
+            GlStateManager._glDeleteFramebuffers(var2);
+         }
       }
 
    }
@@ -45,11 +54,25 @@ public class GlTexture extends GpuTexture {
 
    public int getFbo(DirectStateAccess var1, @Nullable GpuTexture var2) {
       int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
-      return this.fboCache.computeIfAbsent(var3, (var3x) -> {
-         int var4 = var1.createFrameBufferObject();
-         var1.bindFrameBufferTextures(var4, this.id, var3, 0, 0);
-         return var4;
-      });
+      if (this.firstFboDepthId == var3) {
+         return this.firstFboId;
+      } else if (this.firstFboId == -1) {
+         this.firstFboId = this.createFbo(var1, var3);
+         this.firstFboDepthId = var3;
+         return this.firstFboId;
+      } else {
+         if (this.fboCache == null) {
+            this.fboCache = new Int2IntArrayMap();
+         }
+
+         return this.fboCache.computeIfAbsent(var3, (var2x) -> this.createFbo(var1, var2x));
+      }
+   }
+
+   private int createFbo(DirectStateAccess var1, int var2) {
+      int var3 = var1.createFrameBufferObject();
+      var1.bindFrameBufferTextures(var3, this.id, var2, 0, 0);
+      return var3;
    }
 
    public int glId() {

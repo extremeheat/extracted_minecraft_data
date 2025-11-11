@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -26,10 +27,11 @@ public class ChargeAttack extends Behavior<Animal> {
    private final float knockbackForce;
    private final double maxTargetDetectionDistance;
    private final double maxChargeDistance;
+   private final SoundEvent chargeSound;
    private Vec3 chargeVelocityVector;
    private Vec3 startPosition;
 
-   public ChargeAttack(int var1, TargetingConditions var2, float var3, float var4, double var5, double var7) {
+   public ChargeAttack(int var1, TargetingConditions var2, float var3, float var4, double var5, double var7, SoundEvent var9) {
       super(ImmutableMap.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT));
       this.timeBetweenAttacks = var1;
       this.chargeTargeting = var2;
@@ -37,6 +39,7 @@ public class ChargeAttack extends Behavior<Animal> {
       this.knockbackForce = var4;
       this.maxChargeDistance = var5;
       this.maxTargetDetectionDistance = var7;
+      this.chargeSound = var9;
       this.chargeVelocityVector = Vec3.ZERO;
       this.startPosition = Vec3.ZERO;
    }
@@ -77,6 +80,10 @@ public class ChargeAttack extends Behavior<Animal> {
       LivingEntity var6 = (LivingEntity)var5.getMemory(MemoryModuleType.ATTACK_TARGET).get();
       Vec3 var7 = var6.position().subtract(var2.position()).normalize();
       this.chargeVelocityVector = var7.scale((double)this.speed);
+      if (this.canStillUse(var1, var2, var3)) {
+         var2.playSound(this.chargeSound);
+      }
+
    }
 
    protected void tick(ServerLevel var1, Animal var2, long var3) {
