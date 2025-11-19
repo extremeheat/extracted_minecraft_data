@@ -12,9 +12,9 @@ public class SnowflakeParticle extends SingleQuadParticle {
       this.gravity = 0.225F;
       this.friction = 1.0F;
       this.sprites = var14;
-      this.xd = var8 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
-      this.yd = var10 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
-      this.zd = var12 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
+      this.xd = var8 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
+      this.yd = var10 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
+      this.zd = var12 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
       this.quadSize = 0.1F * (this.random.nextFloat() * this.random.nextFloat() * 1.0F + 1.0F);
       this.lifetime = (int)(16.0 / ((double)this.random.nextFloat() * 0.8 + 0.2)) + 2;
       this.setSpriteFromAge(var14);

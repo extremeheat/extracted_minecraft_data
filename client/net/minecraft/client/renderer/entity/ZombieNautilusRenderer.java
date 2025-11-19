@@ -4,11 +4,11 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.NautilusArmorModel;
-import net.minecraft.client.model.NautilusModel;
-import net.minecraft.client.model.NautilusSaddleModel;
-import net.minecraft.client.model.ZombieNautilusCoralModel;
+import net.minecraft.client.model.animal.nautilus.NautilusArmorModel;
+import net.minecraft.client.model.animal.nautilus.NautilusModel;
+import net.minecraft.client.model.animal.nautilus.NautilusSaddleModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.nautilus.ZombieNautilusCoralModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -19,8 +19,8 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.ZombieNautilusVariant;
 import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilusVariant;
 
 public class ZombieNautilusRenderer extends MobRenderer<ZombieNautilus, NautilusRenderState, NautilusModel> {
    private final Map<ZombieNautilusVariant.ModelType, NautilusModel> models;

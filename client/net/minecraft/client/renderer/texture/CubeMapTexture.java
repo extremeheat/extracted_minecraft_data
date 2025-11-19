@@ -55,7 +55,7 @@ public class CubeMapTexture extends ReloadableTexture {
             }
          }
 
-         var15 = new TextureContents(var6, new TextureMetadataSection(true, false, MipmapStrategy.MEAN));
+         var15 = new TextureContents(var6, new TextureMetadataSection(true, false, MipmapStrategy.MEAN, 0.0F));
       } catch (Throwable var14) {
          if (var3 != null) {
             try {

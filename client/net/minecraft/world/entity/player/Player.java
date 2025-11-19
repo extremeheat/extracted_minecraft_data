@@ -76,17 +76,17 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
-import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.animal.parrot.Parrot;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
@@ -139,7 +139,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_LEFT;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_RIGHT;
-   public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private static final short DEFAULT_SLEEP_TIMER = 0;
    private static final float DEFAULT_EXPERIENCE_PROGRESS = 0.0F;
    private static final int DEFAULT_EXPERIENCE_LEVEL = 0;
@@ -155,8 +154,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public AbstractContainerMenu containerMenu;
    protected FoodData foodData = new FoodData();
    protected int jumpTriggerTime;
-   private boolean clientLoaded = false;
-   protected int clientLoadedTimeoutTimer = 60;
    public int takeXpDelay;
    private int sleepCounter = 0;
    protected boolean wasUnderwater;
@@ -1887,25 +1884,6 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
    }
 
-   public boolean hasClientLoaded() {
-      return this.clientLoaded || this.clientLoadedTimeoutTimer <= 0;
-   }
-
-   public void tickClientLoadTimeout() {
-      if (!this.clientLoaded) {
-         --this.clientLoadedTimeoutTimer;
-      }
-
-   }
-
-   public void setClientLoaded(boolean var1) {
-      this.clientLoaded = var1;
-      if (!this.clientLoaded) {
-         this.clientLoadedTimeoutTimer = 60;
-      }
-
-   }
-
    public boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2) {
       return var1.isOwnContainer(this);
    }
@@ -1922,16 +1900,21 @@ public abstract class Player extends Avatar implements ContainerUser {
       return this.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
    }
 
-   public boolean canInteractWithEntity(Entity var1, double var2) {
-      return var1.isRemoved() ? false : this.canInteractWithEntity(var1.getBoundingBox(), var2);
+   public boolean isWithinEntityInteractionRange(Entity var1, double var2) {
+      return var1.isRemoved() ? false : this.isWithinEntityInteractionRange(var1.getBoundingBox(), var2);
    }
 
-   public boolean canInteractWithEntity(AABB var1, double var2) {
+   public boolean isWithinEntityInteractionRange(AABB var1, double var2) {
       double var4 = this.entityInteractionRange() + var2;
-      return var1.distanceToSqr(this.getEyePosition()) < var4 * var4;
+      double var6 = var1.distanceToSqr(this.getEyePosition());
+      return var6 < var4 * var4;
    }
 
-   public boolean canInteractWithBlock(BlockPos var1, double var2) {
+   public boolean isWithinAttackRange(AABB var1, double var2) {
+      return this.entityAttackRange().isInRange(this, var1, var2);
+   }
+
+   public boolean isWithinBlockInteractionRange(BlockPos var1, double var2) {
       double var4 = this.blockInteractionRange() + var2;
       return (new AABB(var1)).distanceToSqr(this.getEyePosition()) < var4 * var4;
    }
@@ -1939,11 +1922,15 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void setIgnoreFallDamageFromCurrentImpulse(boolean var1) {
       this.ignoreFallDamageFromCurrentImpulse = var1;
       if (var1) {
-         this.currentImpulseContextResetGraceTime = 40;
+         this.applyPostImpulseGraceTime(40);
       } else {
          this.currentImpulseContextResetGraceTime = 0;
       }
 
+   }
+
+   public void applyPostImpulseGraceTime(int var1) {
+      this.currentImpulseContextResetGraceTime = Math.max(this.currentImpulseContextResetGraceTime, var1);
    }
 
    public boolean isIgnoringFallDamageFromCurrentImpulse() {
@@ -1955,6 +1942,10 @@ public abstract class Player extends Avatar implements ContainerUser {
          this.resetCurrentImpulseContext();
       }
 
+   }
+
+   public boolean isInPostImpulseGraceTime() {
+      return this.currentImpulseContextResetGraceTime > 0;
    }
 
    public void resetCurrentImpulseContext() {

@@ -4,7 +4,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.monster.Parched;
+import net.minecraft.world.entity.monster.skeleton.Parched;
 
 public class ParchedRenderer extends AbstractSkeletonRenderer<Parched, SkeletonRenderState> {
    private static final Identifier PARCHED_SKELETON_LOCATION = Identifier.withDefaultNamespace("textures/entity/skeleton/parched.png");

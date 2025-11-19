@@ -88,25 +88,25 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
 
    }
 
-   public double compute(double var1, EquipmentSlot var3) {
-      double var4 = var1;
+   public double compute(Holder<Attribute> var1, double var2, EquipmentSlot var4) {
+      double var5 = var2;
 
-      for(Entry var7 : this.modifiers) {
-         if (var7.slot.test(var3)) {
-            double var8 = var7.modifier.amount();
+      for(Entry var8 : this.modifiers) {
+         if (var8.slot.test(var4) && var8.attribute == var1) {
+            double var9 = var8.modifier.amount();
             double var10001;
-            switch (var7.modifier.operation()) {
-               case ADD_VALUE -> var10001 = var8;
-               case ADD_MULTIPLIED_BASE -> var10001 = var8 * var1;
-               case ADD_MULTIPLIED_TOTAL -> var10001 = var8 * var4;
+            switch (var8.modifier.operation()) {
+               case ADD_VALUE -> var10001 = var9;
+               case ADD_MULTIPLIED_BASE -> var10001 = var9 * var2;
+               case ADD_MULTIPLIED_TOTAL -> var10001 = var9 * var5;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var4 += var10001;
+            var5 += var10001;
          }
       }
 
-      return var4;
+      return var5;
    }
 
    static {

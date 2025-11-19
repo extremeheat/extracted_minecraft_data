@@ -150,6 +150,7 @@ public interface ActiveTextCollector {
       private final int testX;
       private final int testY;
       private Parameters defaultParameters;
+      private boolean includeInsertions;
       private @Nullable Style result;
       private final Consumer<Style> styleScanner;
 
@@ -157,7 +158,7 @@ public interface ActiveTextCollector {
          super();
          this.defaultParameters = INITIAL;
          this.styleScanner = (var1x) -> {
-            if (var1x.getClickEvent() != null) {
+            if (var1x.getClickEvent() != null || this.includeInsertions && var1x.getInsertion() != null) {
                this.result = var1x;
             }
 
@@ -186,6 +187,11 @@ public interface ActiveTextCollector {
          Objects.requireNonNull(this.font);
          byte var9 = 9;
          this.defaultScrollingHelper(var1, var2, var3, var4, var5, var6, var8, var9, var7);
+      }
+
+      public ClickableStyleFinder includeInsertions(boolean var1) {
+         this.includeInsertions = var1;
+         return this;
       }
 
       public @Nullable Style result() {

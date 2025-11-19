@@ -9,7 +9,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.animal.ChickenVariants;
+import net.minecraft.world.entity.animal.chicken.ChickenVariants;
 import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;

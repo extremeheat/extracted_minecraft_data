@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -37,6 +38,7 @@ public class LightTexture implements AutoCloseable {
    private final GameRenderer renderer;
    private final Minecraft minecraft;
    private final MappableRingBuffer ubo;
+   private final RandomSource randomSource = RandomSource.create();
 
    public LightTexture(GameRenderer var1, Minecraft var2) {
       super();
@@ -60,7 +62,7 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void tick() {
-      this.blockLightRedFlicker += (float)((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
+      this.blockLightRedFlicker += (this.randomSource.nextFloat() - this.randomSource.nextFloat()) * this.randomSource.nextFloat() * this.randomSource.nextFloat() * 0.1F;
       this.blockLightRedFlicker *= 0.9F;
       this.updateLightTexture = true;
    }

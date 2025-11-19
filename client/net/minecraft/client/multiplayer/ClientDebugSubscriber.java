@@ -88,12 +88,15 @@ public class ClientDebugSubscriber {
 
    private void onSubscriptionsChanged(Set<DebugSubscription<?>> var1) {
       this.valuesBySubscription.keySet().retainAll(var1);
+      this.initializeSubscriptions(var1);
+      this.connection.send(new ServerboundDebugSubscriptionRequestPacket(var1));
+   }
 
+   private void initializeSubscriptions(Set<DebugSubscription<?>> var1) {
       for(DebugSubscription var3 : var1) {
          this.valuesBySubscription.computeIfAbsent(var3, (var0) -> new ValueMaps());
       }
 
-      this.connection.send(new ServerboundDebugSubscriptionRequestPacket(var1));
    }
 
    <V> @Nullable ValueMaps<V> getValueMaps(DebugSubscription<V> var1) {
@@ -196,6 +199,7 @@ public class ClientDebugSubscriber {
 
    public void dropLevel() {
       this.valuesBySubscription.clear();
+      this.initializeSubscriptions(this.remoteSubscriptions);
    }
 
    public void dropChunk(ChunkPos var1) {

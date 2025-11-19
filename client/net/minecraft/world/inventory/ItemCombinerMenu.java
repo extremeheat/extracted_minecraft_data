@@ -93,7 +93,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    public boolean stillValid(Player var1) {
-      return (Boolean)this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0), true);
+      return (Boolean)this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.isWithinBlockInteractionRange(var3, 4.0), true);
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {

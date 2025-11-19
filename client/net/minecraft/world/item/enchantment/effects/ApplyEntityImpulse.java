@@ -4,12 +4,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record ApplyEntityImpulse(Vec3 direction, Vec3 coordinateScale, LevelBasedValue magnitude) implements EnchantmentEntityEffect {
    public static final MapCodec<ApplyEntityImpulse> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3.CODEC.fieldOf("direction").forGetter(ApplyEntityImpulse::direction), Vec3.CODEC.fieldOf("coordinate_scale").forGetter(ApplyEntityImpulse::coordinateScale), LevelBasedValue.CODEC.fieldOf("magnitude").forGetter(ApplyEntityImpulse::magnitude)).apply(var0, ApplyEntityImpulse::new));
+   private static final int POST_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 10;
 
    public ApplyEntityImpulse(Vec3 var1, Vec3 var2, LevelBasedValue var3) {
       super();
@@ -24,6 +26,10 @@ public record ApplyEntityImpulse(Vec3 direction, Vec3 coordinateScale, LevelBase
       var4.addDeltaMovement(var7);
       var4.hurtMarked = true;
       var4.needsSync = true;
+      if (var4 instanceof Player var8) {
+         var8.applyPostImpulseGraceTime(10);
+      }
+
    }
 
    public MapCodec<ApplyEntityImpulse> codec() {

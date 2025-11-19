@@ -97,11 +97,12 @@ import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.Weapon;
@@ -265,7 +266,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.equipment = this.createEquipment();
       this.blocksBuilding = true;
       this.reapplyPosition();
-      this.setYRot((float)(Math.random() * 6.2831854820251465));
+      this.setYRot(this.random.nextFloat() * 6.2831855F);
       this.yHeadRot = this.getYRot();
       this.brain = this.makeBrain(EMPTY_BRAIN);
    }
@@ -1568,8 +1569,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.needsSync = true;
 
          Vec3 var7;
-         for(var7 = this.getDeltaMovement(); var3 * var3 + var5 * var5 < 9.999999747378752E-6; var5 = (Math.random() - Math.random()) * 0.01) {
-            var3 = (Math.random() - Math.random()) * 0.01;
+         for(var7 = this.getDeltaMovement(); var3 * var3 + var5 * var5 < 9.999999747378752E-6; var5 = (this.random.nextDouble() - this.random.nextDouble()) * 0.01) {
+            var3 = (this.random.nextDouble() - this.random.nextDouble()) * 0.01;
          }
 
          Vec3 var8 = (new Vec3(var3, 0.0, var5)).normalize().scale(var1);
@@ -2075,6 +2076,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public ItemStack getWeaponItem() {
       return this.getMainHandItem();
+   }
+
+   public AttackRange entityAttackRange() {
+      AttackRange var1 = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
+      return var1 != null ? var1 : AttackRange.defaultFor(this);
+   }
+
+   public ItemStack getActiveItem() {
+      return this.isUsingItem() ? this.getUseItem() : this.getMainHandItem();
    }
 
    public boolean isHolding(Item var1) {
@@ -2692,8 +2702,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public int stabbedEntities() {
-      return this.recentKineticEnemies == null ? 0 : this.recentKineticEnemies.size();
+   public int stabbedEntities(Predicate<Entity> var1) {
+      return this.recentKineticEnemies == null ? 0 : (int)this.recentKineticEnemies.keySet().stream().filter(var1).count();
    }
 
    public boolean stabAttack(EquipmentSlot var1, Entity var2, float var3, boolean var4, boolean var5, boolean var6) {
@@ -3355,7 +3365,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    public void spawnItemParticles(ItemStack var1, int var2) {
       for(int var3 = 0; var3 < var2; ++var3) {
-         Vec3 var4 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, Math.random() * 0.1 + 0.1, 0.0);
+         Vec3 var4 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, (double)this.random.nextFloat() * 0.1 + 0.1, 0.0);
          var4 = var4.xRot(-this.getXRot() * 0.017453292F);
          var4 = var4.yRot(-this.getYRot() * 0.017453292F);
          double var5 = (double)(-this.random.nextFloat()) * 0.6 - 0.3;

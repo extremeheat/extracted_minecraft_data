@@ -101,6 +101,14 @@ public class ItemModelGenerators {
       this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var4, BLANK_LAYER, var3));
    }
 
+   private void generateItemWithTintedBaseLayer(Item var1, int var2) {
+      Identifier var3 = TextureMapping.getItemTexture(var1);
+      Identifier var4 = TextureMapping.getItemTexture(var1, "_overlay");
+      Identifier var5 = ModelLocationUtils.getModelLocation(var1);
+      ModelTemplates.TWO_LAYERED_ITEM.create(var5, TextureMapping.layered(var3, var4), this.modelOutput);
+      this.itemModelOutput.accept(var1, ItemModelUtils.tintedModel(var5, new Dye(var2)));
+   }
+
    private List<RangeSelectItemModel.Entry> createCompassModels(Item var1) {
       ArrayList var2 = new ArrayList();
       ItemModel.Unbaked var3 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_16", ModelTemplates.FLAT_ITEM));
@@ -274,7 +282,7 @@ public class ItemModelGenerators {
    private void generateSpear(Item var1) {
       ItemModel.Unbaked var2 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, ModelTemplates.FLAT_ITEM));
       ItemModel.Unbaked var3 = ItemModelUtils.plainModel(ModelTemplates.SPEAR_IN_HAND.create(var1, TextureMapping.layer0(TextureMapping.getItemTexture(var1, "_in_hand")), this.modelOutput));
-      this.itemModelOutput.accept(var1, createFlatModelDispatch(var2, var3), new ClientItem.Properties(true, false, 1.9F));
+      this.itemModelOutput.accept(var1, createFlatModelDispatch(var2, var3), new ClientItem.Properties(true, false, 1.95F));
    }
 
    private void addPotionTint(Item var1, Identifier var2) {
@@ -614,7 +622,7 @@ public class ItemModelGenerators {
       this.generateTrimmableItem(Items.NETHERITE_CHESTPLATE, EquipmentAssets.NETHERITE, TRIM_PREFIX_CHESTPLATE, false);
       this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, TRIM_PREFIX_LEGGINGS, false);
       this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, TRIM_PREFIX_BOOTS, false);
-      this.generateDyedItem(Items.LEATHER_HORSE_ARMOR, -6265536);
+      this.generateItemWithTintedBaseLayer(Items.LEATHER_HORSE_ARMOR, -6265536);
       this.generateFlatItem(Items.ANGLER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARCHER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARMS_UP_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);

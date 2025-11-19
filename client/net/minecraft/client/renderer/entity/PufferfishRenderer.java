@@ -2,9 +2,9 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PufferfishBigModel;
-import net.minecraft.client.model.PufferfishMidModel;
-import net.minecraft.client.model.PufferfishSmallModel;
+import net.minecraft.client.model.animal.fish.PufferfishBigModel;
+import net.minecraft.client.model.animal.fish.PufferfishMidModel;
+import net.minecraft.client.model.animal.fish.PufferfishSmallModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.entity.state.PufferfishRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
 
 public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRenderState, EntityModel<EntityRenderState>> {
    private static final Identifier PUFFER_LOCATION = Identifier.withDefaultNamespace("textures/entity/fish/pufferfish.png");

@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.ArmadilloModel;
+import net.minecraft.client.model.animal.armadillo.ArmadilloModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.ArmadilloRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;

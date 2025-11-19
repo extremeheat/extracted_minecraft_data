@@ -15,6 +15,8 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceList;
@@ -62,44 +64,40 @@ public class SpriteLoader {
             }
          }
 
-         int var21 = Math.min(var6, var7);
-         int var22 = Mth.log2(var21);
-         int var23;
-         if (var22 < var2) {
-            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, var2, var22, var21});
-            var23 = var22;
+         int var23 = Math.min(var6, var7);
+         int var24 = Mth.log2(var23);
+         int var25;
+         if (var24 < var2) {
+            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, var2, var24, var23});
+            var25 = var24;
          } else {
-            var23 = var2;
+            var25 = var2;
          }
 
-         Stitcher var11 = new Stitcher(var5, var5, var23, var23 == 0 ? 0 : (Integer)Minecraft.getInstance().options.maxAnisotropyBit().get());
+         Options var11 = Minecraft.getInstance().options;
+         int var12 = var25 != 0 && var11.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC ? (Integer)var11.maxAnisotropyBit().get() : 0;
+         Stitcher var13 = new Stitcher(var5, var5, var25, var12);
 
-         for(SpriteContents var13 : var1) {
-            var11.registerSprite(var13);
+         for(SpriteContents var15 : var1) {
+            var13.registerSprite(var15);
          }
 
          try {
-            var11.stitch();
-         } catch (StitcherException var19) {
-            CrashReport var25 = CrashReport.forThrowable(var19, "Stitching");
-            CrashReportCategory var14 = var25.addCategory("Stitcher");
-            var14.setDetail("Sprites", var19.getAllSprites().stream().map((var0) -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height())).collect(Collectors.joining(",")));
-            var14.setDetail("Max Texture Size", var5);
-            throw new ReportedException(var25);
+            var13.stitch();
+         } catch (StitcherException var21) {
+            CrashReport var27 = CrashReport.forThrowable(var21, "Stitching");
+            CrashReportCategory var16 = var27.addCategory("Stitcher");
+            var16.setDetail("Sprites", var21.getAllSprites().stream().map((var0) -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height())).collect(Collectors.joining(",")));
+            var16.setDetail("Max Texture Size", var5);
+            throw new ReportedException(var27);
          }
 
-         int var24 = Math.max(var11.getWidth(), this.minWidth);
-         int var26 = Math.max(var11.getHeight(), this.minHeight);
-         Map var27 = this.getStitchedSprites(var11, var24, var26);
-         TextureAtlasSprite var15 = (TextureAtlasSprite)var27.get(MissingTextureAtlasSprite.getLocation());
-         CompletableFuture var16;
-         if (var23 > 0) {
-            var16 = CompletableFuture.runAsync(() -> var27.values().forEach((var1) -> var1.contents().increaseMipLevel(var23)), var3);
-         } else {
-            var16 = CompletableFuture.completedFuture((Object)null);
-         }
-
-         return new Preparations(var24, var26, var23, var15, var27, var16);
+         int var26 = Math.max(var13.getWidth(), this.minWidth);
+         int var28 = Math.max(var13.getHeight(), this.minHeight);
+         Map var29 = this.getStitchedSprites(var13, var26, var28);
+         TextureAtlasSprite var17 = (TextureAtlasSprite)var29.get(MissingTextureAtlasSprite.getLocation());
+         CompletableFuture var18 = CompletableFuture.runAsync(() -> var29.values().forEach((var1) -> var1.contents().increaseMipLevel(var25)), var3);
+         return new Preparations(var26, var28, var25, var17, var29, var18);
       }
    }
 

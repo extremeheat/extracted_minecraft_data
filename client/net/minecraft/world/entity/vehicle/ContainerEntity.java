@@ -169,6 +169,6 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default boolean isChestVehicleStillValid(Player var1) {
-      return !this.isRemoved() && var1.canInteractWithEntity(this.getBoundingBox(), 4.0);
+      return !this.isRemoved() && var1.isWithinEntityInteractionRange(this.getBoundingBox(), 4.0);
    }
 }

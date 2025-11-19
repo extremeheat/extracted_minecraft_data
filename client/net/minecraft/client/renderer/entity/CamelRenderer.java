@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.CamelModel;
-import net.minecraft.client.model.CamelSaddleModel;
+import net.minecraft.client.model.animal.camel.CamelModel;
+import net.minecraft.client.model.animal.camel.CamelSaddleModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.CamelRenderState;

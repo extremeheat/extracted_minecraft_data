@@ -27,7 +27,7 @@ public class EquipmentAssetProvider implements DataProvider {
    }
 
    private static void bootstrap(BiConsumer<ResourceKey<EquipmentAsset>, EquipmentClientInfo> var0) {
-      var0.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true)).build());
+      var0.accept(EquipmentAssets.LEATHER, EquipmentClientInfo.builder().addHumanoidLayers(Identifier.withDefaultNamespace("leather"), true).addHumanoidLayers(Identifier.withDefaultNamespace("leather_overlay"), false).addLayers(EquipmentClientInfo.LayerType.HORSE_BODY, EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather"), true), EquipmentClientInfo.Layer.leatherDyeable(Identifier.withDefaultNamespace("leather_overlay"), false)).build());
       var0.accept(EquipmentAssets.CHAINMAIL, onlyHumanoid("chainmail"));
       var0.accept(EquipmentAssets.COPPER, humanoidAndMountArmor("copper"));
       var0.accept(EquipmentAssets.IRON, humanoidAndMountArmor("iron"));

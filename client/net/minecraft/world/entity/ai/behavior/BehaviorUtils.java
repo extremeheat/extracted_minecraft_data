@@ -104,7 +104,7 @@ public class BehaviorUtils {
    public static boolean isWithinAttackRange(Mob var0, LivingEntity var1, int var2) {
       Item var4 = var0.getMainHandItem().getItem();
       if (var4 instanceof ProjectileWeaponItem var3) {
-         if (var0.canFireProjectileWeapon(var3)) {
+         if (var0.canUseNonMeleeWeapon(var0.getMainHandItem())) {
             int var5 = var3.getDefaultProjectileRange() - var2;
             return var0.closerThan(var1, (double)var5);
          }

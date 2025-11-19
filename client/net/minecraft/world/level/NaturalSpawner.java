@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -313,7 +314,7 @@ public final class NaturalSpawner {
    public static void spawnMobsForChunkGeneration(ServerLevelAccessor var0, Holder<Biome> var1, ChunkPos var2, RandomSource var3) {
       MobSpawnSettings var4 = ((Biome)var1.value()).getMobSettings();
       WeightedList var5 = var4.getMobs(MobCategory.CREATURE);
-      if (!var5.isEmpty()) {
+      if (!var5.isEmpty() && (Boolean)var0.getLevel().getGameRules().get(GameRules.SPAWN_MOBS)) {
          int var6 = var2.getMinBlockX();
          int var7 = var2.getMinBlockZ();
 

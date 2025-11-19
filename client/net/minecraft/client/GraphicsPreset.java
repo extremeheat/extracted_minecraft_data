@@ -1,9 +1,13 @@
 package net.minecraft.client;
 
+import com.mojang.blaze3d.GraphicsWorkarounds;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.server.level.ParticleStatus;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public enum GraphicsPreset implements StringRepresentable {
@@ -31,9 +35,10 @@ public enum GraphicsPreset implements StringRepresentable {
 
    public void apply(Minecraft var1) {
       OptionsSubScreen var2 = var1.screen instanceof OptionsSubScreen ? (OptionsSubScreen)var1.screen : null;
+      GpuDevice var3 = RenderSystem.getDevice();
       switch (this.ordinal()) {
          case 0:
-            boolean var5 = true;
+            boolean var6 = true;
             this.set(var2, var1.options.biomeBlendRadius(), 1);
             this.set(var2, var1.options.renderDistance(), 8);
             this.set(var2, var1.options.prioritizeChunkUpdates(), PrioritizeChunkUpdates.NONE);
@@ -49,10 +54,11 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.cutoutLeaves(), true);
             this.set(var2, var1.options.improvedTransparency(), false);
             this.set(var2, var1.options.weatherRadius(), 5);
-            this.set(var2, var1.options.maxAnisotropyBit(), 0);
+            this.set(var2, var1.options.maxAnisotropyBit(), 1);
+            this.set(var2, var1.options.textureFiltering(), TextureFilteringMethod.NONE);
             break;
          case 1:
-            boolean var4 = true;
+            boolean var5 = true;
             this.set(var2, var1.options.biomeBlendRadius(), 2);
             this.set(var2, var1.options.renderDistance(), 16);
             this.set(var2, var1.options.prioritizeChunkUpdates(), PrioritizeChunkUpdates.PLAYER_AFFECTED);
@@ -69,9 +75,10 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.improvedTransparency(), false);
             this.set(var2, var1.options.weatherRadius(), 10);
             this.set(var2, var1.options.maxAnisotropyBit(), 1);
+            this.set(var2, var1.options.textureFiltering(), TextureFilteringMethod.RGSS);
             break;
          case 2:
-            boolean var3 = true;
+            boolean var4 = true;
             this.set(var2, var1.options.biomeBlendRadius(), 2);
             this.set(var2, var1.options.renderDistance(), 32);
             this.set(var2, var1.options.prioritizeChunkUpdates(), PrioritizeChunkUpdates.PLAYER_AFFECTED);
@@ -85,9 +92,14 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.menuBackgroundBlurriness(), 5);
             this.set(var2, var1.options.cloudRange(), 128);
             this.set(var2, var1.options.cutoutLeaves(), true);
-            this.set(var2, var1.options.improvedTransparency(), true);
+            this.set(var2, var1.options.improvedTransparency(), Util.getPlatform() != Util.OS.OSX);
             this.set(var2, var1.options.weatherRadius(), 10);
             this.set(var2, var1.options.maxAnisotropyBit(), 2);
+            if (GraphicsWorkarounds.get(var3).isAmd()) {
+               this.set(var2, var1.options.textureFiltering(), TextureFilteringMethod.RGSS);
+            } else {
+               this.set(var2, var1.options.textureFiltering(), TextureFilteringMethod.ANISOTROPIC);
+            }
       }
 
    }

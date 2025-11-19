@@ -284,9 +284,9 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, String> STRING_UTF8 = stringUtf8(32767);
-   StreamCodec<ByteBuf, Tag> TAG = tagCodec(() -> NbtAccounter.create(2097152L));
+   StreamCodec<ByteBuf, Tag> TAG = tagCodec(NbtAccounter::defaultQuota);
    StreamCodec<ByteBuf, Tag> TRUSTED_TAG = tagCodec(NbtAccounter::unlimitedHeap);
-   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(() -> NbtAccounter.create(2097152L));
+   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(NbtAccounter::defaultQuota);
    StreamCodec<ByteBuf, CompoundTag> TRUSTED_COMPOUND_TAG = compoundTagCodec(NbtAccounter::unlimitedHeap);
    StreamCodec<ByteBuf, Optional<CompoundTag>> OPTIONAL_COMPOUND_TAG = new StreamCodec<ByteBuf, Optional<CompoundTag>>() {
       public Optional<CompoundTag> decode(ByteBuf var1) {
@@ -365,11 +365,6 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, PropertyMap> GAME_PROFILE_PROPERTIES = new StreamCodec<ByteBuf, PropertyMap>() {
-      private static final int MAX_PROPERTY_NAME_LENGTH = 64;
-      private static final int MAX_PROPERTY_VALUE_LENGTH = 32767;
-      private static final int MAX_PROPERTY_SIGNATURE_LENGTH = 1024;
-      private static final int MAX_PROPERTIES = 16;
-
       public PropertyMap decode(ByteBuf var1) {
          int var2 = ByteBufCodecs.readCount(var1, 16);
          ImmutableMultimap.Builder var3 = ImmutableMultimap.builder();
@@ -546,7 +541,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0) {
-      return fromCodec(var0, (Supplier)(() -> NbtAccounter.create(2097152L)));
+      return fromCodec(var0, NbtAccounter::defaultQuota);
    }
 
    static <T, B extends ByteBuf, V> StreamCodec.CodecOperation<B, T, V> fromCodec(DynamicOps<T> var0, Codec<V> var1) {
@@ -582,7 +577,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(Codec<T> var0) {
-      return fromCodecWithRegistries(var0, () -> NbtAccounter.create(2097152L));
+      return fromCodecWithRegistries(var0, NbtAccounter::defaultQuota);
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(final Codec<T> var0, Supplier<NbtAccounter> var1) {

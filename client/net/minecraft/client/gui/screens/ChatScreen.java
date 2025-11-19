@@ -145,10 +145,10 @@ public class ChatScreen extends Screen {
       } else {
          if (var1.button() == 0) {
             int var3 = this.minecraft.getWindow().getGuiScaledHeight();
-            ActiveTextCollector.ClickableStyleFinder var4 = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)var1.x(), (int)var1.y());
+            ActiveTextCollector.ClickableStyleFinder var4 = (new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)var1.x(), (int)var1.y())).includeInsertions(this.insertionClickMode());
             this.minecraft.gui.getChat().captureClickableText(var4, var3, this.minecraft.gui.getGuiTicks(), true);
             Style var5 = var4.result();
-            if (var5 != null && this.handleComponentClicked(var5)) {
+            if (var5 != null && this.handleComponentClicked(var5, this.insertionClickMode())) {
                this.initial = this.input.getValue();
                return true;
             }
@@ -158,26 +158,30 @@ public class ChatScreen extends Screen {
       }
    }
 
-   private boolean handleComponentClicked(Style var1) {
-      ClickEvent var2 = var1.getClickEvent();
-      if (this.minecraft.hasShiftDown()) {
+   private boolean insertionClickMode() {
+      return this.minecraft.hasShiftDown();
+   }
+
+   private boolean handleComponentClicked(Style var1, boolean var2) {
+      ClickEvent var3 = var1.getClickEvent();
+      if (var2) {
          if (var1.getInsertion() != null) {
             this.insertText(var1.getInsertion(), false);
          }
-      } else if (var2 != null) {
-         if (var2 instanceof ClickEvent.Custom) {
-            ClickEvent.Custom var3 = (ClickEvent.Custom)var2;
-            if (var3.id().equals(ChatComponent.QUEUE_EXPAND_ID)) {
-               ChatListener var4 = this.minecraft.getChatListener();
-               if (var4.queueSize() != 0L) {
-                  var4.acceptNextDelayedMessage();
+      } else if (var3 != null) {
+         if (var3 instanceof ClickEvent.Custom) {
+            ClickEvent.Custom var4 = (ClickEvent.Custom)var3;
+            if (var4.id().equals(ChatComponent.QUEUE_EXPAND_ID)) {
+               ChatListener var5 = this.minecraft.getChatListener();
+               if (var5.queueSize() != 0L) {
+                  var5.acceptNextDelayedMessage();
                }
 
                return true;
             }
          }
 
-         defaultHandleGameClickEvent(var2, this.minecraft, this);
+         defaultHandleGameClickEvent(var3, this.minecraft, this);
          return true;
       }
 
@@ -219,7 +223,7 @@ public class ChatScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
-      this.minecraft.gui.getChat().render(var1, this.font, this.minecraft.gui.getGuiTicks(), var2, var3, true);
+      this.minecraft.gui.getChat().render(var1, this.font, this.minecraft.gui.getGuiTicks(), var2, var3, true, this.insertionClickMode());
       super.render(var1, var2, var3, var4);
       this.commandSuggestions.render(var1, var2, var3);
    }

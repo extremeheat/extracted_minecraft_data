@@ -110,6 +110,10 @@ public class ExtraCodecs {
    public static final Function<Optional<Long>, OptionalLong> toOptionalLong;
    public static final Function<OptionalLong, Optional<Long>> fromOptionalLong;
    public static final Codec<BitSet> BIT_SET;
+   public static final int MAX_PROPERTY_NAME_LENGTH = 64;
+   public static final int MAX_PROPERTY_VALUE_LENGTH = 32767;
+   public static final int MAX_PROPERTY_SIGNATURE_LENGTH = 1024;
+   public static final int MAX_PROPERTIES = 16;
    private static final Codec<Property> PROPERTY;
    public static final Codec<PropertyMap> PROPERTY_MAP;
    public static final Codec<String> PLAYER_NAME;
@@ -539,8 +543,8 @@ public class ExtraCodecs {
       toOptionalLong = (var0) -> (OptionalLong)var0.map(OptionalLong::of).orElseGet(OptionalLong::empty);
       fromOptionalLong = (var0) -> var0.isPresent() ? Optional.of(var0.getAsLong()) : Optional.empty();
       BIT_SET = Codec.LONG_STREAM.xmap((var0) -> BitSet.valueOf(var0.toArray()), (var0) -> Arrays.stream(var0.toLongArray()));
-      PROPERTY = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(Property::name), Codec.STRING.fieldOf("value").forGetter(Property::value), Codec.STRING.lenientOptionalFieldOf("signature").forGetter((var0x) -> Optional.ofNullable(var0x.signature()))).apply(var0, (var0x, var1, var2) -> new Property(var0x, var1, (String)var2.orElse((Object)null))));
-      PROPERTY_MAP = Codec.either(Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()), PROPERTY.listOf()).xmap((var0) -> {
+      PROPERTY = RecordCodecBuilder.create((var0) -> var0.group(Codec.sizeLimitedString(64).fieldOf("name").forGetter(Property::name), Codec.sizeLimitedString(32767).fieldOf("value").forGetter(Property::value), Codec.sizeLimitedString(1024).optionalFieldOf("signature").forGetter((var0x) -> Optional.ofNullable(var0x.signature()))).apply(var0, (var0x, var1, var2) -> new Property(var0x, var1, (String)var2.orElse((Object)null))));
+      PROPERTY_MAP = Codec.either(Codec.unboundedMap(Codec.STRING, Codec.STRING.listOf()).validate((var0) -> var0.size() > 16 ? DataResult.error(() -> "Cannot have more than 16 properties, but was " + var0.size()) : DataResult.success(var0)), PROPERTY.sizeLimitedListOf(16)).xmap((var0) -> {
          ImmutableMultimap.Builder var1 = ImmutableMultimap.builder();
          var0.ifLeft((var1x) -> var1x.forEach((var1xx, var2) -> {
                for(String var4 : var2) {

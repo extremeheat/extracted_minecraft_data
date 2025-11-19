@@ -142,7 +142,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             var2.playSound(var1, (BlockPos)var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
             for(int var15 = 0; var15 < 8; ++var15) {
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var18 + Math.random(), (double)var13 + Math.random(), (double)var14 + Math.random(), 0.0, 0.0, 0.0);
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)((float)var18 + var2.random.nextFloat()), (double)((float)var13 + var2.random.nextFloat()), (double)((float)var14 + var2.random.nextFloat()), 0.0, 0.0, 0.0);
             }
 
             return true;

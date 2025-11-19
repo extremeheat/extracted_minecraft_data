@@ -25,7 +25,7 @@ public class GlFence implements GpuFence {
          if (var3 == 37147) {
             return false;
          } else if (var3 == 37149) {
-            throw new IllegalStateException("Failed to complete gpu fence");
+            throw new IllegalStateException("Failed to complete GPU fence: " + GlStateManager._getError());
          } else {
             return true;
          }

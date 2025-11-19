@@ -73,7 +73,8 @@ public class AtmosphericFogEnvironment extends FogEnvironment {
       var1.environmentalStart = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_START_DISTANCE, var6);
       var1.environmentalEnd = (Float)var2.attributeProbe().getValue(EnvironmentAttributes.FOG_END_DISTANCE, var6);
       var1.environmentalStart += -160.0F * this.rainFogMultiplier;
-      var1.environmentalEnd += -256.0F * this.rainFogMultiplier;
+      float var7 = Math.min(96.0F, var1.environmentalEnd);
+      var1.environmentalEnd = Math.max(var7, var1.environmentalEnd + -256.0F * this.rainFogMultiplier);
       var1.skyEnd = Math.min(var4, (Float)var2.attributeProbe().getValue(EnvironmentAttributes.SKY_FOG_END_DISTANCE, var6));
       var1.cloudEnd = Math.min((float)((Integer)Minecraft.getInstance().options.cloudRange().get() * 16), (Float)var2.attributeProbe().getValue(EnvironmentAttributes.CLOUD_FOG_END_DISTANCE, var6));
       if (Minecraft.getInstance().gui.getBossOverlay().shouldCreateWorldFog()) {

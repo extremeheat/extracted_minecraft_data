@@ -39,8 +39,8 @@ public class FireflyParticle extends SingleQuadParticle {
          this.remove();
       } else {
          this.setAlpha(getFadeAmount(this.getLifetimeProgress((float)this.age), 0.3F, 0.5F));
-         if (Math.random() > 0.95 || this.age == 1) {
-            this.setParticleSpeed(-0.05000000074505806 + 0.10000000149011612 * Math.random(), -0.05000000074505806 + 0.10000000149011612 * Math.random(), -0.05000000074505806 + 0.10000000149011612 * Math.random());
+         if (this.random.nextFloat() > 0.95F || this.age == 1) {
+            this.setParticleSpeed((double)(-0.05F + 0.1F * this.random.nextFloat()), (double)(-0.05F + 0.1F * this.random.nextFloat()), (double)(-0.05F + 0.1F * this.random.nextFloat()));
          }
 
       }

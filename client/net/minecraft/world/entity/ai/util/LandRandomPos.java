@@ -39,6 +39,10 @@ public class LandRandomPos {
 
    public static @Nullable Vec3 getPosAway(PathfinderMob var0, double var1, double var3, int var5, Vec3 var6) {
       Vec3 var7 = var0.position().subtract(var6);
+      if (var7.length() == 0.0) {
+         var7 = new Vec3(var0.getRandom().nextDouble() - 0.5, 0.0, var0.getRandom().nextDouble() - 0.5);
+      }
+
       boolean var8 = GoalUtils.mobRestricted(var0, var3);
       return getPosInDirection(var0, var1, var3, var5, var7, var8);
    }

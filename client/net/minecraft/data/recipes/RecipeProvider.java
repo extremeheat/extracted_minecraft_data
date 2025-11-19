@@ -370,7 +370,7 @@ public abstract class RecipeProvider {
    }
 
    protected void waxedChiseled(Block var1, Block var2) {
-      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 2).define('M', var2).pattern(" M ").pattern(" M ").group(getItemName(var1)).unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
+      this.shaped(RecipeCategory.BUILDING_BLOCKS, var1).define('M', var2).pattern(" M ").pattern(" M ").group(getItemName(var1)).unlockedBy(getHasName(var2), this.has(var2)).save(this.output);
    }
 
    protected void suspiciousStew(Item var1, SuspiciousEffectHolder var2) {

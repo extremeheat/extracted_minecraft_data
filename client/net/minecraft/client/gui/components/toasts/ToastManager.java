@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -184,7 +185,9 @@ public class ToastManager {
             break;
          case PAUSE_AND_TOAST:
             this.nowPlayingToast = new ToastInstance<NowPlayingToast>(new NowPlayingToast(), 0, 0);
-            ((NowPlayingToast)this.nowPlayingToast.getToast()).showToast(this.minecraft.options);
+            if (this.minecraft.options.getFinalSoundSourceVolume(SoundSource.MUSIC) > 0.0F) {
+               ((NowPlayingToast)this.nowPlayingToast.getToast()).showToast(this.minecraft.options);
+            }
             break;
          case NEVER:
             this.nowPlayingToast = null;

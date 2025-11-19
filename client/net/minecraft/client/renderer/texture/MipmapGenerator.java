@@ -7,68 +7,145 @@ import net.minecraft.util.ARGB;
 
 public class MipmapGenerator {
    private static final String ITEM_PREFIX = "item/";
-   private static final float ALPHA_CUTOFF = 0.2F;
-   private static final float STRICT_ALPHA_CUTOFF = 0.6F;
-   private static final int ALPHA_CUTOUT_CUTOFF = 96;
+   private static final float ALPHA_CUTOFF = 0.5F;
+   private static final float STRICT_ALPHA_CUTOFF = 0.3F;
 
    private MipmapGenerator() {
       super();
    }
 
-   public static NativeImage[] generateMipLevels(Identifier var0, NativeImage[] var1, int var2, MipmapStrategy var3) {
+   private static float alphaTestCoverage(NativeImage var0, float var1, float var2) {
+      int var3 = var0.getWidth();
+      int var4 = var0.getHeight();
+      float var5 = 0.0F;
+      boolean var6 = true;
+
+      for(int var7 = 0; var7 < var4 - 1; ++var7) {
+         for(int var8 = 0; var8 < var3 - 1; ++var8) {
+            float var9 = Math.clamp(ARGB.alphaFloat(var0.getPixel(var8, var7)) * var2, 0.0F, 1.0F);
+            float var10 = Math.clamp(ARGB.alphaFloat(var0.getPixel(var8 + 1, var7)) * var2, 0.0F, 1.0F);
+            float var11 = Math.clamp(ARGB.alphaFloat(var0.getPixel(var8, var7 + 1)) * var2, 0.0F, 1.0F);
+            float var12 = Math.clamp(ARGB.alphaFloat(var0.getPixel(var8 + 1, var7 + 1)) * var2, 0.0F, 1.0F);
+            float var13 = 0.0F;
+
+            for(int var14 = 0; var14 < 4; ++var14) {
+               float var15 = ((float)var14 + 0.5F) / 4.0F;
+
+               for(int var16 = 0; var16 < 4; ++var16) {
+                  float var17 = ((float)var16 + 0.5F) / 4.0F;
+                  float var18 = var9 * (1.0F - var17) * (1.0F - var15) + var10 * var17 * (1.0F - var15) + var11 * (1.0F - var17) * var15 + var12 * var17 * var15;
+                  if (var18 > var1) {
+                     ++var13;
+                  }
+               }
+            }
+
+            var5 += var13 / 16.0F;
+         }
+      }
+
+      return var5 / (float)((var3 - 1) * (var4 - 1));
+   }
+
+   private static void scaleAlphaToCoverage(NativeImage var0, float var1, float var2, float var3) {
+      float var4 = 0.0F;
+      float var5 = 4.0F;
+      float var6 = 1.0F;
+      float var7 = 1.0F;
+      float var8 = 3.4028235E38F;
+      int var9 = var0.getWidth();
+      int var10 = var0.getHeight();
+
+      for(int var11 = 0; var11 < 5; ++var11) {
+         float var12 = alphaTestCoverage(var0, var2, var6);
+         float var13 = Math.abs(var12 - var1);
+         if (var13 < var8) {
+            var8 = var13;
+            var7 = var6;
+         }
+
+         if (var12 < var1) {
+            var4 = var6;
+         } else {
+            if (!(var12 > var1)) {
+               break;
+            }
+
+            var5 = var6;
+         }
+
+         var6 = (var4 + var5) * 0.5F;
+      }
+
+      for(int var15 = 0; var15 < var10; ++var15) {
+         for(int var16 = 0; var16 < var9; ++var16) {
+            int var17 = var0.getPixel(var16, var15);
+            float var14 = ARGB.alphaFloat(var17);
+            var14 = var14 * var7 + var3 + 0.025F;
+            var14 = Math.clamp(var14, 0.0F, 1.0F);
+            var0.setPixel(var16, var15, ARGB.color(var14, var17));
+         }
+      }
+
+   }
+
+   public static NativeImage[] generateMipLevels(Identifier var0, NativeImage[] var1, int var2, MipmapStrategy var3, float var4) {
+      if (var3 == MipmapStrategy.AUTO) {
+         if (var0.getPath().startsWith("item/")) {
+            var3 = MipmapStrategy.STRICT_CUTOUT;
+         } else {
+            var3 = hasTransparentPixel(var1[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
+         }
+      }
+
+      if (var1.length == 1 && (var3 == MipmapStrategy.CUTOUT || var3 == MipmapStrategy.STRICT_CUTOUT || var3 == MipmapStrategy.DARK_CUTOUT)) {
+         TextureUtil.solidify(var1[0]);
+      }
+
       if (var2 + 1 <= var1.length) {
          return var1;
       } else {
-         NativeImage[] var4 = new NativeImage[var2 + 1];
-         if (var3 == MipmapStrategy.AUTO) {
-            if (var0.getPath().startsWith("item/")) {
-               var3 = MipmapStrategy.STRICT_CUTOUT;
+         NativeImage[] var5 = new NativeImage[var2 + 1];
+         var5[0] = var1[0];
+         boolean var6 = var3 == MipmapStrategy.CUTOUT || var3 == MipmapStrategy.STRICT_CUTOUT || var3 == MipmapStrategy.DARK_CUTOUT;
+         float var7 = var3 == MipmapStrategy.STRICT_CUTOUT ? 0.3F : 0.5F;
+         float var8 = var6 ? alphaTestCoverage(var1[0], var7, 1.0F) : 0.0F;
+
+         for(int var9 = 1; var9 <= var2; ++var9) {
+            if (var9 < var1.length) {
+               var5[var9] = var1[var9];
             } else {
-               var3 = hasTransparentPixel(var1[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
-            }
-         }
+               NativeImage var10 = var5[var9 - 1];
+               NativeImage var11 = new NativeImage(var10.getWidth() >> 1, var10.getHeight() >> 1, false);
+               int var12 = var11.getWidth();
+               int var13 = var11.getHeight();
 
-         if (var1.length == 1 && (var3 == MipmapStrategy.CUTOUT || var3 == MipmapStrategy.STRICT_CUTOUT)) {
-            TextureUtil.solidify(var1[0]);
-         }
-
-         var4[0] = var1[0];
-
-         for(int var5 = 1; var5 <= var2; ++var5) {
-            if (var5 < var1.length) {
-               var4[var5] = var1[var5];
-            } else {
-               NativeImage var6 = var4[var5 - 1];
-               NativeImage var7 = new NativeImage(var6.getWidth() >> 1, var6.getHeight() >> 1, false);
-               int var8 = var7.getWidth();
-               int var9 = var7.getHeight();
-
-               for(int var10 = 0; var10 < var8; ++var10) {
-                  for(int var11 = 0; var11 < var9; ++var11) {
-                     int var12;
-                     if (var3 != MipmapStrategy.MEAN && var3 != MipmapStrategy.DARK_CUTOUT) {
-                        var12 = alphaBlend(var10, var11, var4[0], var5, var3);
+               for(int var14 = 0; var14 < var12; ++var14) {
+                  for(int var15 = 0; var15 < var13; ++var15) {
+                     int var16 = var10.getPixel(var14 * 2 + 0, var15 * 2 + 0);
+                     int var17 = var10.getPixel(var14 * 2 + 1, var15 * 2 + 0);
+                     int var18 = var10.getPixel(var14 * 2 + 0, var15 * 2 + 1);
+                     int var19 = var10.getPixel(var14 * 2 + 1, var15 * 2 + 1);
+                     int var20;
+                     if (var3 == MipmapStrategy.DARK_CUTOUT) {
+                        var20 = darkenedAlphaBlend(var16, var17, var18, var19);
                      } else {
-                        int var13 = var6.getPixel(var10 * 2 + 0, var11 * 2 + 0);
-                        int var14 = var6.getPixel(var10 * 2 + 1, var11 * 2 + 0);
-                        int var15 = var6.getPixel(var10 * 2 + 0, var11 * 2 + 1);
-                        int var16 = var6.getPixel(var10 * 2 + 1, var11 * 2 + 1);
-                        if (var3 == MipmapStrategy.DARK_CUTOUT) {
-                           var12 = darkenedAlphaBlend(var13, var14, var15, var16);
-                        } else {
-                           var12 = ARGB.meanLinear(var13, var14, var15, var16);
-                        }
+                        var20 = ARGB.meanLinear(var16, var17, var18, var19);
                      }
 
-                     var7.setPixel(var10, var11, var12);
+                     var11.setPixel(var14, var15, var20);
                   }
                }
 
-               var4[var5] = var7;
+               var5[var9] = var11;
+            }
+
+            if (var6) {
+               scaleAlphaToCoverage(var5[var9], var8, var7, var4);
             }
          }
 
-         return var4;
+         return var5;
       }
    }
 
@@ -121,53 +198,6 @@ public class MipmapGenerator {
       var5 /= 4.0F;
       var6 /= 4.0F;
       var7 /= 4.0F;
-      int var8 = ARGB.linearToSrgbChannel(var4);
-      if (var8 < 96) {
-         var8 = 0;
-      }
-
-      return ARGB.color(var8, ARGB.linearToSrgbChannel(var5), ARGB.linearToSrgbChannel(var6), ARGB.linearToSrgbChannel(var7));
-   }
-
-   private static int alphaBlend(int var0, int var1, NativeImage var2, int var3, MipmapStrategy var4) {
-      float[] var5 = new float[7];
-      int var6 = 1 << var3;
-
-      for(int var7 = var0 * var6; var7 < var0 * var6 + var6; ++var7) {
-         for(int var8 = var1 * var6; var8 < var1 * var6 + var6; ++var8) {
-            accumulate(var2.getPixel(var7, var8), var5);
-         }
-      }
-
-      float var12 = var5[0];
-      float var14 = var5[1] / var12;
-      float var9 = var5[2] / var12;
-      float var10 = var5[3] / var12;
-      var12 /= (float)(var6 * var6);
-      float var11;
-      if (var12 < (var4 == MipmapStrategy.STRICT_CUTOUT ? 0.6F : 0.2F)) {
-         var11 = 0.0F;
-         var14 = var5[4] / (float)(var6 * var6);
-         var9 = var5[5] / (float)(var6 * var6);
-         var10 = var5[6] / (float)(var6 * var6);
-      } else {
-         var11 = 1.0F;
-      }
-
-      return ARGB.color(var11, ARGB.color(ARGB.linearToSrgbChannel(var14), ARGB.linearToSrgbChannel(var9), ARGB.linearToSrgbChannel(var10)));
-   }
-
-   private static void accumulate(int var0, float[] var1) {
-      float var2 = ARGB.alphaFloat(var0);
-      var1[0] += var2;
-      float var3 = ARGB.srgbToLinearChannel(ARGB.red(var0));
-      var1[1] += var3 * var2;
-      var1[4] += var3;
-      float var4 = ARGB.srgbToLinearChannel(ARGB.green(var0));
-      var1[2] += var4 * var2;
-      var1[5] += var4;
-      float var5 = ARGB.srgbToLinearChannel(ARGB.blue(var0));
-      var1[3] += var5 * var2;
-      var1[6] += var5;
+      return ARGB.color(ARGB.linearToSrgbChannel(var4), ARGB.linearToSrgbChannel(var5), ARGB.linearToSrgbChannel(var6), ARGB.linearToSrgbChannel(var7));
    }
 }

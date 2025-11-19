@@ -12,9 +12,9 @@ public class ExplodeParticle extends SingleQuadParticle {
       this.gravity = -0.1F;
       this.friction = 0.9F;
       this.sprites = var14;
-      this.xd = var8 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
-      this.yd = var10 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
-      this.zd = var12 + (Math.random() * 2.0 - 1.0) * 0.05000000074505806;
+      this.xd = var8 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
+      this.yd = var10 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
+      this.zd = var12 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F);
       float var15 = this.random.nextFloat() * 0.3F + 0.7F;
       this.rCol = var15;
       this.gCol = var15;

@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.BreezeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.breeze.BreezeModel;
 import net.minecraft.client.renderer.entity.layers.BreezeEyesLayer;
 import net.minecraft.client.renderer.entity.layers.BreezeWindLayer;
 import net.minecraft.client.renderer.entity.state.BreezeRenderState;

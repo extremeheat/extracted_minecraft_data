@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.CollisionGetter;
@@ -27,7 +27,7 @@ public interface CollisionContext {
       byte var2 = 0;
       Object var10000;
       //$FF: var2->value
-      //0->net/minecraft/world/entity/vehicle/AbstractMinecart
+      //0->net/minecraft/world/entity/vehicle/minecart/AbstractMinecart
       switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
          case 0:
             AbstractMinecart var3 = (AbstractMinecart)var0;

@@ -3,6 +3,8 @@ package net.minecraft.nbt;
 import com.google.common.annotations.VisibleForTesting;
 
 public class NbtAccounter {
+   public static final int DEFAULT_NBT_QUOTA = 2097152;
+   public static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
    private static final int MAX_STACK_DEPTH = 512;
    private final long quota;
    private long usage;
@@ -17,6 +19,14 @@ public class NbtAccounter {
 
    public static NbtAccounter create(long var0) {
       return new NbtAccounter(var0, 512);
+   }
+
+   public static NbtAccounter defaultQuota() {
+      return new NbtAccounter(2097152L, 512);
+   }
+
+   public static NbtAccounter uncompressedQuota() {
+      return new NbtAccounter(104857600L, 512);
    }
 
    public static NbtAccounter unlimitedHeap() {

@@ -74,8 +74,8 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.BlockItem;
@@ -230,7 +230,10 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.serverSimulationDistance = var6;
       this.environmentAttributes = this.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
       this.updateSkyBrightness();
-      this.prepareWeather();
+      if (this.canHaveWeather()) {
+         this.prepareWeather();
+      }
+
    }
 
    private EnvironmentAttributeSystem.Builder addEnvironmentAttributeLayers(EnvironmentAttributeSystem.Builder var1) {

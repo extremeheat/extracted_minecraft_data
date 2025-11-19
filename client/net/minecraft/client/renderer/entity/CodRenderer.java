@@ -2,13 +2,13 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.CodModel;
+import net.minecraft.client.model.animal.fish.CodModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Cod;
+import net.minecraft.world.entity.animal.fish.Cod;
 import org.joml.Quaternionfc;
 
 public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodModel> {

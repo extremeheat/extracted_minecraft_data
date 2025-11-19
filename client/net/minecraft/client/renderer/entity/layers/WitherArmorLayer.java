@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.WitherBossModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WitherRenderState;
 import net.minecraft.resources.Identifier;

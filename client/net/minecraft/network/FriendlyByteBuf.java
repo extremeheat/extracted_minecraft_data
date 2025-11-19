@@ -69,7 +69,6 @@ import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class FriendlyByteBuf extends ByteBuf {
-   public static final int DEFAULT_NBT_QUOTA = 2097152;
    private final ByteBuf source;
    public static final short MAX_STRING_LENGTH = 32767;
    public static final int MAX_COMPONENT_STRING_LENGTH = 262144;
@@ -568,7 +567,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public static @Nullable CompoundTag readNbt(ByteBuf var0) {
-      Tag var1 = readNbt(var0, NbtAccounter.create(2097152L));
+      Tag var1 = readNbt(var0, NbtAccounter.defaultQuota());
       if (var1 != null && !(var1 instanceof CompoundTag)) {
          throw new DecoderException("Not a compound tag: " + String.valueOf(var1));
       } else {

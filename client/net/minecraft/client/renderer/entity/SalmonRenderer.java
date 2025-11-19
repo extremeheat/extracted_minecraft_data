@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.SalmonModel;
+import net.minecraft.client.model.animal.fish.SalmonModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.entity.state.SalmonRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Salmon;
+import net.minecraft.world.entity.animal.fish.Salmon;
 import org.joml.Quaternionfc;
 
 public class SalmonRenderer extends MobRenderer<Salmon, SalmonRenderState, SalmonModel> {

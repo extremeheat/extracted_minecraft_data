@@ -9,7 +9,7 @@ public class ReversePortalParticle extends PortalParticle {
    ReversePortalParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
       super(var1, var2, var4, var6, var8, var10, var12, var14);
       this.quadSize *= 1.5F;
-      this.lifetime = (int)(Math.random() * 2.0) + 60;
+      this.lifetime = (int)(this.random.nextFloat() * 2.0F) + 60;
    }
 
    public float getQuadSize(float var1) {

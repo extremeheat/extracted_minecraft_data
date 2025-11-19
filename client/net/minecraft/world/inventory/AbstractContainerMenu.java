@@ -102,7 +102,7 @@ public abstract class AbstractContainerMenu {
    }
 
    protected static boolean stillValid(ContainerLevelAccess var0, Player var1, Block var2) {
-      return (Boolean)var0.evaluate((var2x, var3) -> !var2x.getBlockState(var3).is(var2) ? false : var1.canInteractWithBlock(var3, 4.0), true);
+      return (Boolean)var0.evaluate((var2x, var3) -> !var2x.getBlockState(var3).is(var2) ? false : var1.isWithinBlockInteractionRange(var3, 4.0), true);
    }
 
    public MenuType<?> getType() {

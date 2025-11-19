@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.render.state.pip;
 
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 

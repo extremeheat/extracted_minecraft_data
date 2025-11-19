@@ -3,6 +3,7 @@ package net.minecraft.client.model;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Set;
 import java.util.function.Function;
+import net.minecraft.client.model.effects.SpearAnimations;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -386,7 +387,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       this.getArm(var2).translateAndRotate(var3);
    }
 
-   protected ModelPart getArm(HumanoidArm var1) {
+   public ModelPart getArm(HumanoidArm var1) {
       return var1 == HumanoidArm.LEFT ? this.leftArm : this.rightArm;
    }
 

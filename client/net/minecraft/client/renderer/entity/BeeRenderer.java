@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.BeeModel;
+import net.minecraft.client.model.animal.bee.BeeModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.BeeRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.bee.Bee;
 
 public class BeeRenderer extends AgeableMobRenderer<Bee, BeeRenderState, BeeModel> {
    private static final Identifier ANGRY_BEE_TEXTURE = Identifier.withDefaultNamespace("textures/entity/bee/bee_angry.png");

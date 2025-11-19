@@ -173,8 +173,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.entity.player.ProfilePublicKey;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.BeaconMenu;
@@ -226,6 +226,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
    private static final int MAXIMUM_FLYING_TICKS = 80;
    private static final int ATTACK_INDICATOR_TOLERANCE_TICKS = 5;
+   public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
    private static final Component INVALID_COMMAND_SIGNATURE;
    private static final int MAX_COMMAND_SUGGESTIONS = 1000;
@@ -265,9 +266,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    private final MessageSignatureCache messageSignatureCache = MessageSignatureCache.createDefault();
    private final FutureChain chatMessageChain;
    private boolean waitingForSwitchToConfig;
+   private boolean waitingForRespawn;
+   private int clientLoadedTimeoutTimer;
 
    public ServerGamePacketListenerImpl(MinecraftServer var1, Connection var2, ServerPlayer var3, CommonListenerCookie var4) {
       super(var1, var2, var4);
+      this.restartClientLoadTimerAfterRespawn();
       this.chunkSender = new PlayerChunkSender(var2.isMemoryConnection());
       this.player = var3;
       var3.connection = this;
@@ -404,7 +408,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handlePlayerInput(ServerboundPlayerInputPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
       this.player.setLastClientInput(var1.input());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          this.player.resetLastActionTime();
          this.player.setShiftKeyDown(var1.input().shift());
       }
@@ -427,7 +431,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
       if (containsInvalidValues(var1.position().x(), var1.position().y(), var1.position().z(), var1.yRot(), var1.xRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
-      } else if (!this.updateAwaitingTeleport() && this.player.hasClientLoaded()) {
+      } else if (!this.updateAwaitingTeleport() && this.hasClientLoaded()) {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
             ServerLevel var3 = this.player.level();
@@ -525,7 +529,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      this.player.setClientLoaded(true);
+      this.markClientLoaded();
    }
 
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
@@ -663,7 +667,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       ServerLevel var2 = this.player.level();
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)var2);
       BlockPos var3 = var1.pos();
-      if (this.player.canInteractWithBlock(var3, 1.0)) {
+      if (this.player.isWithinBlockInteractionRange(var3, 1.0)) {
          if (var2.isLoaded(var3)) {
             BlockState var4 = var2.getBlockState(var3);
             boolean var5 = this.player.hasInfiniteMaterials() && var1.includeData();
@@ -697,7 +701,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       ServerLevel var2 = this.player.level();
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)var2);
       Entity var3 = var2.getEntityOrPart(var1.id());
-      if (var3 != null && this.player.canInteractWithEntity(var3, 3.0)) {
+      if (var3 != null && this.player.isWithinEntityInteractionRange(var3, 3.0)) {
          ItemStack var4 = var3.getPickResult();
          if (var4 != null && !var4.isEmpty()) {
             this.tryPickItem(var4);
@@ -1021,7 +1025,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.resetPosition();
             }
 
-            if (this.player.hasClientLoaded()) {
+            if (this.hasClientLoaded()) {
                float var3 = Mth.wrapDegrees(var1.getYRot(this.player.getYRot()));
                float var4 = Mth.wrapDegrees(var1.getXRot(this.player.getXRot()));
                if (this.updateAwaitingTeleport()) {
@@ -1088,7 +1092,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         var21 = var9 - this.player.getZ();
                         var25 = var17 * var17 + var19 * var19 + var21 * var21;
                         boolean var33 = false;
-                        if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator()) {
+                        if (!this.player.isChangingDimension() && var25 > 0.0625 && !this.player.isSleeping() && !this.player.isCreative() && !this.player.isSpectator() && !this.player.isInPostImpulseGraceTime()) {
                            var33 = true;
                            LOGGER.warn("{} moved wrongly!", this.player.getPlainTextName());
                         }
@@ -1187,7 +1191,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handlePlayerAction(ServerboundPlayerActionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          BlockPos var2 = var1.getPos();
          this.player.resetLastActionTime();
          ServerboundPlayerActionPacket.Action var3 = var1.getAction();
@@ -1275,7 +1279,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleUseItemOn(ServerboundUseItemOnPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          this.ackBlockChangesUpTo(var1.getSequence());
          ServerLevel var2 = this.player.level();
          InteractionHand var3 = var1.getHand();
@@ -1284,7 +1288,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             BlockHitResult var5 = var1.getHitResult();
             Vec3 var6 = var5.getLocation();
             BlockPos var7 = var5.getBlockPos();
-            if (this.player.canInteractWithBlock(var7, 1.0)) {
+            if (this.player.isWithinBlockInteractionRange(var7, 1.0)) {
                Vec3 var8 = var6.subtract(Vec3.atCenterOf(var7));
                double var9 = 1.0000001;
                if (Math.abs(var8.x()) < 1.0000001 && Math.abs(var8.y()) < 1.0000001 && Math.abs(var8.z()) < 1.0000001) {
@@ -1325,7 +1329,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleUseItem(ServerboundUseItemPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          this.ackBlockChangesUpTo(var1.getSequence());
          ServerLevel var2 = this.player.level();
          InteractionHand var3 = var1.getHand();
@@ -1607,7 +1611,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handlePlayerCommand(ServerboundPlayerCommandPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          this.player.resetLastActionTime();
          switch (var1.getAction()) {
             case START_SPRINTING:
@@ -1697,7 +1701,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleInteract(ServerboundInteractPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.level());
-      if (this.player.hasClientLoaded()) {
+      if (this.hasClientLoaded()) {
          final ServerLevel var2 = this.player.level();
          final Entity var3 = var1.getTarget(var2);
          this.player.resetLastActionTime();
@@ -1708,7 +1712,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             }
 
             AABB var4 = var3.getBoundingBox();
-            if (this.player.canInteractWithEntity(var4, 3.0)) {
+            if (var1.isWithinRange(this.player, var4, 3.0)) {
                var1.dispatch(new ServerboundInteractPacket.Handler() {
                   private void performInteraction(InteractionHand var1, EntityInteraction var2x) {
                      ItemStack var3x = ServerGamePacketListenerImpl.this.player.getItemInHand(var1);
@@ -1779,6 +1783,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.player.wonGame = false;
                this.player = this.server.getPlayerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION);
                this.resetPosition();
+               this.restartClientLoadTimerAfterRespawn();
                CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.END, Level.OVERWORLD);
             } else {
                if (this.player.getHealth() > 0.0F) {
@@ -1787,6 +1792,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
                this.resetPosition();
+               this.restartClientLoadTimerAfterRespawn();
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
                   this.player.level().getGameRules().set(GameRules.SPECTATORS_GENERATE_CHUNKS, false, this.server);
@@ -2055,6 +2061,30 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public ServerPlayer getPlayer() {
       return this.player;
+   }
+
+   public boolean hasClientLoaded() {
+      return !this.waitingForRespawn && this.clientLoadedTimeoutTimer <= 0;
+   }
+
+   public void tickClientLoadTimeout() {
+      if (this.clientLoadedTimeoutTimer > 0) {
+         --this.clientLoadedTimeoutTimer;
+      }
+
+   }
+
+   private void markClientLoaded() {
+      this.clientLoadedTimeoutTimer = 0;
+   }
+
+   public void markClientUnloadedAfterDeath() {
+      this.waitingForRespawn = true;
+   }
+
+   private void restartClientLoadTimerAfterRespawn() {
+      this.waitingForRespawn = false;
+      this.clientLoadedTimeoutTimer = 60;
    }
 
    static {

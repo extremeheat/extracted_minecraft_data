@@ -156,7 +156,7 @@ public interface EasingType {
 
       private DataResult<CubicBezierControls> validate() {
          if (!(this.x1 < 0.0F) && !(this.x1 > 1.0F)) {
-            return !(this.y1 < 0.0F) && !(this.y1 > 1.0F) ? DataResult.success(this) : DataResult.error(() -> "y1 must be in range [0; 1]");
+            return !(this.x2 < 0.0F) && !(this.x2 > 1.0F) ? DataResult.success(this) : DataResult.error(() -> "x2 must be in range [0; 1]");
          } else {
             return DataResult.error(() -> "x1 must be in range [0; 1]");
          }

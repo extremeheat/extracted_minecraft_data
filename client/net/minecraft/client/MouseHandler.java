@@ -168,7 +168,7 @@ public class MouseHandler {
 
    public void fillMousePositionDetails(CrashReportCategory var1, Window var2) {
       var1.setDetail("Mouse location", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%f, %f). Absolute: (%f, %f)", getScaledXPos(var2, this.xpos), getScaledYPos(var2, this.ypos), this.xpos, this.ypos)));
-      var1.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f", var2.getGuiScaledWidth(), var2.getGuiScaledHeight(), var2.getWidth(), var2.getHeight(), var2.getGuiScale())));
+      var1.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %d", var2.getGuiScaledWidth(), var2.getGuiScaledHeight(), var2.getWidth(), var2.getHeight(), var2.getGuiScale())));
    }
 
    private void onScroll(long var1, double var3, double var5) {

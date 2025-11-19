@@ -14,10 +14,10 @@ public class BubbleColumnUpParticle extends SingleQuadParticle {
       this.friction = 0.85F;
       this.setSize(0.02F, 0.02F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
-      this.xd = var8 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.yd = var10 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.zd = var12 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.lifetime = (int)(40.0 / (Math.random() * 0.8 + 0.2));
+      this.xd = var8 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.yd = var10 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.zd = var12 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.lifetime = (int)(40.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
    }
 
    public void tick() {

@@ -25,7 +25,7 @@ public abstract class AbstractMountInventoryMenu extends AbstractContainerMenu {
    protected abstract boolean hasInventoryChanged(Container var1);
 
    public boolean stillValid(Player var1) {
-      return !this.hasInventoryChanged(this.mountContainer) && this.mountContainer.stillValid(var1) && this.mount.isAlive() && var1.canInteractWithEntity((Entity)this.mount, 4.0);
+      return !this.hasInventoryChanged(this.mountContainer) && this.mountContainer.stillValid(var1) && this.mount.isAlive() && var1.isWithinEntityInteractionRange((Entity)this.mount, 4.0);
    }
 
    public void removed(Player var1) {

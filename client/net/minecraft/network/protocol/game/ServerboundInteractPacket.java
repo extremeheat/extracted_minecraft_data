@@ -6,8 +6,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -77,6 +79,10 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
 
    public boolean isUsingSecondaryAction() {
       return this.usingSecondaryAction;
+   }
+
+   public boolean isWithinRange(ServerPlayer var1, AABB var2, double var3) {
+      return this.action.getType() == ServerboundInteractPacket.ActionType.ATTACK ? var1.isWithinAttackRange(var2, var3) : var1.isWithinEntityInteractionRange(var2, var3);
    }
 
    public void dispatch(Handler var1) {

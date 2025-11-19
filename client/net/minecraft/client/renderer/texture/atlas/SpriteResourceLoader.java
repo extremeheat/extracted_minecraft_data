@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
@@ -77,8 +76,7 @@ public interface SpriteResourceLoader {
             var15 = new FrameSize(var14.getWidth(), var14.getHeight());
          }
 
-         MipmapStrategy var8 = (MipmapStrategy)var4.map(TextureMetadataSection::mipmapStrategy).orElse(MipmapStrategy.AUTO);
-         return new SpriteContents(var1, var15, var14, var3, var5, var8);
+         return new SpriteContents(var1, var15, var14, var3, var5, var4);
       };
    }
 

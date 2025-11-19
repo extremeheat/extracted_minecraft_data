@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.illager.IllagerModel;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.monster.Pillager;
+import net.minecraft.world.entity.monster.illager.Pillager;
 
 public class PillagerRenderer extends IllagerRenderer<Pillager, IllagerRenderState> {
    private static final Identifier PILLAGER = Identifier.withDefaultNamespace("textures/entity/illager/pillager.png");

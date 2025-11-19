@@ -244,6 +244,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -439,7 +440,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.fixerUpper = DataFixers.getDataFixer();
       this.gameThread = Thread.currentThread();
       this.options = new Options(this, this.gameDirectory);
-      this.options.applyGraphicsPreset((GraphicsPreset)this.options.graphicsPreset().get());
       this.debugEntries = new DebugScreenEntryList(this.gameDirectory);
       this.toastManager = new ToastManager(this, this.options);
       boolean var7 = this.options.startedCleanly;
@@ -488,6 +488,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.keyboardHandler = new KeyboardHandler(this);
       this.keyboardHandler.setup(this.window);
       RenderSystem.initRenderer(this.window.handle(), this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, (var1x, var2x) -> this.getShaderManager().getShader(var1x, var2x), var1.game.renderDebugLabels);
+      this.options.applyGraphicsPreset((GraphicsPreset)this.options.graphicsPreset().get());
       LOGGER.info("Using optional rendering extensions: {}", String.join(", ", RenderSystem.getDevice().getEnabledExtensions()));
       this.mainRenderTarget = new MainTarget(this.window.getWidth(), this.window.getHeight());
       this.resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
@@ -1604,14 +1605,17 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             } else {
                switch (this.hitResult.getType()) {
                   case ENTITY:
-                     this.gameMode.attack(this.player, ((EntityHitResult)this.hitResult).getEntity());
+                     AttackRange var4 = (AttackRange)var1.get(DataComponents.ATTACK_RANGE);
+                     if (var4 == null || var4.isInRange(this.player, this.hitResult.getLocation())) {
+                        this.gameMode.attack(this.player, ((EntityHitResult)this.hitResult).getEntity());
+                     }
                      break;
                   case BLOCK:
-                     BlockHitResult var4 = (BlockHitResult)this.hitResult;
-                     BlockPos var5 = var4.getBlockPos();
-                     if (!this.level.getBlockState(var5).isAir()) {
-                        this.gameMode.startDestroyBlock(var5, var4.getDirection());
-                        if (this.level.getBlockState(var5).isAir()) {
+                     BlockHitResult var5 = (BlockHitResult)this.hitResult;
+                     BlockPos var6 = var5.getBlockPos();
+                     if (!this.level.getBlockState(var6).isAir()) {
+                        this.gameMode.startDestroyBlock(var6, var5.getDirection());
+                        if (this.level.getBlockState(var6).isAir()) {
                            var2 = true;
                         }
                         break;
@@ -1651,6 +1655,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                         EntityHitResult var6 = (EntityHitResult)this.hitResult;
                         Entity var7 = var6.getEntity();
                         if (!this.level.getWorldBorder().isWithinBounds(var7.blockPosition())) {
+                           return;
+                        }
+
+                        if (!this.player.isWithinEntityInteractionRange(var7, 0.0)) {
                            return;
                         }
 

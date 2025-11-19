@@ -1,0 +1,175 @@
+package net.minecraft.world.entity.projectile.hurtingprojectile;
+
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
+
+public abstract class AbstractHurtingProjectile extends Projectile {
+   public static final double INITAL_ACCELERATION_POWER = 0.1;
+   public static final double DEFLECTION_SCALE = 0.5;
+   public double accelerationPower;
+
+   protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, Level var2) {
+      super(var1, var2);
+      this.accelerationPower = 0.1;
+   }
+
+   protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, Level var8) {
+      this(var1, var8);
+      this.setPos(var2, var4, var6);
+   }
+
+   public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
+      this(var1, var9);
+      this.snapTo(var2, var4, var6, this.getYRot(), this.getXRot());
+      this.reapplyPosition();
+      this.assignDirectionalMovement(var8, this.accelerationPower);
+   }
+
+   public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, LivingEntity var2, Vec3 var3, Level var4) {
+      this(var1, var2.getX(), var2.getY(), var2.getZ(), var3, var4);
+      this.setOwner(var2);
+      this.setRot(var2.getYRot(), var2.getXRot());
+   }
+
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   }
+
+   public boolean shouldRenderAtSqrDistance(double var1) {
+      double var3 = this.getBoundingBox().getSize() * 4.0;
+      if (Double.isNaN(var3)) {
+         var3 = 4.0;
+      }
+
+      var3 *= 64.0;
+      return var1 < var3 * var3;
+   }
+
+   protected ClipContext.Block getClipType() {
+      return ClipContext.Block.COLLIDER;
+   }
+
+   public void tick() {
+      Entity var1 = this.getOwner();
+      this.applyInertia();
+      if (this.level().isClientSide() || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
+         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
+         Vec3 var3;
+         if (var2.getType() != HitResult.Type.MISS) {
+            var3 = var2.getLocation();
+         } else {
+            var3 = this.position().add(this.getDeltaMovement());
+         }
+
+         ProjectileUtil.rotateTowardsMovement(this, 0.2F);
+         this.setPos(var3);
+         this.applyEffectsFromBlocks();
+         super.tick();
+         if (this.shouldBurn()) {
+            this.igniteForSeconds(1.0F);
+         }
+
+         if (var2.getType() != HitResult.Type.MISS && this.isAlive()) {
+            this.hitTargetOrDeflectSelf(var2);
+         }
+
+         this.createParticleTrail();
+      } else {
+         this.discard();
+      }
+   }
+
+   private void applyInertia() {
+      Vec3 var1 = this.getDeltaMovement();
+      Vec3 var2 = this.position();
+      float var3;
+      if (this.isInWater()) {
+         for(int var4 = 0; var4 < 4; ++var4) {
+            float var5 = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
+         }
+
+         var3 = this.getLiquidInertia();
+      } else {
+         var3 = this.getInertia();
+      }
+
+      this.setDeltaMovement(var1.add(var1.normalize().scale(this.accelerationPower)).scale((double)var3));
+   }
+
+   private void createParticleTrail() {
+      ParticleOptions var1 = this.getTrailParticle();
+      Vec3 var2 = this.position();
+      if (var1 != null) {
+         this.level().addParticle(var1, var2.x, var2.y + 0.5, var2.z, 0.0, 0.0, 0.0);
+      }
+
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
+   }
+
+   protected boolean canHitEntity(Entity var1) {
+      return super.canHitEntity(var1) && !var1.noPhysics;
+   }
+
+   protected boolean shouldBurn() {
+      return true;
+   }
+
+   protected @Nullable ParticleOptions getTrailParticle() {
+      return ParticleTypes.SMOKE;
+   }
+
+   protected float getInertia() {
+      return 0.95F;
+   }
+
+   protected float getLiquidInertia() {
+      return 0.8F;
+   }
+
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      super.addAdditionalSaveData(var1);
+      var1.putDouble("acceleration_power", this.accelerationPower);
+   }
+
+   protected void readAdditionalSaveData(ValueInput var1) {
+      super.readAdditionalSaveData(var1);
+      this.accelerationPower = var1.getDoubleOr("acceleration_power", 0.1);
+   }
+
+   public float getLightLevelDependentMagicValue() {
+      return 1.0F;
+   }
+
+   private void assignDirectionalMovement(Vec3 var1, double var2) {
+      this.setDeltaMovement(var1.normalize().scale(var2));
+      this.needsSync = true;
+   }
+
+   protected void onDeflection(boolean var1) {
+      super.onDeflection(var1);
+      if (var1) {
+         this.accelerationPower = 0.1;
+      } else {
+         this.accelerationPower *= 0.5;
+      }
+
+   }
+}

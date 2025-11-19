@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.WitchModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.witch.WitchModel;
 import net.minecraft.client.renderer.entity.layers.WitchItemLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;

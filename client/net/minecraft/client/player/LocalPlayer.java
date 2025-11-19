@@ -62,20 +62,23 @@ import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.HappyGhast;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.UseEffects;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -90,6 +93,9 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -203,8 +209,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void tick() {
-      this.tickClientLoadTimeout();
-      if (this.hasClientLoaded()) {
+      if (this.connection.hasClientLoaded()) {
          this.dropSpamThrottler.tick();
          super.tick();
          if (!this.lastSentInput.equals(this.input.keyPresses)) {
@@ -1159,5 +1164,55 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public Input getLastSentInput() {
       return this.lastSentInput;
+   }
+
+   public HitResult raycastHitResult(float var1, Entity var2) {
+      ItemStack var3 = this.getActiveItem();
+      AttackRange var4 = (AttackRange)var3.get(DataComponents.ATTACK_RANGE);
+      double var5 = this.blockInteractionRange();
+      HitResult var7 = null;
+      if (var4 != null) {
+         var7 = var4.getClosesetHit(var2, var1, EntitySelector.CAN_BE_PICKED);
+         if (var7 instanceof BlockHitResult) {
+            var7 = filterHitResult(var7, var2.getEyePosition(var1), var5);
+         }
+      }
+
+      if (var7 == null || var7.getType() == HitResult.Type.MISS) {
+         double var8 = this.entityInteractionRange();
+         var7 = pick(var2, var5, var8, var1);
+      }
+
+      return var7;
+   }
+
+   private static HitResult pick(Entity var0, double var1, double var3, float var5) {
+      double var6 = Math.max(var1, var3);
+      double var8 = Mth.square(var6);
+      Vec3 var10 = var0.getEyePosition(var5);
+      HitResult var11 = var0.pick(var6, var5, false);
+      double var12 = var11.getLocation().distanceToSqr(var10);
+      if (var11.getType() != HitResult.Type.MISS) {
+         var8 = var12;
+         var6 = Math.sqrt(var12);
+      }
+
+      Vec3 var14 = var0.getViewVector(var5);
+      Vec3 var15 = var10.add(var14.x * var6, var14.y * var6, var14.z * var6);
+      float var16 = 1.0F;
+      AABB var17 = var0.getBoundingBox().expandTowards(var14.scale(var6)).inflate(1.0, 1.0, 1.0);
+      EntityHitResult var18 = ProjectileUtil.getEntityHitResult(var0, var10, var15, var17, EntitySelector.CAN_BE_PICKED, var8);
+      return var18 != null && var18.getLocation().distanceToSqr(var10) < var12 ? filterHitResult(var18, var10, var3) : filterHitResult(var11, var10, var1);
+   }
+
+   private static HitResult filterHitResult(HitResult var0, Vec3 var1, double var2) {
+      Vec3 var4 = var0.getLocation();
+      if (!var4.closerThan(var1, var2)) {
+         Vec3 var5 = var0.getLocation();
+         Direction var6 = Direction.getApproximateNearest(var5.x - var1.x, var5.y - var1.y, var5.z - var1.z);
+         return BlockHitResult.miss(var5, var6, BlockPos.containing(var5));
+      } else {
+         return var0;
+      }
    }
 }

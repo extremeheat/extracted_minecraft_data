@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -45,7 +46,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private boolean hasBeenShot = false;
    private @Nullable Entity lastDeflectedBy;
 
-   Projectile(EntityType<? extends Projectile> var1, Level var2) {
+   protected Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
    }
 

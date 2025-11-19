@@ -23,11 +23,12 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.monster.illager.AbstractIllager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -314,8 +315,8 @@ public class Ravager extends Raider {
       return false;
    }
 
-   protected AABB getAttackBoundingBox() {
-      AABB var1 = super.getAttackBoundingBox();
-      return var1.deflate(0.05, 0.0, 0.05);
+   protected AABB getAttackBoundingBox(double var1) {
+      AABB var3 = super.getAttackBoundingBox(var1);
+      return var3.deflate(0.05, 0.0, 0.05);
    }
 }

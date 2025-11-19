@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.LlamaModel;
+import net.minecraft.client.model.animal.llama.LlamaModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.LlamaDecorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LlamaRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.animal.equine.Llama;
 
 public class LlamaRenderer extends AgeableMobRenderer<Llama, LlamaRenderState, LlamaModel> {
    private static final Identifier CREAMY = Identifier.withDefaultNamespace("textures/entity/llama/creamy.png");

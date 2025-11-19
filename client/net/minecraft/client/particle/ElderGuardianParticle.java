@@ -1,8 +1,8 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.GuardianParticleModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.guardian.GuardianParticleModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.entity.ElderGuardianRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;

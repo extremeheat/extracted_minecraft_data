@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.TropicalFishModelA;
-import net.minecraft.client.model.TropicalFishModelB;
+import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
+import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.TropicalFishPatternLayer;
@@ -14,26 +14,26 @@ import net.minecraft.client.renderer.entity.state.TropicalFishRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.TropicalFish;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
 import org.joml.Quaternionfc;
 
 public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFishRenderState, EntityModel<TropicalFishRenderState>> {
-   private final EntityModel<TropicalFishRenderState> modelA = this.getModel();
-   private final EntityModel<TropicalFishRenderState> modelB;
-   private static final Identifier MODEL_A_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_a.png");
-   private static final Identifier MODEL_B_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_b.png");
+   private final EntityModel<TropicalFishRenderState> smallModel = this.getModel();
+   private final EntityModel<TropicalFishRenderState> largeModel;
+   private static final Identifier SMALL_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_a.png");
+   private static final Identifier LARGE_TEXTURE = Identifier.withDefaultNamespace("textures/entity/fish/tropical_b.png");
 
    public TropicalFishRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new TropicalFishModelA(var1.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL)), 0.15F);
-      this.modelB = new TropicalFishModelB(var1.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE));
+      super(var1, new TropicalFishSmallModel(var1.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL)), 0.15F);
+      this.largeModel = new TropicalFishLargeModel(var1.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE));
       this.addLayer(new TropicalFishPatternLayer(this, var1.getModelSet()));
    }
 
    public Identifier getTextureLocation(TropicalFishRenderState var1) {
       Identifier var10000;
       switch (var1.pattern.base()) {
-         case SMALL -> var10000 = MODEL_A_TEXTURE;
-         case LARGE -> var10000 = MODEL_B_TEXTURE;
+         case SMALL -> var10000 = SMALL_TEXTURE;
+         case LARGE -> var10000 = LARGE_TEXTURE;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -54,8 +54,8 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
    public void submit(TropicalFishRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
       EntityModel var10001;
       switch (var1.pattern.base()) {
-         case SMALL -> var10001 = this.modelA;
-         case LARGE -> var10001 = this.modelB;
+         case SMALL -> var10001 = this.smallModel;
+         case LARGE -> var10001 = this.largeModel;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

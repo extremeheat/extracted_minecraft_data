@@ -12,10 +12,10 @@ public class BubbleParticle extends SingleQuadParticle {
       super(var1, var2, var4, var6, var14);
       this.setSize(0.02F, 0.02F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
-      this.xd = var8 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.yd = var10 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.zd = var12 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
-      this.lifetime = (int)(8.0 / (Math.random() * 0.8 + 0.2));
+      this.xd = var8 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.yd = var10 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.zd = var12 * 0.20000000298023224 + (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.02F);
+      this.lifetime = (int)(8.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
    }
 
    public void tick() {

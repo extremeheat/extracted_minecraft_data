@@ -3,17 +3,18 @@ package net.minecraft.world.entity.projectile;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -37,13 +38,13 @@ public final class ProjectileUtil {
       return getHitResult(var4, var0, var1, var2, var3, computeMargin(var0), ClipContext.Block.COLLIDER);
    }
 
-   public static Collection<EntityHitResult> getHitEntitiesAlong(LivingEntity var0, float var1, float var2, float var3, Predicate<Entity> var4) {
-      Vec3 var5 = var0.getHeadLookAngle();
-      Vec3 var6 = var0.getEyePosition();
-      Vec3 var7 = var6.add(var5.scale((double)var1));
-      double var8 = var0.getKnownMovement().dot(var5);
-      Vec3 var10 = var6.add(var5.scale((double)var2 + Math.max(0.0, var8)));
-      return (Collection)getHitEntitiesAlong(var0, var6, var7, var4, var10, var3, ClipContext.Block.COLLIDER).map((var0x) -> List.of(), (var0x) -> var0x);
+   public static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, AttackRange var1, Predicate<Entity> var2) {
+      Vec3 var3 = var0.getHeadLookAngle();
+      Vec3 var4 = var0.getEyePosition();
+      Vec3 var5 = var4.add(var3.scale(var1.effectiveMinRange(var0)));
+      double var6 = var0.getKnownMovement().dot(var3);
+      Vec3 var8 = var4.add(var3.scale(var1.effectiveMaxRange(var0) + Math.max(0.0, var6)));
+      return getHitEntitiesAlong(var0, var4, var5, var2, var8, var1.hitboxMargin(), ClipContext.Block.COLLIDER);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {

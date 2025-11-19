@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.PolarBearModel;
+import net.minecraft.client.model.animal.polarbear.PolarBearModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PolarBearRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.animal.PolarBear;
+import net.minecraft.world.entity.animal.polarbear.PolarBear;
 
 public class PolarBearRenderer extends AgeableMobRenderer<PolarBear, PolarBearRenderState, PolarBearModel> {
    private static final Identifier BEAR_LOCATION = Identifier.withDefaultNamespace("textures/entity/bear/polarbear.png");

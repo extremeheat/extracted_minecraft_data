@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.NautilusArmorModel;
-import net.minecraft.client.model.NautilusModel;
-import net.minecraft.client.model.NautilusSaddleModel;
+import net.minecraft.client.model.animal.nautilus.NautilusArmorModel;
+import net.minecraft.client.model.animal.nautilus.NautilusModel;
+import net.minecraft.client.model.animal.nautilus.NautilusSaddleModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;

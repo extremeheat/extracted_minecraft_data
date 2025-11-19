@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 public class RandomStandGoal extends Goal {
    private final AbstractHorse horse;

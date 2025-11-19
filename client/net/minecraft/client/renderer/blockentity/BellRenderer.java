@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.BellModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.object.bell.BellModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BellRenderState;

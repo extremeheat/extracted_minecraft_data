@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.BoggedModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.skeleton.BoggedModel;
 import net.minecraft.client.renderer.entity.layers.SkeletonClothingLayer;
 import net.minecraft.client.renderer.entity.state.BoggedRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.monster.Bogged;
+import net.minecraft.world.entity.monster.skeleton.Bogged;
 
 public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRenderState> {
    private static final Identifier BOGGED_SKELETON_LOCATION = Identifier.withDefaultNamespace("textures/entity/skeleton/bogged.png");

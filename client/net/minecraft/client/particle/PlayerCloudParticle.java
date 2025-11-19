@@ -20,12 +20,12 @@ public class PlayerCloudParticle extends SingleQuadParticle {
       this.xd += var8;
       this.yd += var10;
       this.zd += var12;
-      float var16 = 1.0F - (float)(Math.random() * 0.30000001192092896);
+      float var16 = 1.0F - this.random.nextFloat() * 0.3F;
       this.rCol = var16;
       this.gCol = var16;
       this.bCol = var16;
       this.quadSize *= 1.875F;
-      int var17 = (int)(8.0 / (Math.random() * 0.8 + 0.3));
+      int var17 = (int)(8.0 / ((double)this.random.nextFloat() * 0.8 + 0.3));
       this.lifetime = (int)Math.max((float)var17 * 2.5F, 1.0F);
       this.hasPhysics = false;
       this.setSpriteFromAge(var14);

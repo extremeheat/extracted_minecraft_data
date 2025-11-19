@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.client.model.AxolotlModel;
+import net.minecraft.client.model.animal.axolotl.AxolotlModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.AxolotlRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;

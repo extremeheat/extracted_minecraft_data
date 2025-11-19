@@ -11,10 +11,10 @@ public class WakeParticle extends SingleQuadParticle {
       super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var14.first());
       this.sprites = var14;
       this.xd *= 0.30000001192092896;
-      this.yd = Math.random() * 0.20000000298023224 + 0.10000000149011612;
+      this.yd = (double)(this.random.nextFloat() * 0.2F + 0.1F);
       this.zd *= 0.30000001192092896;
       this.setSize(0.01F, 0.01F);
-      this.lifetime = (int)(8.0 / (Math.random() * 0.8 + 0.2));
+      this.lifetime = (int)(8.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
       this.setSpriteFromAge(var14);
       this.gravity = 0.0F;
       this.xd = var8;

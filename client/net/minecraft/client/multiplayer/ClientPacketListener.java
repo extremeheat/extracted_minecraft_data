@@ -282,8 +282,8 @@ import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.animal.Bee;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.bee.Bee;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -292,11 +292,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.MinecartBehavior;
-import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AbstractMountInventoryMenu;
@@ -392,6 +392,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final ClientWaypointManager waypointManager;
    private final SessionSearchTrees searchTrees;
    private final List<WeakReference<CacheSlot<?, ?>>> cacheSlots;
+   private boolean clientLoaded;
 
    public ClientPacketListener(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -486,6 +487,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          }
       }
 
+      this.setClientLoaded(false);
       this.debugSubscriber.clear();
       this.minecraft.levelRenderer.debugRenderer.refreshRendererList();
       this.minecraft.player.resetPos();
@@ -1156,6 +1158,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var14 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }
 
+      this.setClientLoaded(false);
       this.startWaitingForNewLevel(var14, this.level, var8);
       var14.setId(var5.getId());
       this.minecraft.player = var14;
@@ -2506,9 +2509,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void notifyPlayerLoaded() {
-      if (!this.minecraft.player.hasClientLoaded()) {
+      if (!this.hasClientLoaded()) {
          this.connection.send(new ServerboundPlayerLoadedPacket());
-         this.minecraft.player.setClientLoaded(true);
+         this.setClientLoaded(true);
       }
 
    }
@@ -2581,6 +2584,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public DebugValueAccess createDebugValueAccess() {
       return this.debugSubscriber.createDebugValueAccess(this.level);
+   }
+
+   public boolean hasClientLoaded() {
+      return this.clientLoaded;
+   }
+
+   private void setClientLoaded(boolean var1) {
+      this.clientLoaded = var1;
    }
 
    static {

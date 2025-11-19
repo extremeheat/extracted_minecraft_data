@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
-import net.minecraft.client.model.IronGolemModel;
+import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;

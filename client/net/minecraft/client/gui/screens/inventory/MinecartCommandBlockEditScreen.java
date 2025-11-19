@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.network.protocol.game.ServerboundSetCommandMinecartPacket;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.level.BaseCommandBlock;
 
 public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScreen {

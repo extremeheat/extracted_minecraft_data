@@ -2,8 +2,8 @@ package net.minecraft.client.renderer.entity;
 
 import java.util.function.UnaryOperator;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.RaftModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.object.boat.RaftModel;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;

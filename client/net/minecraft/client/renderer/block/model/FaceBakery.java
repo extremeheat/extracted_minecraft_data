@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.math.MatrixUtil;
 import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
+import java.util.Objects;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -55,11 +56,11 @@ public class FaceBakery {
       }
 
       Direction var16 = calculateFacing(var12);
-      if (var7 == null) {
+      if (var7 == null && var16 != null) {
          recalculateWinding(var12, var13, var16);
       }
 
-      return new BakedQuad(var12[0], var12[1], var12[2], var12[3], var13[0], var13[1], var13[2], var13[3], var3.tintIndex(), var16, var4, var8, var9);
+      return new BakedQuad(var12[0], var12[1], var12[2], var12[3], var13[0], var13[1], var13[2], var13[3], var3.tintIndex(), (Direction)Objects.requireNonNullElse(var16, Direction.UP), var4, var8, var9);
    }
 
    private static void bakeVertex(int var0, FaceInfo var1, BlockElementFace.UVs var2, Quadrant var3, Matrix4fc var4, Vector3fc var5, Vector3fc var6, TextureAtlasSprite var7, Transformation var8, @Nullable BlockElementRotation var9, Vector3fc[] var10, long[] var11, ModelBaker.PartCache var12) {
@@ -104,15 +105,15 @@ public class FaceBakery {
       var0.add(var1);
    }
 
-   private static Direction calculateFacing(Vector3fc[] var0) {
+   private static @Nullable Direction calculateFacing(Vector3fc[] var0) {
       Vector3f var1 = new Vector3f();
       GeometryUtils.normal(var0[0], var0[1], var0[2], var1);
       return findClosestDirection(var1);
    }
 
-   private static Direction findClosestDirection(Vector3f var0) {
+   private static @Nullable Direction findClosestDirection(Vector3f var0) {
       if (!var0.isFinite()) {
-         return Direction.UP;
+         return null;
       } else {
          Direction var1 = null;
          float var2 = 0.0F;
@@ -125,11 +126,7 @@ public class FaceBakery {
             }
          }
 
-         if (var1 == null) {
-            return Direction.UP;
-         } else {
-            return var1;
-         }
+         return var1;
       }
    }
 

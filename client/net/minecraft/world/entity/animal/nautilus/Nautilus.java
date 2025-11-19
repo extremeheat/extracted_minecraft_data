@@ -55,23 +55,35 @@ public class Nautilus extends AbstractNautilus {
    }
 
    protected SoundEvent getAmbientSound() {
-      return this.isBaby() ? SoundEvents.BABY_NAUTILUS_AMBIENT : SoundEvents.NAUTILUS_AMBIENT;
+      if (this.isBaby()) {
+         return this.isUnderWater() ? SoundEvents.BABY_NAUTILUS_AMBIENT : SoundEvents.BABY_NAUTILUS_AMBIENT_ON_LAND;
+      } else {
+         return this.isUnderWater() ? SoundEvents.NAUTILUS_AMBIENT : SoundEvents.NAUTILUS_AMBIENT_ON_LAND;
+      }
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return this.isBaby() ? SoundEvents.BABY_NAUTILUS_HURT : SoundEvents.NAUTILUS_HURT;
+      if (this.isBaby()) {
+         return this.isUnderWater() ? SoundEvents.BABY_NAUTILUS_HURT : SoundEvents.BABY_NAUTILUS_HURT_ON_LAND;
+      } else {
+         return this.isUnderWater() ? SoundEvents.NAUTILUS_HURT : SoundEvents.NAUTILUS_HURT_ON_LAND;
+      }
    }
 
    protected SoundEvent getDeathSound() {
-      return this.isBaby() ? SoundEvents.BABY_NAUTILUS_DEATH : SoundEvents.NAUTILUS_DEATH;
+      if (this.isBaby()) {
+         return this.isUnderWater() ? SoundEvents.BABY_NAUTILUS_DEATH : SoundEvents.BABY_NAUTILUS_DEATH_ON_LAND;
+      } else {
+         return this.isUnderWater() ? SoundEvents.NAUTILUS_DEATH : SoundEvents.NAUTILUS_DEATH_ON_LAND;
+      }
    }
 
    protected SoundEvent getDashSound() {
-      return SoundEvents.NAUTILUS_DASH;
+      return this.isUnderWater() ? SoundEvents.NAUTILUS_DASH : SoundEvents.NAUTILUS_DASH_ON_LAND;
    }
 
    protected SoundEvent getDashReadySound() {
-      return SoundEvents.NAUTILUS_DASH_READY;
+      return this.isUnderWater() ? SoundEvents.NAUTILUS_DASH_READY : SoundEvents.NAUTILUS_DASH_READY_ON_LAND;
    }
 
    protected void playEatingSound() {
@@ -111,6 +123,10 @@ public class Nautilus extends AbstractNautilus {
          }
       }
 
+   }
+
+   public boolean canBeLeashed() {
+      return !this.isAggravated();
    }
 
    // $FF: synthetic method

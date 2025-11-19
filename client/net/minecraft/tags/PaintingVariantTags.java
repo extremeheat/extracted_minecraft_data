@@ -2,7 +2,7 @@ package net.minecraft.tags;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.decoration.PaintingVariant;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 
 public class PaintingVariantTags {
    public static final TagKey<PaintingVariant> PLACEABLE = create("placeable");

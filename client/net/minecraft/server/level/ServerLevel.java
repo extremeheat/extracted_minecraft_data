@@ -108,9 +108,9 @@ import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
-import net.minecraft.world.entity.animal.horse.SkeletonHorse;
-import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.animal.equine.SkeletonHorse;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
@@ -250,7 +250,10 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.chunkSource = new ServerChunkCache(this, var3, var15, var10006, var2, var13, var10009, var10010, var14, var10012::updateChunkStatus, () -> var1.overworld().getDataStorage());
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
-      this.prepareWeather();
+      if (this.canHaveWeather()) {
+         this.prepareWeather();
+      }
+
       this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.getType(this.dimensionTypeRegistration()));
       if (!var1.isSingleplayer()) {
          var4.setGameType(var1.getDefaultGameType());

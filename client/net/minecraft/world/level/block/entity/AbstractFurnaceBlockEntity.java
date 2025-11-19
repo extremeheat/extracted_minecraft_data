@@ -361,7 +361,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    private static void createExperience(ServerLevel var0, Vec3 var1, int var2, float var3) {
       int var4 = Mth.floor((float)var2 * var3);
       float var5 = Mth.frac((float)var2 * var3);
-      if (var5 != 0.0F && Math.random() < (double)var5) {
+      if (var5 != 0.0F && var0.random.nextFloat() < var5) {
          ++var4;
       }
 

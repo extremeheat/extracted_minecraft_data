@@ -31,6 +31,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.metadata.animation.AnimationFrame;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
+import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.ARGB;
@@ -48,12 +49,13 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    private final @Nullable AnimatedTexture animatedTexture;
    private final List<MetadataSectionType.WithValue<?>> additionalMetadata;
    private final MipmapStrategy mipmapStrategy;
+   private final float alphaCutoffBias;
 
    public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3) {
-      this(var1, var2, var3, Optional.empty(), List.of(), MipmapStrategy.AUTO);
+      this(var1, var2, var3, Optional.empty(), List.of(), Optional.empty());
    }
 
-   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, MipmapStrategy var6) {
+   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, Optional<TextureMetadataSection> var6) {
       super();
       this.name = var1;
       this.width = var2.width();
@@ -62,12 +64,13 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       this.animatedTexture = (AnimatedTexture)var4.map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
       this.originalImage = var3;
       this.byMipLevel = new NativeImage[]{this.originalImage};
-      this.mipmapStrategy = var6;
+      this.mipmapStrategy = (MipmapStrategy)var6.map(TextureMetadataSection::mipmapStrategy).orElse(MipmapStrategy.AUTO);
+      this.alphaCutoffBias = (Float)var6.map(TextureMetadataSection::alphaCutoffBias).orElse(0.0F);
    }
 
    public void increaseMipLevel(int var1) {
       try {
-         this.byMipLevel = MipmapGenerator.generateMipLevels(this.name, this.byMipLevel, var1, this.mipmapStrategy);
+         this.byMipLevel = MipmapGenerator.generateMipLevels(this.name, this.byMipLevel, var1, this.mipmapStrategy, this.alphaCutoffBias);
       } catch (Throwable var5) {
          CrashReport var3 = CrashReport.forThrowable(var5, "Generating mipmaps for frame");
          CrashReportCategory var4 = var3.addCategory("Frame being iterated");

@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.CreakingModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.creaking.CreakingModel;
 import net.minecraft.client.renderer.entity.layers.LivingEntityEmissiveLayer;
 import net.minecraft.client.renderer.entity.state.CreakingRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;

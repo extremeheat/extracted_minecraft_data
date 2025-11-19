@@ -170,7 +170,7 @@ public class LoadingOverlay extends Overlay {
 
          TextureContents var4;
          try {
-            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, MipmapStrategy.MEAN));
+            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true, MipmapStrategy.MEAN, 0.0F));
          } catch (Throwable var7) {
             if (var3 != null) {
                try {

@@ -97,7 +97,7 @@ public interface Container extends Clearable, SlotProvider, Iterable<ItemStack> 
       if (var3 == null) {
          return false;
       } else {
-         return var3.getBlockEntity(var4) != var0 ? false : var1.canInteractWithBlock(var4, (double)var2);
+         return var3.getBlockEntity(var4) != var0 ? false : var1.isWithinBlockInteractionRange(var4, (double)var2);
       }
    }
 

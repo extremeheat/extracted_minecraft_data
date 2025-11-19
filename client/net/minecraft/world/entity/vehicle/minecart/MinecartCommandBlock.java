@@ -1,0 +1,127 @@
+package net.minecraft.world.entity.vehicle.minecart;
+
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BaseCommandBlock;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+
+public class MinecartCommandBlock extends AbstractMinecart {
+   static final EntityDataAccessor<String> DATA_ID_COMMAND_NAME;
+   static final EntityDataAccessor<Component> DATA_ID_LAST_OUTPUT;
+   private final BaseCommandBlock commandBlock = new MinecartCommandBase();
+   private static final int ACTIVATION_DELAY = 4;
+   private int lastActivated;
+
+   public MinecartCommandBlock(EntityType<? extends MinecartCommandBlock> var1, Level var2) {
+      super(var1, var2);
+   }
+
+   protected Item getDropItem() {
+      return Items.MINECART;
+   }
+
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.COMMAND_BLOCK_MINECART);
+   }
+
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_COMMAND_NAME, "");
+      var1.define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
+   }
+
+   protected void readAdditionalSaveData(ValueInput var1) {
+      super.readAdditionalSaveData(var1);
+      this.commandBlock.load(var1);
+      this.getEntityData().set(DATA_ID_COMMAND_NAME, this.getCommandBlock().getCommand());
+      this.getEntityData().set(DATA_ID_LAST_OUTPUT, this.getCommandBlock().getLastOutput());
+   }
+
+   protected void addAdditionalSaveData(ValueOutput var1) {
+      super.addAdditionalSaveData(var1);
+      this.commandBlock.save(var1);
+   }
+
+   public BlockState getDefaultDisplayBlockState() {
+      return Blocks.COMMAND_BLOCK.defaultBlockState();
+   }
+
+   public BaseCommandBlock getCommandBlock() {
+      return this.commandBlock;
+   }
+
+   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
+      if (var5 && this.tickCount - this.lastActivated >= 4) {
+         this.getCommandBlock().performCommand(var1);
+         this.lastActivated = this.tickCount;
+      }
+
+   }
+
+   public InteractionResult interact(Player var1, InteractionHand var2) {
+      if (!var1.canUseGameMasterBlocks()) {
+         return InteractionResult.PASS;
+      } else {
+         if (var1.level().isClientSide()) {
+            var1.openMinecartCommandBlock(this);
+         }
+
+         return InteractionResult.SUCCESS;
+      }
+   }
+
+   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+      super.onSyncedDataUpdated(var1);
+      if (DATA_ID_LAST_OUTPUT.equals(var1)) {
+         try {
+            this.commandBlock.setLastOutput((Component)this.getEntityData().get(DATA_ID_LAST_OUTPUT));
+         } catch (Throwable var3) {
+         }
+      } else if (DATA_ID_COMMAND_NAME.equals(var1)) {
+         this.commandBlock.setCommand((String)this.getEntityData().get(DATA_ID_COMMAND_NAME));
+      }
+
+   }
+
+   static {
+      DATA_ID_COMMAND_NAME = SynchedEntityData.<String>defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
+      DATA_ID_LAST_OUTPUT = SynchedEntityData.<Component>defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
+   }
+
+   class MinecartCommandBase extends BaseCommandBlock {
+      MinecartCommandBase() {
+         super();
+      }
+
+      public void onUpdated(ServerLevel var1) {
+         MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_COMMAND_NAME, this.getCommand());
+         MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_LAST_OUTPUT, this.getLastOutput());
+      }
+
+      public CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2) {
+         return new CommandSourceStack(var2, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), var1, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), var1.getServer(), MinecartCommandBlock.this);
+      }
+
+      public boolean isValid() {
+         return !MinecartCommandBlock.this.isRemoved();
+      }
+   }
+}

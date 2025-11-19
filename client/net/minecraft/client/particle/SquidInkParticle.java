@@ -13,7 +13,7 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
       this.quadSize = 0.5F;
       this.setAlpha(1.0F);
       this.setColor(ARGB.redFloat(var14), ARGB.greenFloat(var14), ARGB.blueFloat(var14));
-      this.lifetime = (int)((double)(this.quadSize * 12.0F) / (Math.random() * 0.800000011920929 + 0.20000000298023224));
+      this.lifetime = (int)(this.quadSize * 12.0F / (this.random.nextFloat() * 0.8F + 0.2F));
       this.setSpriteFromAge(var15);
       this.hasPhysics = false;
       this.xd = var8;

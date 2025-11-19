@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.render.state.pip;
 
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.model.BannerFlagModel;
+import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jspecify.annotations.Nullable;

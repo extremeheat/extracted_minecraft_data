@@ -151,7 +151,7 @@ public class ServerPlayerGameMode {
    }
 
    public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
-      if (!this.player.canInteractWithBlock(var1, 1.0)) {
+      if (!this.player.isWithinBlockInteractionRange(var1, 1.0)) {
          this.debugLogging(var1, false, var5, "too far");
       } else if (var1.getY() > var4) {
          this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));

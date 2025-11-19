@@ -116,6 +116,7 @@ public class DripParticle extends SingleQuadParticle {
 
       FallAndLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9, TextureAtlasSprite var10) {
          super(var1, var2, var4, var6, var8, var10);
+         this.lifetime = (int)(64.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
          this.landParticle = var9;
       }
 
@@ -163,12 +164,7 @@ public class DripParticle extends SingleQuadParticle {
 
    static class FallingParticle extends DripParticle {
       FallingParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, TextureAtlasSprite var9) {
-         this(var1, var2, var4, var6, var8, (int)(64.0 / (Math.random() * 0.8 + 0.2)), var9);
-      }
-
-      FallingParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, int var9, TextureAtlasSprite var10) {
-         super(var1, var2, var4, var6, var8, var10);
-         this.lifetime = var9;
+         super(var1, var2, var4, var6, var8, var9);
       }
 
       protected void postMoveUpdate() {
@@ -182,7 +178,7 @@ public class DripParticle extends SingleQuadParticle {
    static class DripLandParticle extends DripParticle {
       DripLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, TextureAtlasSprite var9) {
          super(var1, var2, var4, var6, var8, var9);
-         this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+         this.lifetime = (int)(16.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
       }
    }
 
@@ -303,7 +299,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          DripLandParticle var16 = new DripLandParticle(var2, var3, var5, var7, Fluids.EMPTY, this.sprite.get(var15));
-         var16.lifetime = (int)(128.0 / (Math.random() * 0.8 + 0.2));
+         var16.lifetime = (int)(128.0 / ((double)var15.nextFloat() * 0.8 + 0.2));
          ((DripParticle)var16).setColor(0.522F, 0.408F, 0.082F);
          return var16;
       }
@@ -378,7 +374,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          FallingParticle var16 = new FallingParticle(var2, var3, var5, var7, Fluids.EMPTY, this.sprite.get(var15));
-         var16.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+         var16.lifetime = (int)(16.0 / ((double)var15.nextFloat() * 0.8 + 0.2));
          var16.gravity = 0.007F;
          ((DripParticle)var16).setColor(0.92F, 0.782F, 0.72F);
          return var16;
@@ -394,11 +390,11 @@ public class DripParticle extends SingleQuadParticle {
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         int var16 = (int)(64.0F / Mth.randomBetween(var2.getRandom(), 0.1F, 0.9F));
-         FallingParticle var17 = new FallingParticle(var2, var3, var5, var7, Fluids.EMPTY, var16, this.sprite.get(var15));
-         var17.gravity = 0.005F;
-         ((DripParticle)var17).setColor(0.32F, 0.5F, 0.22F);
-         return var17;
+         FallingParticle var16 = new FallingParticle(var2, var3, var5, var7, Fluids.EMPTY, this.sprite.get(var15));
+         var16.lifetime = (int)(64.0F / Mth.randomBetween(var16.random, 0.1F, 0.9F));
+         var16.gravity = 0.005F;
+         ((DripParticle)var16).setColor(0.32F, 0.5F, 0.22F);
+         return var16;
       }
    }
 
@@ -448,7 +444,7 @@ public class DripParticle extends SingleQuadParticle {
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
          DripLandParticle var16 = new DripLandParticle(var2, var3, var5, var7, Fluids.EMPTY, this.sprite.get(var15));
          var16.isGlowing = true;
-         var16.lifetime = (int)(28.0 / (Math.random() * 0.8 + 0.2));
+         var16.lifetime = (int)(28.0 / ((double)var15.nextFloat() * 0.8 + 0.2));
          ((DripParticle)var16).setColor(0.51171875F, 0.03125F, 0.890625F);
          return var16;
       }

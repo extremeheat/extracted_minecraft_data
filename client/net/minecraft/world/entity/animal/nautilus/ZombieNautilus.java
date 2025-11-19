@@ -25,8 +25,6 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.ZombieNautilusVariant;
-import net.minecraft.world.entity.animal.ZombieNautilusVariants;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.EitherHolder;
@@ -79,23 +77,23 @@ public class ZombieNautilus extends AbstractNautilus {
    }
 
    protected SoundEvent getAmbientSound() {
-      return SoundEvents.ZOMBIE_NAUTILUS_AMBIENT;
+      return this.isUnderWater() ? SoundEvents.ZOMBIE_NAUTILUS_AMBIENT : SoundEvents.ZOMBIE_NAUTILUS_AMBIENT_ON_LAND;
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.ZOMBIE_NAUTILUS_HURT;
+      return this.isUnderWater() ? SoundEvents.ZOMBIE_NAUTILUS_HURT : SoundEvents.ZOMBIE_NAUTILUS_HURT_ON_LAND;
    }
 
    protected SoundEvent getDeathSound() {
-      return SoundEvents.ZOMBIE_NAUTILUS_DEATH;
+      return this.isUnderWater() ? SoundEvents.ZOMBIE_NAUTILUS_DEATH : SoundEvents.ZOMBIE_NAUTILUS_DEATH_ON_LAND;
    }
 
    protected SoundEvent getDashSound() {
-      return SoundEvents.ZOMBIE_NAUTILUS_DASH;
+      return this.isUnderWater() ? SoundEvents.ZOMBIE_NAUTILUS_DASH : SoundEvents.ZOMBIE_NAUTILUS_DASH_ON_LAND;
    }
 
    protected SoundEvent getDashReadySound() {
-      return SoundEvents.ZOMBIE_NAUTILUS_DASH_READY;
+      return this.isUnderWater() ? SoundEvents.ZOMBIE_NAUTILUS_DASH_READY : SoundEvents.ZOMBIE_NAUTILUS_DASH_READY_ON_LAND;
    }
 
    protected void playEatingSound() {
@@ -155,6 +153,10 @@ public class ZombieNautilus extends AbstractNautilus {
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.ZOMBIE_NAUTILUS_VARIANT).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
+   public boolean canBeLeashed() {
+      return !this.isAggravated() && !this.isMobControlled();
    }
 
    // $FF: synthetic method

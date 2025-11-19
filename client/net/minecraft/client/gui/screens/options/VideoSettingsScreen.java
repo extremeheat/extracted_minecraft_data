@@ -12,6 +12,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,9 +35,10 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private final GpuWarnlistManager gpuWarnlistManager;
    private final int oldMipmaps;
    private final int oldAnisotropyBit;
+   private final TextureFilteringMethod oldTextureFiltering;
 
    private static OptionInstance<?>[] qualityOptions(Options var0) {
-      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.weatherRadius(), var0.maxAnisotropyBit()};
+      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.textureFiltering(), var0.maxAnisotropyBit(), var0.weatherRadius()};
    }
 
    private static OptionInstance<?>[] displayOptions(Options var0) {
@@ -56,6 +59,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
       this.oldMipmaps = (Integer)var3.mipmapLevels().get();
       this.oldAnisotropyBit = (Integer)var3.maxAnisotropyBit().get();
+      this.oldTextureFiltering = (TextureFilteringMethod)var3.textureFiltering().get();
    }
 
    protected void addOptions() {
@@ -95,13 +99,25 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addSmall(preferenceOptions(this.options));
    }
 
+   public void tick() {
+      if (this.list != null) {
+         AbstractWidget var2 = this.list.findOption(this.options.maxAnisotropyBit());
+         if (var2 instanceof AbstractSliderButton) {
+            AbstractSliderButton var1 = (AbstractSliderButton)var2;
+            var1.active = this.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC;
+         }
+      }
+
+      super.tick();
+   }
+
    public void onClose() {
       this.minecraft.getWindow().changeFullscreenVideoMode();
       super.onClose();
    }
 
    public void removed() {
-      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps || (Integer)this.options.maxAnisotropyBit().get() != this.oldAnisotropyBit) {
+      if ((Integer)this.options.mipmapLevels().get() != this.oldMipmaps || (Integer)this.options.maxAnisotropyBit().get() != this.oldAnisotropyBit || this.options.textureFiltering().get() != this.oldTextureFiltering) {
          this.minecraft.updateMaxMipLevel((Integer)this.options.mipmapLevels().get());
          this.minecraft.delayTextureReload();
       }

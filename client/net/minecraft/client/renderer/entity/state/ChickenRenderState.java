@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.entity.animal.ChickenVariant;
+import net.minecraft.world.entity.animal.chicken.ChickenVariant;
 import org.jspecify.annotations.Nullable;
 
 public class ChickenRenderState extends LivingEntityRenderState {

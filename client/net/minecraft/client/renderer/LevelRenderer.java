@@ -43,6 +43,7 @@ import net.minecraft.client.CloudStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.PrioritizeChunkUpdates;
+import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -578,11 +579,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          double var15 = var10x.z();
          var8.push("terrain");
          if (this.chunkLayerSampler == null) {
-            this.chunkLayerSampler = RenderSystem.getDevice().createSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, this.minecraft.options.maxAnisotropyValue(), OptionalDouble.empty());
+            int var17 = this.minecraft.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC ? this.minecraft.options.maxAnisotropyValue() : 1;
+            this.chunkLayerSampler = RenderSystem.getDevice().createSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, var17, OptionalDouble.empty());
          }
 
-         ChunkSectionsToRender var17 = this.prepareChunkRenders(var3, var11x, var13x, var15);
-         var17.renderGroup(ChunkSectionLayerGroup.OPAQUE, this.chunkLayerSampler);
+         ChunkSectionsToRender var21 = this.prepareChunkRenders(var3, var11x, var13x, var15);
+         var21.renderGroup(ChunkSectionLayerGroup.OPAQUE, this.chunkLayerSampler);
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
          if (var12 != null) {
             ((RenderTarget)var12.get()).copyDepthFrom(this.minecraft.getMainRenderTarget());
@@ -593,17 +595,17 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(var18.getColorTexture(), 0, var18.getDepthTexture(), 1.0);
          }
 
-         PoseStack var21 = new PoseStack();
+         PoseStack var22 = new PoseStack();
          MultiBufferSource.BufferSource var19 = this.renderBuffers.bufferSource();
          MultiBufferSource.BufferSource var20 = this.renderBuffers.crumblingBufferSource();
          var8.popPush("submitEntities");
-         this.submitEntities(var21, var6, this.submitNodeStorage);
+         this.submitEntities(var22, var6, this.submitNodeStorage);
          var8.popPush("submitBlockEntities");
-         this.submitBlockEntities(var21, var6, this.submitNodeStorage);
+         this.submitBlockEntities(var22, var6, this.submitNodeStorage);
          var8.popPush("renderFeatures");
          this.featureRenderDispatcher.renderAllFeatures();
          var19.endLastBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var22);
          var19.endBatch(RenderTypes.solidMovingBlock());
          var19.endBatch(RenderTypes.endPortal());
          var19.endBatch(RenderTypes.endGateway());
@@ -616,14 +618,14 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var19.endBatch(Sheets.chestSheet());
          this.renderBuffers.outlineBufferSource().endOutlineBatch();
          if (var5) {
-            this.renderBlockOutline(var19, var21, false, var6);
+            this.renderBlockOutline(var19, var22, false, var6);
          }
 
          var8.pop();
          this.finalizeGizmoCollection();
-         this.finalizedGizmos.standardPrimitives().render(var21, var19, var6.cameraRenderState, var3);
+         this.finalizedGizmos.standardPrimitives().render(var22, var19, var6.cameraRenderState, var3);
          var19.endLastBatch();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var22);
          var19.endBatch(Sheets.translucentItemSheet());
          var19.endBatch(Sheets.bannerSheet());
          var19.endBatch(Sheets.shieldSheet());
@@ -632,10 +634,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var19.endBatch(RenderTypes.glintTranslucent());
          var19.endBatch(RenderTypes.entityGlint());
          var8.push("destroyProgress");
-         this.renderBlockDestroyAnimation(var21, var20, var6);
+         this.renderBlockDestroyAnimation(var22, var20, var6);
          var20.endBatch();
          var8.pop();
-         this.checkPoseStack(var21);
+         this.checkPoseStack(var22);
          var19.endBatch(RenderTypes.waterMask());
          var19.endBatch();
          if (var11 != null) {
@@ -643,11 +645,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          var8.push("translucent");
-         var17.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
+         var21.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
          var8.popPush("string");
-         var17.renderGroup(ChunkSectionLayerGroup.TRIPWIRE, this.chunkLayerSampler);
+         var21.renderGroup(ChunkSectionLayerGroup.TRIPWIRE, this.chunkLayerSampler);
          if (var5) {
-            this.renderBlockOutline(var19, var21, true, var6);
+            this.renderBlockOutline(var19, var22, true, var6);
          }
 
          var19.endBatch();
@@ -794,7 +796,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       while(var12.hasNext()) {
          SectionRenderDispatcher.RenderSection var13 = (SectionRenderDispatcher.RenderSection)var12.next();
          List var14 = var13.getSectionMesh().getRenderableBlockEntities();
-         if (!var14.isEmpty()) {
+         if (!var14.isEmpty() && !(var13.getVisibility(Util.getMillis()) < 0.3F)) {
             for(BlockEntity var16 : var14) {
                BlockPos var17 = var16.getBlockPos();
                SortedSet var18 = (SortedSet)this.destructionProgress.get(var17.asLong());

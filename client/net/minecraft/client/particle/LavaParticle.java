@@ -16,7 +16,7 @@ public class LavaParticle extends SingleQuadParticle {
       this.zd *= 0.800000011920929;
       this.yd = (double)(this.random.nextFloat() * 0.4F + 0.05F);
       this.quadSize *= this.random.nextFloat() * 2.0F + 0.2F;
-      this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+      this.lifetime = (int)(16.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
    }
 
    public SingleQuadParticle.Layer getLayer() {

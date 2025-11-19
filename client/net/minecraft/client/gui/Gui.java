@@ -66,6 +66,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -383,7 +384,7 @@ public class Gui {
          int var4 = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(var3));
          int var5 = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(var3));
          var1.nextStratum();
-         this.chat.render(var1, this.getFont(), this.tickCount, var4, var5, false);
+         this.chat.render(var1, this.getFont(), this.tickCount, var4, var5, false, false);
       }
 
    }
@@ -434,16 +435,18 @@ public class Gui {
                   if (this.minecraft.crosshairPickEntity != null && this.minecraft.crosshairPickEntity instanceof LivingEntity && var5 >= 1.0F) {
                      var6 = this.minecraft.player.getCurrentItemAttackStrengthDelay() > 5.0F;
                      var6 &= this.minecraft.crosshairPickEntity.isAlive();
+                     AttackRange var7 = (AttackRange)this.minecraft.player.getActiveItem().get(DataComponents.ATTACK_RANGE);
+                     var6 &= var7 == null || var7.isInRange(this.minecraft.player, this.minecraft.hitResult.getLocation());
                   }
 
-                  int var7 = var1.guiHeight() / 2 - 7 + 16;
+                  int var12 = var1.guiHeight() / 2 - 7 + 16;
                   int var8 = var1.guiWidth() / 2 - 8;
                   if (var6) {
-                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var7, 16, 16);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, var8, var12, 16, 16);
                   } else if (var5 < 1.0F) {
                      int var9 = (int)(var5 * 17.0F);
-                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var7, 16, 4);
-                     var1.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var7, var9, 4);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var8, var12, 16, 4);
+                     var1.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, var8, var12, var9, 4);
                   }
                }
             }

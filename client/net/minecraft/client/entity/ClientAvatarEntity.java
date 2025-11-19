@@ -1,7 +1,7 @@
 package net.minecraft.client.entity;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
 

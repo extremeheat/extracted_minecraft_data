@@ -81,7 +81,6 @@ public class LevelStorageSource {
    public static final String TAG_DATA = "Data";
    private static final PathMatcher NO_SYMLINKS_ALLOWED = (var0) -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
-   private static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
    private static final int DISK_SPACE_WARNING_THRESHOLD = 67108864;
    private final Path baseDir;
    private final Path backupDir;
@@ -246,7 +245,7 @@ public class LevelStorageSource {
    }
 
    static CompoundTag readLevelDataTagRaw(Path var0) throws IOException {
-      return NbtIo.readCompressed(var0, NbtAccounter.create(104857600L));
+      return NbtIo.readCompressed(var0, NbtAccounter.uncompressedQuota());
    }
 
    static Dynamic<?> readLevelDataTagFixed(Path var0, DataFixer var1) throws IOException {
@@ -330,7 +329,7 @@ public class LevelStorageSource {
 
    private static @Nullable Tag readLightweightData(Path var0) throws IOException {
       SkipFields var1 = new SkipFields(new FieldSelector[]{new FieldSelector("Data", CompoundTag.TYPE, "Player"), new FieldSelector("Data", CompoundTag.TYPE, "WorldGenSettings")});
-      NbtIo.parseCompressed((Path)var0, var1, NbtAccounter.create(104857600L));
+      NbtIo.parseCompressed((Path)var0, var1, NbtAccounter.uncompressedQuota());
       return var1.getResult();
    }
 

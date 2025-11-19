@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,9 +90,9 @@ public class ChatComponent {
       return var4;
    }
 
-   public void render(GuiGraphics var1, Font var2, int var3, int var4, int var5, boolean var6) {
+   public void render(GuiGraphics var1, Font var2, int var3, int var4, int var5, boolean var6, boolean var7) {
       var1.pose().pushMatrix();
-      this.render((ChatGraphicsAccess)(var6 ? new DrawingFocusedGraphicsAccess(var1, var2, var4, var5) : new DrawingBackgroundGraphicsAccess(var1)), var1.guiHeight(), var3, var6);
+      this.render((ChatGraphicsAccess)(var6 ? new DrawingFocusedGraphicsAccess(var1, var2, var4, var5, var7) : new DrawingBackgroundGraphicsAccess(var1)), var1.guiHeight(), var3, var6);
       var1.pose().popMatrix();
    }
 
@@ -568,14 +569,16 @@ public class ChatComponent {
       private final int globalMouseY;
       private final Vector2f localMousePos = new Vector2f();
       private @Nullable Style hoveredStyle;
+      private final boolean changeCursorOnInsertions;
 
-      public DrawingFocusedGraphicsAccess(GuiGraphics var1, Font var2, int var3, int var4) {
+      public DrawingFocusedGraphicsAccess(GuiGraphics var1, Font var2, int var3, int var4, boolean var5) {
          super();
          this.graphics = var1;
          this.font = var2;
          this.textRenderer = var1.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR, this);
          this.globalMouseX = var3;
          this.globalMouseY = var4;
+         this.changeCursorOnInsertions = var5;
          this.parameters = this.textRenderer.defaultParameters();
          this.updateLocalMousePos();
       }
@@ -601,6 +604,10 @@ public class ChatComponent {
       public boolean handleMessage(int var1, float var2, FormattedCharSequence var3) {
          this.hoveredStyle = null;
          this.textRenderer.accept(TextAlignment.LEFT, 0, var1, this.parameters.withOpacity(var2), (FormattedCharSequence)var3);
+         if (this.changeCursorOnInsertions && this.hoveredStyle != null && this.hoveredStyle.getInsertion() != null) {
+            this.graphics.requestCursor(CursorTypes.POINTING_HAND);
+         }
+
          return this.hoveredStyle != null;
       }
 

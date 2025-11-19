@@ -17,7 +17,7 @@ public class SuspendedTownParticle extends SingleQuadParticle {
       this.xd *= 0.019999999552965164;
       this.yd *= 0.019999999552965164;
       this.zd *= 0.019999999552965164;
-      this.lifetime = (int)(20.0 / (Math.random() * 0.8 + 0.2));
+      this.lifetime = (int)(20.0 / ((double)this.random.nextFloat() * 0.8 + 0.2));
    }
 
    public SingleQuadParticle.Layer getLayer() {

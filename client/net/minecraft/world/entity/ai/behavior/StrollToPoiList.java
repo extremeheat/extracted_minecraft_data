@@ -6,7 +6,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.villager.Villager;
 import org.apache.commons.lang3.mutable.MutableLong;
 
 public class StrollToPoiList {

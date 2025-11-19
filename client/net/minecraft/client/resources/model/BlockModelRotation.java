@@ -13,6 +13,7 @@ import org.joml.Matrix4fc;
 public class BlockModelRotation implements ModelState {
    private static final Map<OctahedralGroup, BlockModelRotation> BY_GROUP_ORDINAL = Util.<OctahedralGroup, BlockModelRotation>makeEnumMap(OctahedralGroup.class, BlockModelRotation::new);
    public static final BlockModelRotation IDENTITY;
+   final OctahedralGroup orientation;
    final Transformation transformation;
    final Map<Direction, Matrix4fc> faceMapping = new EnumMap(Direction.class);
    final Map<Direction, Matrix4fc> inverseFaceMapping = new EnumMap(Direction.class);
@@ -20,6 +21,7 @@ public class BlockModelRotation implements ModelState {
 
    private BlockModelRotation(OctahedralGroup var1) {
       super();
+      this.orientation = var1;
       if (var1 != OctahedralGroup.IDENTITY) {
          this.transformation = new Transformation(new Matrix4f(var1.transformation()));
       } else {
@@ -46,6 +48,10 @@ public class BlockModelRotation implements ModelState {
       return this.withUvLock;
    }
 
+   public String toString() {
+      return "simple[" + this.orientation.getSerializedName() + "]";
+   }
+
    static {
       IDENTITY = get(OctahedralGroup.IDENTITY);
    }
@@ -66,6 +72,10 @@ public class BlockModelRotation implements ModelState {
 
       public Matrix4fc inverseFaceTransformation(Direction var1) {
          return (Matrix4fc)this.parent.inverseFaceMapping.getOrDefault(var1, NO_TRANSFORM);
+      }
+
+      public String toString() {
+         return "uvLocked[" + this.parent.orientation.getSerializedName() + "]";
       }
    }
 }

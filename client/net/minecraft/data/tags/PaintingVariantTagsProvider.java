@@ -5,8 +5,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.PaintingVariantTags;
-import net.minecraft.world.entity.decoration.PaintingVariant;
-import net.minecraft.world.entity.decoration.PaintingVariants;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
+import net.minecraft.world.entity.decoration.painting.PaintingVariants;
 
 public class PaintingVariantTagsProvider extends KeyTagProvider<PaintingVariant> {
    public PaintingVariantTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {

@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.GhastModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.ghast.GhastModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.GhastRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;

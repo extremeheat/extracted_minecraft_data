@@ -57,12 +57,12 @@ import net.minecraft.world.entity.ai.sensing.Sensing;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -265,7 +265,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return var1 != EntityType.GHAST;
    }
 
-   public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
+   public boolean canUseNonMeleeWeapon(ItemStack var1) {
       return false;
    }
 
@@ -623,7 +623,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private double getApproximateAttributeWith(ItemStack var1, Holder<Attribute> var2, EquipmentSlot var3) {
       double var4 = this.getAttributes().hasAttribute(var2) ? this.getAttributeBaseValue(var2) : 0.0;
       ItemAttributeModifiers var6 = (ItemAttributeModifiers)var1.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      return var6.compute(var4, var3);
+      return var6.compute(var2, var4, var3);
    }
 
    public boolean canReplaceEqualItem(ItemStack var1, ItemStack var2) {
@@ -857,7 +857,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          }
 
          public boolean stillValid(Player var1x) {
-            return var1x.getVehicle() == Mob.this || var1x.canInteractWithEntity((Entity)Mob.this, 4.0);
+            return var1x.getVehicle() == Mob.this || var1x.isWithinEntityInteractionRange((Entity)Mob.this, 4.0);
          }
       };
    }
@@ -1311,21 +1311,33 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public boolean isWithinMeleeAttackRange(LivingEntity var1) {
-      return this.getAttackBoundingBox().intersects(var1.getHitbox());
-   }
-
-   protected AABB getAttackBoundingBox() {
-      Entity var2 = this.getVehicle();
-      AABB var1;
-      if (var2 != null) {
-         AABB var3 = var2.getBoundingBox();
-         AABB var4 = this.getBoundingBox();
-         var1 = new AABB(Math.min(var4.minX, var3.minX), var4.minY, Math.min(var4.minZ, var3.minZ), Math.max(var4.maxX, var3.maxX), var4.maxY, Math.max(var4.maxZ, var3.maxZ));
+      AttackRange var2 = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
+      double var3;
+      double var5;
+      if (var2 == null) {
+         var3 = DEFAULT_ATTACK_REACH;
+         var5 = 0.0;
       } else {
-         var1 = this.getBoundingBox();
+         var3 = var2.effectiveMaxRange(this);
+         var5 = var2.effectiveMinRange(this);
       }
 
-      return var1.inflate(DEFAULT_ATTACK_REACH, 0.0, DEFAULT_ATTACK_REACH);
+      AABB var7 = var1.getHitbox();
+      return this.getAttackBoundingBox(var3).intersects(var7) && (var5 <= 0.0 || !this.getAttackBoundingBox(var5).intersects(var7));
+   }
+
+   protected AABB getAttackBoundingBox(double var1) {
+      Entity var4 = this.getVehicle();
+      AABB var3;
+      if (var4 != null) {
+         AABB var5 = var4.getBoundingBox();
+         AABB var6 = this.getBoundingBox();
+         var3 = new AABB(Math.min(var6.minX, var5.minX), var6.minY, Math.min(var6.minZ, var5.minZ), Math.max(var6.maxX, var5.maxX), var6.maxY, Math.max(var6.maxZ, var5.maxZ));
+      } else {
+         var3 = this.getBoundingBox();
+      }
+
+      return var3.inflate(var1, 0.0, var1);
    }
 
    public boolean doHurtTarget(ServerLevel var1, Entity var2) {

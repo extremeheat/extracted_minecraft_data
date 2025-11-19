@@ -19,12 +19,14 @@ public class GraphicsWorkarounds {
    private final WeakReference<GpuDevice> gpuDevice;
    private final boolean alwaysCreateFreshImmediateBuffer;
    private final boolean isGlOnDx12;
+   private final boolean isAmd;
 
    private GraphicsWorkarounds(GpuDevice var1) {
       super();
       this.gpuDevice = new WeakReference(var1);
       this.alwaysCreateFreshImmediateBuffer = isIntelGen11(var1);
       this.isGlOnDx12 = isGlOnDx12(var1);
+      this.isAmd = isAmd(var1);
    }
 
    public static GraphicsWorkarounds get(GpuDevice var0) {
@@ -42,6 +44,10 @@ public class GraphicsWorkarounds {
 
    public boolean isGlOnDx12() {
       return this.isGlOnDx12;
+   }
+
+   public boolean isAmd() {
+      return this.isAmd;
    }
 
    private static boolean isIntelGen11(GpuDevice var0) {
@@ -98,5 +104,9 @@ public class GraphicsWorkarounds {
    private static boolean isGlOnDx12(GpuDevice var0) {
       boolean var1 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
       return var1 || var0.getRenderer().startsWith("D3D12");
+   }
+
+   private static boolean isAmd(GpuDevice var0) {
+      return var0.getRenderer().contains("AMD");
    }
 }

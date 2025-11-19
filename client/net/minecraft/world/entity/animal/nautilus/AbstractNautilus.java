@@ -28,6 +28,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.SlotAccess;
@@ -37,6 +38,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
@@ -369,8 +371,8 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
             }
 
             if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-               FoodProperties var6 = (FoodProperties)var3.get(DataComponents.FOOD);
-               this.heal(var6 != null ? (float)(2 * var6.nutrition()) : 1.0F);
+               FoodProperties var5 = (FoodProperties)var3.get(DataComponents.FOOD);
+               this.heal(var5 != null ? (float)(2 * var5.nutrition()) : 1.0F);
                this.usePlayerItem(var1, var2, var3);
                this.playEatingSound();
                return InteractionResult.SUCCESS;
@@ -382,17 +384,11 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
             }
          }
 
-         if (this.isSaddled() && !var1.isSecondaryUseActive() && !this.isFood(var3)) {
+         if (this.isTame() && !var1.isSecondaryUseActive() && !this.isFood(var3)) {
             this.doPlayerRide(var1);
             return InteractionResult.SUCCESS;
          } else {
-            InteractionResult var5 = super.mobInteract(var1, var2);
-            if (var5 == InteractionResult.PASS) {
-               this.openCustomInventoryScreen(var1);
-               return InteractionResult.SUCCESS;
-            } else {
-               return var5;
-            }
+            return super.mobInteract(var1, var2);
          }
       }
    }
@@ -482,6 +478,14 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
 
    public int getInventoryColumns() {
       return 0;
+   }
+
+   protected boolean isMobControlled() {
+      return this.getFirstPassenger() instanceof Mob;
+   }
+
+   protected boolean isAggravated() {
+      return this.getBrain().hasMemoryValue(MemoryModuleType.ANGRY_AT) || this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
    }
 
    static {

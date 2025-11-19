@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 
 public class LookAtTradingPlayerGoal extends LookAtPlayerGoal {

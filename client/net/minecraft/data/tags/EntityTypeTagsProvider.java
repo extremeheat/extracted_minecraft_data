@@ -58,6 +58,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT).add(EntityType.COPPER_GOLEM);
       this.tag(EntityTypeTags.CANDIDATE_FOR_IRON_GOLEM_GIFT).add(EntityType.VILLAGER).addTag(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT);
       this.tag(EntityTypeTags.NAUTILUS_HOSTILES).add(EntityType.PUFFERFISH);
-      this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityType.HORSE, EntityType.ZOMBIE_HORSE, EntityType.MULE, EntityType.DONKEY, EntityType.CAMEL);
+      this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityType.HORSE, EntityType.ZOMBIE_HORSE, EntityType.MULE, EntityType.DONKEY, EntityType.CAMEL, EntityType.CAMEL_HUSK);
    }
 }

@@ -30,7 +30,7 @@ public class FlyStraightTowardsParticle extends SingleQuadParticle {
       this.z = this.zo;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.2F);
       this.hasPhysics = false;
-      this.lifetime = (int)(Math.random() * 5.0) + 25;
+      this.lifetime = (int)(this.random.nextFloat() * 5.0F) + 25;
       this.startColor = var14;
       this.endColor = var15;
    }

@@ -68,7 +68,7 @@ public abstract class VehicleEntity extends Entity {
       }
    }
 
-   boolean shouldSourceDestroy(DamageSource var1) {
+   protected boolean shouldSourceDestroy(DamageSource var1) {
       return false;
    }
 

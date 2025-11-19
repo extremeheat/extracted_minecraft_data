@@ -10,7 +10,7 @@ public class DustPlumeParticle extends BaseAshSmokeParticle {
 
    protected DustPlumeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, SpriteSet var15) {
       super(var1, var2, var4, var6, 0.7F, 0.6F, 0.7F, var8, var10 + 0.15000000596046448, var12, var14, var15, 0.5F, 7, 0.5F, false);
-      float var16 = (float)Math.random() * 0.2F;
+      float var16 = this.random.nextFloat() * 0.2F;
       this.rCol = (float)ARGB.red(12235202) / 255.0F - var16;
       this.gCol = (float)ARGB.green(12235202) / 255.0F - var16;
       this.bCol = (float)ARGB.blue(12235202) / 255.0F - var16;

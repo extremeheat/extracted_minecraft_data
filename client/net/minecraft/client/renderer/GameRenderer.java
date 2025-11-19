@@ -30,6 +30,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -60,7 +61,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Style;
@@ -76,19 +76,16 @@ import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
-import net.minecraft.world.entity.monster.Spider;
+import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -228,7 +225,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       byte var3 = 0;
       //$FF: var3->value
       //0->net/minecraft/world/entity/monster/Creeper
-      //1->net/minecraft/world/entity/monster/Spider
+      //1->net/minecraft/world/entity/monster/spider/Spider
       //2->net/minecraft/world/entity/monster/EnderMan
       switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
          case -1:
@@ -356,15 +353,13 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
       if (var2 != null) {
          if (this.minecraft.level != null && this.minecraft.player != null) {
             Profiler.get().push("pick");
-            double var3 = this.minecraft.player.blockInteractionRange();
-            double var5 = this.minecraft.player.entityInteractionRange();
-            HitResult var7 = this.pick(var2, var3, var5, var1);
-            this.minecraft.hitResult = var7;
+            this.minecraft.hitResult = this.minecraft.player.raycastHitResult(var1, var2);
             Minecraft var10000 = this.minecraft;
+            HitResult var4 = this.minecraft.hitResult;
             Entity var10001;
-            if (var7 instanceof EntityHitResult) {
-               EntityHitResult var8 = (EntityHitResult)var7;
-               var10001 = var8.getEntity();
+            if (var4 instanceof EntityHitResult) {
+               EntityHitResult var3 = (EntityHitResult)var4;
+               var10001 = var3.getEntity();
             } else {
                var10001 = null;
             }
@@ -372,36 +367,6 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
             var10000.crosshairPickEntity = var10001;
             Profiler.get().pop();
          }
-      }
-   }
-
-   private HitResult pick(Entity var1, double var2, double var4, float var6) {
-      double var7 = Math.max(var2, var4);
-      double var9 = Mth.square(var7);
-      Vec3 var11 = var1.getEyePosition(var6);
-      HitResult var12 = var1.pick(var7, var6, false);
-      double var13 = var12.getLocation().distanceToSqr(var11);
-      if (var12.getType() != HitResult.Type.MISS) {
-         var9 = var13;
-         var7 = Math.sqrt(var13);
-      }
-
-      Vec3 var15 = var1.getViewVector(var6);
-      Vec3 var16 = var11.add(var15.x * var7, var15.y * var7, var15.z * var7);
-      float var17 = 1.0F;
-      AABB var18 = var1.getBoundingBox().expandTowards(var15.scale(var7)).inflate(1.0, 1.0, 1.0);
-      EntityHitResult var19 = ProjectileUtil.getEntityHitResult(var1, var11, var16, var18, EntitySelector.CAN_BE_PICKED, var9);
-      return var19 != null && var19.getLocation().distanceToSqr(var11) < var13 ? filterHitResult(var19, var11, var4) : filterHitResult(var12, var11, var2);
-   }
-
-   private static HitResult filterHitResult(HitResult var0, Vec3 var1, double var2) {
-      Vec3 var4 = var0.getLocation();
-      if (!var4.closerThan(var1, var2)) {
-         Vec3 var5 = var0.getLocation();
-         Direction var6 = Direction.getApproximateNearest(var5.x - var1.x, var5.y - var1.y, var5.z - var1.z);
-         return BlockHitResult.miss(var5, var6, BlockPos.containing(var5));
-      } else {
-         return var0;
       }
    }
 
@@ -538,7 +503,7 @@ public class GameRenderer implements TrackedWaypoint.Projector, AutoCloseable {
          var3.push("camera");
          this.updateCamera(var1);
          var3.pop();
-         this.globalSettingsUniform.update(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), (Double)this.minecraft.options.glintStrength().get(), this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime(), var1, this.minecraft.options.getMenuBackgroundBlurriness(), this.mainCamera);
+         this.globalSettingsUniform.update(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), (Double)this.minecraft.options.glintStrength().get(), this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime(), var1, this.minecraft.options.getMenuBackgroundBlurriness(), this.mainCamera, this.minecraft.options.textureFiltering().get() == TextureFilteringMethod.RGSS);
          boolean var4 = this.minecraft.isGameLoadFinished();
          int var5 = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
          int var6 = (int)this.minecraft.mouseHandler.getScaledYPos(this.minecraft.getWindow());

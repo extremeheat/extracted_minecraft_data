@@ -46,6 +46,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.renderer.GpuWarnlistManager;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
@@ -155,6 +156,10 @@ public class Options {
    private final OptionInstance<Integer> mipmapLevels;
    private static final Component GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING = Component.translatable("options.maxAnisotropy.tooltip");
    private final OptionInstance<Integer> maxAnisotropyBit;
+   private static final Component FILTERING_NONE_TOOLTIP = Component.translatable("options.textureFiltering.none.tooltip");
+   private static final Component FILTERING_RGSS_TOOLTIP = Component.translatable("options.textureFiltering.rgss.tooltip");
+   private static final Component FILTERING_ANISOTROPIC_TOOLTIP = Component.translatable("options.textureFiltering.anisotropic.tooltip");
+   private final OptionInstance<TextureFilteringMethod> textureFiltering;
    private boolean useNativeTransport;
    private final OptionInstance<AttackIndicatorStatus> attackIndicator;
    public TutorialSteps tutorialStep;
@@ -482,6 +487,10 @@ public class Options {
 
    public int maxAnisotropyValue() {
       return Math.min(1 << (Integer)this.maxAnisotropyBit.get(), RenderSystem.getDevice().getMaxSupportedAnisotropy());
+   }
+
+   public OptionInstance<TextureFilteringMethod> textureFiltering() {
+      return this.textureFiltering;
    }
 
    public OptionInstance<AttackIndicatorStatus> attackIndicator() {
@@ -861,9 +870,31 @@ public class Options {
       this.notificationDisplayTime = new OptionInstance<Double>("options.notifications.display_time", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)), (new OptionInstance.IntRange(5, 100)).xmap((var0) -> (double)var0 / 10.0, (var0) -> (int)(var0 * 10.0), true), Codec.doubleRange(0.5, 10.0), 1.0, (var0) -> {
       });
       this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var1x) -> this.setGraphicsPresetToCustom());
-      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(0, 3), 2, (var1x) -> {
+      this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(1, 3), 2, (var1x) -> {
          this.setGraphicsPresetToCustom();
-         Minecraft.getInstance().levelRenderer.onChangeMaxAnisotropy();
+         LevelRenderer var2 = Minecraft.getInstance().levelRenderer;
+         if (var2 != null) {
+            var2.onChangeMaxAnisotropy();
+         }
+
+      });
+      this.textureFiltering = new OptionInstance<TextureFilteringMethod>("options.textureFiltering", (var0) -> {
+         Tooltip var10000;
+         switch (var0) {
+            case NONE -> var10000 = Tooltip.create(FILTERING_NONE_TOOLTIP);
+            case RGSS -> var10000 = Tooltip.create(FILTERING_RGSS_TOOLTIP);
+            case ANISOTROPIC -> var10000 = Tooltip.create(FILTERING_ANISOTROPIC_TOOLTIP);
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(TextureFilteringMethod.values()), TextureFilteringMethod.LEGACY_CODEC), TextureFilteringMethod.NONE, (var1x) -> {
+         this.setGraphicsPresetToCustom();
+         LevelRenderer var2 = Minecraft.getInstance().levelRenderer;
+         if (var2 != null) {
+            var2.onChangeMaxAnisotropy();
+         }
+
       });
       this.useNativeTransport = true;
       this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
@@ -1128,6 +1159,7 @@ public class Options {
       var1.process("gamma", this.gamma);
       var1.process("guiScale", this.guiScale);
       var1.process("maxAnisotropyBit", this.maxAnisotropyBit);
+      var1.process("textureFiltering", this.textureFiltering);
       var1.process("maxFps", this.framerateLimit);
       var1.process("improvedTransparency", this.improvedTransparency);
       var1.process("inactivityFpsLimit", this.inactivityFpsLimit);

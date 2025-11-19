@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.render.state.pip;
 
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.model.BookModel;
+import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
