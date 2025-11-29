@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -42,7 +43,7 @@ public record AttackRange(float minRange, float maxRange, float hitboxMargin, fl
    }
 
    public HitResult getClosesetHit(Entity var1, float var2, Predicate<Entity> var3) {
-      Either var4 = ProjectileUtil.getHitEntitiesAlong(var1, this, var3);
+      Either var4 = ProjectileUtil.getHitEntitiesAlong(var1, this.effectiveRange(var1), var3, ClipContext.Block.OUTLINE);
       if (var4.left().isPresent()) {
          return (HitResult)var4.left().get();
       } else {
@@ -69,12 +70,20 @@ public record AttackRange(float minRange, float maxRange, float hitboxMargin, fl
       }
    }
 
-   public double effectiveMinRange(Entity var1) {
-      return var1 instanceof Player ? (double)this.minRange : (double)(this.minRange * this.mobFactor);
+   public float effectiveMinRange(Entity var1) {
+      return var1 instanceof Player ? this.minRange : this.minRange * this.mobFactor;
    }
 
-   public double effectiveMaxRange(Entity var1) {
-      return var1 instanceof Player ? (double)this.maxRange : (double)(this.maxRange * this.mobFactor);
+   public float effectiveMaxRange(Entity var1) {
+      if (var1 instanceof Player var2) {
+         return var2.isCreative() ? this.maxRange + 2.0F : this.maxRange;
+      } else {
+         return this.maxRange * this.mobFactor;
+      }
+   }
+
+   public AttackRange effectiveRange(Entity var1) {
+      return new AttackRange(this.effectiveMinRange(var1), this.effectiveMaxRange(var1), this.hitboxMargin, this.mobFactor);
    }
 
    public boolean isInRange(LivingEntity var1, Vec3 var2) {
@@ -89,8 +98,8 @@ public record AttackRange(float minRange, float maxRange, float hitboxMargin, fl
 
    private boolean isInRange(LivingEntity var1, ToDoubleFunction<Vec3> var2, double var3) {
       double var5 = Math.sqrt(var2.applyAsDouble(var1.getEyePosition()));
-      double var7 = this.effectiveMinRange(var1) - (double)this.hitboxMargin - var3;
-      double var9 = this.effectiveMaxRange(var1) + (double)this.hitboxMargin + var3;
+      double var7 = (double)(this.effectiveMinRange(var1) - this.hitboxMargin) - var3;
+      double var9 = (double)(this.effectiveMaxRange(var1) + this.hitboxMargin) + var3;
       return var5 >= var7 && var5 <= var9;
    }
 

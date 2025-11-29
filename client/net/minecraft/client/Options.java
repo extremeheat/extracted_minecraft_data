@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -304,6 +305,14 @@ public class Options {
    private final OptionInstance<MusicToastDisplayState> musicToast;
    public boolean syncWrites;
    public boolean startedCleanly;
+
+   private static void operateOnLevelRenderer(Consumer<LevelRenderer> var0) {
+      LevelRenderer var1 = Minecraft.getInstance().levelRenderer;
+      if (var1 != null) {
+         var0.accept(var1);
+      }
+
+   }
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
@@ -797,12 +806,12 @@ public class Options {
       });
       this.cloudStatus = new OptionInstance<CloudStatus>("options.renderClouds", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, (var0) -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)), CloudStatus.FANCY, (var1x) -> this.setGraphicsPresetToCustom());
       this.cloudRange = new OptionInstance<Integer>("options.renderCloudsDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, 128, true), 128, (var1x) -> {
-         Minecraft.getInstance().levelRenderer.getCloudRenderer().markForRebuild();
+         operateOnLevelRenderer((var0) -> var0.getCloudRenderer().markForRebuild());
          this.setGraphicsPresetToCustom();
       });
       this.weatherRadius = new OptionInstance<Integer>("options.weatherRadius", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_WEATHER_RADIUS), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.blocks", var1x)), new OptionInstance.IntRange(3, 10, true), 10, (var1x) -> this.setGraphicsPresetToCustom());
       this.cutoutLeaves = OptionInstance.createBoolean("options.cutoutLeaves", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CUTOUT_LEAVES), true, (var1x) -> {
-         Minecraft.getInstance().levelRenderer.allChanged();
+         operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
       this.vignette = OptionInstance.createBoolean("options.vignette", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_VIGNETTE), true);
@@ -812,12 +821,12 @@ public class Options {
          if (var1x && var3.willShowWarning()) {
             var3.showWarning();
          } else {
-            var2.levelRenderer.allChanged();
+            operateOnLevelRenderer(LevelRenderer::allChanged);
             this.setGraphicsPresetToCustom();
          }
       });
       this.ambientOcclusion = OptionInstance.createBoolean("options.ao", true, (var1x) -> {
-         Minecraft.getInstance().levelRenderer.allChanged();
+         operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
       this.chunkSectionFadeInTime = new OptionInstance<Double>("options.chunkFade", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_CHUNK_FADE), (var0, var1x) -> var1x <= 0.0 ? Component.translatable("options.chunkFade.none") : Component.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", var1x)), (new OptionInstance.IntRange(0, 40)).xmap((var0) -> (double)var0 / 20.0, (var0) -> (int)(var0 * 20.0), true), Codec.doubleRange(0.0, 2.0), 0.75, (var0) -> {
@@ -872,11 +881,7 @@ public class Options {
       this.mipmapLevels = new OptionInstance<Integer>("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x)), new OptionInstance.IntRange(0, 4), 4, (var1x) -> this.setGraphicsPresetToCustom());
       this.maxAnisotropyBit = new OptionInstance<Integer>("options.maxAnisotropy", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_ANISOTROPIC_FILTERING), (var0, var1x) -> (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, Component.translatable("options.multiplier", Integer.toString(1 << var1x)))), new OptionInstance.IntRange(1, 3), 2, (var1x) -> {
          this.setGraphicsPresetToCustom();
-         LevelRenderer var2 = Minecraft.getInstance().levelRenderer;
-         if (var2 != null) {
-            var2.onChangeMaxAnisotropy();
-         }
-
+         operateOnLevelRenderer(LevelRenderer::resetSampler);
       });
       this.textureFiltering = new OptionInstance<TextureFilteringMethod>("options.textureFiltering", (var0) -> {
          Tooltip var10000;
@@ -890,11 +895,7 @@ public class Options {
          return var10000;
       }, (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(TextureFilteringMethod.values()), TextureFilteringMethod.LEGACY_CODEC), TextureFilteringMethod.NONE, (var1x) -> {
          this.setGraphicsPresetToCustom();
-         LevelRenderer var2 = Minecraft.getInstance().levelRenderer;
-         if (var2 != null) {
-            var2.onChangeMaxAnisotropy();
-         }
-
+         operateOnLevelRenderer(LevelRenderer::resetSampler);
       });
       this.useNativeTransport = true;
       this.attackIndicator = new OptionInstance<AttackIndicatorStatus>("options.attackIndicator", OptionInstance.noTooltip(), (var0, var1x) -> var1x.caption(), new OptionInstance.Enum(Arrays.asList(AttackIndicatorStatus.values()), AttackIndicatorStatus.LEGACY_CODEC), AttackIndicatorStatus.CROSSHAIR, (var0) -> {
@@ -905,7 +906,7 @@ public class Options {
          int var2 = var1x * 2 + 1;
          return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2));
       }, new OptionInstance.IntRange(0, 7, false), 2, (var1x) -> {
-         Minecraft.getInstance().levelRenderer.allChanged();
+         operateOnLevelRenderer(LevelRenderer::allChanged);
          this.setGraphicsPresetToCustom();
       });
       this.mouseWheelSensitivity = new OptionInstance<Double>("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x))), (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse, false), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (var0) -> {
@@ -1059,7 +1060,7 @@ public class Options {
          }
 
          return var10000;
-      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((var0) -> (int)(var0 * 40.0 + 70.0), (var0) -> ((double)var0 - 70.0) / 40.0), 70, (var0) -> Minecraft.getInstance().levelRenderer.needsUpdate());
+      }, new OptionInstance.IntRange(30, 110), Codec.DOUBLE.xmap((var0) -> (int)(var0 * 40.0 + 70.0), (var0) -> ((double)var0 - 70.0) / 40.0), 70, (var0) -> operateOnLevelRenderer(LevelRenderer::needsUpdate));
       this.telemetryOptInExtra = OptionInstance.createBoolean("options.telemetry.button", OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP), (var0, var1x) -> {
          Minecraft var2 = Minecraft.getInstance();
          if (!var2.allowsTelemetry()) {
@@ -1118,7 +1119,7 @@ public class Options {
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
       this.renderDistance = new OptionInstance<Integer>("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var1x) -> {
-         Minecraft.getInstance().levelRenderer.needsUpdate();
+         operateOnLevelRenderer(LevelRenderer::needsUpdate);
          this.setGraphicsPresetToCustom();
       });
       this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, var3 ? 32 : 16, false), 12, (var1x) -> this.setGraphicsPresetToCustom());

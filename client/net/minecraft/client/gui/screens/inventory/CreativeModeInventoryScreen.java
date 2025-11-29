@@ -690,7 +690,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       var1.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      if (this.insideScrollbar((double)var3, (double)var4)) {
+      if (this.insideScrollbar((double)var3, (double)var4) && this.canScroll()) {
          var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
       }
 

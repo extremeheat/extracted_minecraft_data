@@ -91,15 +91,17 @@ public class MipmapGenerator {
 
    public static NativeImage[] generateMipLevels(Identifier var0, NativeImage[] var1, int var2, MipmapStrategy var3, float var4) {
       if (var3 == MipmapStrategy.AUTO) {
-         if (var0.getPath().startsWith("item/")) {
-            var3 = MipmapStrategy.STRICT_CUTOUT;
-         } else {
-            var3 = hasTransparentPixel(var1[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
-         }
+         var3 = hasTransparentPixel(var1[0]) ? MipmapStrategy.CUTOUT : MipmapStrategy.MEAN;
       }
 
-      if (var1.length == 1 && (var3 == MipmapStrategy.CUTOUT || var3 == MipmapStrategy.STRICT_CUTOUT || var3 == MipmapStrategy.DARK_CUTOUT)) {
-         TextureUtil.solidify(var1[0]);
+      if (var1.length == 1 && !var0.getPath().startsWith("item/")) {
+         if (var3 != MipmapStrategy.CUTOUT && var3 != MipmapStrategy.STRICT_CUTOUT) {
+            if (var3 == MipmapStrategy.DARK_CUTOUT) {
+               TextureUtil.fillEmptyAreasWithDarkColor(var1[0]);
+            }
+         } else {
+            TextureUtil.solidify(var1[0]);
+         }
       }
 
       if (var2 + 1 <= var1.length) {

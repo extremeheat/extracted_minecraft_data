@@ -17,7 +17,7 @@ public class GlobalSettingsUniform implements AutoCloseable {
 
    public GlobalSettingsUniform() {
       super();
-      this.buffer = RenderSystem.getDevice().createBuffer(() -> "Global Settings UBO", 136, UBO_SIZE);
+      this.buffer = RenderSystem.getDevice().createBuffer(() -> "Global Settings UBO", 136, (long)UBO_SIZE);
    }
 
    public void update(int var1, int var2, double var3, long var5, DeltaTracker var7, int var8, Camera var9, boolean var10) {

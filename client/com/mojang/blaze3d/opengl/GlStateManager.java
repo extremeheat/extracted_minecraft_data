@@ -241,9 +241,9 @@ public class GlStateManager {
       GL15.glBufferData(var0, var1, var2);
    }
 
-   public static void _glBufferSubData(int var0, int var1, ByteBuffer var2) {
+   public static void _glBufferSubData(int var0, long var1, ByteBuffer var3) {
       RenderSystem.assertOnRenderThread();
-      GL15.glBufferSubData(var0, (long)var1, var2);
+      GL15.glBufferSubData(var0, var1, var3);
    }
 
    public static void _glBufferData(int var0, long var1, int var3) {
@@ -251,9 +251,9 @@ public class GlStateManager {
       GL15.glBufferData(var0, var1, var3);
    }
 
-   public static @Nullable ByteBuffer _glMapBufferRange(int var0, int var1, int var2, int var3) {
+   public static @Nullable ByteBuffer _glMapBufferRange(int var0, long var1, long var3, int var5) {
       RenderSystem.assertOnRenderThread();
-      return GL30.glMapBufferRange(var0, (long)var1, (long)var2, var3);
+      return GL30.glMapBufferRange(var0, var1, var3, var5);
    }
 
    public static void _glUnmapBuffer(int var0) {

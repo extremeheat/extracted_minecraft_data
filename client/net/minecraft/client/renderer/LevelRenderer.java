@@ -103,6 +103,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -279,6 +280,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
          this.cloudRenderer.markForRebuild();
          ItemBlockRenderTypes.setCutoutLeaves((Boolean)this.minecraft.options.cutoutLeaves().get());
+         LeavesBlock.setCutoutLeaves((Boolean)this.minecraft.options.cutoutLeaves().get());
          this.lastViewDistance = this.minecraft.options.getEffectiveRenderDistance();
          if (this.viewArea != null) {
             this.viewArea.releaseAllBuffers();
@@ -337,7 +339,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return var1;
    }
 
-   public void onChangeMaxAnisotropy() {
+   public void resetSampler() {
       if (this.chunkLayerSampler != null) {
          this.chunkLayerSampler.close();
       }

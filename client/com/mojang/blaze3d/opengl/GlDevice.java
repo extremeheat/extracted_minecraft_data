@@ -198,20 +198,20 @@ public class GlDevice implements GpuDevice {
       }
    }
 
-   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, int var3) {
-      if (var3 <= 0) {
+   public GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, long var3) {
+      if (var3 <= 0L) {
          throw new IllegalArgumentException("Buffer size must be greater than zero");
       } else {
          GlStateManager.clearGlErrors();
-         GlBuffer var4 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
-         int var5 = GlStateManager._getError();
-         if (var5 == 1285) {
+         GlBuffer var5 = this.bufferStorage.createBuffer(this.directStateAccess, var1, var2, var3);
+         int var6 = GlStateManager._getError();
+         if (var6 == 1285) {
             throw new GpuOutOfMemoryException("Could not allocate buffer of " + var3 + " for " + String.valueOf(var1));
-         } else if (var5 != 0) {
-            throw new IllegalStateException("OpenGL error " + var5);
+         } else if (var6 != 0) {
+            throw new IllegalStateException("OpenGL error " + var6);
          } else {
-            this.debugLabels.applyLabel(var4);
-            return var4;
+            this.debugLabels.applyLabel(var5);
+            return var5;
          }
       }
    }

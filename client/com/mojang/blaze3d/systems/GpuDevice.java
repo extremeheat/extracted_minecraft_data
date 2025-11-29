@@ -31,7 +31,7 @@ public interface GpuDevice {
 
    GpuTextureView createTextureView(GpuTexture var1, int var2, int var3);
 
-   GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, int var3);
+   GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, long var3);
 
    GpuBuffer createBuffer(@Nullable Supplier<String> var1, @GpuBuffer.Usage int var2, ByteBuffer var3);
 

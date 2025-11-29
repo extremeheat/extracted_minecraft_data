@@ -501,7 +501,7 @@ public class ItemInHandRenderer {
                   case SPEAR:
                      var8.translate((float)var22 * 0.56F, -0.52F, -0.72F);
                      float var24 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                     SpearAnimations.firstPersonUse(var1.getTicksSinceEnemyHit(var2), var8, var24, var12, var6);
+                     SpearAnimations.firstPersonUse(var1.getTicksSinceLastKineticHitFeedback(var2), var8, var24, var12, var6);
                }
             } else if (var1.isAutoSpinAttack()) {
                this.applyItemArmTransform(var8, var12, var7);

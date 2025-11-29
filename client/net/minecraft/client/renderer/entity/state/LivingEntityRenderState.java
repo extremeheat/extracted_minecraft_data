@@ -16,7 +16,7 @@ public class LivingEntityRenderState extends EntityRenderState {
    public float walkAnimationSpeed;
    public float scale = 1.0F;
    public float ageScale = 1.0F;
-   public float ticksSinceEnemyHit;
+   public float ticksSinceKineticHitFeedback;
    public boolean isUpsideDown;
    public boolean isFullyFrozen;
    public boolean isBaby;

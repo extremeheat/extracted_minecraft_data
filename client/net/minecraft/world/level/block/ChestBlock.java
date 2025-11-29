@@ -36,6 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -54,6 +55,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -350,6 +352,10 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
                      var2.unpackLootTable(var2x.player);
                      return ChestMenu.sixRows(var1x, var2x, var3);
                   } else {
+                     Direction var4 = ChestBlock.getConnectedDirection(var1.getBlockState());
+                     Vec3 var5 = var1.getBlockPos().getCenter();
+                     Vec3 var6 = var5.add((double)var4.getStepX() / 2.0, 0.0, (double)var4.getStepZ() / 2.0);
+                     BaseContainerBlockEntity.sendChestLockedNotifications(var6, var3x, this.getDisplayName());
                      return null;
                   }
                }

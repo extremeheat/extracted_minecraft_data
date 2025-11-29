@@ -51,16 +51,18 @@ public class LegacyStructureDataHandler implements LegacyTagFixer {
    private final boolean hasLegacyData;
    private final Map<String, Long2ObjectMap<CompoundTag>> dataMap = Maps.newHashMap();
    private final Map<String, StructureFeatureIndexSavedData> indexMap = Maps.newHashMap();
+   private final @Nullable DimensionDataStorage dimensionDataStorage;
    private final List<String> legacyKeys;
    private final List<String> currentKeys;
    private final DataFixer dataFixer;
+   private boolean cachesInitialized;
 
    public LegacyStructureDataHandler(@Nullable DimensionDataStorage var1, List<String> var2, List<String> var3, DataFixer var4) {
       super();
+      this.dimensionDataStorage = var1;
       this.legacyKeys = var2;
       this.currentKeys = var3;
       this.dataFixer = var4;
-      this.populateCaches(var1);
       boolean var5 = false;
 
       for(String var7 : this.currentKeys) {
@@ -87,6 +89,10 @@ public class LegacyStructureDataHandler implements LegacyTagFixer {
    }
 
    public CompoundTag applyFix(CompoundTag var1) {
+      if (!this.cachesInitialized && this.dimensionDataStorage != null) {
+         this.populateCaches(this.dimensionDataStorage);
+      }
+
       int var2 = NbtUtils.getDataVersion(var1);
       if (var2 < 1493) {
          var1 = DataFixTypes.CHUNK.update(this.dataFixer, var1, var2, 1493);
@@ -178,8 +184,8 @@ public class LegacyStructureDataHandler implements LegacyTagFixer {
       return var1;
    }
 
-   private void populateCaches(@Nullable DimensionDataStorage var1) {
-      if (var1 != null) {
+   private synchronized void populateCaches(DimensionDataStorage var1) {
+      if (!this.cachesInitialized) {
          for(String var3 : this.legacyKeys) {
             CompoundTag var4 = new CompoundTag();
 
@@ -221,6 +227,7 @@ public class LegacyStructureDataHandler implements LegacyTagFixer {
             }
          }
 
+         this.cachesInitialized = true;
       }
    }
 

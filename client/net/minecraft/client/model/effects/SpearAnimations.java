@@ -53,7 +53,7 @@ public class SpearAnimations {
          int var9 = var3 == HumanoidArm.RIGHT ? 1 : -1;
          float var10 = 1.0F - Ease.outBack(1.0F - var8.raiseProgress());
          float var11 = 0.125F;
-         float var12 = hitFeedbackAmount(var0.ticksSinceEnemyHit);
+         float var12 = hitFeedbackAmount(var0.ticksSinceKineticHitFeedback);
          var1.translate(0.0, (double)(-var12) * 0.4, (double)(-var5.forwardMovement() * (var10 - var8.raiseBackProgress()) + var12));
          var1.rotateAround(Axis.XN.rotationDegrees(70.0F * (var8.raiseProgress() - var8.raiseBackProgress()) - 40.0F * (var6 - var7)), 0.0F, -0.03125F, 0.125F);
          var1.rotateAround(Axis.YP.rotationDegrees((float)(var9 * 90) * (var8.raiseProgress() - var8.swayProgress() + 3.0F * var7 + var6)), 0.0F, 0.0F, 0.125F);
@@ -90,7 +90,7 @@ public class SpearAnimations {
    }
 
    private static float hitFeedbackAmount(float var0) {
-      return var0 >= 10.0F ? 0.0F : 0.4F * (Ease.outQuart(progress(var0, 1.0F, 3.0F)) - Ease.inOutSine(progress(var0, 3.0F, 10.0F)));
+      return 0.4F * (Ease.outQuart(progress(var0, 1.0F, 3.0F)) - Ease.inOutSine(progress(var0, 3.0F, 10.0F)));
    }
 
    public static void firstPersonUse(float var0, PoseStack var1, float var2, HumanoidArm var3, ItemStack var4) {
@@ -100,7 +100,7 @@ public class SpearAnimations {
          int var7 = var3 == HumanoidArm.RIGHT ? 1 : -1;
          var1.translate((double)((float)var7 * (var6.raiseProgress() * 0.15F + var6.raiseProgressEnd() * -0.05F + var6.swayProgress() * -0.1F + var6.swayScaleSlow() * 0.005F)), (double)(var6.raiseProgress() * -0.075F + var6.raiseProgressMiddle() * 0.075F + var6.swayScaleFast() * 0.01F), (double)var6.raiseProgressStart() * 0.05 + (double)var6.raiseProgressEnd() * -0.05 + (double)(var6.swayScaleSlow() * 0.005F));
          var1.rotateAround(Axis.XP.rotationDegrees(-65.0F * Ease.inOutBack(var6.raiseProgress()) - 35.0F * var6.lowerProgress() + 100.0F * var6.raiseBackProgress() + -0.5F * var6.swayScaleFast()), 0.0F, 0.1F, 0.0F);
-         var1.rotateAround(Axis.YN.rotationDegrees((float)var7 * (-90.0F * progress(var6.raiseProgress(), 0.5F, 0.55F) + 60.0F * var6.swayProgress() + 30.0F * var6.raiseBackProgress() + 2.0F * var6.swayScaleSlow())), (float)var7 * 0.15F, 0.0F, 0.0F);
+         var1.rotateAround(Axis.YN.rotationDegrees((float)var7 * (-90.0F * progress(var6.raiseProgress(), 0.5F, 0.55F) + 90.0F * var6.swayProgress() + 2.0F * var6.swayScaleSlow())), (float)var7 * 0.15F, 0.0F, 0.0F);
          var1.translate(0.0F, -hitFeedbackAmount(var0), 0.0F);
       }
    }

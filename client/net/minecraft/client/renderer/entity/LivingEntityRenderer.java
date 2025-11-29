@@ -301,7 +301,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.isBaby = var1.isBaby();
          var2.isInWater = var1.isInWater();
          var2.isAutoSpinAttack = var1.isAutoSpinAttack();
-         var2.ticksSinceEnemyHit = var1.getTicksSinceEnemyHit(var3);
+         var2.ticksSinceKineticHitFeedback = var1.getTicksSinceLastKineticHitFeedback(var3);
          var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
          ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
          Item var8 = var9.getItem();

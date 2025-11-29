@@ -56,7 +56,7 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
 
    public GpuBufferSlice writeUniform(T var1) {
       if (this.lastUniform != null && this.lastUniform.equals(var1)) {
-         return this.ringBuffer.currentBuffer().slice((this.nextBlock - 1) * this.blockSize, this.blockSize);
+         return this.ringBuffer.currentBuffer().slice((long)((this.nextBlock - 1) * this.blockSize), (long)this.blockSize);
       } else {
          if (this.nextBlock >= this.capacity) {
             int var2 = this.capacity * 2;
@@ -66,13 +66,13 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
 
          int var8 = this.nextBlock * this.blockSize;
 
-         try (GpuBuffer.MappedView var3 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice(var8, this.blockSize), false, true)) {
+         try (GpuBuffer.MappedView var3 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)var8, (long)this.blockSize), false, true)) {
             var1.write(var3.data());
          }
 
          ++this.nextBlock;
          this.lastUniform = var1;
-         return this.ringBuffer.currentBuffer().slice(var8, this.blockSize);
+         return this.ringBuffer.currentBuffer().slice((long)var8, (long)this.blockSize);
       }
    }
 
@@ -89,12 +89,12 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
          int var10 = this.nextBlock * this.blockSize;
          GpuBufferSlice[] var3 = new GpuBufferSlice[var1.length];
 
-         try (GpuBuffer.MappedView var4 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice(var10, var1.length * this.blockSize), false, true)) {
+         try (GpuBuffer.MappedView var4 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)var10, (long)(var1.length * this.blockSize)), false, true)) {
             ByteBuffer var5 = var4.data();
 
             for(int var6 = 0; var6 < var1.length; ++var6) {
                DynamicUniform var7 = var1[var6];
-               var3[var6] = this.ringBuffer.currentBuffer().slice(var10 + var6 * this.blockSize, this.blockSize);
+               var3[var6] = this.ringBuffer.currentBuffer().slice((long)(var10 + var6 * this.blockSize), (long)this.blockSize);
                var5.position(var6 * this.blockSize);
                var7.write(var5);
             }

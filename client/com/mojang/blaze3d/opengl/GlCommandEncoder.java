@@ -241,7 +241,7 @@ public class GlCommandEncoder implements CommandEncoder {
             throw new IllegalStateException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
          } else {
             int var4 = var2.remaining();
-            if (var4 > var1.length()) {
+            if ((long)var4 > var1.length()) {
                throw new IllegalArgumentException("Cannot write more data than the slice allows (attempting to write " + var4 + " bytes into a slice of length " + var1.length() + ")");
             } else if (var1.length() + var1.offset() > var3.size()) {
                throw new IllegalArgumentException("Cannot write more data than this buffer can hold (attempting to write " + var4 + " bytes at offset " + var1.offset() + " to " + var3.size() + " size buffer)");
@@ -270,7 +270,7 @@ public class GlCommandEncoder implements CommandEncoder {
          } else if (var3 && (var4.usage() & 2) == 0) {
             throw new IllegalStateException("Buffer is not writable");
          } else if (var1.offset() + var1.length() > var4.size()) {
-            int var10002 = var1.length();
+            long var10002 = var1.length();
             throw new IllegalArgumentException("Cannot map more data than this buffer can hold (attempting to map " + var10002 + " bytes at offset " + var1.offset() + " from " + var4.size() + " size buffer)");
          } else {
             int var5 = 0;
@@ -303,13 +303,13 @@ public class GlCommandEncoder implements CommandEncoder {
             } else if ((var4.usage() & 8) == 0) {
                throw new IllegalStateException("Target buffer needs USAGE_COPY_DST to be a destination for a copy");
             } else if (var1.length() != var2.length()) {
-               int var6 = var1.length();
+               long var6 = var1.length();
                throw new IllegalArgumentException("Cannot copy from slice of size " + var6 + " to slice of size " + var2.length() + ", they must be equal");
             } else if (var1.offset() + var1.length() > var3.size()) {
-               int var5 = var1.length();
+               long var5 = var1.length();
                throw new IllegalArgumentException("Cannot copy more data than the source buffer holds (attempting to copy " + var5 + " bytes at offset " + var1.offset() + " from " + var3.size() + " size buffer)");
             } else if (var2.offset() + var2.length() > var4.size()) {
-               int var10002 = var2.length();
+               long var10002 = var2.length();
                throw new IllegalArgumentException("Cannot copy more data than the target buffer can hold (attempting to copy " + var10002 + " bytes at offset " + var2.offset() + " to " + var4.size() + " size buffer)");
             } else {
                this.device.directStateAccess().copyBufferSubData(var3.handle, var4.handle, var1.offset(), var2.offset(), var1.length());
@@ -411,26 +411,26 @@ public class GlCommandEncoder implements CommandEncoder {
       }
    }
 
-   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5) {
+   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, long var3, Runnable var5, int var6) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else {
-         this.copyTextureToBuffer(var1, var2, var3, var4, var5, 0, 0, var1.getWidth(var5), var1.getHeight(var5));
+         this.copyTextureToBuffer(var1, var2, var3, var5, var6, 0, 0, var1.getWidth(var6), var1.getHeight(var6));
       }
    }
 
-   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, int var3, Runnable var4, int var5, int var6, int var7, int var8, int var9) {
+   public void copyTextureToBuffer(GpuTexture var1, GpuBuffer var2, long var3, Runnable var5, int var6, int var7, int var8, int var9, int var10) {
       if (this.inRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
-      } else if (var5 >= 0 && var5 < var1.getMipLevels()) {
-         if (var1.getWidth(var5) * var1.getHeight(var5) * var1.getFormat().pixelSize() + var3 > var2.size()) {
-            int var11 = var2.size();
-            throw new IllegalArgumentException("Buffer of size " + var11 + " is not large enough to hold " + var8 + "x" + var9 + " pixels (" + var1.getFormat().pixelSize() + " bytes each) starting from offset " + var3);
+      } else if (var6 >= 0 && var6 < var1.getMipLevels()) {
+         if ((long)(var1.getWidth(var6) * var1.getHeight(var6) * var1.getFormat().pixelSize()) + var3 > var2.size()) {
+            long var12 = var2.size();
+            throw new IllegalArgumentException("Buffer of size " + var12 + " is not large enough to hold " + var9 + "x" + var10 + " pixels (" + var1.getFormat().pixelSize() + " bytes each) starting from offset " + var3);
          } else if ((var1.usage() & 2) == 0) {
             throw new IllegalArgumentException("Texture needs USAGE_COPY_SRC to be a source for a copy");
          } else if ((var2.usage() & 8) == 0) {
             throw new IllegalArgumentException("Buffer needs USAGE_COPY_DST to be a destination for a copy");
-         } else if (var6 + var8 <= var1.getWidth(var5) && var7 + var9 <= var1.getHeight(var5)) {
+         } else if (var7 + var9 <= var1.getWidth(var6) && var8 + var10 <= var1.getHeight(var6)) {
             if (var1.isClosed()) {
                throw new IllegalStateException("Source texture is closed");
             } else if (var2.isClosed()) {
@@ -439,25 +439,25 @@ public class GlCommandEncoder implements CommandEncoder {
                throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported for copying");
             } else {
                GlStateManager.clearGlErrors();
-               this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)var1).glId(), 0, var5, 36008);
+               this.device.directStateAccess().bindFrameBufferTextures(this.readFbo, ((GlTexture)var1).glId(), 0, var6, 36008);
                GlStateManager._glBindBuffer(35051, ((GlBuffer)var2).handle);
-               GlStateManager._pixelStore(3330, var8);
-               GlStateManager._readPixels(var6, var7, var8, var9, GlConst.toGlExternalId(var1.getFormat()), GlConst.toGlType(var1.getFormat()), (long)var3);
-               RenderSystem.queueFencedTask(var4);
-               GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, 0, var5);
+               GlStateManager._pixelStore(3330, var9);
+               GlStateManager._readPixels(var7, var8, var9, var10, GlConst.toGlExternalId(var1.getFormat()), GlConst.toGlType(var1.getFormat()), var3);
+               RenderSystem.queueFencedTask(var5);
+               GlStateManager._glFramebufferTexture2D(36008, 36064, 3553, 0, var6);
                GlStateManager._glBindFramebuffer(36008, 0);
                GlStateManager._glBindBuffer(35051, 0);
-               int var10 = GlStateManager._getError();
-               if (var10 != 0) {
+               int var11 = GlStateManager._getError();
+               if (var11 != 0) {
                   String var10002 = var1.getLabel();
-                  throw new IllegalStateException("Couldn't perform copyTobuffer for texture " + var10002 + ": GL error " + var10);
+                  throw new IllegalStateException("Couldn't perform copyTobuffer for texture " + var10002 + ": GL error " + var11);
                }
             }
          } else {
-            throw new IllegalArgumentException("Copy source texture (" + var1.getWidth(var5) + "x" + var1.getHeight(var5) + ") is not large enough to read a rectangle of " + var8 + "x" + var9 + " from " + var6 + "," + var7);
+            throw new IllegalArgumentException("Copy source texture (" + var1.getWidth(var6) + "x" + var1.getHeight(var6) + ") is not large enough to read a rectangle of " + var9 + "x" + var10 + " from " + var7 + "," + var8);
          }
       } else {
-         throw new IllegalArgumentException("Invalid mipLevel " + var5 + ", must be >= 0 and < " + var1.getMipLevels());
+         throw new IllegalArgumentException("Invalid mipLevel " + var6 + ", must be >= 0 and < " + var1.getMipLevels());
       }
    }
 
@@ -574,7 +574,7 @@ public class GlCommandEncoder implements CommandEncoder {
                      }
 
                      int var6 = var8;
-                     GL32.glBindBufferRange(35345, var6, ((GlBuffer)var2x.buffer()).handle, (long)var2x.offset(), (long)var2x.length());
+                     GL32.glBindBufferRange(35345, var6, ((GlBuffer)var2x.buffer()).handle, var2x.offset(), var2x.length());
                   }
 
                });
@@ -677,7 +677,7 @@ public class GlCommandEncoder implements CommandEncoder {
                }
 
                if (var4.type() == UniformType.TEXEL_BUFFER) {
-                  if (var5.offset() != 0 || var5.length() != var5.buffer().size()) {
+                  if (var5.offset() != 0L || var5.length() != var5.buffer().size()) {
                      throw new IllegalStateException("Uniform texel buffers do not support a slice of a buffer, must be entire buffer");
                   }
 
@@ -751,7 +751,7 @@ public class GlCommandEncoder implements CommandEncoder {
                int var13 = var41;
                if (var9) {
                   GpuBufferSlice var42 = (GpuBufferSlice)var1.uniforms.get(var8);
-                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var42.buffer()).handle, (long)var42.offset(), (long)var42.length());
+                  GL32.glBindBufferRange(35345, var13, ((GlBuffer)var42.buffer()).handle, var42.offset(), var42.length());
                }
                break;
             case 1:

@@ -33,6 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -46,6 +47,8 @@ public class ZombieHorse extends AbstractHorse {
 
    public ZombieHorse(EntityType<? extends ZombieHorse> var1, Level var2) {
       super(var1, var2);
+      this.setPathfindingMalus(PathType.DANGER_OTHER, -1.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_OTHER, -1.0F);
    }
 
    public static AttributeSupplier.Builder createAttributes() {

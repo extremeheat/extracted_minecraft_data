@@ -51,7 +51,7 @@ public enum GraphicsPreset implements StringRepresentable {
             this.set(var2, var1.options.entityDistanceScaling(), 0.75);
             this.set(var2, var1.options.menuBackgroundBlurriness(), 2);
             this.set(var2, var1.options.cloudRange(), 32);
-            this.set(var2, var1.options.cutoutLeaves(), true);
+            this.set(var2, var1.options.cutoutLeaves(), false);
             this.set(var2, var1.options.improvedTransparency(), false);
             this.set(var2, var1.options.weatherRadius(), 5);
             this.set(var2, var1.options.maxAnisotropyBit(), 1);

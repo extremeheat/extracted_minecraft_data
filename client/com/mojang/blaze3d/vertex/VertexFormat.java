@@ -122,7 +122,7 @@ public class VertexFormat {
             var0 = var4.createBuffer(var3, var2, var1);
          } else {
             CommandEncoder var5 = var4.createCommandEncoder();
-            if (var0.size() < var1.remaining()) {
+            if (var0.size() < (long)var1.remaining()) {
                var0.close();
                var0 = var4.createBuffer(var3, var2, var1);
             } else {

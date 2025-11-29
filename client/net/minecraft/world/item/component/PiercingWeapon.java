@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.EntityHitResult;
 
 public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
@@ -69,7 +70,7 @@ public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional
       AttackRange var4 = var1.entityAttackRange();
       boolean var5 = false;
 
-      for(EntityHitResult var7 : (Collection)ProjectileUtil.getHitEntitiesAlong(var1, var4, (var1x) -> canHitEntity(var1, var1x)).map((var0) -> List.of(), (var0) -> var0)) {
+      for(EntityHitResult var7 : (Collection)ProjectileUtil.getHitEntitiesAlong(var1, var4, (var1x) -> canHitEntity(var1, var1x), ClipContext.Block.COLLIDER).map((var0) -> List.of(), (var0) -> var0)) {
          var5 |= var1.stabAttack(var2, var7.getEntity(), var3, true, this.dealsKnockback, this.dismounts);
       }
 

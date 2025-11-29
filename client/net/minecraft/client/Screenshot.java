@@ -85,9 +85,9 @@ public class Screenshot {
       if (var5 == null) {
          throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
       } else if (var3 % var1 == 0 && var4 % var1 == 0) {
-         GpuBuffer var6 = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, var3 * var4 * var5.getFormat().pixelSize());
+         GpuBuffer var6 = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, (long)var3 * (long)var4 * (long)var5.getFormat().pixelSize());
          CommandEncoder var7 = RenderSystem.getDevice().createCommandEncoder();
-         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(var5, var6, 0, () -> {
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(var5, var6, 0L, () -> {
             try (GpuBuffer.MappedView var7x = var7.mapBuffer(var6, true, false)) {
                int var8 = var4 / var1;
                int var9 = var3 / var1;

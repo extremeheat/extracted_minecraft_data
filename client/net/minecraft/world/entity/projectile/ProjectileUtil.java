@@ -38,13 +38,13 @@ public final class ProjectileUtil {
       return getHitResult(var4, var0, var1, var2, var3, computeMargin(var0), ClipContext.Block.COLLIDER);
    }
 
-   public static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, AttackRange var1, Predicate<Entity> var2) {
-      Vec3 var3 = var0.getHeadLookAngle();
-      Vec3 var4 = var0.getEyePosition();
-      Vec3 var5 = var4.add(var3.scale(var1.effectiveMinRange(var0)));
-      double var6 = var0.getKnownMovement().dot(var3);
-      Vec3 var8 = var4.add(var3.scale(var1.effectiveMaxRange(var0) + Math.max(0.0, var6)));
-      return getHitEntitiesAlong(var0, var4, var5, var2, var8, var1.hitboxMargin(), ClipContext.Block.COLLIDER);
+   public static Either<BlockHitResult, Collection<EntityHitResult>> getHitEntitiesAlong(Entity var0, AttackRange var1, Predicate<Entity> var2, ClipContext.Block var3) {
+      Vec3 var4 = var0.getHeadLookAngle();
+      Vec3 var5 = var0.getEyePosition();
+      Vec3 var6 = var5.add(var4.scale((double)var1.effectiveMinRange(var0)));
+      double var7 = var0.getKnownMovement().dot(var4);
+      Vec3 var9 = var5.add(var4.scale((double)var1.effectiveMaxRange(var0) + Math.max(0.0, var7)));
+      return getHitEntitiesAlong(var0, var5, var6, var2, var9, var1.hitboxMargin(), var3);
    }
 
    public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {

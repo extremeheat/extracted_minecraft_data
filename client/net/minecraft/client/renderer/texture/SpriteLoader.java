@@ -34,19 +34,15 @@ public class SpriteLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Identifier location;
    private final int maxSupportedTextureSize;
-   private final int minWidth;
-   private final int minHeight;
 
-   public SpriteLoader(Identifier var1, int var2, int var3, int var4) {
+   public SpriteLoader(Identifier var1, int var2) {
       super();
       this.location = var1;
       this.maxSupportedTextureSize = var2;
-      this.minWidth = var3;
-      this.minHeight = var4;
    }
 
    public static SpriteLoader create(TextureAtlas var0) {
-      return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize(), var0.getWidth(), var0.getHeight());
+      return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize());
    }
 
    private Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
@@ -92,8 +88,8 @@ public class SpriteLoader {
             throw new ReportedException(var27);
          }
 
-         int var26 = Math.max(var13.getWidth(), this.minWidth);
-         int var28 = Math.max(var13.getHeight(), this.minHeight);
+         int var26 = var13.getWidth();
+         int var28 = var13.getHeight();
          Map var29 = this.getStitchedSprites(var13, var26, var28);
          TextureAtlasSprite var17 = (TextureAtlasSprite)var29.get(MissingTextureAtlasSprite.getLocation());
          CompletableFuture var18 = CompletableFuture.runAsync(() -> var29.values().forEach((var1) -> var1.contents().increaseMipLevel(var25)), var3);

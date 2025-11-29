@@ -19,15 +19,15 @@ public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_UNIFORM = 128;
    public static final int USAGE_UNIFORM_TEXEL_BUFFER = 256;
    private final @GpuBuffer.Usage int usage;
-   private final int size;
+   private final long size;
 
-   public GpuBuffer(@GpuBuffer.Usage int var1, int var2) {
+   public GpuBuffer(@GpuBuffer.Usage int var1, long var2) {
       super();
       this.size = var2;
       this.usage = var1;
    }
 
-   public int size() {
+   public long size() {
       return this.size;
    }
 
@@ -39,16 +39,16 @@ public abstract class GpuBuffer implements AutoCloseable {
 
    public abstract void close();
 
-   public GpuBufferSlice slice(int var1, int var2) {
-      if (var1 >= 0 && var2 >= 0 && var1 + var2 <= this.size) {
-         return new GpuBufferSlice(this, var1, var2);
+   public GpuBufferSlice slice(long var1, long var3) {
+      if (var1 >= 0L && var3 >= 0L && var1 + var3 <= this.size) {
+         return new GpuBufferSlice(this, var1, var3);
       } else {
-         throw new IllegalArgumentException("Offset of " + var1 + " and length " + var2 + " would put new slice outside buffer's range (of 0," + var2 + ")");
+         throw new IllegalArgumentException("Offset of " + var1 + " and length " + var3 + " would put new slice outside buffer's range (of 0," + var3 + ")");
       }
    }
 
    public GpuBufferSlice slice() {
-      return new GpuBufferSlice(this, 0, this.size);
+      return new GpuBufferSlice(this, 0L, this.size);
    }
 
    @DontObfuscate

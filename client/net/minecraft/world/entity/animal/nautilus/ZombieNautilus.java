@@ -159,6 +159,10 @@ public class ZombieNautilus extends AbstractNautilus {
       return !this.isAggravated() && !this.isMobControlled();
    }
 
+   public boolean isBaby() {
+      return false;
+   }
+
    // $FF: synthetic method
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);

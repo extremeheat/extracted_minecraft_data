@@ -23,10 +23,12 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<Condition> dismountConditions, Optional<Condition> knockbackConditions, Optional<Condition> damageConditions, float forwardMovement, float damageMultiplier, Optional<Holder<SoundEvent>> sound, Optional<Holder<SoundEvent>> hitSound) {
+   public static final int HIT_FEEDBACK_TICKS = 10;
    public static final Codec<KineticWeapon> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("contact_cooldown_ticks", 10).forGetter(KineticWeapon::contactCooldownTicks), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("delay_ticks", 0).forGetter(KineticWeapon::delayTicks), KineticWeapon.Condition.CODEC.optionalFieldOf("dismount_conditions").forGetter(KineticWeapon::dismountConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("knockback_conditions").forGetter(KineticWeapon::knockbackConditions), KineticWeapon.Condition.CODEC.optionalFieldOf("damage_conditions").forGetter(KineticWeapon::damageConditions), Codec.FLOAT.optionalFieldOf("forward_movement", 0.0F).forGetter(KineticWeapon::forwardMovement), Codec.FLOAT.optionalFieldOf("damage_multiplier", 1.0F).forGetter(KineticWeapon::damageMultiplier), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(KineticWeapon::sound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(KineticWeapon::hitSound)).apply(var0, KineticWeapon::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, KineticWeapon> STREAM_CODEC;
 
@@ -55,8 +57,8 @@ public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<C
       this.sound.ifPresent((var1x) -> var1.level().playSound(var1, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
    }
 
-   public void makeHitSound(Entity var1) {
-      this.hitSound.ifPresent((var1x) -> var1.level().playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), (Holder)var1x, var1.getSoundSource(), 1.0F, 1.0F));
+   public void makeLocalHitSound(Entity var1) {
+      this.hitSound.ifPresent((var1x) -> var1.level().playLocalSound(var1, (SoundEvent)var1x.value(), var1.getSoundSource(), 1.0F, 1.0F));
    }
 
    public int computeDamageUseDuration() {
@@ -74,7 +76,7 @@ public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<C
          double var11 = var3.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
          boolean var13 = false;
 
-         for(EntityHitResult var15 : (Collection)ProjectileUtil.getHitEntitiesAlong(var3, var10, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x)).map((var0) -> List.of(), (var0) -> var0)) {
+         for(EntityHitResult var15 : (Collection)ProjectileUtil.getHitEntitiesAlong(var3, var10, (var1x) -> PiercingWeapon.canHitEntity(var3, var1x), ClipContext.Block.COLLIDER).map((var0) -> List.of(), (var0) -> var0)) {
             Object var16 = var15.getEntity();
             if (var16 instanceof EnderDragonPart) {
                EnderDragonPart var17 = (EnderDragonPart)var16;
@@ -97,7 +99,6 @@ public record KineticWeapon(int contactCooldownTicks, int delayTicks, Optional<C
          }
 
          if (var13) {
-            this.makeHitSound(var3);
             var3.level().broadcastEntityEvent(var3, (byte)2);
             if (var3 instanceof ServerPlayer) {
                ServerPlayer var27 = (ServerPlayer)var3;

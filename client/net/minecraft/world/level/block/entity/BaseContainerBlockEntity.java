@@ -14,14 +14,17 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public abstract class BaseContainerBlockEntity extends BlockEntity implements Container, MenuProvider, Nameable {
@@ -60,17 +63,16 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    protected abstract Component getDefaultName();
 
    public boolean canOpen(Player var1) {
-      return canUnlock(var1, this.lockKey, this.getDisplayName());
+      return this.lockKey.canUnlock(var1);
    }
 
-   public static boolean canUnlock(Player var0, LockCode var1, Component var2) {
-      if (!var0.isSpectator() && !var1.unlocksWith(var0.getMainHandItem())) {
-         var0.displayClientMessage(Component.translatable("container.isLocked", var2), true);
-         var0.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
-         return false;
-      } else {
-         return true;
+   public static void sendChestLockedNotifications(Vec3 var0, Player var1, Component var2) {
+      Level var3 = var1.level();
+      var1.displayClientMessage(Component.translatable("container.isLocked", var2), true);
+      if (!var3.isClientSide()) {
+         var3.playSound((Entity)null, var0.x(), var0.y(), var0.z(), SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
+
    }
 
    public boolean isLocked() {
@@ -123,7 +125,12 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    }
 
    public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      return this.canOpen(var3) ? this.createMenu(var1, var2) : null;
+      if (this.canOpen(var3)) {
+         return this.createMenu(var1, var2);
+      } else {
+         sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
+         return null;
+      }
    }
 
    protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);

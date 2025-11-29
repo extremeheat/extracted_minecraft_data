@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 public class TracyFrameCapture implements AutoCloseable {
    private static final int MAX_WIDTH = 320;
    private static final int MAX_HEIGHT = 180;
-   private static final int BYTES_PER_PIXEL = 4;
+   private static final long BYTES_PER_PIXEL = 4L;
    private int targetWidth;
    private int targetHeight;
    private int width;
@@ -37,7 +37,7 @@ public class TracyFrameCapture implements AutoCloseable {
       GpuDevice var1 = RenderSystem.getDevice();
       this.frameBuffer = var1.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1, 1);
       this.frameBufferView = var1.createTextureView(this.frameBuffer);
-      this.pixelbuffer = var1.createBuffer(() -> "Tracy Frame Capture buffer", 9, this.width * this.height * 4);
+      this.pixelbuffer = var1.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(this.width * this.height) * 4L);
    }
 
    private void resize(int var1, int var2) {
@@ -63,7 +63,7 @@ public class TracyFrameCapture implements AutoCloseable {
          this.frameBufferView.close();
          this.frameBufferView = var4.createTextureView(this.frameBuffer);
          this.pixelbuffer.close();
-         this.pixelbuffer = var4.createBuffer(() -> "Tracy Frame Capture buffer", 9, var1 * var2 * 4);
+         this.pixelbuffer = var4.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(var1 * var2) * 4L);
       }
 
    }
@@ -86,7 +86,7 @@ public class TracyFrameCapture implements AutoCloseable {
             var3.draw(0, 3);
          }
 
-         var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
+         var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0L, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
          this.lastCaptureDelay = 0;
       }
    }

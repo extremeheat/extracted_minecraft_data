@@ -1318,8 +1318,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          var3 = DEFAULT_ATTACK_REACH;
          var5 = 0.0;
       } else {
-         var3 = var2.effectiveMaxRange(this);
-         var5 = var2.effectiveMinRange(this);
+         var3 = (double)var2.effectiveMaxRange(this);
+         var5 = (double)var2.effectiveMinRange(this);
       }
 
       AABB var7 = var1.getHitbox();

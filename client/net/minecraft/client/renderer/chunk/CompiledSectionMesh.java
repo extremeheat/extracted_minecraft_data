@@ -71,7 +71,7 @@ public class CompiledSectionMesh implements SectionMesh {
       CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
       SectionBuffers var6 = this.getBuffers(var1);
       if (var6 != null) {
-         if (var6.getVertexBuffer().size() < var2.vertexBuffer().remaining()) {
+         if (var6.getVertexBuffer().size() < (long)var2.vertexBuffer().remaining()) {
             var6.getVertexBuffer().close();
             var6.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
                String var10000 = var1.label();
@@ -83,7 +83,7 @@ public class CompiledSectionMesh implements SectionMesh {
 
          ByteBuffer var7 = var2.indexBuffer();
          if (var7 != null) {
-            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= var7.remaining()) {
+            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= (long)var7.remaining()) {
                if (!var6.getIndexBuffer().isClosed()) {
                   var5.writeToBuffer(var6.getIndexBuffer().slice(), var7);
                }

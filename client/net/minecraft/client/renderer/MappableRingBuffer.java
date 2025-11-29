@@ -24,7 +24,7 @@ public class MappableRingBuffer implements AutoCloseable {
             this.buffers[var5] = var4.createBuffer(() -> {
                String var10000 = (String)var1.get();
                return var10000 + " #" + var5;
-            }, var2, var3);
+            }, var2, (long)var3);
             this.fences[var5] = null;
          }
 

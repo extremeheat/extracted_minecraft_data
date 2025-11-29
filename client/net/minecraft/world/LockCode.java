@@ -2,6 +2,7 @@ package net.minecraft.world;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -25,6 +26,10 @@ public record LockCode(ItemPredicate predicate) {
          var1.store("lock", CODEC, this);
       }
 
+   }
+
+   public boolean canUnlock(Player var1) {
+      return var1.isSpectator() || this.unlocksWith(var1.getMainHandItem());
    }
 
    public static LockCode fromTag(ValueInput var0) {

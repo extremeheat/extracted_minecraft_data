@@ -93,7 +93,7 @@ public class GlRenderPass implements RenderPass {
 
    public void setUniform(String var1, GpuBufferSlice var2) {
       int var3 = this.encoder.getDevice().getUniformOffsetAlignment();
-      if (var2.offset() % var3 > 0) {
+      if (var2.offset() % (long)var3 > 0L) {
          throw new IllegalArgumentException("Uniform buffer offset must be aligned to " + var3);
       } else {
          this.uniforms.put(var1, var2);

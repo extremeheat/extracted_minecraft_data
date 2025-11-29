@@ -78,12 +78,12 @@ public class FogRenderer implements AutoCloseable {
 
    public GpuBufferSlice getBuffer(FogMode var1) {
       if (!fogEnabled) {
-         return this.emptyBuffer.slice(0, FOG_UBO_SIZE);
+         return this.emptyBuffer.slice(0L, (long)FOG_UBO_SIZE);
       } else {
          GpuBufferSlice var10000;
          switch (var1.ordinal()) {
-            case 0 -> var10000 = this.emptyBuffer.slice(0, FOG_UBO_SIZE);
-            case 1 -> var10000 = this.regularBuffer.currentBuffer().slice(0, FOG_UBO_SIZE);
+            case 0 -> var10000 = this.emptyBuffer.slice(0L, (long)FOG_UBO_SIZE);
+            case 1 -> var10000 = this.regularBuffer.currentBuffer().slice(0L, (long)FOG_UBO_SIZE);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

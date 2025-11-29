@@ -44,7 +44,7 @@ public class WorldBorderRenderer {
 
    public WorldBorderRenderer() {
       super();
-      this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16 * DefaultVertexFormat.POSITION_TEX.getVertexSize());
+      this.worldBorderBuffer = RenderSystem.getDevice().createBuffer(() -> "World border vertex buffer", 40, 16L * (long)DefaultVertexFormat.POSITION_TEX.getVertexSize());
       this.indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
    }
 

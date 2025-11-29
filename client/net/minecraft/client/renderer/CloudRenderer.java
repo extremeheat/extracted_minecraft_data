@@ -156,7 +156,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          int var8 = (Integer)Minecraft.getInstance().options.cloudRange().get() * 16;
          int var9 = Mth.ceil((float)var8 / 12.0F);
          int var10 = getSizeForCloudDistance(var9);
-         if (this.utb == null || this.utb.currentBuffer().size() != var10) {
+         if (this.utb == null || this.utb.currentBuffer().size() != (long)var10) {
             if (this.utb != null) {
                this.utb.close();
             }

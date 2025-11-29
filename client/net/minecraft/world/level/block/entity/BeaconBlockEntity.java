@@ -310,7 +310,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      return BaseContainerBlockEntity.canUnlock(var3, this.lockKey, this.getDisplayName()) ? new BeaconMenu(var1, var2, this.dataAccess, ContainerLevelAccess.create(this.level, this.getBlockPos())) : null;
+      if (this.lockKey.canUnlock(var3)) {
+         return new BeaconMenu(var1, var2, this.dataAccess, ContainerLevelAccess.create(this.level, this.getBlockPos()));
+      } else {
+         BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
+         return null;
+      }
    }
 
    public Component getDisplayName() {

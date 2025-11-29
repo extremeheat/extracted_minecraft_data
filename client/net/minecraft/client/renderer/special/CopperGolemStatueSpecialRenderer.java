@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -21,9 +20,9 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import org.joml.Vector3fc;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
+   private static final Direction MODEL_STATE;
    private final CopperGolemStatueModel model;
    private final Identifier texture;
-   static final Map<CopperGolemStatueBlock.Pose, ModelLayerLocation> MODELS;
 
    public CopperGolemStatueSpecialRenderer(CopperGolemStatueModel var1, Identifier var2) {
       super();
@@ -32,23 +31,24 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
    }
 
    public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      this.positionModel(var2);
+      positionModel(var2);
       var3.submitModel(this.model, Direction.SOUTH, var2, RenderTypes.entityCutoutNoCull(this.texture), var4, var5, -1, (TextureAtlasSprite)null, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(Consumer<Vector3fc> var1) {
       PoseStack var2 = new PoseStack();
-      this.positionModel(var2);
+      positionModel(var2);
+      this.model.setupAnim(MODEL_STATE);
       this.model.root().getExtentsForGui(var2, var1);
    }
 
-   private void positionModel(PoseStack var1) {
-      var1.translate(0.5F, 1.5F, 0.5F);
-      var1.scale(-1.0F, -1.0F, 1.0F);
+   private static void positionModel(PoseStack var0) {
+      var0.translate(0.5F, 1.5F, 0.5F);
+      var0.scale(-1.0F, -1.0F, 1.0F);
    }
 
    static {
-      MODELS = Map.of(CopperGolemStatueBlock.Pose.STANDING, ModelLayers.COPPER_GOLEM, CopperGolemStatueBlock.Pose.SITTING, ModelLayers.COPPER_GOLEM_SITTING, CopperGolemStatueBlock.Pose.STAR, ModelLayers.COPPER_GOLEM_STAR, CopperGolemStatueBlock.Pose.RUNNING, ModelLayers.COPPER_GOLEM_RUNNING);
+      MODEL_STATE = Direction.SOUTH;
    }
 
    public static record Unbaked(Identifier texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
@@ -69,8 +69,21 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       }
 
       public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer((ModelLayerLocation)CopperGolemStatueSpecialRenderer.MODELS.get(this.pose)));
+         CopperGolemStatueModel var2 = new CopperGolemStatueModel(var1.entityModelSet().bakeLayer(getModel(this.pose)));
          return new CopperGolemStatueSpecialRenderer(var2, this.texture);
+      }
+
+      private static ModelLayerLocation getModel(CopperGolemStatueBlock.Pose var0) {
+         ModelLayerLocation var10000;
+         switch (var0) {
+            case STANDING -> var10000 = ModelLayers.COPPER_GOLEM;
+            case SITTING -> var10000 = ModelLayers.COPPER_GOLEM_SITTING;
+            case STAR -> var10000 = ModelLayers.COPPER_GOLEM_STAR;
+            case RUNNING -> var10000 = ModelLayers.COPPER_GOLEM_RUNNING;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
    }
 }

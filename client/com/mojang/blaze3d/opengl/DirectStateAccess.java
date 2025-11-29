@@ -31,13 +31,13 @@ public abstract class DirectStateAccess {
 
    abstract void bufferData(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3);
 
-   abstract void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4);
+   abstract void bufferSubData(int var1, long var2, ByteBuffer var4, @GpuBuffer.Usage int var5);
 
    abstract void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4);
 
    abstract void bufferStorage(int var1, ByteBuffer var2, @GpuBuffer.Usage int var3);
 
-   abstract @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5);
+   abstract @Nullable ByteBuffer mapBufferRange(int var1, long var2, long var4, int var6, @GpuBuffer.Usage int var7);
 
    abstract void unmapBuffer(int var1, @GpuBuffer.Usage int var2);
 
@@ -47,9 +47,9 @@ public abstract class DirectStateAccess {
 
    abstract void blitFrameBuffers(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12);
 
-   abstract void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4);
+   abstract void flushMappedBufferRange(int var1, long var2, long var4, @GpuBuffer.Usage int var6);
 
-   abstract void copyBufferSubData(int var1, int var2, int var3, int var4, int var5);
+   abstract void copyBufferSubData(int var1, int var2, long var3, long var5, long var7);
 
    static class Core extends DirectStateAccess {
       Core() {
@@ -69,8 +69,8 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glNamedBufferData(var1, var2, GlConst.bufferUsageToGlEnum(var3));
       }
 
-      void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4) {
-         ARBDirectStateAccess.glNamedBufferSubData(var1, (long)var2, var3);
+      void bufferSubData(int var1, long var2, ByteBuffer var4, @GpuBuffer.Usage int var5) {
+         ARBDirectStateAccess.glNamedBufferSubData(var1, var2, var4);
       }
 
       void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4) {
@@ -81,8 +81,8 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glNamedBufferStorage(var1, var2, GlConst.bufferUsageToGlFlag(var3));
       }
 
-      @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
-         return ARBDirectStateAccess.glMapNamedBufferRange(var1, (long)var2, (long)var3, var4);
+      @Nullable ByteBuffer mapBufferRange(int var1, long var2, long var4, int var6, @GpuBuffer.Usage int var7) {
+         return ARBDirectStateAccess.glMapNamedBufferRange(var1, var2, var4, var6);
       }
 
       void unmapBuffer(int var1, int var2) {
@@ -106,12 +106,12 @@ public abstract class DirectStateAccess {
          ARBDirectStateAccess.glBlitNamedFramebuffer(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12);
       }
 
-      void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4) {
-         ARBDirectStateAccess.glFlushMappedNamedBufferRange(var1, (long)var2, (long)var3);
+      void flushMappedBufferRange(int var1, long var2, long var4, @GpuBuffer.Usage int var6) {
+         ARBDirectStateAccess.glFlushMappedNamedBufferRange(var1, var2, var4);
       }
 
-      void copyBufferSubData(int var1, int var2, int var3, int var4, int var5) {
-         ARBDirectStateAccess.glCopyNamedBufferSubData(var1, var2, (long)var3, (long)var4, (long)var5);
+      void copyBufferSubData(int var1, int var2, long var3, long var5, long var7) {
+         ARBDirectStateAccess.glCopyNamedBufferSubData(var1, var2, var3, var5, var7);
       }
    }
 
@@ -148,11 +148,11 @@ public abstract class DirectStateAccess {
          GlStateManager._glBindBuffer(var4, 0);
       }
 
-      void bufferSubData(int var1, int var2, ByteBuffer var3, @GpuBuffer.Usage int var4) {
-         int var5 = this.selectBufferBindTarget(var4);
-         GlStateManager._glBindBuffer(var5, var1);
-         GlStateManager._glBufferSubData(var5, var2, var3);
-         GlStateManager._glBindBuffer(var5, 0);
+      void bufferSubData(int var1, long var2, ByteBuffer var4, @GpuBuffer.Usage int var5) {
+         int var6 = this.selectBufferBindTarget(var5);
+         GlStateManager._glBindBuffer(var6, var1);
+         GlStateManager._glBufferSubData(var6, var2, var4);
+         GlStateManager._glBindBuffer(var6, 0);
       }
 
       void bufferStorage(int var1, long var2, @GpuBuffer.Usage int var4) {
@@ -169,12 +169,12 @@ public abstract class DirectStateAccess {
          GlStateManager._glBindBuffer(var4, 0);
       }
 
-      @Nullable ByteBuffer mapBufferRange(int var1, int var2, int var3, int var4, @GpuBuffer.Usage int var5) {
-         int var6 = this.selectBufferBindTarget(var5);
-         GlStateManager._glBindBuffer(var6, var1);
-         ByteBuffer var7 = GlStateManager._glMapBufferRange(var6, var2, var3, var4);
-         GlStateManager._glBindBuffer(var6, 0);
-         return var7;
+      @Nullable ByteBuffer mapBufferRange(int var1, long var2, long var4, int var6, @GpuBuffer.Usage int var7) {
+         int var8 = this.selectBufferBindTarget(var7);
+         GlStateManager._glBindBuffer(var8, var1);
+         ByteBuffer var9 = GlStateManager._glMapBufferRange(var8, var2, var4, var6);
+         GlStateManager._glBindBuffer(var8, 0);
+         return var9;
       }
 
       void unmapBuffer(int var1, @GpuBuffer.Usage int var2) {
@@ -184,17 +184,17 @@ public abstract class DirectStateAccess {
          GlStateManager._glBindBuffer(var3, 0);
       }
 
-      void flushMappedBufferRange(int var1, int var2, int var3, @GpuBuffer.Usage int var4) {
-         int var5 = this.selectBufferBindTarget(var4);
-         GlStateManager._glBindBuffer(var5, var1);
-         GL30.glFlushMappedBufferRange(var5, (long)var2, (long)var3);
-         GlStateManager._glBindBuffer(var5, 0);
+      void flushMappedBufferRange(int var1, long var2, long var4, @GpuBuffer.Usage int var6) {
+         int var7 = this.selectBufferBindTarget(var6);
+         GlStateManager._glBindBuffer(var7, var1);
+         GL30.glFlushMappedBufferRange(var7, var2, var4);
+         GlStateManager._glBindBuffer(var7, 0);
       }
 
-      void copyBufferSubData(int var1, int var2, int var3, int var4, int var5) {
+      void copyBufferSubData(int var1, int var2, long var3, long var5, long var7) {
          GlStateManager._glBindBuffer(36662, var1);
          GlStateManager._glBindBuffer(36663, var2);
-         GL31.glCopyBufferSubData(36662, 36663, (long)var3, (long)var4, (long)var5);
+         GL31.glCopyBufferSubData(36662, 36663, var3, var5, var7);
          GlStateManager._glBindBuffer(36662, 0);
          GlStateManager._glBindBuffer(36663, 0);
       }

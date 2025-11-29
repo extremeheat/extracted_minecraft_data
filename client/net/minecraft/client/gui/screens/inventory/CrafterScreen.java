@@ -70,21 +70,18 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    }
 
    public void renderSlot(GuiGraphics var1, Slot var2, int var3, int var4) {
-      label22: {
-         if (var2 instanceof CrafterSlot var5) {
-            if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
-               this.renderDisabledSlot(var1, var5);
-               break label22;
-            }
+      if (var2 instanceof CrafterSlot var5) {
+         if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
+            this.renderDisabledSlot(var1, var5);
          }
 
+         int var6 = this.leftPos + var5.x - 2;
+         int var7 = this.topPos + var5.y - 2;
+         if (var3 > var6 && var4 > var7 && var3 < var6 + 19 && var4 < var7 + 19) {
+            var1.requestCursor(CursorTypes.POINTING_HAND);
+         }
+      } else {
          super.renderSlot(var1, var2, var3, var4);
-      }
-
-      int var7 = this.leftPos + var2.x - 2;
-      int var6 = this.topPos + var2.y - 2;
-      if (var3 > var7 && var4 > var6 && var3 < var7 + 19 && var4 < var6 + 19) {
-         var1.requestCursor(CursorTypes.POINTING_HAND);
       }
 
    }

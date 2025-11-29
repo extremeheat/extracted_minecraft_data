@@ -156,7 +156,7 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
          if (var2 instanceof Dumpable var3) {
             try {
                var3.dumpContents(var1x, var1);
-            } catch (IOException var5) {
+            } catch (Exception var5) {
                LOGGER.error("Failed to dump texture {}", var1x, var5);
             }
          }

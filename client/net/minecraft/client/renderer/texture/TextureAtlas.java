@@ -114,7 +114,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
          for(TextureAtlasSprite var11 : var1.regions().values()) {
             var2.add(var11);
             if (var11.isAnimated() && var15 != null) {
-               SpriteContents.AnimationState var12 = var11.createAnimationState(var15.slice(var8 * var6, var6), var5);
+               SpriteContents.AnimationState var12 = var11.createAnimationState(var15.slice((long)(var8 * var6), (long)var6), var5);
                ++var8;
                if (var12 != null) {
                   var3.add(var12);
@@ -132,7 +132,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
             try {
                Files.createDirectories(var17);
                this.dumpContents(this.location, var17);
-            } catch (IOException var13) {
+            } catch (Exception var13) {
                LOGGER.warn("Failed to dump atlas contents to {}", var17);
             }
          }
@@ -170,7 +170,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, TickableT
 
                for(int var24 = 0; var24 < var5.size(); ++var24) {
                   var22.bindTexture("Sprite", ((GpuTextureView[])var6.get(var24))[var20], var4);
-                  var22.setUniform("SpriteAnimationInfo", var18.slice(var24 * var3 + var20 * var2, SpriteContents.UBO_SIZE));
+                  var22.setUniform("SpriteAnimationInfo", var18.slice((long)(var24 * var3 + var20 * var2), (long)SpriteContents.UBO_SIZE));
                   var22.draw(0, 6);
                }
             }

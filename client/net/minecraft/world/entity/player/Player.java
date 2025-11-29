@@ -148,6 +148,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    private static final int DEFAULT_SCORE = 0;
    private static final boolean DEFAULT_IGNORE_FALL_DAMAGE_FROM_CURRENT_IMPULSE = false;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
+   public static final float CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER_VALUE = 2.0F;
    final Inventory inventory;
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
@@ -386,9 +387,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public void playSound(SoundEvent var1, float var2, float var3) {
       this.level().playSound(this, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
-   }
-
-   public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
    }
 
    public SoundSource getSoundSource() {
@@ -953,7 +951,7 @@ public abstract class Player extends Avatar implements ContainerUser {
                      this.doSweepAttack(var1, var2, var4, var5);
                   }
 
-                  this.attackVisualEffects(var1, var9, var11, var7, var6);
+                  this.attackVisualEffects(var1, var9, var11, var7, false, var6);
                   this.setLastHurtMob(var1);
                   this.itemAttackInteraction(var1, var3, var4, true);
                   this.damageStatsAndHearts(var1, var12);
@@ -1007,17 +1005,17 @@ public abstract class Player extends Avatar implements ContainerUser {
       return false;
    }
 
-   private void attackVisualEffects(Entity var1, boolean var2, boolean var3, boolean var4, float var5) {
+   private void attackVisualEffects(Entity var1, boolean var2, boolean var3, boolean var4, boolean var5, float var6) {
       if (var2) {
          this.playServerSideSound(SoundEvents.PLAYER_ATTACK_CRIT);
          this.crit(var1);
       }
 
-      if (!var2 && !var3) {
+      if (!var2 && !var3 && !var5) {
          this.playServerSideSound(var4 ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
       }
 
-      if (var5 > 0.0F) {
+      if (var6 > 0.0F) {
          this.magicCrit(var1);
       }
 
@@ -1178,7 +1176,7 @@ public abstract class Player extends Avatar implements ContainerUser {
             if (!var13 && !var5 && !var14) {
                return false;
             } else {
-               this.attackVisualEffects(var2, false, false, var4, var9);
+               this.attackVisualEffects(var2, false, false, var4, true, var9);
                this.setLastHurtMob(var2);
                this.itemAttackInteraction(var2, var7, var8, var13);
                this.damageStatsAndHearts(var2, var11);

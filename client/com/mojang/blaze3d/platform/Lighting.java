@@ -21,13 +21,13 @@ public class Lighting implements AutoCloseable {
    private static final Vector3f INVENTORY_DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, -1.0F, 0.0F)).normalize();
    public static final int UBO_SIZE = (new Std140SizeCalculator()).putVec3().putVec3().get();
    private final GpuBuffer buffer;
-   private final int paddedSize;
+   private final long paddedSize;
 
    public Lighting() {
       super();
       GpuDevice var1 = RenderSystem.getDevice();
-      this.paddedSize = Mth.roundToward(UBO_SIZE, var1.getUniformOffsetAlignment());
-      this.buffer = var1.createBuffer(() -> "Lighting UBO", 136, this.paddedSize * Lighting.Entry.values().length);
+      this.paddedSize = (long)Mth.roundToward(UBO_SIZE, var1.getUniformOffsetAlignment());
+      this.buffer = var1.createBuffer(() -> "Lighting UBO", 136, this.paddedSize * (long)Lighting.Entry.values().length);
       Matrix4f var2 = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
       this.updateBuffer(Lighting.Entry.ITEMS_FLAT, var2.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), var2.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
       Matrix4f var3 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
@@ -50,7 +50,7 @@ public class Lighting implements AutoCloseable {
 
       try {
          ByteBuffer var5 = Std140Builder.onStack(var4, UBO_SIZE).putVec3(var2).putVec3(var3).get();
-         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(var1.ordinal() * this.paddedSize, this.paddedSize), var5);
+         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice((long)var1.ordinal() * this.paddedSize, this.paddedSize), var5);
       } catch (Throwable var8) {
          if (var4 != null) {
             try {
@@ -70,7 +70,7 @@ public class Lighting implements AutoCloseable {
    }
 
    public void setupFor(Entry var1) {
-      RenderSystem.setShaderLights(this.buffer.slice(var1.ordinal() * this.paddedSize, UBO_SIZE));
+      RenderSystem.setShaderLights(this.buffer.slice((long)var1.ordinal() * this.paddedSize, (long)UBO_SIZE));
    }
 
    public void close() {

@@ -488,10 +488,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3, false);
    }
 
-   public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
-      this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1, var2, var3, var4, false);
-   }
-
    public void startUsingItem(InteractionHand var1) {
       ItemStack var2 = this.getItemInHand(var1);
       if (!var2.isEmpty() && !this.isUsingItem()) {
@@ -1172,7 +1168,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       double var5 = this.blockInteractionRange();
       HitResult var7 = null;
       if (var4 != null) {
-         var7 = var4.getClosesetHit(var2, var1, EntitySelector.CAN_BE_PICKED);
+         var7 = var4.getClosesetHit(this, var1, EntitySelector.CAN_BE_PICKED);
          if (var7 instanceof BlockHitResult) {
             var7 = filterHitResult(var7, var2.getEyePosition(var1), var5);
          }

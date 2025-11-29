@@ -256,7 +256,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          }
 
          for(int var14 = 0; var14 < SpriteContents.this.byMipLevel.length; ++var14) {
-            var5[var14] = var1.slice(var14 * var2, var2);
+            var5[var14] = var1.slice((long)(var14 * var2), (long)var2);
          }
 
          return SpriteContents.this.new AnimationState(this, var4, var5);

@@ -44,7 +44,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
@@ -86,7 +85,6 @@ import net.minecraft.network.protocol.game.ClientboundSetCursorItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
@@ -102,8 +100,6 @@ import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.waypoints.ServerWaypointManager;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerRecipeBook;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
@@ -1903,10 +1899,6 @@ public class ServerPlayer extends Player {
 
    public void setChunkTrackingView(ChunkTrackingView var1) {
       this.chunkTrackingView = var1;
-   }
-
-   public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
-      this.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var1), var2, this.getX(), this.getY(), this.getZ(), var3, var4, this.random.nextLong()));
    }
 
    public ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {

@@ -491,7 +491,7 @@ public class GuiRenderer implements AutoCloseable {
          int var10 = var9.remaining();
          int var11 = var2.getInt(var7);
 
-         try (GpuBuffer.MappedView var12 = var1.mapBuffer(var8.currentBuffer().slice(var11, var10), false, true)) {
+         try (GpuBuffer.MappedView var12 = var1.mapBuffer(var8.currentBuffer().slice((long)var11, (long)var10), false, true)) {
             MemoryUtil.memCopy(var9, var12.data());
          }
 

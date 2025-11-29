@@ -61,56 +61,60 @@ public class TextureUtil {
 
    public static void writeAsPNG(Path var0, String var1, GpuTexture var2, int var3, IntUnaryOperator var4) {
       RenderSystem.assertOnRenderThread();
-      int var5 = 0;
+      long var5 = 0L;
 
-      for(int var6 = 0; var6 <= var3; ++var6) {
-         var5 += var2.getFormat().pixelSize() * var2.getWidth(var6) * var2.getHeight(var6);
+      for(int var7 = 0; var7 <= var3; ++var7) {
+         var5 += (long)var2.getFormat().pixelSize() * (long)var2.getWidth(var7) * (long)var2.getHeight(var7);
       }
 
-      GpuBuffer var12 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", 9, var5);
-      CommandEncoder var7 = RenderSystem.getDevice().createCommandEncoder();
-      Runnable var8 = () -> {
-         try (GpuBuffer.MappedView var7x = var7.mapBuffer(var12, true, false)) {
-            int var8 = 0;
+      if (var5 > 2147483647L) {
+         throw new IllegalArgumentException("Exporting textures larger than 2GB is not supported");
+      } else {
+         GpuBuffer var13 = RenderSystem.getDevice().createBuffer(() -> "Texture output buffer", 9, var5);
+         CommandEncoder var8 = RenderSystem.getDevice().createCommandEncoder();
+         Runnable var9 = () -> {
+            try (GpuBuffer.MappedView var7 = var8.mapBuffer(var13, true, false)) {
+               int var8x = 0;
 
-            for(int var9 = 0; var9 <= var3; ++var9) {
-               int var10 = var2.getWidth(var9);
-               int var11 = var2.getHeight(var9);
+               for(int var9 = 0; var9 <= var3; ++var9) {
+                  int var10 = var2.getWidth(var9);
+                  int var11 = var2.getHeight(var9);
 
-               try (NativeImage var12x = new NativeImage(var10, var11, false)) {
-                  for(int var13 = 0; var13 < var11; ++var13) {
-                     for(int var14 = 0; var14 < var10; ++var14) {
-                        int var15 = var7x.data().getInt(var8 + (var14 + var13 * var10) * var2.getFormat().pixelSize());
-                        var12x.setPixelABGR(var14, var13, var4.applyAsInt(var15));
+                  try (NativeImage var12 = new NativeImage(var10, var11, false)) {
+                     for(int var13x = 0; var13x < var11; ++var13x) {
+                        for(int var14 = 0; var14 < var10; ++var14) {
+                           int var15 = var7.data().getInt(var8x + (var14 + var13x * var10) * var2.getFormat().pixelSize());
+                           var12.setPixelABGR(var14, var13x, var4.applyAsInt(var15));
+                        }
                      }
+
+                     Path var21 = var0.resolve(var1 + "_" + var9 + ".png");
+                     var12.writeToFile(var21);
+                     LOGGER.debug("Exported png to: {}", var21.toAbsolutePath());
+                  } catch (IOException var19) {
+                     LOGGER.debug("Unable to write: ", var19);
                   }
 
-                  Path var21 = var0.resolve(var1 + "_" + var9 + ".png");
-                  var12x.writeToFile(var21);
-                  LOGGER.debug("Exported png to: {}", var21.toAbsolutePath());
-               } catch (IOException var19) {
-                  LOGGER.debug("Unable to write: ", var19);
+                  var8x += var2.getFormat().pixelSize() * var10 * var11;
+               }
+            }
+
+            var13.close();
+         };
+         AtomicInteger var10 = new AtomicInteger();
+         int var11 = 0;
+
+         for(int var12 = 0; var12 <= var3; ++var12) {
+            var8.copyTextureToBuffer(var2, var13, (long)var11, () -> {
+               if (var10.getAndIncrement() == var3) {
+                  var9.run();
                }
 
-               var8 += var2.getFormat().pixelSize() * var10 * var11;
-            }
+            }, var12);
+            var11 += var2.getFormat().pixelSize() * var2.getWidth(var12) * var2.getHeight(var12);
          }
 
-         var12.close();
-      };
-      AtomicInteger var9 = new AtomicInteger();
-      int var10 = 0;
-
-      for(int var11 = 0; var11 <= var3; ++var11) {
-         var7.copyTextureToBuffer(var2, var12, var10, () -> {
-            if (var9.getAndIncrement() == var3) {
-               var8.run();
-            }
-
-         }, var11);
-         var10 += var2.getFormat().pixelSize() * var2.getWidth(var11) * var2.getHeight(var11);
       }
-
    }
 
    public static Path getDebugTexturePath(Path var0) {
@@ -165,6 +169,45 @@ public class TextureUtil {
                var0.setPixel(var17, var19, ARGB.color(0, var3[pack(var17, var19, var1)]));
             } else {
                var0.setPixel(var17, var19, var21);
+            }
+         }
+      }
+
+   }
+
+   public static void fillEmptyAreasWithDarkColor(NativeImage var0) {
+      int var1 = var0.getWidth();
+      int var2 = var0.getHeight();
+      int var3 = -1;
+      int var4 = 2147483647;
+
+      for(int var5 = 0; var5 < var1; ++var5) {
+         for(int var6 = 0; var6 < var2; ++var6) {
+            int var7 = var0.getPixel(var5, var6);
+            int var8 = ARGB.alpha(var7);
+            if (var8 != 0) {
+               int var9 = ARGB.red(var7);
+               int var10 = ARGB.green(var7);
+               int var11 = ARGB.blue(var7);
+               int var12 = var9 + var10 + var11;
+               if (var12 < var4) {
+                  var4 = var12;
+                  var3 = var7;
+               }
+            }
+         }
+      }
+
+      int var13 = 3 * ARGB.red(var3) / 4;
+      int var14 = 3 * ARGB.green(var3) / 4;
+      int var15 = 3 * ARGB.blue(var3) / 4;
+      int var16 = ARGB.color(0, var13, var14, var15);
+
+      for(int var17 = 0; var17 < var1; ++var17) {
+         for(int var18 = 0; var18 < var2; ++var18) {
+            int var19 = var0.getPixel(var17, var18);
+            if (ARGB.alpha(var19) == 0) {
+               var0.setPixel(var17, var18, var16);
             }
          }
       }

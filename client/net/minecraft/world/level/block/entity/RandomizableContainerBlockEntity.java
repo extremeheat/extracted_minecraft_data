@@ -74,6 +74,7 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
          this.unpackLootTable(var2.player);
          return this.createMenu(var1, var2);
       } else {
+         BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), var3, this.getDisplayName());
          return null;
       }
    }

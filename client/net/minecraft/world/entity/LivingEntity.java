@@ -105,6 +105,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.DeathProtection;
+import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -237,7 +238,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected ItemStack useItem;
    protected int useItemRemaining;
    protected int fallFlyTicks;
-   private long lastEnemyHitTime;
+   private long lastKineticHitFeedbackTime;
    private BlockPos lastPos;
    private Optional<BlockPos> lastClimbablePos;
    private @Nullable DamageSource lastDamageSource;
@@ -257,7 +258,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected LivingEntity(EntityType<? extends LivingEntity> var1, Level var2) {
       super(var1, var2);
       this.useItem = ItemStack.EMPTY;
-      this.lastEnemyHitTime = -2147483648L;
+      this.lastKineticHitFeedbackTime = -2147483648L;
       this.lastClimbablePos = Optional.empty();
       this.activeLocationDependentEnchantments = new EnumMap(EquipmentSlot.class);
       this.locatorBarIcon = new Waypoint.Icon();
@@ -1925,7 +1926,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public void handleEntityEvent(byte var1) {
       switch (var1) {
          case 2:
-            this.lastEnemyHitTime = this.level().getGameTime();
+            this.onKineticHit();
             break;
          case 3:
             SoundEvent var15 = this.getDeathSound();
@@ -1994,8 +1995,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public float getTicksSinceEnemyHit(float var1) {
-      return this.lastEnemyHitTime < 0L ? 0.0F : (float)(this.level().getGameTime() - this.lastEnemyHitTime) + var1;
+   public float getTicksSinceLastKineticHitFeedback(float var1) {
+      return this.lastKineticHitFeedbackTime < 0L ? 0.0F : (float)(this.level().getGameTime() - this.lastKineticHitFeedbackTime) + var1;
    }
 
    public void makePoofParticles() {
@@ -2019,6 +2020,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var3, this.getY() + var5, this.getZ() + var7, var1.x, var1.y, var1.z);
       }
 
+   }
+
+   private void onKineticHit() {
+      if (this.level().getGameTime() - this.lastKineticHitFeedbackTime > 10L) {
+         this.lastKineticHitFeedbackTime = this.level().getGameTime();
+         KineticWeapon var1 = (KineticWeapon)this.useItem.get(DataComponents.KINETIC_WEAPON);
+         if (var1 != null) {
+            var1.makeLocalHitSound(this);
+         }
+      }
    }
 
    private void swapHandItems() {

@@ -1658,22 +1658,20 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                            return;
                         }
 
-                        if (!this.player.isWithinEntityInteractionRange(var7, 0.0)) {
-                           return;
-                        }
-
-                        InteractionResult var8 = this.gameMode.interactAt(this.player, var7, var6, var4);
-                        if (!var8.consumesAction()) {
-                           var8 = this.gameMode.interact(this.player, var7, var4);
-                        }
-
-                        if (var8 instanceof InteractionResult.Success) {
-                           InteractionResult.Success var15 = (InteractionResult.Success)var8;
-                           if (var15.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                              this.player.swing(var4);
+                        if (this.player.isWithinEntityInteractionRange(var7, 0.0)) {
+                           InteractionResult var8 = this.gameMode.interactAt(this.player, var7, var6, var4);
+                           if (!var8.consumesAction()) {
+                              var8 = this.gameMode.interact(this.player, var7, var4);
                            }
 
-                           return;
+                           if (var8 instanceof InteractionResult.Success) {
+                              InteractionResult.Success var15 = (InteractionResult.Success)var8;
+                              if (var15.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                                 this.player.swing(var4);
+                              }
+
+                              return;
+                           }
                         }
                         break;
                      case BLOCK:
