@@ -1168,7 +1168,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       double var5 = this.blockInteractionRange();
       HitResult var7 = null;
       if (var4 != null) {
-         var7 = var4.getClosesetHit(this, var1, EntitySelector.CAN_BE_PICKED);
+         var7 = var4.getClosesetHit(var2, var1, EntitySelector.CAN_BE_PICKED);
          if (var7 instanceof BlockHitResult) {
             var7 = filterHitResult(var7, var2.getEyePosition(var1), var5);
          }

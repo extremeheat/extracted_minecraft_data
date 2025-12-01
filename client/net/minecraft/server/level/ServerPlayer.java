@@ -1538,8 +1538,8 @@ public class ServerPlayer extends Player {
       this.chatSession = var1.chatSession;
       this.gameMode.setGameModeForPlayer(var1.gameMode.getGameModeForPlayer(), var1.gameMode.getPreviousGameModeForPlayer());
       this.onUpdateAbilities();
+      this.getAttributes().assignBaseValues(var1.getAttributes());
       if (var2) {
-         this.getAttributes().assignBaseValues(var1.getAttributes());
          this.getAttributes().assignPermanentModifiers(var1.getAttributes());
          this.setHealth(var1.getHealth());
          this.foodData = var1.foodData;
@@ -1548,21 +1548,12 @@ public class ServerPlayer extends Player {
             this.addEffect(new MobEffectInstance(var4));
          }
 
-         this.getInventory().replaceWith(var1.getInventory());
-         this.experienceLevel = var1.experienceLevel;
-         this.totalExperience = var1.totalExperience;
-         this.experienceProgress = var1.experienceProgress;
-         this.setScore(var1.getScore());
+         this.transferInventoryXpAndScore(var1);
          this.portalProcess = var1.portalProcess;
       } else {
-         this.getAttributes().assignBaseValues(var1.getAttributes());
          this.setHealth(this.getMaxHealth());
          if ((Boolean)this.level().getGameRules().get(GameRules.KEEP_INVENTORY) || var1.isSpectator()) {
-            this.getInventory().replaceWith(var1.getInventory());
-            this.experienceLevel = var1.experienceLevel;
-            this.totalExperience = var1.totalExperience;
-            this.experienceProgress = var1.experienceProgress;
-            this.setScore(var1.getScore());
+            this.transferInventoryXpAndScore(var1);
          }
       }
 
@@ -1580,6 +1571,15 @@ public class ServerPlayer extends Player {
       this.setShoulderEntityLeft(var1.getShoulderEntityLeft());
       this.setShoulderEntityRight(var1.getShoulderEntityRight());
       this.setLastDeathLocation(var1.getLastDeathLocation());
+      this.waypointIcon().copyFrom(var1.waypointIcon());
+   }
+
+   private void transferInventoryXpAndScore(Player var1) {
+      this.getInventory().replaceWith(var1.getInventory());
+      this.experienceLevel = var1.experienceLevel;
+      this.totalExperience = var1.totalExperience;
+      this.experienceProgress = var1.experienceProgress;
+      this.setScore(var1.getScore());
    }
 
    protected void onEffectAdded(MobEffectInstance var1, @Nullable Entity var2) {

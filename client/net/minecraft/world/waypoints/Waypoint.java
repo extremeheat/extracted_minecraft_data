@@ -56,6 +56,11 @@ public interface Waypoint {
          return var2 == this.style && var3.isEmpty() ? this : new Icon(var2, var3);
       }
 
+      public void copyFrom(Icon var1) {
+         this.color = var1.color;
+         this.style = var1.style;
+      }
+
       private ResourceKey<WaypointStyleAsset> getOverrideStyle() {
          return this.style != WaypointStyleAssets.DEFAULT ? this.style : WaypointStyleAssets.DEFAULT;
       }

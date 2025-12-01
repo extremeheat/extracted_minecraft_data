@@ -76,7 +76,7 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    protected abstract AABB calculateBoundingBox(BlockPos var1, Direction var2);
 
    public boolean survives() {
-      if (!this.level().noCollision(this, this.getPopBox())) {
+      if (this.hasLevelCollision(this.getPopBox())) {
          return false;
       } else {
          boolean var1 = BlockPos.betweenClosedStream(this.calculateSupportBox()).allMatch((var1x) -> {
@@ -98,6 +98,11 @@ public abstract class HangingEntity extends BlockAttachedEntity {
          return var2x != this && (var3 || var4);
       };
       return !this.level().hasEntities(EntityTypeTest.forClass(HangingEntity.class), this.getPopBox(), var2);
+   }
+
+   protected boolean hasLevelCollision(AABB var1) {
+      Level var2 = this.level();
+      return !var2.noBlockCollision(this, var1) || !var2.noBorderCollision(this, var1);
    }
 
    protected AABB getPopBox() {

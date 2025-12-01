@@ -73,6 +73,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       if (var2 instanceof CrafterSlot var5) {
          if (((CrafterMenu)this.menu).isSlotDisabled(var2.index)) {
             this.renderDisabledSlot(var1, var5);
+         } else {
+            super.renderSlot(var1, var2, var3, var4);
          }
 
          int var6 = this.leftPos + var5.x - 2;

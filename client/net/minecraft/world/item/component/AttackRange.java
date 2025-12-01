@@ -25,25 +25,26 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public record AttackRange(float minRange, float maxRange, float hitboxMargin, float mobFactor) {
-   public static final AttackRange DEFAULT = new AttackRange(0.0F, 3.0F, 0.3F, 1.0F);
-   public static final Codec<AttackRange> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_reach", 0.0F).forGetter(AttackRange::minRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_reach", 3.0F).forGetter(AttackRange::maxRange), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(AttackRange::hitboxMargin), Codec.floatRange(0.0F, 2.0F).optionalFieldOf("mob_factor", DEFAULT.mobFactor).forGetter(AttackRange::mobFactor)).apply(var0, AttackRange::new));
+public record AttackRange(float minRange, float maxRange, float minCreativeRange, float maxCreativeRange, float hitboxMargin, float mobFactor) {
+   public static final Codec<AttackRange> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_reach", 0.0F).forGetter(AttackRange::minRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_reach", 3.0F).forGetter(AttackRange::maxRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("min_creative_reach", 0.0F).forGetter(AttackRange::minCreativeRange), ExtraCodecs.floatRange(0.0F, 64.0F).optionalFieldOf("max_creative_reach", 5.0F).forGetter(AttackRange::maxCreativeRange), ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("hitbox_margin", 0.3F).forGetter(AttackRange::hitboxMargin), Codec.floatRange(0.0F, 2.0F).optionalFieldOf("mob_factor", 1.0F).forGetter(AttackRange::mobFactor)).apply(var0, AttackRange::new));
    public static final StreamCodec<ByteBuf, AttackRange> STREAM_CODEC;
 
-   public AttackRange(float var1, float var2, float var3, float var4) {
+   public AttackRange(float var1, float var2, float var3, float var4, float var5, float var6) {
       super();
       this.minRange = var1;
       this.maxRange = var2;
-      this.hitboxMargin = var3;
-      this.mobFactor = var4;
+      this.minCreativeRange = var3;
+      this.maxCreativeRange = var4;
+      this.hitboxMargin = var5;
+      this.mobFactor = var6;
    }
 
    public static AttackRange defaultFor(LivingEntity var0) {
-      return new AttackRange(0.0F, (float)var0.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, 1.0F);
+      return new AttackRange(0.0F, (float)var0.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, (float)var0.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, 1.0F);
    }
 
    public HitResult getClosesetHit(Entity var1, float var2, Predicate<Entity> var3) {
-      Either var4 = ProjectileUtil.getHitEntitiesAlong(var1, this.effectiveRange(var1), var3, ClipContext.Block.OUTLINE);
+      Either var4 = ProjectileUtil.getHitEntitiesAlong(var1, this, var3, ClipContext.Block.OUTLINE);
       if (var4.left().isPresent()) {
          return (HitResult)var4.left().get();
       } else {
@@ -71,19 +72,19 @@ public record AttackRange(float minRange, float maxRange, float hitboxMargin, fl
    }
 
    public float effectiveMinRange(Entity var1) {
-      return var1 instanceof Player ? this.minRange : this.minRange * this.mobFactor;
+      if (var1 instanceof Player var2) {
+         return var2.isCreative() ? this.minCreativeRange : this.minRange;
+      } else {
+         return this.minRange * this.mobFactor;
+      }
    }
 
    public float effectiveMaxRange(Entity var1) {
       if (var1 instanceof Player var2) {
-         return var2.isCreative() ? this.maxRange + 2.0F : this.maxRange;
+         return var2.isCreative() ? this.maxCreativeRange : this.maxRange;
       } else {
          return this.maxRange * this.mobFactor;
       }
-   }
-
-   public AttackRange effectiveRange(Entity var1) {
-      return new AttackRange(this.effectiveMinRange(var1), this.effectiveMaxRange(var1), this.hitboxMargin, this.mobFactor);
    }
 
    public boolean isInRange(LivingEntity var1, Vec3 var2) {
@@ -104,6 +105,6 @@ public record AttackRange(float minRange, float maxRange, float hitboxMargin, fl
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, AttackRange::minRange, ByteBufCodecs.FLOAT, AttackRange::maxRange, ByteBufCodecs.FLOAT, AttackRange::hitboxMargin, ByteBufCodecs.FLOAT, AttackRange::mobFactor, AttackRange::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, AttackRange::minRange, ByteBufCodecs.FLOAT, AttackRange::maxRange, ByteBufCodecs.FLOAT, AttackRange::minCreativeRange, ByteBufCodecs.FLOAT, AttackRange::maxCreativeRange, ByteBufCodecs.FLOAT, AttackRange::hitboxMargin, ByteBufCodecs.FLOAT, AttackRange::mobFactor, AttackRange::new);
    }
 }

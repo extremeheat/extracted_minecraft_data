@@ -2094,14 +2094,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void disconnectWithProgressScreen() {
-      this.disconnect(new ProgressScreen(true), false);
+      this.disconnectWithProgressScreen(true);
+   }
+
+   public void disconnectWithProgressScreen(boolean var1) {
+      this.disconnect(new ProgressScreen(true), false, var1);
    }
 
    public void disconnect(Screen var1, boolean var2) {
-      ClientPacketListener var3 = this.getConnection();
-      if (var3 != null) {
+      this.disconnect(var1, var2, true);
+   }
+
+   public void disconnect(Screen var1, boolean var2, boolean var3) {
+      ClientPacketListener var4 = this.getConnection();
+      if (var4 != null) {
          this.dropAllTasks();
-         var3.close();
+         var4.close();
          if (!var2) {
             this.clearDownloadedResourcePacks();
          }
@@ -2112,7 +2120,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.debugClientMetricsCancel();
       }
 
-      IntegratedServer var4 = this.singleplayerServer;
+      IntegratedServer var5 = this.singleplayerServer;
       this.singleplayerServer = null;
       this.gameRenderer.resetData();
       this.gameMode = null;
@@ -2124,22 +2132,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.gui.onDisconnected();
          }
 
-         if (var4 != null) {
+         if (var5 != null) {
             this.setScreen(new GenericMessageScreen(SAVING_LEVEL));
-            ProfilerFiller var5 = Profiler.get();
-            var5.push("waitForServer");
+            ProfilerFiller var6 = Profiler.get();
+            var6.push("waitForServer");
 
-            while(!var4.isShutdown()) {
+            while(!var5.isShutdown()) {
                this.runTick(false);
             }
 
-            var5.pop();
+            var6.pop();
          }
 
          this.setScreenAndShow(var1);
          this.isLocalServer = false;
          this.level = null;
-         this.updateLevelInEngines((ClientLevel)null);
+         this.updateLevelInEngines((ClientLevel)null, var3);
          this.player = null;
       } finally {
          this.clientLevelTeardownInProgress = false;
@@ -2188,7 +2196,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void updateLevelInEngines(@Nullable ClientLevel var1) {
-      this.soundManager.stop();
+      this.updateLevelInEngines(var1, true);
+   }
+
+   private void updateLevelInEngines(@Nullable ClientLevel var1, boolean var2) {
+      if (var2) {
+         this.soundManager.stop();
+      }
+
       this.setCameraEntity((Entity)null);
       this.pendingConnection = null;
       this.levelRenderer.setLevel(var1);

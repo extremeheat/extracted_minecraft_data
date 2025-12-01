@@ -143,6 +143,10 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       }
    }
 
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.BODY || var1 == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(var1);
+   }
+
    protected boolean canAddPassenger(Entity var1) {
       return !this.isVehicle();
    }

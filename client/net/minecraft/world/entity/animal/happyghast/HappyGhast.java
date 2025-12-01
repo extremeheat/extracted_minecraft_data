@@ -524,6 +524,10 @@ public class HappyGhast extends Animal {
       return !this.isBaby();
    }
 
+   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
+      return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
+   }
+
    static {
       IS_LEASH_HOLDER = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
       STAYS_STILL = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);

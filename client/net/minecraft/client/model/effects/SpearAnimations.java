@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Ease;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.KineticWeapon;
@@ -33,7 +34,7 @@ public class SpearAnimations {
 
       var0.yRot = 0.017453292F * Math.clamp(57.295776F * var0.yRot, -60.0F, 60.0F);
       var0.xRot = 0.017453292F * Math.clamp(57.295776F * var0.xRot, -120.0F, 30.0F);
-      if (!(var4.ticksUsingItem <= 0.0F)) {
+      if (!(var4.ticksUsingItem <= 0.0F) && (!var4.isUsingItem || var4.useItemHand == (var2 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND))) {
          KineticWeapon var6 = (KineticWeapon)var3.get(DataComponents.KINETIC_WEAPON);
          if (var6 != null) {
             UseParams var7 = SpearAnimations.UseParams.fromKineticWeapon(var6, var4.ticksUsingItem);
