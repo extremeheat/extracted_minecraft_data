@@ -891,6 +891,10 @@ public abstract class Entity implements SyncedDataHolder, DebugValueSource, Name
       this.movementThisTick.clear();
    }
 
+   public boolean hasMovedHorizontallyRecently() {
+      return Math.abs(this.lastKnownSpeed.horizontalDistance()) > 9.999999747378752E-6;
+   }
+
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
       this.applyEffectsFromBlocks(List.of(new Movement(var1, var2)));
    }

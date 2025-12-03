@@ -3797,8 +3797,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public float getSecondsToDisableBlocking() {
-      Weapon var1 = (Weapon)this.getWeaponItem().get(DataComponents.WEAPON);
-      return var1 != null ? var1.disableBlockingForSeconds() : 0.0F;
+      ItemStack var1 = this.getWeaponItem();
+      Weapon var2 = (Weapon)var1.get(DataComponents.WEAPON);
+      return var2 != null && var1 == this.getActiveItem() ? var2.disableBlockingForSeconds() : 0.0F;
    }
 
    public float maxUpStep() {

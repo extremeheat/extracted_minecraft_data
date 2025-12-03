@@ -2,8 +2,11 @@ package net.minecraft.client.renderer.block.model;
 
 import com.mojang.math.Quadrant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
@@ -136,10 +139,10 @@ public class ItemModelGenerator implements UnbakedModel {
       return var5;
    }
 
-   private static List<SideFace> getSideFaces(SpriteContents var0) {
+   private static Collection<SideFace> getSideFaces(SpriteContents var0) {
       int var1 = var0.width();
       int var2 = var0.height();
-      ArrayList var3 = new ArrayList();
+      HashSet var3 = new HashSet();
       var0.getUniqueFrames().forEach((var4) -> {
          for(int var5 = 0; var5 < var2; ++var5) {
             for(int var6 = 0; var6 < var1; ++var6) {
@@ -157,7 +160,7 @@ public class ItemModelGenerator implements UnbakedModel {
       return var3;
    }
 
-   private static void checkTransition(SideDirection var0, List<SideFace> var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
+   private static void checkTransition(SideDirection var0, Set<SideFace> var1, SpriteContents var2, int var3, int var4, int var5, int var6, int var7) {
       if (isTransparent(var2, var3, var4 - var0.direction.getStepX(), var5 - var0.direction.getStepY(), var6, var7)) {
          var1.add(new SideFace(var0, var4, var5));
       }

@@ -73,7 +73,11 @@ public record AttackRange(float minRange, float maxRange, float minCreativeRange
 
    public float effectiveMinRange(Entity var1) {
       if (var1 instanceof Player var2) {
-         return var2.isCreative() ? this.minCreativeRange : this.minRange;
+         if (var2.isSpectator()) {
+            return 0.0F;
+         } else {
+            return var2.isCreative() ? this.minCreativeRange : this.minRange;
+         }
       } else {
          return this.minRange * this.mobFactor;
       }

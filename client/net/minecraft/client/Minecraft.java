@@ -1628,7 +1628,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                      this.player.resetAttackStrengthTicker();
                }
 
-               this.player.swing(InteractionHand.MAIN_HAND);
+               if (!this.player.isSpectator()) {
+                  this.player.swing(InteractionHand.MAIN_HAND);
+               }
+
                return var2;
             }
          }

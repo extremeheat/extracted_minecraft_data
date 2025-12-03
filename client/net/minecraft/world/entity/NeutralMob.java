@@ -60,8 +60,11 @@ public interface NeutralMob {
       if (var3 != null && var3.isDeadOrDying() && var4 != null && var4.matches(var3) && var3 instanceof Mob) {
          this.stopBeingAngry();
       } else {
-         if (var3 != null && (var4 == null || !var4.matches(var3))) {
-            this.setPersistentAngerTarget(EntityReference.of(var3));
+         if (var3 != null) {
+            if (var4 == null || !var4.matches(var3)) {
+               this.setPersistentAngerTarget(EntityReference.of(var3));
+            }
+
             this.startPersistentAngerTimer();
          }
 
