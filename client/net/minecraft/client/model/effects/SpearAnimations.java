@@ -133,19 +133,21 @@ public class SpearAnimations {
       public static UseParams fromKineticWeapon(KineticWeapon var0, float var1) {
          int var2 = var0.delayTicks();
          int var3 = (Integer)var0.dismountConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         int var4 = (Integer)var0.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         int var5 = (Integer)var0.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
-         float var6 = SpearAnimations.progress(var1, 0.0F, (float)var2);
-         float var7 = SpearAnimations.progress(var6, 0.0F, 0.5F);
-         float var8 = SpearAnimations.progress(var6, 0.5F, 0.8F);
-         float var9 = SpearAnimations.progress(var6, 0.8F, 1.0F);
-         float var10 = SpearAnimations.progress(var1, (float)var3, (float)var4);
-         float var11 = Ease.outCubic(Ease.inOutElastic(SpearAnimations.progress(var1, (float)var4, (float)(var5 - 5))));
-         float var12 = SpearAnimations.progress(var1, (float)(var5 - 5), (float)var5);
-         float var13 = 2.0F * Ease.outCirc(var10) - 2.0F * Ease.inCirc(var12);
-         float var14 = Mth.sin((double)(var1 * 19.0F * 0.017453292F)) * var13;
-         float var15 = Mth.sin((double)(var1 * 30.0F * 0.017453292F)) * var13;
-         return new UseParams(var6, var7, var8, var9, var10, var11, var12, var13, var14, var15);
+         int var4 = var3 - 20;
+         int var5 = (Integer)var0.knockbackConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
+         int var6 = var5 - 40;
+         int var7 = (Integer)var0.damageConditions().map(KineticWeapon.Condition::maxDurationTicks).orElse(0) + var2;
+         float var8 = SpearAnimations.progress(var1, 0.0F, (float)var2);
+         float var9 = SpearAnimations.progress(var8, 0.0F, 0.5F);
+         float var10 = SpearAnimations.progress(var8, 0.5F, 0.8F);
+         float var11 = SpearAnimations.progress(var8, 0.8F, 1.0F);
+         float var12 = SpearAnimations.progress(var1, (float)var4, (float)var6);
+         float var13 = Ease.outCubic(Ease.inOutElastic(SpearAnimations.progress(var1 - 20.0F, (float)var6, (float)var5)));
+         float var14 = SpearAnimations.progress(var1, (float)(var7 - 5), (float)var7);
+         float var15 = 2.0F * Ease.outCirc(var12) - 2.0F * Ease.inCirc(var14);
+         float var16 = Mth.sin((double)(var1 * 19.0F * 0.017453292F)) * var15;
+         float var17 = Mth.sin((double)(var1 * 30.0F * 0.017453292F)) * var15;
+         return new UseParams(var8, var9, var10, var11, var12, var13, var14, var15, var16, var17);
       }
    }
 }

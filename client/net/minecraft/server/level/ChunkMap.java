@@ -568,7 +568,10 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       Throwable var9 = var10000;
       boolean var10 = var9 instanceof Error;
       boolean var6 = var9 instanceof IOException || var9 instanceof NbtException;
-      if (!var10 && var6) {
+      if (!var10) {
+         if (!var6) {
+         }
+
          this.level.getServer().reportChunkLoadFailure(var9, this.storageInfo(), var2);
          return this.createEmptyChunk(var2);
       } else {
