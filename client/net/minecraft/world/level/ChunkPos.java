@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.chunk.status.ChunkPyramid;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -60,6 +61,14 @@ public class ChunkPos {
 
    public static ChunkPos maxFromRegion(int var0, int var1) {
       return new ChunkPos((var0 << 5) + 31, (var1 << 5) + 31);
+   }
+
+   public boolean isValid() {
+      return isValid(this.x, this.z);
+   }
+
+   public static boolean isValid(int var0, int var1) {
+      return Mth.absMax(var0, var1) <= MAX_COORDINATE_VALUE;
    }
 
    public long toLong() {
@@ -176,7 +185,7 @@ public class ChunkPos {
    }
 
    public int getChessboardDistance(int var1, int var2) {
-      return Math.max(Math.abs(this.x - var1), Math.abs(this.z - var2));
+      return Mth.chessboardDistance(var1, var2, this.x, this.z);
    }
 
    public int distanceSquared(ChunkPos var1) {

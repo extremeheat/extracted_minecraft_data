@@ -41,7 +41,7 @@ public abstract class GenerationChunkHolder {
       this.generationRefCount = new AtomicInteger();
       this.generationSaveSyncFuture = CompletableFuture.completedFuture((Object)null);
       this.pos = var1;
-      if (var1.getChessboardDistance(ChunkPos.ZERO) > ChunkPos.MAX_COORDINATE_VALUE) {
+      if (!var1.isValid()) {
          throw new IllegalStateException("Trying to create chunk out of reasonable bounds: " + String.valueOf(var1));
       }
    }

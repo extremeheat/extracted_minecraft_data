@@ -132,8 +132,20 @@ public class Mth {
       }
    }
 
+   public static int absMax(int var0, int var1) {
+      return Math.max(Math.abs(var0), Math.abs(var1));
+   }
+
+   public static float absMax(float var0, float var1) {
+      return Math.max(Math.abs(var0), Math.abs(var1));
+   }
+
    public static double absMax(double var0, double var2) {
       return Math.max(Math.abs(var0), Math.abs(var2));
+   }
+
+   public static int chessboardDistance(int var0, int var1, int var2, int var3) {
+      return absMax(var2 - var0, var3 - var1);
    }
 
    public static int floorDiv(int var0, int var1) {
