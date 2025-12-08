@@ -103,6 +103,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
       if ((var3 == EntitySpawnReason.NATURAL || var3 == EntitySpawnReason.STRUCTURE) && this.getMainHandItem().is(Items.TRIDENT) && var1.getRandom().nextFloat() < 0.5F && !this.isBaby() && !var1.getBiome(this.blockPosition()).is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
          ZombieNautilus var5 = EntityType.ZOMBIE_NAUTILUS.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var5 != null) {
+            if (var3 == EntitySpawnReason.STRUCTURE) {
+               var5.setPersistenceRequired();
+            }
+
             var5.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var5.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
             this.startRiding(var5, false, false);

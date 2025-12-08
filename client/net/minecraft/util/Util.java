@@ -587,7 +587,7 @@ public class Util {
       return Maps.transformValues(var0, var1);
    }
 
-   public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {
       if (var0.isEmpty()) {
          return CompletableFuture.completedFuture(List.of());
       } else if (var0.size() == 1) {
@@ -598,13 +598,13 @@ public class Util {
       }
    }
 
-   public static <V> CompletableFuture<List<V>> sequenceFailFast(List<? extends CompletableFuture<? extends V>> var0) {
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFast(List<? extends CompletableFuture<? extends V>> var0) {
       CompletableFuture var1 = new CompletableFuture();
       Objects.requireNonNull(var1);
       return fallibleSequence(var0, var1::completeExceptionally).applyToEither(var1, Function.identity());
    }
 
-   public static <V> CompletableFuture<List<V>> sequenceFailFastAndCancel(List<? extends CompletableFuture<? extends V>> var0) {
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFastAndCancel(List<? extends CompletableFuture<? extends V>> var0) {
       CompletableFuture var1 = new CompletableFuture();
       return fallibleSequence(var0, (var2) -> {
          if (var1.completeExceptionally(var2)) {
@@ -616,7 +616,7 @@ public class Util {
       }).applyToEither(var1, Function.identity());
    }
 
-   private static <V> CompletableFuture<List<V>> fallibleSequence(List<? extends CompletableFuture<? extends V>> var0, Consumer<Throwable> var1) {
+   private static <V extends @Nullable Object> CompletableFuture<List<V>> fallibleSequence(List<? extends CompletableFuture<? extends V>> var0, Consumer<Throwable> var1) {
       ObjectArrayList var2 = new ObjectArrayList();
       var2.size(var0.size());
       CompletableFuture[] var3 = new CompletableFuture[var0.size()];

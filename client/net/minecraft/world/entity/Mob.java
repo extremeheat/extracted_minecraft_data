@@ -502,7 +502,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       if (!this.level().isClientSide() && (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.MONSTERS_BURN, this.position())) {
          float var1 = this.getLightLevelDependentMagicValue();
          BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
-         boolean var3 = this.isInWater() || this.isInPowderSnow || this.wasInPowderSnow;
+         boolean var3 = this.isInWaterOrRain() || this.isInPowderSnow || this.wasInPowderSnow;
          if (var1 > 0.5F && this.random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F && !var3 && this.level().canSeeSky(var2)) {
             return true;
          }

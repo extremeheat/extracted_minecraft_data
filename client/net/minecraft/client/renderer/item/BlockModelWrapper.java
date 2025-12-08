@@ -39,12 +39,12 @@ public class BlockModelWrapper implements ItemModel {
       Item var2 = var0.getItem();
       if (var2 instanceof BlockItem var1) {
          ChunkSectionLayer var3 = ItemBlockRenderTypes.getChunkRenderType(var1.getBlock().defaultBlockState());
-         if (var3 == ChunkSectionLayer.TRANSLUCENT) {
-            return Sheets.translucentBlockItemSheet();
+         if (var3 != ChunkSectionLayer.TRANSLUCENT) {
+            return Sheets.cutoutBlockSheet();
          }
       }
 
-      return Sheets.cutoutBlockSheet();
+      return Sheets.translucentBlockItemSheet();
    };
    private final List<ItemTintSource> tints;
    private final List<BakedQuad> quads;

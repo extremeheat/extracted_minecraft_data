@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.function.LongSupplier;
 import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -64,10 +63,6 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
       var1.dimensionType().timelines().forEach((var2x) -> var0.addTimelineLayer(var2x, var4));
       if (var1.canHaveWeather()) {
          WeatherAttributes.addBuiltinLayers(var0, WeatherAttributes.WeatherAccess.from(var1));
-         var0.addPositionalLayer(EnvironmentAttributes.MONSTERS_BURN, (var2x, var3x, var4x) -> {
-            Holder var5 = var3.getNoiseBiomeAtPosition(var3x.x, var3x.y, var3x.z);
-            return var2x || ((Biome)var5.value()).getPrecipitationAt(BlockPos.containing(var3x.x, var3x.y, var3x.z), var1.getSeaLevel()) != Biome.Precipitation.RAIN;
-         });
       }
 
    }
